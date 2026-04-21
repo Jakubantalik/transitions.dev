@@ -1,0 +1,2698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+
+  <title>Transitions.dev — Essential transitions for web apps</title>
+  <meta
+    name="description"
+    content="Collection of the most essential transitions for web apps that you can just copy and paste into any project."
+  />
+  <meta
+    name="keywords"
+    content="transitions, CSS transitions, web animations, UI animations, React animations, microinteractions, motion design, frontend, copy paste CSS"
+  />
+  <meta name="author" content="Transitions.dev" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="googlebot" content="index, follow" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="theme-color" content="#fdfdfd" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#070707" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-title" content="Transitions.dev" />
+  <meta name="application-name" content="Transitions.dev" />
+
+  <link rel="canonical" href="https://transitions.dev/" />
+  <link rel="alternate" hreflang="en" href="https://transitions.dev/" />
+  <link rel="alternate" hreflang="x-default" href="https://transitions.dev/" />
+
+  <link rel="icon" href="assets/favicon-light-mode.png?v=3" type="image/png" sizes="any" />
+  <link rel="icon" href="assets/favicon-light-mode.png?v=3" media="(prefers-color-scheme: light)" type="image/png" />
+  <link rel="icon" href="assets/icon-dark-2x.png?v=3" media="(prefers-color-scheme: dark)" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/favicon-light-mode.png?v=3" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:url" content="https://transitions.dev/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:title" content="Transitions.dev — Essential transitions for web apps" />
+  <meta property="og:description" content="Collection of the most essential transitions for web apps that you can just copy and paste into any project." />
+  <meta property="og:image" content="https://transitions.dev/assets/og-image.jpg" />
+  <meta property="og:image:secure_url" content="https://transitions.dev/assets/og-image.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Transitions.dev — Collection of the most essential transitions" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Transitions.dev — Essential transitions for web apps" />
+  <meta name="twitter:description" content="Collection of the most essential transitions for web apps that you can just copy and paste into any project." />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-image.jpg" />
+  <meta name="twitter:image:alt" content="Transitions.dev — Collection of the most essential transitions" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://transitions.dev/#website",
+          "url": "https://transitions.dev/",
+          "name": "Transitions.dev",
+          "description": "Collection of the most essential transitions for web apps that you can just copy and paste into any project.",
+          "inLanguage": "en"
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://transitions.dev/#webpage",
+          "url": "https://transitions.dev/",
+          "name": "Transitions.dev — Essential transitions for web apps",
+          "isPartOf": { "@id": "https://transitions.dev/#website" },
+          "inLanguage": "en",
+          "primaryImageOfPage": {
+            "@type": "ImageObject",
+            "url": "https://transitions.dev/assets/og-image.jpg",
+            "width": 1200,
+            "height": 630
+          }
+        }
+      ]
+    }
+  </script>
+  <script>
+    // Apply theme from system preference before first paint to avoid FOUC.
+    // Session-only toggle overrides this (see end of <body>); not persisted.
+    (function () {
+      try {
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    /* ============================================================ */
+    /* Design tokens — light (default) and dark                      */
+    /* ============================================================ */
+    :root {
+      color-scheme: light;
+
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --text-subtle: #767676;
+      --text-faint: #8f8f8f;
+      --text-footer-name: #4a4a4a;
+
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+      /* Horizontal inset for card title block + copy control */
+      --card-pad-x: 20px;
+
+      --stage-bg: rgba(194, 194, 194, 0.1);
+      --stage-border: rgba(0, 0, 0, 0.04);
+
+      --chip-bg: #f4f4f4;
+      --chip-bg-hover: #f1f1f1;
+      --chip-bg-pressed: #eae9e9;
+
+      --animate-bg: rgba(243, 243, 243, 0.9);
+      --animate-bg-tint: #bfc0cb;
+      --animate-bg-hover: #eae9e9;
+      --animate-text: #17181c;
+
+      --copy-bg: rgba(255, 255, 255, 0.9);
+      --copy-bg-tint: #bfc0cb;
+      --copy-bg-hover: #f1f1f1;
+      --copy-bg-pressed: #eae9e9;
+
+      --surface-bg: #ffffff;
+      --skeleton: #eeeeef;
+      --muted: #5e6073;
+
+      /* Inner "material" surface (Figma: node 221:2895)
+         used by dropdowns, panels, and resize cards inside demo cards */
+      --material-bg: #ffffff;
+      --material-shadow:
+        0 4px 42px 0 rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(0, 0, 0, 0.06);
+
+      --icon-color: #0d0d0d;
+      --icon-color-muted: rgba(13, 13, 13, 0.6);
+
+      --label-mono: #5e6073;
+
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, monospace;
+
+      /* ========================================================== */
+      /* Prototype transition knobs (copied per prototype)          */
+      /* ========================================================== */
+
+      /* P1 — Notification badge */
+      --p1-pos-open-dur: 260ms;
+      --p1-scale-open-dur: 500ms;
+      --p1-scale-close-dur: 180ms;
+      --p1-opacity-open-dur: 400ms;
+      --p1-opacity-close-dur: 180ms;
+      --p1-blur: 2px;
+      --p1-distance-x: -8.2px;
+      --p1-distance-y: 12.4px;
+      --p1-bounce: 1.36;
+      --p1-ease-pos-open: cubic-bezier(0.22, 1, 0.36, 1);
+      --p1-ease-scale-open: cubic-bezier(0.34, 1.36, 0.64, 1);
+      --p1-ease-close: cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* P2 — Menu dropdown */
+      --p2-open-dur: 250ms;
+      --p2-close-dur: 150ms;
+      --p2-pre-scale: 0.97;
+      --p2-closing-scale: 0.99;
+      /* Origin-aware: anchor the scale where the trigger sits so the
+         menu visually "grows" from the trigger (top center = button
+         sits directly above the menu). */
+      --p2-origin: top center;
+      --p2-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P3 — Panel reveal */
+      --p3-open-dur: 400ms;
+      --p3-close-dur: 250ms;
+      --p3-panel-height: 187px;
+      --p3-translate-y: 187px;
+      /* Gutter inside clip so box-shadow isn’t cropped.
+         Top needs enough room for the 42px-blur shadow (blur 42 − offset 4 ≈ 38px reach);
+         sides/bottom stay slim so the stack still fits the 260px stage. */
+      /* Clip fills the full 260px stage (top:0, bottom:0) so no bare stage
+         strip shows below the panel when it's open. Top pad still sized so
+         resting panel is pushed below the button and the 38px top-reach drop
+         shadow has room above the panel. */
+      --p3-clip-pad-top: 54px;
+      --p3-clip-pad: 14px;
+      /* Vertical offset when panel is open. Positive = lift the panel
+         higher in the stage; negative = push it lower. */
+      --p3-open-lift: -28px;
+      --p3-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Figma 213:1375 — Light Mode / Shadow 25.
+         Left/right/bottom of the panel are flush with the stage, where
+         `.card-stage::after` already draws a ring — so we only draw
+         the top edge here, plus the drop shadows. */
+      --p3-shadow:
+        inset 0 1px 0 0 rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+
+      /* P4 — Card resize */
+      --p4-dur: 300ms;
+      --p4-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P5 — Hamburger ↔ Close */
+      --p5-dur: 200ms;
+      --p5-blur: 2px;
+      --p5-start-scale: 0.25;
+      --p5-ease: ease-in-out;
+
+      /* P6 — Text enter/exit */
+      --p6-dur: 200ms;
+      --p6-translate-y: 8px;
+      --p6-blur: 2px;
+      --p6-ease: ease-out;
+
+      /* P7 — Modal open/close */
+      --p7-open-dur: 300ms;
+      --p7-close-dur: 150ms;
+      --p7-scale: 0.95;
+      --p7-scale-close: 0.96;
+      --p7-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P8 — Page slide */
+      --p8-slide-dur: 200ms;
+      --p8-fade-dur: 200ms;
+      --p8-distance: 8px;
+      --p8-blur: 3px;
+      --p8-stagger: 0ms;
+      --p8-exit-enabled: 1;
+      --p8-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --p8-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P9 — Number pop-in */
+      --p9-dur: 500ms;
+      --p9-distance: 8px;
+      --p9-stagger: 50ms;
+      --p9-blur: 2px;
+      --p9-bounce: 1.35;
+      --p9-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
+      --p9-dir-x: 0;
+      --p9-dir-y: 1;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --text-subtle: #767676;
+      --text-faint: #8f8f8f;
+      --text-footer-name: #e9e9e9;
+
+      --card-bg: #181818;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+
+      --stage-bg: #131313;
+      --stage-border: rgba(255, 255, 255, 0.02);
+
+      --chip-bg: rgba(255, 255, 255, 0.07);
+      --chip-bg-hover: rgba(255, 255, 255, 0.1);
+      --chip-bg-pressed: rgba(255, 255, 255, 0.08);
+
+      /* Animate button — Figma icons 232:3561 (dark states).
+         Translucent white overlays on the card surface:
+           default 4%, hover 6%, clicked 8%, disabled 4% + 50% text. */
+      --animate-bg: rgba(255, 255, 255, 0.04);
+      --animate-bg-tint: transparent;
+      --animate-bg-hover: rgba(255, 255, 255, 0.06);
+      --animate-bg-pressed: rgba(255, 255, 255, 0.08);
+      --animate-text: #e3e3e3;
+      --animate-text-disabled: rgba(227, 227, 227, 0.5);
+
+      --copy-bg: rgba(255, 255, 255, 0.08);
+      --copy-bg-tint: transparent;
+      --copy-bg-hover: rgba(255, 255, 255, 0.10);
+      --copy-bg-pressed: rgba(255, 255, 255, 0.10);
+
+      --surface-bg: #181818;
+      --skeleton: rgba(238, 238, 239, 0.1);
+      --muted: #767676;
+
+      --material-bg: #181818;
+      --material-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.08);
+
+      --icon-color: #ededed;
+      --icon-color-muted: rgba(237, 237, 237, 0.6);
+
+      --label-mono: #5e6073;
+    }
+
+    * { box-sizing: border-box; }
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100dvh;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* ─── Cross-browser text anti-aliasing ───────────────────── */
+    html {
+      -webkit-font-smoothing: antialiased;           /* Safari, Chrome (macOS/iOS) */
+      -moz-osx-font-smoothing: grayscale;            /* Firefox (macOS) */
+      font-smooth: always;                           /* legacy non-standard */
+      text-rendering: optimizeLegibility;            /* Firefox, Safari, Chrome */
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    /* ─── Skip link ───────────────────────────────────────────── */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 16px;
+      z-index: 200;
+      padding: 12px 20px;
+      border-radius: 8px;
+      background: var(--text);
+      color: var(--bg);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 16px; }
+
+    /* ─── Main container ──────────────────────────────────────── */
+    .app {
+      position: relative;
+      max-width: 1008px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 24px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ─── Top bar (absolute action buttons) ──────────────────── */
+    .top-bar {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 50px;
+      background: var(--chip-bg);
+      color: var(--icon-color);
+      cursor: pointer;
+      text-decoration: none;
+      padding: 0;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .icon-btn:hover { background: var(--chip-bg-hover); }
+    .icon-btn:active { background: var(--chip-bg-pressed); }
+    .icon-btn:focus-visible {
+      outline: 2px solid var(--icon-color);
+      outline-offset: 2px;
+    }
+
+    .icon-btn svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+      fill: currentColor;
+      color: var(--icon-color-muted);
+      transition: color 0.15s ease;
+    }
+    .icon-btn svg.icon-x {
+      width: 16px;
+      height: 17px;
+    }
+    .icon-btn:hover svg { color: var(--icon-color); }
+
+    .theme-icon {
+      width: 16px;
+      height: 16px;
+      display: block;
+      opacity: 0.6;
+      transition: opacity 0.5s ease, transform 0.5s ease, filter 0.15s ease;
+      transform-origin: center;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .theme-toggle:hover .theme-icon { opacity: 1; }
+
+    .theme-icon.morph-out {
+      opacity: 0;
+      transform: scale(0.85) rotate(30deg);
+    }
+
+    html[data-theme="dark"] .theme-icon {
+      filter: brightness(0) invert(1);
+    }
+
+    /* ─── Header (Figma demo page + border-beam vertical rhythm) ─ */
+    .header {
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 48px;
+      padding-bottom: 53px;
+      text-align: center;
+    }
+
+    .header-icon-wrap {
+      position: relative;
+      width: 136px;
+      height: 140px;
+      margin-top: -43px;
+      margin-bottom: -27px;
+      overflow: visible;
+    }
+
+    .header-icon-img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 136px;
+      height: 140px;
+      display: block;
+      user-select: none;
+      transform-origin: center;
+      transition:
+        filter 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .header-icon-wrap:hover .header-icon-img {
+      filter: hue-rotate(60deg) saturate(1.6);
+      transform: rotate(8deg) scale(1.06);
+    }
+
+    html[data-theme="dark"] .header-icon-img--light,
+    html:not([data-theme="dark"]) .header-icon-img--dark {
+      display: none;
+    }
+
+    html:not([data-theme="dark"]) .header-icon-img--light,
+    html[data-theme="dark"] .header-icon-img--dark {
+      display: block;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 500;
+      line-height: 34px;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      max-width: 560px;
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 22px;
+      color: var(--text-muted);
+    }
+
+    /* ─── Cards grid ──────────────────────────────────────────── */
+    .cards {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 320px);
+      justify-content: center;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ─── Card ────────────────────────────────────────────────── */
+    .card {
+      position: relative;
+      width: 320px;
+      height: 344px;
+      min-height: 344px;
+      max-height: 344px;
+      overflow: hidden;
+      border-radius: 24px;
+      background: var(--card-bg);
+      box-shadow:
+        var(--card-shadow),
+        inset 0 0 0 1px var(--card-border),
+        inset 0 -1px 0 0 var(--card-border);
+      transition: box-shadow 0.15s ease, background-color 0.2s ease;
+    }
+
+    html[data-theme="dark"] .card {
+      background: #181818;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.07);
+    }
+
+    .card-stage {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      width: 296px;
+      max-width: calc(100% - 24px);
+      height: 260px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--stage-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Ring rendered on a pseudo so it draws on top of descendants
+       (e.g. the P3 panel material) instead of being occluded by them. */
+    .card-stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px var(--stage-border);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    html[data-theme="dark"] .card-stage {
+      background: #131313;
+    }
+    html[data-theme="dark"] .card-stage::after {
+      box-shadow: inset 0 0 0 1px rgba(191, 192, 203, 0.08);
+    }
+
+    .card-meta {
+      position: absolute;
+      left: var(--card-pad-x);
+      bottom: 20px;
+      width: calc(100% - 2 * var(--card-pad-x) - 44px);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 18px;
+      color: var(--text);
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 13px;
+      color: var(--text-subtle);
+    }
+
+    html[data-theme="dark"] .card-title { color: #ededed; }
+    html[data-theme="dark"] .card-subtitle { color: #767676; }
+
+    .card-copy {
+      position: absolute;
+      right: var(--card-pad-x);
+      bottom: 16px;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 24px;
+      padding: 0;
+      cursor: pointer;
+      background-color: var(--copy-bg-tint);
+      background-image: linear-gradient(90deg, var(--copy-bg) 0%, var(--copy-bg) 100%);
+      color: var(--icon-color-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html[data-theme="dark"] .card-copy {
+      background-color: transparent;
+      background-image: none;
+      background: var(--copy-bg);
+    }
+
+    .card-copy:hover {
+      background-color: var(--copy-bg-tint);
+      background-image: linear-gradient(90deg, var(--copy-bg-hover) 0%, var(--copy-bg-hover) 100%);
+      color: var(--icon-color);
+    }
+    html[data-theme="dark"] .card-copy:hover {
+      background-image: none;
+      background: var(--copy-bg-hover);
+      color: var(--icon-color);
+    }
+
+    .card-copy:active {
+      background-color: var(--copy-bg-tint);
+      background-image: linear-gradient(90deg, var(--copy-bg-pressed) 0%, var(--copy-bg-pressed) 100%);
+      color: var(--icon-color);
+    }
+    html[data-theme="dark"] .card-copy:active {
+      background-image: none;
+      background: var(--copy-bg-pressed);
+      color: var(--icon-color);
+    }
+
+    .card-copy:focus-visible {
+      outline: 2px solid var(--icon-color);
+      outline-offset: 2px;
+    }
+
+    .card-copy svg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      display: block;
+      transform-origin: center;
+      will-change: opacity, transform, filter;
+      transition:
+        opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .card-copy .icon-copy {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      filter: blur(0);
+    }
+    .card-copy .icon-check {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.25);
+      filter: blur(4px);
+      color: currentColor;
+    }
+    .card-copy[data-copied="true"] .icon-copy {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.25);
+      filter: blur(4px);
+    }
+    .card-copy[data-copied="true"] .icon-check {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      filter: blur(0);
+    }
+
+    /* ─── Animate button (centered inside stage bottom) ──────── */
+    /* Same reset as prototypes `.btn`: no native button chrome. */
+    .btn-animate {
+      appearance: none;
+      -webkit-appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 20px;
+      height: 36px;
+      padding: 6px 10px;
+      border: 0;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 16px;
+      color: var(--animate-text);
+      background-color: var(--animate-bg-tint);
+      background-image: linear-gradient(90deg, var(--animate-bg) 0%, var(--animate-bg) 100%);
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.15s ease, filter 0.15s ease;
+      z-index: 5;
+      flex-shrink: 0;
+    }
+    html[data-theme="dark"] .btn-animate {
+      background-color: transparent;
+      background-image: none;
+      background: var(--animate-bg);
+    }
+
+    .btn-animate:hover { filter: brightness(0.98); }
+    html[data-theme="dark"] .btn-animate:hover {
+      background: var(--animate-bg-hover);
+      filter: none;
+    }
+    html[data-theme="dark"] .btn-animate:active {
+      background: var(--animate-bg-pressed);
+      filter: none;
+    }
+    html[data-theme="dark"] .btn-animate:disabled {
+      background: var(--animate-bg);
+      color: var(--animate-text-disabled);
+      cursor: not-allowed;
+    }
+    html[data-theme="dark"] .btn-animate:disabled:hover {
+      background: var(--animate-bg);
+      color: var(--animate-text-disabled);
+    }
+    .btn-animate:active { filter: brightness(0.95); }
+    .btn-animate:focus-visible {
+      outline: 2px solid var(--animate-text);
+      outline-offset: 2px;
+    }
+
+    /* ─── Footer ──────────────────────────────────────────────── */
+    .footer {
+      width: 100%;
+      text-align: center;
+      padding: 96px 0 24px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 14px;
+    }
+    .footer-muted { color: var(--text-faint); }
+    .footer-name {
+      color: var(--text-footer-name);
+      text-decoration: none;
+      margin-left: 4px;
+    }
+    .footer-name:hover {
+      color: #0d0d0d;
+      text-decoration: none;
+    }
+    html[data-theme="dark"] .footer-name:hover {
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    /* ============================================================ */
+    /* Prototype stages (296×260 stage; button pinned to bottom)    */
+    /* ============================================================ */
+
+    .stage-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 56px;
+    }
+
+    /* Shared skeleton (matches prototypes.html `.sk` / `.skeleton`) */
+    .sk,
+    .skeleton {
+      background: var(--skeleton);
+      border-radius: 4px;
+    }
+
+    /* Inner surfaces (matches prototypes.html `.surface`; uses demo material tokens) */
+    .surface {
+      background: var(--material-bg);
+      border-radius: 12px;
+      box-shadow: var(--material-shadow);
+      overflow: hidden;
+    }
+
+    /* ─── Prototype 1 — Notification badge ──────────────────── */
+    /* True-centre the bell in the stage (ignore the bottom padding
+       that reserves space for the Animate button — the bell is small
+       enough to never overlap it visually). */
+    .p1-stage-inner {
+      padding-bottom: 0;
+    }
+
+    .p1-bell {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 40px;
+      background: var(--material-bg);
+      box-shadow:
+        0 1px 0 0 rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.04),
+        0 2px 3px 0 rgba(0, 0, 0, 0.04);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+    }
+    html[data-theme="dark"] .p1-bell {
+      background: #181818;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        0 1px 0 0 rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.04),
+        0 2px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.08);
+    }
+    .p1-bell > svg { width: 16px; height: 16px; display: block; }
+
+    /* Two-part badge: outer slides diagonally, inner scales/fades. */
+    .p1-bell .bell-badge {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      will-change: transform;
+    }
+    .p1-bell[data-badge-open="true"] .bell-badge {
+      animation: p1-badge-slide-in var(--p1-pos-open-dur) var(--p1-ease-pos-open);
+    }
+    @keyframes p1-badge-slide-in {
+      0%   { transform: translate(var(--p1-distance-x), var(--p1-distance-y)); }
+      100% { transform: translate(0, 0); }
+    }
+    .p1-bell .bell-badge-inner {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-image: linear-gradient(-51.52deg, rgb(238, 41, 51) 13.929%, rgb(236, 2, 72) 112.7%);
+      color: #ffffff;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 11.744px;
+      line-height: 1;
+      letter-spacing: -0.1174px;
+      box-shadow:
+        0 0.338px 1.351px 0 rgba(0, 0, 0, 0.17),
+        0 0.676px 2.703px 0 rgba(0, 0, 0, 0.04),
+        inset 0 -0.338px 0 0 rgba(0, 0, 0, 0.16);
+      transform-origin: center;
+      transform: scale(1);
+      opacity: 1;
+      filter: blur(0);
+      transition:
+        transform var(--p1-scale-open-dur) var(--p1-ease-scale-open),
+        opacity var(--p1-opacity-open-dur) var(--p1-ease-scale-open),
+        filter var(--p1-scale-open-dur) var(--p1-ease-scale-open);
+      will-change: transform, opacity, filter;
+    }
+    .p1-bell[data-badge-open="false"] .bell-badge-inner {
+      transform: scale(0);
+      opacity: 0;
+      filter: blur(var(--p1-blur));
+      transition:
+        transform var(--p1-scale-close-dur) var(--p1-ease-close),
+        opacity var(--p1-opacity-close-dur) var(--p1-ease-close),
+        filter var(--p1-scale-close-dur) var(--p1-ease-close);
+    }
+
+    /* ─── Prototype 2 — Menu dropdown ────────────────────────── */
+    /* Matches prototypes.html `.p2-stage`: button above dropdown, top-aligned. */
+    .p2-stage-inner {
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      padding-top: 20px;
+      padding-bottom: 0;
+    }
+    .p2-stage-inner .btn-animate {
+      position: static;
+      left: auto;
+      bottom: auto;
+      transform: none;
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .p2-dropdown {
+      width: 234px;
+      height: 136px;
+      position: relative;
+      padding: 8px;
+      transform-origin: var(--p2-origin);
+      transform: scale(var(--p2-pre-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--p2-open-dur) var(--p2-ease),
+        opacity var(--p2-open-dur) var(--p2-ease);
+    }
+    .p2-dropdown.is-open {
+      transform: scale(1); opacity: 1; pointer-events: auto;
+    }
+    .p2-dropdown.is-closing {
+      transform: scale(var(--p2-closing-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--p2-close-dur) var(--p2-ease),
+        opacity var(--p2-close-dur) var(--p2-ease);
+    }
+    .p2-dropdown .skeleton {
+      position: absolute;
+      height: 14px;
+    }
+    .p2-dropdown .s1 {
+      left: 18px;
+      top: 23px;
+      width: 173px;
+    }
+    .p2-dropdown .s2 {
+      left: 18px;
+      top: 63px;
+      width: 131px;
+    }
+    .p2-dropdown .s3 {
+      left: 18px;
+      top: 103px;
+      width: 194px;
+    }
+
+    /* ─── Prototype 3 — Toggle panel (vertical) ──────────────── */
+    /* Absolute layout: clip fills the stage so the panel's drop shadow has
+       room above the panel; the button overlays the clip via z-index. */
+    .p3-stage-inner {
+      padding: 0;
+      gap: 0;
+    }
+    .p3-stage-inner .btn-animate {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: auto;
+      margin: 0;
+      z-index: 2;
+    }
+    /* Clips the panel so it can hide purely via translateY — no opacity
+       fade. Span the stage width exactly so overflow:hidden does not sit
+       14px past the card-stage edge (that stacked with the stage hairline
+       and read as a “double border”). Side shadow may clip slightly. */
+    .p3-panel-clip {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: auto;
+      transform: none;
+      overflow: hidden;
+      z-index: 1;
+      /* Lets 100cqh resolve to the clip height so the closed translate
+         always clears the viewport (no sliver of panel at the bottom). */
+      container-type: size;
+    }
+    .p3-panel {
+      width: 296px;
+      height: var(--p3-panel-height);
+      margin: var(--p3-clip-pad-top) auto 0;
+      border-radius: 0;
+      background: var(--material-bg);
+      box-shadow: var(--p3-shadow);
+      position: relative;
+      transform: translateY(
+        calc(
+          max(
+            var(--p3-translate-y) + var(--p3-clip-pad),
+            100cqh - var(--p3-clip-pad-top) + 4px
+          )
+        )
+      );
+      pointer-events: none;
+      transition: transform var(--p3-close-dur) var(--p3-ease);
+    }
+    /* Dark mode: only the top edge + outer drop shadow. We drop the
+       side/bottom inset rings because the card-stage already draws a
+       ring along the same edges the panel meets; keeping just the top
+       1px line defines the panel's free edge under the button. */
+    html[data-theme="dark"] .p3-panel {
+      box-shadow:
+        inset 0 1px 0 0 rgba(196, 196, 196, 0.12),
+        0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    }
+    .p3-panel.is-open {
+      transform: translateY(calc(-1 * var(--p3-open-lift)));
+      pointer-events: auto;
+      transition: transform var(--p3-open-dur) var(--p3-ease);
+    }
+    .p3-panel .lines {
+      position: absolute;
+      left: 35px;
+      top: 28px;
+      width: 173px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .p3-panel .lines .l1 { height: 10px; width: 100%; }
+    .p3-panel .lines .l2 { height: 10px; width: 131px; }
+    .p3-panel .tiles {
+      position: absolute;
+      left: 35px;
+      top: 73px;
+      width: 226px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 17px 14px;
+    }
+    .p3-panel .tiles .tile { width: 106px; height: 46px; }
+
+    /* ─── Prototype 4 — Card resize ──────────────────────────── */
+    .p4-card {
+      width: 220px;
+      height: 112px;
+      background: var(--material-bg);
+      border-radius: 12px;
+      box-shadow: var(--material-shadow);
+      position: relative;
+      overflow: hidden;
+      transition:
+        width var(--p4-dur) var(--p4-ease),
+        height var(--p4-dur) var(--p4-ease);
+    }
+    .p4-card.is-small { width: 154px; height: 128px; }
+    .p4-card .sk {
+      position: absolute;
+      left: 14px; right: 14px;
+      background: var(--skeleton);
+      border-radius: 4px;
+    }
+    .p4-card .sk-1 { top: 14px; height: 10px; right: auto; width: calc((100% - 28px) * 0.526); }
+    .p4-card .sk-2 { top: 28px; height: 7px; }
+    .p4-card .sk-3 { top: 39px; height: 7px; }
+    .p4-card .sk-4 { top: 50px; height: 7px; right: auto; width: calc((100% - 28px) * 0.734); }
+    .p4-card .sk-5 { top: 78px; height: 7px; }
+    .p4-card .sk-6 { top: 89px; height: 7px; }
+
+    /* ─── Prototype 5 — Hamburger ↔ Close ────────────────────── */
+    /* True-centre the icon in the stage (ignore the bottom padding
+       reserved for the Animate button — the icon is small enough not
+       to overlap). */
+    .p5-stage-inner {
+      padding-bottom: 0;
+    }
+
+    .p5-icon-wrap {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      color: var(--text);
+    }
+    .p5-icon-wrap .icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        opacity var(--p5-dur) var(--p5-ease),
+        filter var(--p5-dur) var(--p5-ease),
+        transform var(--p5-dur) var(--p5-ease);
+      will-change: opacity, filter, transform;
+    }
+    .p5-icon-wrap[data-animated="false"] .icon-menu {
+      opacity: 1; filter: blur(0); transform: scale(1);
+    }
+    .p5-icon-wrap[data-animated="false"] .icon-close {
+      opacity: 0; filter: blur(var(--p5-blur)); transform: scale(var(--p5-start-scale));
+    }
+    .p5-icon-wrap[data-animated="true"] .icon-menu {
+      opacity: 0; filter: blur(var(--p5-blur)); transform: scale(var(--p5-start-scale));
+    }
+    .p5-icon-wrap[data-animated="true"] .icon-close {
+      opacity: 1; filter: blur(0); transform: scale(1);
+    }
+
+    /* ─── Prototype 6 — Status text swap ─────────────────────── */
+    /* True-centre the text in the stage (ignore the bottom padding
+       reserved for the Animate button). */
+    .p6-stage-inner {
+      padding-bottom: 0;
+    }
+
+    .p6-text {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 18px;
+      color: var(--text);
+      white-space: nowrap;
+      transform: translateY(0);
+      filter: blur(0);
+      opacity: 1;
+      transition:
+        transform var(--p6-dur) var(--p6-ease),
+        filter var(--p6-dur) var(--p6-ease),
+        opacity var(--p6-dur) var(--p6-ease);
+      will-change: transform, filter, opacity;
+    }
+    .p6-text.is-exit {
+      transform: translateY(calc(var(--p6-translate-y) * -1));
+      filter: blur(var(--p6-blur));
+      opacity: 0;
+    }
+    .p6-text.is-enter-start {
+      transform: translateY(var(--p6-translate-y));
+      filter: blur(var(--p6-blur));
+      opacity: 0;
+      transition: none;
+    }
+
+    /* ─── Prototype 7 — Modal open/close ─────────────────────── */
+    .p7-dropdown {
+      width: 261px;
+      height: 172px;
+      background: var(--material-bg);
+      border-radius: 12px;
+      box-shadow: var(--material-shadow);
+      position: relative;
+      overflow: hidden;
+      transform-origin: center;
+      transform: scale(var(--p7-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--p7-open-dur) var(--p7-ease),
+        opacity var(--p7-open-dur) var(--p7-ease);
+      will-change: transform, opacity;
+    }
+    .p7-dropdown.is-open {
+      transform: scale(1); opacity: 1; pointer-events: auto;
+    }
+    .p7-dropdown.is-closing {
+      transform: scale(var(--p7-scale-close));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--p7-close-dur) var(--p7-ease),
+        opacity var(--p7-close-dur) var(--p7-ease);
+    }
+    .p7-dropdown .title    { position: absolute; left: 16px;  top: 29px; width: 167px; height: 14px; background: var(--skeleton); border-radius: 4px; }
+    .p7-dropdown .close-dot{ position: absolute; left: 237px; top: 8px;  width: 16px;  height: 16px; background: var(--skeleton); border-radius: 43px; }
+    .p7-dropdown .body-1,
+    .p7-dropdown .body-2,
+    .p7-dropdown .body-3   { position: absolute; left: 16px;  height: 10px; background: var(--skeleton); border-radius: 4px; }
+    .p7-dropdown .body-1   { top: 57px; width: 227px; }
+    .p7-dropdown .body-2   { top: 73px; width: 227px; }
+    .p7-dropdown .body-3   { top: 89px; width: 141px; }
+    .p7-dropdown .pill     { position: absolute; top: 135px; width: 66px; height: 21px; background: var(--skeleton); border-radius: 6px; }
+    .p7-dropdown .pill-1   { left: 107px; }
+    .p7-dropdown .pill-2   { left: 179px; }
+
+    /* ─── Prototype 8 — Token list ↔ Amount ───────────────────── */
+    /* Figma 213:1489 — modal sits 18px from left & top of the stage
+       (296×260), width 260px; same inset on the right (296−18−260=18). */
+    .p8-stage-inner {
+      position: relative;
+      padding-bottom: 0;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+    .p8-modal {
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      width: 260px;
+      height: 267px;
+      background: var(--material-bg);
+      border-radius: 12px;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px rgba(0, 0, 0, 0.05),
+        0 4px 42px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+    html[data-theme="dark"] .p8-modal {
+      box-shadow: var(--material-shadow);
+    }
+    /* Page transition: both pages animate position + blur.
+       `--p8-exit-enabled` (0/1) lets you disable the outgoing slide. */
+    .p8-modal .page-1 { --p8-from-x: calc(var(--p8-distance) * -1); }
+    .p8-modal .page-2 { --p8-from-x: var(--p8-distance); }
+    .p8-modal .page {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(calc(var(--p8-from-x, 0px) * var(--p8-exit-enabled)));
+      filter: blur(calc(var(--p8-blur) * var(--p8-exit-enabled)));
+      transition:
+        opacity var(--p8-fade-dur) var(--p8-fade-ease),
+        transform var(--p8-slide-dur) var(--p8-slide-ease),
+        filter var(--p8-slide-dur) var(--p8-slide-ease);
+      will-change: opacity, transform, filter;
+    }
+    .p8-modal[data-page="1"] .page-1,
+    .p8-modal[data-page="2"] .page-2 {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+      filter: blur(0);
+      transition-delay: var(--p8-stagger);
+    }
+    .p8-modal .page-title {
+      position: absolute;
+      left: 50%;
+      top: 25px;
+      transform: translateX(-50%);
+      width: 95px;
+      height: 14px;
+      background: var(--skeleton);
+      border-radius: 4px;
+    }
+    .p8-modal .chip-btn {
+      appearance: none;
+      border: 0;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 60px;
+      background: rgba(244, 244, 244, 0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      transition: background-color 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html[data-theme="dark"] .p8-modal .chip-btn {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .p8-modal .chip-btn:hover { background: rgba(244, 244, 244, 0.9); }
+    html[data-theme="dark"] .p8-modal .chip-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .p8-modal .chip-btn svg { display: block; }
+    .p8-modal .back-btn {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      z-index: 2;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--p8-fade-dur) var(--p8-fade-ease);
+    }
+    .p8-modal[data-page="2"] .back-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .p8-modal .back-btn svg {
+      transform: translateX(-1px);
+    }
+    .p8-modal .tokens {
+      position: absolute;
+      left: 8px;
+      top: 60.5px;
+      width: 244px;
+      display: flex;
+      flex-direction: column;
+    }
+    .p8-modal .token-row {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px 8px 12px;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .p8-modal .token-row:hover { background: rgba(2, 2, 2, 0.02); }
+    html[data-theme="dark"] .p8-modal .token-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .p8-modal .token-row:focus-visible {
+      outline: 2px solid var(--text);
+      outline-offset: 2px;
+    }
+    .p8-modal .token-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    /* Token chip: pure-CSS avatar matching Figma 232:3349.
+       32×32 circle · translucent brand-tinted fill (α ≈ 10.2%) · letter
+       positioned via padding (Inter 13/22, left 12 / top 4.5). Colors come
+       from two variables:
+         --token-fill-rgb : the translucent circle fill (brand tint)
+         --token-label    : the letter color (slightly darker brand color) */
+    .p8-modal .token-icon {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      padding: 4.5px 0 0 12px;
+      border-radius: 50%;
+      font-family: var(--font-sans);
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 22px;
+      letter-spacing: 0;
+      white-space: nowrap;
+      color: var(--token-label);
+      background-color: rgba(var(--token-fill-rgb), 0.102);
+    }
+    .p8-modal .token-icon.eth  { --token-label: #4e6cc2; --token-fill-rgb: 108, 137, 235; }
+    .p8-modal .token-icon.avax { --token-label: #c24e4e; --token-fill-rgb: 245, 118, 118; }
+    .p8-modal .token-icon.bnb  { --token-label: #c2964e; --token-fill-rgb: 235, 167,  59; }
+    .p8-modal .token-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-bottom: 4px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 22px;
+      white-space: nowrap;
+    }
+    .p8-modal .token-text .name { color: var(--text); }
+    .p8-modal .token-text .sym  { color: var(--muted); }
+    .p8-modal .amount-screen {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: 78px;
+      width: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-sizing: border-box;
+    }
+    .p8-modal .amount-value {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 48px;
+      line-height: 48px;
+      color: var(--text);
+      text-align: center;
+      width: 100%;
+    }
+    .p8-modal .pills {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .p8-modal .pill {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 27px;
+      background: #f7f7f8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 16px;
+      color: #5e6773;
+      white-space: nowrap;
+    }
+    html[data-theme="dark"] .p8-modal .pill {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+    }
+    .p8-modal .amount-available {
+      font-family: var(--font-sans);
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 18px;
+      color: var(--text);
+      text-align: center;
+      width: 100%;
+    }
+
+    /* ─── Prototype 9 — Number pop-in ────────────────────────── */
+    /* True-centre the number in the stage (ignore the bottom padding
+       reserved for the Animate button). */
+    .p9-stage-inner {
+      padding-bottom: 0;
+    }
+
+    .p9-number {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 24px;
+      line-height: 24px;
+      color: var(--text);
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: baseline;
+      user-select: none;
+      position: relative;
+    }
+    .p9-char {
+      display: inline-block;
+      transform: translateY(0);
+      opacity: 1;
+      will-change: transform, opacity;
+    }
+    .p9-number.is-animating .p9-char {
+      animation: p9-pop-in var(--p9-dur) var(--p9-ease) both;
+    }
+    .p9-number.is-animating .p9-char[data-stagger="1"] { animation-delay: var(--p9-stagger); }
+    .p9-number.is-animating .p9-char[data-stagger="2"] { animation-delay: calc(var(--p9-stagger) * 2); }
+
+    .p9-number .p9-ghost {
+      position: absolute;
+      inset: 0;
+      display: inline-flex;
+      align-items: baseline;
+      pointer-events: none;
+    }
+    .p9-number .p9-ghost .p9-char {
+      animation: p9-pop-out var(--p9-dur) var(--p9-ease) both;
+    }
+    .p9-number .p9-ghost .p9-char[data-stagger="1"] { animation-delay: var(--p9-stagger); }
+    .p9-number .p9-ghost .p9-char[data-stagger="2"] { animation-delay: calc(var(--p9-stagger) * 2); }
+
+    @keyframes p9-pop-in {
+      0%   {
+        transform: translate(
+          calc(var(--p9-distance) * var(--p9-dir-x)),
+          calc(var(--p9-distance) * var(--p9-dir-y))
+        );
+        opacity: 0;
+        filter: blur(var(--p9-blur));
+      }
+      100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+    }
+    @keyframes p9-pop-out {
+      0%   { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+      100% {
+        transform: translate(
+          calc(var(--p9-distance) * var(--p9-dir-x) * -1),
+          calc(var(--p9-distance) * var(--p9-dir-y) * -1)
+        );
+        opacity: 0;
+        filter: blur(var(--p9-blur));
+      }
+    }
+
+    /* ============================================================ */
+    /* Responsive — mirrors border-beam demo breakpoints            */
+    /* ============================================================ */
+    @media (max-width: 1100px) {
+      .cards { grid-template-columns: repeat(2, 320px); }
+    }
+
+    @media (max-width: 740px) {
+      .cards { grid-template-columns: 320px; gap: 16px; }
+    }
+
+    @media (max-width: 639px) {
+      .app { padding: 0 16px 48px; }
+      .top-bar { right: 16px; top: 12px; }
+      .header {
+        height: auto;
+        min-height: 180px;
+        padding-top: 60px;
+        padding-bottom: 32px;
+        justify-content: flex-end;
+      }
+      .title { font-size: 20px; line-height: 28px; }
+      .subtitle { font-size: 15px; line-height: 22px; }
+      .footer { padding: 64px 0 24px; }
+    }
+
+    /* ─── Reduced motion ─────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 1ms !important;
+        animation-duration: 1ms !important;
+      }
+      .bell-badge,
+      .bell-badge-inner,
+      .p5-icon-wrap .icon,
+      .p6-text,
+      .p9-char {
+        transform: none !important;
+        filter: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <main id="main" class="app">
+    <nav class="top-bar" aria-label="Page actions">
+      <button
+        type="button"
+        class="icon-btn theme-toggle"
+        id="theme-toggle"
+        aria-label="Toggle color theme"
+      >
+        <img
+          src="assets/theme-moon-01.svg"
+          id="theme-icon"
+          alt="Toggle theme"
+          class="theme-icon"
+          width="16"
+          height="16"
+          decoding="async"
+        />
+      </button>
+      <a
+        class="icon-btn"
+        href="https://github.com/Jakubantalik"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="GitHub"
+      >
+        <svg aria-hidden="true" viewBox="0 0 16 16">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+        </svg>
+      </a>
+      <a
+        class="icon-btn"
+        href="https://x.com/jakubantalik"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="X (Twitter)"
+      >
+        <svg class="icon-x" aria-hidden="true" viewBox="0 0 16 17" xmlns="http://www.w3.org/2000/svg">
+          <path
+            fill="currentColor"
+            d="M12.4041 1.39726H14.6953L9.69087 7.2591L15.5781 15.2368H10.9696L7.35741 10.3996L3.22921 15.2368H0.934687L6.28641 8.96575L0.642598 1.39726H5.36795L8.62962 5.81859L12.4041 1.39726ZM11.5992 13.8329H12.8682L4.67667 2.72798H3.31359L11.5992 13.8329Z"
+          />
+        </svg>
+      </a>
+    </nav>
+
+    <header class="header">
+      <div class="header-icon-wrap" aria-hidden="true">
+        <img
+          class="header-icon-img header-icon-img--light"
+          src="assets/icon%20light%202x.png"
+          alt=""
+          width="136"
+          height="140"
+          decoding="async"
+        />
+        <img
+          class="header-icon-img header-icon-img--dark"
+          src="assets/icon-dark-2x.png"
+          alt=""
+          width="136"
+          height="140"
+          decoding="async"
+        />
+      </div>
+      <h1 class="title">Transitions</h1>
+      <p class="subtitle">
+        Collection of the most essential transitions for web apps that<br />
+        you can just copy and paste into any project.
+      </p>
+    </header>
+
+    <section class="cards" aria-label="Transition prototypes">
+
+      <!-- 1. Card resize -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner">
+            <div class="p4-card" data-proto-resize>
+              <div class="sk sk-1"></div>
+              <div class="sk sk-2"></div>
+              <div class="sk sk-3"></div>
+              <div class="sk sk-4"></div>
+              <div class="sk sk-5"></div>
+              <div class="sk sk-6"></div>
+            </div>
+          </div>
+          <button type="button" class="btn-animate" data-proto="4">Animate</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Card resize</div>
+          <div class="card-subtitle">Smooth card resize transition</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Card resize CSS" data-copy-key="p4">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 2. Number pop-in -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner p9-stage-inner">
+            <div class="p9-number" data-proto-number aria-live="polite"
+              ><span class="p9-char">6</span
+              ><span class="p9-char">5</span
+              ><span class="p9-char">.</span
+              ><span class="p9-char">7</span
+              ><span class="p9-char">8</span
+            ></div>
+          </div>
+          <button type="button" class="btn-animate" data-proto="9">Animate</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Number pop-in</div>
+          <div class="card-subtitle">Digit flip with blur and stagger</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Number pop-in CSS" data-copy-key="p9">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 3. Notification badge -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner p1-stage-inner">
+            <div class="p1-bell" data-proto-bell data-badge-open="false" aria-label="Notifications">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6.23612 14C6.70621 14.4149 7.3237 14.6667 8 14.6667C8.6763 14.6667 9.29379 14.4149 9.76388 14M12 5.33333C12 4.27247 11.5786 3.25505 10.8284 2.50491C10.0783 1.75476 9.06087 1.33333 8 1.33333C6.93913 1.33333 5.92172 1.75476 5.17157 2.50491C4.42143 3.25505 4 4.27247 4 5.33333C4 7.39346 3.48031 8.80397 2.89978 9.73694C2.41008 10.5239 2.16524 10.9174 2.17422 11.0272C2.18416 11.1487 2.20991 11.1951 2.30785 11.2677C2.39631 11.3333 2.79506 11.3333 3.59257 11.3333H12.4074C13.2049 11.3333 13.6037 11.3333 13.6921 11.2677C13.7901 11.1951 13.8158 11.1487 13.8258 11.0272C13.8348 10.9174 13.5899 10.5239 13.1002 9.73694C12.5197 8.80397 12 7.39346 12 5.33333Z"/>
+              </svg>
+              <span class="bell-badge" aria-hidden="true"><span class="bell-badge-inner">1</span></span>
+            </div>
+          </div>
+          <button type="button" class="btn-animate" data-proto="1">Animate</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Notification badge</div>
+          <div class="card-subtitle">Diagonal slide with spring pop-in</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Notification badge CSS" data-copy-key="p1">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 4. Text states swap -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner p6-stage-inner">
+            <span class="p6-text" data-proto-text>Transaction processing...</span>
+          </div>
+          <button type="button" class="btn-animate" data-proto="6">Animate</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Text states swap</div>
+          <div class="card-subtitle">Text swap transition with blur</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Text states swap CSS" data-copy-key="p6">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 5. Menu dropdown -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner p2-stage-inner">
+            <button type="button" class="btn-animate" data-proto="2">Toggle menu</button>
+            <div class="surface p2-dropdown is-open" data-proto-dropdown>
+              <div class="skeleton s1"></div>
+              <div class="skeleton s2"></div>
+              <div class="skeleton s3"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Menu dropdown</div>
+          <div class="card-subtitle">Origin-aware open / close transition</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Menu dropdown CSS" data-copy-key="p2">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 6. Modal open/close -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner">
+            <div class="p7-dropdown is-open" data-proto-modal>
+              <div class="title"></div>
+              <div class="close-dot"></div>
+              <div class="body-1"></div>
+              <div class="body-2"></div>
+              <div class="body-3"></div>
+              <div class="pill pill-1"></div>
+              <div class="pill pill-2"></div>
+            </div>
+          </div>
+          <button type="button" class="btn-animate" data-proto="7">Toggle modal</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Modal open/close</div>
+          <div class="card-subtitle">Modal transition with scale</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Modal CSS" data-copy-key="p7">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 7. Panel reveal -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner p3-stage-inner">
+            <button type="button" class="btn-animate" data-proto="3">Toggle panel</button>
+            <div class="p3-panel-clip">
+              <div class="p3-panel is-open" data-proto-panel>
+                <div class="lines">
+                  <div class="skeleton l1"></div>
+                  <div class="skeleton l2"></div>
+                </div>
+                <div class="tiles">
+                  <div class="skeleton tile"></div>
+                  <div class="skeleton tile"></div>
+                  <div class="skeleton tile"></div>
+                  <div class="skeleton tile"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Panel reveal</div>
+          <div class="card-subtitle">Panel open / close transition</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Panel reveal CSS" data-copy-key="p3">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 8. Side-by-side page slide -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner p8-stage-inner">
+            <div class="p8-modal" data-proto-p8 data-page="1">
+                <div class="page-title"></div>
+                <div class="page page-1">
+                  <div class="tokens">
+                    <button class="token-row" type="button" data-token="ETH">
+                      <div class="token-left">
+                        <div class="token-icon eth">E</div>
+                        <div class="token-text">
+                          <span class="name">Ethereum</span>
+                          <span class="sym">ETH</span>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="token-row" type="button" data-token="AVAX">
+                      <div class="token-left">
+                        <div class="token-icon avax">A</div>
+                        <div class="token-text">
+                          <span class="name">Avalanche</span>
+                          <span class="sym">AVAX</span>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="token-row" type="button" data-token="BNB">
+                      <div class="token-left">
+                        <div class="token-icon bnb">B</div>
+                        <div class="token-text">
+                          <span class="name">BNB</span>
+                          <span class="sym">BNB</span>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                <button class="chip-btn back-btn" type="button" aria-label="Back" data-p8-back>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <div class="page page-2">
+                  <div class="amount-screen">
+                    <div class="amount-value">$10</div>
+                    <div class="pills">
+                      <div class="pill">25%</div>
+                      <div class="pill">50%</div>
+                      <div class="pill">Max</div>
+                    </div>
+                    <div class="amount-available">$66.11 available</div>
+                  </div>
+                </div>
+              </div>
+          </div>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Page side-by-side</div>
+          <div class="card-subtitle">Forward / back page transition</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Page slide CSS" data-copy-key="p8">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 9. Icon swap -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner p5-stage-inner">
+            <div class="p5-icon-wrap" data-proto-icon data-animated="false">
+              <div class="icon icon-menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M4 7H20"  stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                  <path d="M4 12H20" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                  <path d="M4 17H20" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="icon icon-close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M6 6L18 18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                  <path d="M18 6L6 18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-animate" data-proto="5">Animate</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Icon swap</div>
+          <div class="card-subtitle">Scale and blur icon swap</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Icon swap CSS" data-copy-key="p5">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+    </section>
+
+    <footer class="footer">
+      <span class="footer-muted">Made by</span><a
+        class="footer-name"
+        href="https://x.com/jakubantalik"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Jakub Antalik</a>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      /* ── Theme toggle ──────────────────────────────────────── */
+      /* Default theme follows system settings (see inline script in <head>).
+         The toggle below provides a session-only override; nothing is persisted
+         across reloads. If the OS theme changes while the page is open and the
+         user hasn't manually toggled this session, we mirror the OS change. */
+      var html = document.documentElement;
+      var themeIcon = document.getElementById("theme-icon");
+      var userOverride = false;
+
+      function currentSystemTheme() {
+        return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)
+          ? "dark" : "light";
+      }
+
+      function updateThemeIcon(theme, animate) {
+        if (!themeIcon) return;
+        var nextSrc = theme === "light" ? "assets/theme-moon-01.svg" : "assets/theme-sun.svg";
+        if (!animate) {
+          themeIcon.setAttribute("src", nextSrc);
+          themeIcon.classList.remove("morph-out");
+          return;
+        }
+        themeIcon.classList.add("morph-out");
+        window.setTimeout(function () {
+          themeIcon.setAttribute("src", nextSrc);
+          themeIcon.classList.remove("morph-out");
+        }, 250);
+      }
+
+      function applyTheme(theme, animateIcon) {
+        if (theme === "dark") {
+          html.setAttribute("data-theme", "dark");
+        } else {
+          html.removeAttribute("data-theme");
+        }
+        updateThemeIcon(theme, animateIcon === true);
+      }
+
+      // Sync the icon with whatever the inline <head> script (or nothing) set.
+      updateThemeIcon(html.getAttribute("data-theme") === "dark" ? "dark" : "light", false);
+
+      var toggle = document.getElementById("theme-toggle");
+      if (toggle) {
+        toggle.addEventListener("click", function () {
+          var next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+          userOverride = true;
+          applyTheme(next, true);
+        });
+      }
+
+      // Follow OS theme changes unless the user has toggled this session.
+      if (window.matchMedia) {
+        var mql = window.matchMedia("(prefers-color-scheme: dark)");
+        var onSystemChange = function (e) {
+          if (userOverride) return;
+          applyTheme(e.matches ? "dark" : "light", true);
+        };
+        if (mql.addEventListener) mql.addEventListener("change", onSystemChange);
+        else if (mql.addListener) mql.addListener(onSystemChange);
+      }
+
+      /* ── Prototype handlers ───────────────────────────────── */
+      function findCard(el) { return el.closest("[data-proto-card]"); }
+
+      // Read a CSS time variable ("--foo-dur") and return it as ms.
+      function readMs(name, fallback) {
+        var raw = getComputedStyle(document.documentElement)
+          .getPropertyValue(name).trim();
+        if (!raw) return fallback;
+        if (raw.slice(-2) === "ms") return parseFloat(raw);
+        if (raw.slice(-1) === "s")  return parseFloat(raw) * 1000;
+        var n = parseFloat(raw);
+        return isNaN(n) ? fallback : n;
+      }
+
+      /* Per-prototype portable CSS templates for the copy buttons.
+       *
+       * Each entry produces a drop-in snippet the user can paste into any
+       * project. Rules:
+       *   - Selectors are namespaced `.t-*` (transitions).
+       *   - State is expressed via `[data-open]`, `[data-state]`, or
+       *     `.is-open` / `.is-closing` / `.is-exit` / `.is-animating`.
+       *   - ONLY transition-related properties are emitted (transform,
+       *     opacity, filter, transition, animation, transform-origin,
+       *     pointer-events, will-change). No sizes / colors / shadows.
+       *   - `vars` is an ordered list of [semanticName, internalName] pairs
+       *     read from the live computed style on :root. This lets the
+       *     exported snippet use semantic names while keeping the demo's
+       *     internal --p?-* tokens untouched.
+       */
+      var PROTO_TEMPLATES = {
+        p1: {
+          name: "Notification badge",
+          usage:
+            "    <!-- Place .t-badge inside your trigger (bell icon, button, etc.). -->\n" +
+            "    <!-- The trigger must be position: relative so .t-badge can anchor to it. -->\n" +
+            "    <button class=\"your-trigger\" style=\"position: relative\">\n" +
+            "      <!-- your icon / trigger contents -->\n" +
+            "      <span class=\"t-badge\" data-open=\"false\">\n" +
+            "        <span class=\"t-badge-dot\">1</span>\n" +
+            "      </span>\n" +
+            "    </button>\n" +
+            "\n" +
+            "  State: toggle data-open=\"true\" / \"false\" on .t-badge.\n" +
+            "  Only the badge slides + pops — the trigger itself stays put.",
+          vars: [
+            ["--badge-slide-dur",      "--p1-pos-open-dur"],
+            ["--badge-pop-dur",        "--p1-scale-open-dur"],
+            ["--badge-pop-close-dur",  "--p1-scale-close-dur"],
+            ["--badge-fade-dur",       "--p1-opacity-open-dur"],
+            ["--badge-fade-close-dur", "--p1-opacity-close-dur"],
+            ["--badge-blur",           "--p1-blur"],
+            ["--badge-offset-x",       "--p1-distance-x"],
+            ["--badge-offset-y",       "--p1-distance-y"],
+            ["--badge-slide-ease",     "--p1-ease-pos-open"],
+            ["--badge-pop-ease",       "--p1-ease-scale-open"],
+            ["--badge-close-ease",     "--p1-ease-close"]
+          ],
+          css:
+            "@keyframes t-badge-slide-in {\n" +
+            "  from { transform: translate(var(--badge-offset-x), var(--badge-offset-y)); }\n" +
+            "  to   { transform: translate(0, 0); }\n" +
+            "}\n" +
+            "\n" +
+            "/* .t-badge is the absolutely-positioned wrapper for the dot.\n" +
+            "   Adjust top/right (or left/bottom) to anchor it on your trigger. */\n" +
+            ".t-badge {\n" +
+            "  position: absolute;\n" +
+            "  top: -6px;\n" +
+            "  right: -8px;\n" +
+            "  pointer-events: none;\n" +
+            "  will-change: transform;\n" +
+            "}\n" +
+            ".t-badge[data-open=\"true\"] {\n" +
+            "  animation: t-badge-slide-in var(--badge-slide-dur) var(--badge-slide-ease);\n" +
+            "}\n" +
+            "\n" +
+            ".t-badge-dot {\n" +
+            "  display: block;\n" +
+            "  transform-origin: center;\n" +
+            "  transform: scale(1);\n" +
+            "  opacity: 1;\n" +
+            "  filter: blur(0);\n" +
+            "  transition:\n" +
+            "    transform var(--badge-pop-dur)  var(--badge-pop-ease),\n" +
+            "    opacity   var(--badge-fade-dur) var(--badge-pop-ease),\n" +
+            "    filter    var(--badge-pop-dur)  var(--badge-pop-ease);\n" +
+            "  will-change: transform, opacity, filter;\n" +
+            "}\n" +
+            ".t-badge[data-open=\"false\"] .t-badge-dot {\n" +
+            "  transform: scale(0);\n" +
+            "  opacity: 0;\n" +
+            "  filter: blur(var(--badge-blur));\n" +
+            "  transition:\n" +
+            "    transform var(--badge-pop-close-dur)  var(--badge-close-ease),\n" +
+            "    opacity   var(--badge-fade-close-dur) var(--badge-close-ease),\n" +
+            "    filter    var(--badge-pop-close-dur)  var(--badge-close-ease);\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-badge, .t-badge-dot { animation: none !important; transition: none !important; }\n" +
+            "}"
+        },
+
+        p2: {
+          name: "Menu dropdown",
+          usage:
+            "    <div class=\"t-dropdown\" data-origin=\"top-center\">\n" +
+            "      <!-- your menu contents -->\n" +
+            "    </div>\n" +
+            "\n" +
+            "  State:\n" +
+            "    - Add `.is-open` to show.\n" +
+            "    - On close, swap `.is-open` for `.is-closing`, then remove\n" +
+            "      `.is-closing` after --dropdown-close-dur.\n" +
+            "\n" +
+            "  data-origin values: top-left | top-center | top-right |\n" +
+            "                      bottom-left | bottom-center | bottom-right.",
+          vars: [
+            ["--dropdown-open-dur",     "--p2-open-dur"],
+            ["--dropdown-close-dur",    "--p2-close-dur"],
+            ["--dropdown-pre-scale",    "--p2-pre-scale"],
+            ["--dropdown-closing-scale","--p2-closing-scale"],
+            ["--dropdown-ease",         "--p2-ease"]
+          ],
+          css:
+            ".t-dropdown {\n" +
+            "  transform-origin: top left;\n" +
+            "  transform: scale(var(--dropdown-pre-scale));\n" +
+            "  opacity: 0;\n" +
+            "  pointer-events: none;\n" +
+            "  transition:\n" +
+            "    transform var(--dropdown-open-dur) var(--dropdown-ease),\n" +
+            "    opacity   var(--dropdown-open-dur) var(--dropdown-ease);\n" +
+            "  will-change: transform, opacity;\n" +
+            "}\n" +
+            ".t-dropdown[data-origin=\"top-right\"]     { transform-origin: top right; }\n" +
+            ".t-dropdown[data-origin=\"top-center\"]    { transform-origin: top center; }\n" +
+            ".t-dropdown[data-origin=\"bottom-left\"]   { transform-origin: bottom left; }\n" +
+            ".t-dropdown[data-origin=\"bottom-center\"] { transform-origin: bottom center; }\n" +
+            ".t-dropdown[data-origin=\"bottom-right\"]  { transform-origin: bottom right; }\n" +
+            "\n" +
+            ".t-dropdown.is-open {\n" +
+            "  transform: scale(1);\n" +
+            "  opacity: 1;\n" +
+            "  pointer-events: auto;\n" +
+            "}\n" +
+            ".t-dropdown.is-closing {\n" +
+            "  transform: scale(var(--dropdown-closing-scale));\n" +
+            "  opacity: 0;\n" +
+            "  pointer-events: none;\n" +
+            "  transition:\n" +
+            "    transform var(--dropdown-close-dur) var(--dropdown-ease),\n" +
+            "    opacity   var(--dropdown-close-dur) var(--dropdown-ease);\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-dropdown { transition: none !important; }\n" +
+            "}"
+        },
+
+        p3: {
+          name: "Panel reveal",
+          usage:
+            "    <div class=\"t-panel-slide\" data-open=\"false\">\n" +
+            "      <!-- your panel contents -->\n" +
+            "    </div>\n" +
+            "\n" +
+            "  The panel slides on the Y axis only (no fade). Wrap it in\n" +
+            "  your own container with `overflow: hidden` if you want the\n" +
+            "  closed state fully clipped. Set --panel-translate-y to the\n" +
+            "  distance the panel should be hidden (e.g. its own height).",
+          vars: [
+            ["--panel-open-dur",    "--p3-open-dur"],
+            ["--panel-close-dur",   "--p3-close-dur"],
+            ["--panel-translate-y", "--p3-translate-y"],
+            ["--panel-ease",        "--p3-ease"]
+          ],
+          css:
+            ".t-panel-slide {\n" +
+            "  transform: translateY(var(--panel-translate-y));\n" +
+            "  pointer-events: none;\n" +
+            "  transition: transform var(--panel-close-dur) var(--panel-ease);\n" +
+            "  will-change: transform;\n" +
+            "}\n" +
+            ".t-panel-slide[data-open=\"true\"] {\n" +
+            "  transform: translateY(0);\n" +
+            "  pointer-events: auto;\n" +
+            "  transition: transform var(--panel-open-dur) var(--panel-ease);\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-panel-slide { transition: none !important; }\n" +
+            "}"
+        },
+
+        p4: {
+          name: "Card resize",
+          usage:
+            "    <div class=\"t-resize\">…</div>\n" +
+            "\n" +
+            "  Put `.t-resize` on any element and change its width/height\n" +
+            "  (directly, or via a state class such as `.is-small`). The\n" +
+            "  transition will tween the two sizes.",
+          vars: [
+            ["--resize-dur",  "--p4-dur"],
+            ["--resize-ease", "--p4-ease"]
+          ],
+          css:
+            ".t-resize {\n" +
+            "  transition:\n" +
+            "    width  var(--resize-dur) var(--resize-ease),\n" +
+            "    height var(--resize-dur) var(--resize-ease);\n" +
+            "  will-change: width, height;\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-resize { transition: none !important; }\n" +
+            "}"
+        },
+
+        p5: {
+          name: "Icon swap",
+          usage:
+            "    <div class=\"t-icon-swap\" data-state=\"a\">\n" +
+            "      <span class=\"t-icon\" data-icon=\"a\">…</span>\n" +
+            "      <span class=\"t-icon\" data-icon=\"b\">…</span>\n" +
+            "    </div>\n" +
+            "\n" +
+            "  State: set data-state=\"a\" or \"b\" on .t-icon-swap.\n" +
+            "  The matching .t-icon fades in; the other fades out with blur\n" +
+            "  and scale.",
+          vars: [
+            ["--icon-swap-dur",         "--p5-dur"],
+            ["--icon-swap-blur",        "--p5-blur"],
+            ["--icon-swap-start-scale", "--p5-start-scale"],
+            ["--icon-swap-ease",        "--p5-ease"]
+          ],
+          css:
+            ".t-icon-swap {\n" +
+            "  position: relative;\n" +
+            "  display: inline-grid;\n" +
+            "}\n" +
+            ".t-icon-swap .t-icon {\n" +
+            "  grid-area: 1 / 1;\n" +
+            "  transition:\n" +
+            "    opacity   var(--icon-swap-dur) var(--icon-swap-ease),\n" +
+            "    filter    var(--icon-swap-dur) var(--icon-swap-ease),\n" +
+            "    transform var(--icon-swap-dur) var(--icon-swap-ease);\n" +
+            "  will-change: opacity, filter, transform;\n" +
+            "}\n" +
+            ".t-icon-swap[data-state=\"a\"] .t-icon[data-icon=\"a\"],\n" +
+            ".t-icon-swap[data-state=\"b\"] .t-icon[data-icon=\"b\"] {\n" +
+            "  opacity: 1;\n" +
+            "  filter: blur(0);\n" +
+            "  transform: scale(1);\n" +
+            "}\n" +
+            ".t-icon-swap[data-state=\"a\"] .t-icon[data-icon=\"b\"],\n" +
+            ".t-icon-swap[data-state=\"b\"] .t-icon[data-icon=\"a\"] {\n" +
+            "  opacity: 0;\n" +
+            "  filter: blur(var(--icon-swap-blur));\n" +
+            "  transform: scale(var(--icon-swap-start-scale));\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-icon-swap .t-icon { transition: none !important; }\n" +
+            "}"
+        },
+
+        p6: {
+          name: "Text states swap",
+          usage:
+            "    <span class=\"t-text-swap\">Processing…</span>\n" +
+            "\n" +
+            "  Driven by JS (three-phase sequence):\n" +
+            "    1. Add `.is-exit`  -> old text slides up + blurs + fades.\n" +
+            "    2. After --text-swap-dur: change textContent, then add\n" +
+            "       `.is-enter-start` (jumps to below, no transition).\n" +
+            "    3. Force reflow, remove `.is-enter-start` so the new text\n" +
+            "       animates back to 0 with the default transition.",
+          vars: [
+            ["--text-swap-dur",         "--p6-dur"],
+            ["--text-swap-translate-y", "--p6-translate-y"],
+            ["--text-swap-blur",        "--p6-blur"],
+            ["--text-swap-ease",        "--p6-ease"]
+          ],
+          css:
+            ".t-text-swap {\n" +
+            "  display: inline-block;\n" +
+            "  transform: translateY(0);\n" +
+            "  filter: blur(0);\n" +
+            "  opacity: 1;\n" +
+            "  transition:\n" +
+            "    transform var(--text-swap-dur) var(--text-swap-ease),\n" +
+            "    filter    var(--text-swap-dur) var(--text-swap-ease),\n" +
+            "    opacity   var(--text-swap-dur) var(--text-swap-ease);\n" +
+            "  will-change: transform, filter, opacity;\n" +
+            "}\n" +
+            ".t-text-swap.is-exit {\n" +
+            "  transform: translateY(calc(var(--text-swap-translate-y) * -1));\n" +
+            "  filter: blur(var(--text-swap-blur));\n" +
+            "  opacity: 0;\n" +
+            "}\n" +
+            ".t-text-swap.is-enter-start {\n" +
+            "  transform: translateY(var(--text-swap-translate-y));\n" +
+            "  filter: blur(var(--text-swap-blur));\n" +
+            "  opacity: 0;\n" +
+            "  transition: none;\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-text-swap { transition: none !important; }\n" +
+            "}"
+        },
+
+        p7: {
+          name: "Modal open / close",
+          usage:
+            "    <div class=\"t-modal\" role=\"dialog\">…</div>\n" +
+            "\n" +
+            "  State:\n" +
+            "    - Add `.is-open` to open (scales up from --modal-scale).\n" +
+            "    - On close, swap `.is-open` for `.is-closing`, then remove\n" +
+            "      `.is-closing` after --modal-close-dur.",
+          vars: [
+            ["--modal-open-dur",   "--p7-open-dur"],
+            ["--modal-close-dur",  "--p7-close-dur"],
+            ["--modal-scale",      "--p7-scale"],
+            ["--modal-scale-close","--p7-scale-close"],
+            ["--modal-ease",       "--p7-ease"]
+          ],
+          css:
+            ".t-modal {\n" +
+            "  transform-origin: center;\n" +
+            "  transform: scale(var(--modal-scale));\n" +
+            "  opacity: 0;\n" +
+            "  pointer-events: none;\n" +
+            "  transition:\n" +
+            "    transform var(--modal-open-dur) var(--modal-ease),\n" +
+            "    opacity   var(--modal-open-dur) var(--modal-ease);\n" +
+            "  will-change: transform, opacity;\n" +
+            "}\n" +
+            ".t-modal.is-open {\n" +
+            "  transform: scale(1);\n" +
+            "  opacity: 1;\n" +
+            "  pointer-events: auto;\n" +
+            "}\n" +
+            ".t-modal.is-closing {\n" +
+            "  transform: scale(var(--modal-scale-close));\n" +
+            "  opacity: 0;\n" +
+            "  pointer-events: none;\n" +
+            "  transition:\n" +
+            "    transform var(--modal-close-dur) var(--modal-ease),\n" +
+            "    opacity   var(--modal-close-dur) var(--modal-ease);\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-modal { transition: none !important; }\n" +
+            "}"
+        },
+
+        p8: {
+          name: "Page side-by-side",
+          usage:
+            "    <div class=\"t-page-slide\" data-page=\"1\">\n" +
+            "      <section class=\"t-page\" data-page-id=\"1\">…</section>\n" +
+            "      <section class=\"t-page\" data-page-id=\"2\">…</section>\n" +
+            "    </div>\n" +
+            "\n" +
+            "  State: set data-page=\"1\" or \"2\" on .t-page-slide.\n" +
+            "  Page 1 exits to the left, page 2 exits to the right.\n" +
+            "  --page-exit-enabled (0/1) disables the outgoing slide.",
+          vars: [
+            ["--page-slide-dur",      "--p8-slide-dur"],
+            ["--page-fade-dur",       "--p8-fade-dur"],
+            ["--page-slide-distance", "--p8-distance"],
+            ["--page-blur",           "--p8-blur"],
+            ["--page-stagger",        "--p8-stagger"],
+            ["--page-exit-enabled",   "--p8-exit-enabled"],
+            ["--page-slide-ease",     "--p8-slide-ease"],
+            ["--page-fade-ease",      "--p8-fade-ease"]
+          ],
+          css:
+            ".t-page-slide {\n" +
+            "  position: relative;\n" +
+            "}\n" +
+            ".t-page-slide .t-page[data-page-id=\"1\"] {\n" +
+            "  --t-page-from-x: calc(var(--page-slide-distance) * -1);\n" +
+            "}\n" +
+            ".t-page-slide .t-page[data-page-id=\"2\"] {\n" +
+            "  --t-page-from-x: var(--page-slide-distance);\n" +
+            "}\n" +
+            ".t-page-slide .t-page {\n" +
+            "  position: absolute;\n" +
+            "  inset: 0;\n" +
+            "  opacity: 0;\n" +
+            "  pointer-events: none;\n" +
+            "  transform: translateX(calc(var(--t-page-from-x, 0px) * var(--page-exit-enabled)));\n" +
+            "  filter: blur(calc(var(--page-blur) * var(--page-exit-enabled)));\n" +
+            "  transition:\n" +
+            "    opacity   var(--page-fade-dur)  var(--page-fade-ease),\n" +
+            "    transform var(--page-slide-dur) var(--page-slide-ease),\n" +
+            "    filter    var(--page-slide-dur) var(--page-slide-ease);\n" +
+            "  will-change: opacity, transform, filter;\n" +
+            "}\n" +
+            ".t-page-slide[data-page=\"1\"] .t-page[data-page-id=\"1\"],\n" +
+            ".t-page-slide[data-page=\"2\"] .t-page[data-page-id=\"2\"] {\n" +
+            "  opacity: 1;\n" +
+            "  pointer-events: auto;\n" +
+            "  transform: translateX(0);\n" +
+            "  filter: blur(0);\n" +
+            "  transition-delay: var(--page-stagger);\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-page-slide .t-page { transition: none !important; }\n" +
+            "}"
+        },
+
+        p9: {
+          name: "Number pop-in",
+          usage:
+            "    <span class=\"t-digit-group is-animating\">\n" +
+            "      <span class=\"t-digit\">1</span>\n" +
+            "      <span class=\"t-digit\">2</span>\n" +
+            "      <span class=\"t-digit\" data-stagger=\"1\">.</span>\n" +
+            "      <span class=\"t-digit\" data-stagger=\"2\">3</span>\n" +
+            "    </span>\n" +
+            "\n" +
+            "  Replay:\n" +
+            "    - Remove `.is-animating`, re-render digits (or swap text),\n" +
+            "      force a reflow, then re-add `.is-animating`.\n" +
+            "    - Use data-stagger=\"1\", \"2\", … to delay individual\n" +
+            "      digits by `n * var(--digit-stagger)`.\n" +
+            "\n" +
+            "  Direction:\n" +
+            "    --digit-dir-x / --digit-dir-y are unit-less multipliers\n" +
+            "    (e.g. 1, -1, 0) applied to --digit-distance.",
+          vars: [
+            ["--digit-dur",      "--p9-dur"],
+            ["--digit-distance", "--p9-distance"],
+            ["--digit-stagger",  "--p9-stagger"],
+            ["--digit-blur",     "--p9-blur"],
+            ["--digit-ease",     "--p9-ease"],
+            ["--digit-dir-x",    "--p9-dir-x"],
+            ["--digit-dir-y",    "--p9-dir-y"]
+          ],
+          css:
+            "@keyframes t-digit-pop-in {\n" +
+            "  0%   {\n" +
+            "    transform: translate(\n" +
+            "      calc(var(--digit-distance) * var(--digit-dir-x)),\n" +
+            "      calc(var(--digit-distance) * var(--digit-dir-y))\n" +
+            "    );\n" +
+            "    opacity: 0;\n" +
+            "    filter: blur(var(--digit-blur));\n" +
+            "  }\n" +
+            "  100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }\n" +
+            "}\n" +
+            "\n" +
+            ".t-digit-group {\n" +
+            "  display: inline-flex;\n" +
+            "  align-items: baseline;\n" +
+            "}\n" +
+            ".t-digit {\n" +
+            "  display: inline-block;\n" +
+            "  will-change: transform, opacity, filter;\n" +
+            "}\n" +
+            ".t-digit-group.is-animating .t-digit {\n" +
+            "  animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;\n" +
+            "}\n" +
+            ".t-digit-group.is-animating .t-digit[data-stagger=\"1\"] {\n" +
+            "  animation-delay: var(--digit-stagger);\n" +
+            "}\n" +
+            ".t-digit-group.is-animating .t-digit[data-stagger=\"2\"] {\n" +
+            "  animation-delay: calc(var(--digit-stagger) * 2);\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-digit-group .t-digit { animation: none !important; }\n" +
+            "}"
+        }
+      };
+
+      function buildSnippet(key) {
+        var tpl = PROTO_TEMPLATES[key];
+        if (!tpl) return "";
+        var cs = getComputedStyle(document.documentElement);
+        var rootLines = tpl.vars.map(function (pair) {
+          return "  " + pair[0] + ": " + cs.getPropertyValue(pair[1]).trim() + ";";
+        }).join("\n");
+        return [
+          "/* Transitions.dev — " + tpl.name + " */",
+          "/*\n  Usage:\n" + tpl.usage + "\n*/",
+          ":root {\n" + rootLines + "\n}",
+          tpl.css
+        ].join("\n\n");
+      }
+
+      // ── Prototype 6 message cycle ────────────────────────────
+      var p6Messages = ["Transaction processing...", "Transaction completed"];
+      var p6Index = 0;
+      var p6Busy = false;
+
+      // ── Prototype 8: token / back handled via delegation on the modal
+      document.addEventListener("click", function (e) {
+        var p8Modal = e.target.closest("[data-proto-p8]");
+        if (p8Modal) {
+          if (e.target.closest("[data-token]")) {
+            p8Modal.setAttribute("data-page", "2");
+            return;
+          }
+          if (e.target.closest("[data-p8-back]")) {
+            p8Modal.setAttribute("data-page", "1");
+            return;
+          }
+        }
+
+        /* --- Animate buttons --- */
+        var animateBtn = e.target.closest("button[data-proto]");
+        if (animateBtn) {
+          var proto = animateBtn.getAttribute("data-proto");
+          var card = findCard(animateBtn);
+          if (!card) return;
+
+          switch (proto) {
+            case "1": {
+              var bell = card.querySelector("[data-proto-bell]");
+              var open = bell.getAttribute("data-badge-open") === "true";
+              bell.setAttribute("data-badge-open", open ? "false" : "true");
+              break;
+            }
+            case "2": {
+              var dd = card.querySelector("[data-proto-dropdown]");
+              if (dd.classList.contains("is-open")) {
+                dd.classList.remove("is-open");
+                dd.classList.add("is-closing");
+                window.setTimeout(function () {
+                  dd.classList.remove("is-closing");
+                }, readMs("--p2-close-dur", 150));
+              } else {
+                dd.classList.remove("is-closing");
+                dd.classList.add("is-open");
+              }
+              break;
+            }
+            case "3": {
+              card.querySelector("[data-proto-panel]").classList.toggle("is-open");
+              break;
+            }
+            case "4": {
+              card.querySelector("[data-proto-resize]").classList.toggle("is-small");
+              break;
+            }
+            case "5": {
+              var p5 = card.querySelector("[data-proto-icon]");
+              var cur = p5.getAttribute("data-animated") === "true";
+              p5.setAttribute("data-animated", cur ? "false" : "true");
+              break;
+            }
+            case "6": {
+              if (p6Busy) return;
+              p6Busy = true;
+              var t = card.querySelector("[data-proto-text]");
+              var dur = readMs("--p6-dur", 200);
+              t.classList.add("is-exit");
+              window.setTimeout(function () {
+                p6Index = (p6Index + 1) % p6Messages.length;
+                t.textContent = p6Messages[p6Index];
+                t.classList.remove("is-exit");
+                t.classList.add("is-enter-start");
+                void t.offsetHeight;
+                t.classList.remove("is-enter-start");
+                window.setTimeout(function () { p6Busy = false; }, dur);
+              }, dur);
+              break;
+            }
+            case "7": {
+              var modal = card.querySelector("[data-proto-modal]");
+              if (modal.classList.contains("is-open")) {
+                modal.classList.remove("is-open");
+                modal.classList.add("is-closing");
+                window.setTimeout(function () {
+                  modal.classList.remove("is-closing");
+                }, readMs("--p7-close-dur", 150));
+              } else {
+                modal.classList.remove("is-closing");
+                modal.classList.add("is-open");
+              }
+              break;
+            }
+            case "9": {
+              var p9 = card.querySelector("[data-proto-number]");
+              if (!p9) break;
+              // Generate a new two-integer-digit + "." + two-decimal number.
+              var intPart = Math.floor(Math.random() * 90) + 10;
+              var decPart = Math.floor(Math.random() * 100);
+              var str = String(intPart) + "." + String(decPart).padStart(2, "0");
+              var chars = str.split("");
+              var len = chars.length;
+
+              // Snapshot old digits into a ghost so they can play the
+              // pop-out animation in parallel with new digits popping in.
+              var oldGhost = p9.querySelector(".p9-ghost");
+              if (oldGhost) oldGhost.remove();
+
+              var liveChars = p9.querySelectorAll(":scope > .p9-char");
+              if (liveChars.length) {
+                var ghost = document.createElement("span");
+                ghost.className = "p9-ghost";
+                liveChars.forEach(function (ch) {
+                  ghost.appendChild(ch.cloneNode(true));
+                });
+                p9.appendChild(ghost);
+                var p9Dur = readMs("--p9-dur", 500);
+                var p9Stag = readMs("--p9-stagger", 50);
+                window.setTimeout(function () {
+                  if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+                }, p9Dur + p9Stag * 2 + 50);
+              }
+
+              // Restart the animation class cleanly.
+              p9.classList.remove("is-animating");
+              p9.querySelectorAll(":scope > .p9-char").forEach(function (el) { el.remove(); });
+              chars.forEach(function (ch, i) {
+                var span = document.createElement("span");
+                span.className = "p9-char";
+                span.textContent = ch;
+                if (i === len - 2) span.setAttribute("data-stagger", "1");
+                else if (i === len - 1) span.setAttribute("data-stagger", "2");
+                var ghostEl = p9.querySelector(".p9-ghost");
+                if (ghostEl) p9.insertBefore(span, ghostEl);
+                else p9.appendChild(span);
+              });
+              // Force reflow so removing + re-adding the class replays.
+              // eslint-disable-next-line no-unused-expressions
+              p9.offsetHeight;
+              p9.classList.add("is-animating");
+              break;
+            }
+          }
+          return;
+        }
+
+        /* --- Copy buttons: copy the CSS snippet for this prototype --- */
+        var copyBtn = e.target.closest("[data-copy-key]");
+        if (copyBtn) {
+          var key = copyBtn.getAttribute("data-copy-key");
+          var snippet = buildSnippet(key);
+
+          function markCopied() {
+            copyBtn.setAttribute("data-copied", "true");
+            window.setTimeout(function () {
+              copyBtn.removeAttribute("data-copied");
+            }, 1600);
+          }
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(snippet).then(markCopied).catch(function () {
+              // Fallback: selection + execCommand
+              fallbackCopy(snippet, markCopied);
+            });
+          } else {
+            fallbackCopy(snippet, markCopied);
+          }
+        }
+      });
+
+      function fallbackCopy(text, onDone) {
+        try {
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          if (onDone) onDone();
+        } catch (e) {}
+      }
+    })();
+  </script>
+</body>
+</html>
+

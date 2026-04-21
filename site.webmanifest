@@ -1,0 +1,27 @@
+{
+  "name": "Transitions.dev",
+  "short_name": "Transitions.dev",
+  "description": "Collection of the most essential transitions for web apps that you can just copy and paste into any project.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "en",
+  "dir": "ltr",
+  "background_color": "#fdfdfd",
+  "theme_color": "#fdfdfd",
+  "icons": [
+    {
+      "src": "assets/icon%20light%202x.png",
+      "sizes": "272x280",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-dark-2x.png",
+      "sizes": "272x280",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

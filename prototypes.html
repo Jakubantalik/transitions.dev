@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prototypes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Roboto+Mono:wght@500&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --btn-base: #bfc0cb;
+      --btn-overlay: rgba(243, 243, 243, 0.9);
+      --btn-text: #17181c;
+      --skeleton: #eeeeef;
+      --modal-bg: #ffffff;
+      --muted: #5e6773;
+      --token-light: #f4f4f4;
+      --shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px rgba(0, 0, 0, 0.05),
+        0 4px 42px rgba(0, 0, 0, 0.06);
+      --r-btn: 10px;
+      --r-card: 12px;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, monospace;
+
+      /* ========================================================== */
+      /* Prototype transition knobs (read by the control panel)     */
+      /* ========================================================== */
+
+      /* P1 — Notification badge */
+      --p1-pos-open-dur: 260ms;
+      --p1-scale-open-dur: 500ms;
+      --p1-scale-close-dur: 180ms;
+      --p1-opacity-open-dur: 400ms;
+      --p1-opacity-close-dur: 180ms;
+      --p1-blur: 2px;
+      --p1-distance-x: -8.2px;
+      --p1-distance-y: 12.4px;
+      --p1-bounce: 1.36;
+      --p1-ease-pos-open: cubic-bezier(0.22, 1, 0.36, 1);
+      --p1-ease-scale-open: cubic-bezier(0.34, 1.36, 0.64, 1);
+      --p1-ease-close: cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* P2 — Dropdown.
+         `--p2-origin` is the scale transform-origin. The transition is
+         origin-aware: the anchor point should sit where the trigger is
+         (e.g. "top center" when the trigger button is above the menu,
+         "top right" when it opens from a right-aligned button, etc.). */
+      --p2-open-dur: 250ms;
+      --p2-close-dur: 150ms;
+      --p2-pre-scale: 0.97;
+      --p2-closing-scale: 0.99;
+      --p2-origin: top center;
+      --p2-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P3 — Panel (Figma 213:1375 "Dropdown", 296×175) */
+      --p3-open-dur: 400ms;
+      --p3-close-dur: 250ms;
+      --p3-translate-y: 175px;
+      /* Gutter inside the clip so box-shadow is not clipped by overflow:hidden */
+      --p3-clip-pad: 14px;
+      --p3-open-lift: 30px;
+      --p3-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --p3-surface-bg: #ffffff;
+      --p3-surface-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px rgba(0, 0, 0, 0.05),
+        0 4px 42px rgba(0, 0, 0, 0.06);
+
+      /* P4 — Card resize */
+      --p4-dur: 300ms;
+      --p4-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P5 — Hamburger ↔ Close */
+      --p5-dur: 200ms;
+      --p5-blur: 2px;
+      --p5-start-scale: 0.25;
+      --p5-ease: ease-in-out;
+
+      /* P6 — Text enter/exit */
+      --p6-dur: 200ms;
+      --p6-translate-y: 8px;
+      --p6-blur: 2px;
+      --p6-ease: ease-out;
+
+      /* P7 — Modal open/close (scale + opacity, Figma skeleton 261×172) */
+      --p7-open-dur: 300ms;
+      --p7-close-dur: 150ms;
+      --p7-scale: 0.95;
+      --p7-scale-close: 0.96;
+      --p7-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --p7-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+
+      /* P8 — Page slide */
+      --p8-slide-dur: 200ms;
+      --p8-fade-dur: 200ms;
+      --p8-distance: 8px;
+      --p8-blur: 3px;
+      --p8-stagger: 0ms;
+      /* Exit animation multiplier (1 = slide+blur the outgoing page,
+         0 = fade it out in place). */
+      --p8-exit-enabled: 1;
+      --p8-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --p8-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P9 — Number pop-in */
+      --p9-dur: 500ms;
+      --p9-distance: 8px;
+      --p9-stagger: 50ms;
+      --p9-blur: 2px;
+      --p9-bounce: 1.35;
+      --p9-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
+      /* Direction multipliers: where each digit starts relative to its
+         final resting position. (0, 1) = rises from below (default).
+         The keyframe multiplies --p9-distance by these, so flipping a
+         sign changes the starting corner instantly. */
+      --p9-dir-x: 0;
+      --p9-dir-y: 1;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+    }
+
+    main.grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 64px 24px 120px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 48px 24px;
+    }
+
+    .proto-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .proto-label {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 13px;
+      color: var(--text);
+      opacity: 0.5;
+      margin: 0 0 8px;
+      align-self: center;
+    }
+
+    .stage {
+      width: 100%;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      position: relative;
+    }
+
+    /* Shared button */
+    .btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 36px;
+      padding: 6px 10px;
+      border-radius: var(--r-btn);
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 16px;
+      color: var(--btn-text);
+      background-color: var(--btn-base);
+      background-image: linear-gradient(
+        90deg,
+        var(--btn-overlay) 0%,
+        var(--btn-overlay) 100%
+      );
+      white-space: nowrap;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: filter 120ms ease;
+    }
+
+    .btn:hover {
+      filter: brightness(0.98);
+    }
+
+    .btn:active {
+      filter: brightness(0.95);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid #17181c;
+      outline-offset: 2px;
+    }
+
+    /* Shared card surface */
+    .surface {
+      background: var(--modal-bg);
+      border-radius: var(--r-card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .skeleton {
+      background: var(--skeleton);
+      border-radius: 4px;
+    }
+
+    /* ============================================================ */
+    /* Prototype 1 — Notification badge open ↔ close                 */
+    /* ============================================================ */
+    .p1-stage {
+      gap: 50px;
+    }
+
+    /* Bell button (Button/Medium/Secondary/Icon only) */
+    .bell-btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 40px;
+      background: #ffffff;
+      box-shadow:
+        0 1px 0 0 rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.04),
+        0 2px 3px 0 rgba(0, 0, 0, 0.04);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bell-btn .bell-icon {
+      width: 16px;
+      height: 16px;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Notification badge.
+       Two-part structure so we can run two independent timing curves:
+       • outer (.bell-badge)        → translate (diagonal slide)
+       • inner (.bell-badge-inner)  → scale (springy pop-in) + opacity + blur
+       The badge slides on a 4px diagonal trajectory along the vector from
+       the button's center toward the badge's resting position. Resting
+       position center relative to the button's center gives a diagonal
+       unit vector (-0.8, +0.6). Scaled to 4px = (-3.2px, +2.4px). The
+       inner scales around its own center, so the visible travel equals
+       exactly the 4px translate (no extra "unfold" contribution from the
+       scale). A 2px blur fades in on close / out on open for a subtle
+       haze on the motion. */
+    .bell-badge {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      /* Transform is driven by a one-shot keyframe animation that fires
+         only when the badge opens (see rule below). On close there is
+         no transform change, so the badge does not move out — it just
+         scales/fades via the inner element. */
+      will-change: transform;
+    }
+
+    /* Open-only slide: 4px diagonal translate from the button's center
+       back to the badge's resting position. Runs every time the button
+       enters the "open" state. */
+    .bell-btn[data-badge-open="true"] .bell-badge {
+      animation: p1-badge-slide-in var(--p1-pos-open-dur) var(--p1-ease-pos-open);
+    }
+
+    @keyframes p1-badge-slide-in {
+      0%   { transform: translate(var(--p1-distance-x), var(--p1-distance-y)); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .bell-badge-inner {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-image: linear-gradient(
+        -51.52deg,
+        rgb(238, 41, 51) 13.929%,
+        rgb(236, 2, 72) 112.7%
+      );
+      color: #ffffff;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 11.744px;
+      line-height: 1;
+      letter-spacing: -0.1174px;
+      box-shadow:
+        0 0.338px 1.351px 0 rgba(0, 0, 0, 0.17),
+        0 0.676px 2.703px 0 rgba(0, 0, 0, 0.04),
+        inset 0 -0.338px 0 0 rgba(0, 0, 0, 0.16);
+      transform-origin: center;
+      transform: scale(1);
+      opacity: 1;
+      filter: blur(0);
+      transition:
+        transform var(--p1-scale-open-dur) var(--p1-ease-scale-open),
+        opacity var(--p1-opacity-open-dur) var(--p1-ease-scale-open),
+        filter var(--p1-scale-open-dur) var(--p1-ease-scale-open);
+      will-change: transform, opacity, filter;
+    }
+
+    .bell-btn[data-badge-open="false"] .bell-badge-inner {
+      transform: scale(0);
+      opacity: 0;
+      filter: blur(var(--p1-blur));
+      transition:
+        transform var(--p1-scale-close-dur) var(--p1-ease-close),
+        opacity var(--p1-opacity-close-dur) var(--p1-ease-close),
+        filter var(--p1-scale-close-dur) var(--p1-ease-close);
+    }
+
+    /* ============================================================ */
+    /* Prototype 2 — Toggle menu dropdown                            */
+    /* ============================================================ */
+    .p2-stage {
+      gap: 10px;
+      justify-content: flex-start;
+      padding-top: 20px;
+    }
+
+    /* Default resting state: pre-open (hidden).
+       Scale anchors at --p2-origin so the menu visually "grows" from
+       the trigger (top center by default — trigger button above). */
+    .p2-dropdown {
+      width: 234px;
+      height: 136px;
+      position: relative;
+      padding: 8px;
+      transform-origin: var(--p2-origin);
+      transform: scale(var(--p2-pre-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--p2-open-dur) var(--p2-ease),
+        opacity var(--p2-open-dur) var(--p2-ease);
+    }
+
+    .p2-dropdown.is-open {
+      transform: scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .p2-dropdown.is-closing {
+      transform: scale(var(--p2-closing-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--p2-close-dur) var(--p2-ease),
+        opacity var(--p2-close-dur) var(--p2-ease);
+    }
+
+    .p2-dropdown .skeleton {
+      position: absolute;
+      height: 14px;
+    }
+    .p2-dropdown .s1 {
+      left: 18px;
+      top: 23px;
+      width: 173px;
+    }
+    .p2-dropdown .s2 {
+      left: 18px;
+      top: 63px;
+      width: 131px;
+    }
+    .p2-dropdown .s3 {
+      left: 18px;
+      top: 103px;
+      width: 194px;
+    }
+
+    /* ============================================================ */
+    /* Prototype 3 — Toggle panel (vertical)                         */
+    /* ============================================================ */
+    .p3-stage {
+      gap: 10px;
+      justify-content: flex-start;
+      padding-top: 20px;
+    }
+
+    /* Clips the panel so it can hide purely via translateY — no opacity
+       fade. Clip is larger than the panel by --p3-clip-pad on each side so
+       box-shadow and border ring stay visible (overflow:hidden no longer
+       crops them). */
+    .p3-panel-clip {
+      width: calc(296px + 2 * var(--p3-clip-pad));
+      height: calc(175px + 2 * var(--p3-clip-pad));
+      overflow: hidden;
+      flex-shrink: 0;
+      container-type: size;
+    }
+
+    .p3-panel {
+      width: 296px;
+      height: 175px;
+      margin: var(--p3-clip-pad) auto 0;
+      border-radius: var(--r-card);
+      background: var(--p3-surface-bg);
+      box-shadow: var(--p3-surface-shadow);
+      overflow: hidden;
+      position: relative;
+      transform: translateY(
+        calc(
+          max(
+            var(--p3-translate-y) + var(--p3-clip-pad),
+            100cqh - var(--p3-clip-pad) + 4px
+          )
+        )
+      );
+      pointer-events: none;
+      /* Base (close) transition — used when returning to hidden state. */
+      transition: transform var(--p3-close-dur) var(--p3-ease);
+    }
+
+    .p3-panel.is-open {
+      transform: translateY(calc(-1 * var(--p3-open-lift)));
+      pointer-events: auto;
+      /* Open transition overrides the base timing. */
+      transition: transform var(--p3-open-dur) var(--p3-ease);
+    }
+
+    .p3-panel .lines {
+      position: absolute;
+      left: 35px;
+      top: 28px;
+      width: 173px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .p3-panel .lines .l1 {
+      height: 10px;
+      width: 100%;
+    }
+    .p3-panel .lines .l2 {
+      height: 10px;
+      width: 131px;
+    }
+
+    .p3-panel .tiles {
+      position: absolute;
+      left: 35px;
+      top: 73px;
+      width: 226px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 17px 14px;
+    }
+    .p3-panel .tiles .tile {
+      width: 106px;
+      height: 46px;
+    }
+
+    /* ============================================================ */
+    /* Prototype 4 — Card resize                                     */
+    /* ============================================================ */
+    .p4-stage {
+      gap: 30px;
+    }
+
+    /* Pin the Animate button to a fixed spot within the P4 stage so it
+       doesn't bob up/down while the card resizes. The card stays the
+       sole flex-centred item and can subtly shift with its own size
+       change, but the button acts as a stable anchor for the user. */
+    .p4-stage > .btn {
+      position: absolute;
+      left: 50%;
+      bottom: 48px;
+      transform: translateX(-50%);
+    }
+
+    .p4-card {
+      width: 220px;
+      height: 112px;
+      background: var(--modal-bg);
+      border-radius: var(--r-card);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition:
+        width var(--p4-dur) var(--p4-ease),
+        height var(--p4-dur) var(--p4-ease);
+    }
+
+    .p4-card.is-small {
+      width: 154px;
+      height: 128px;
+    }
+
+    /* Skeleton geometry: everything is anchored to a 14px horizontal
+       inset on both sides. Full-width lines use `right: 14px` so they
+       automatically reflow as the card's width transitions. Partial
+       lines (title, short paragraph end) are sized as a fraction of
+       the inner width so they scale proportionally. */
+    .p4-card .sk {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      background: var(--skeleton);
+      border-radius: 4px;
+    }
+    .p4-card .sk-1 { top: 14px; height: 10px; right: auto; width: calc((100% - 28px) * 0.526); }
+    .p4-card .sk-2 { top: 28px; height: 7px; }
+    .p4-card .sk-3 { top: 39px; height: 7px; }
+    .p4-card .sk-4 { top: 50px; height: 7px;  right: auto; width: calc((100% - 28px) * 0.734); }
+    .p4-card .sk-5 { top: 78px; height: 7px; }
+    .p4-card .sk-6 { top: 89px; height: 7px; }
+
+    /* ============================================================ */
+    /* Prototype 5 — Hamburger ↔ Close                               */
+    /* ============================================================ */
+    .p5-stage {
+      gap: 60px;
+    }
+
+    .p5-icon-wrap {
+      position: relative;
+      width: 24px;
+      height: 24px;
+    }
+
+    .p5-icon-wrap .icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        opacity var(--p5-dur) var(--p5-ease),
+        filter var(--p5-dur) var(--p5-ease),
+        transform var(--p5-dur) var(--p5-ease);
+      will-change: opacity, filter, transform;
+    }
+
+    .p5-icon-wrap[data-animated="false"] .icon-menu {
+      opacity: 1;
+      filter: blur(0);
+      transform: scale(1);
+    }
+    .p5-icon-wrap[data-animated="false"] .icon-close {
+      opacity: 0;
+      filter: blur(var(--p5-blur));
+      transform: scale(var(--p5-start-scale));
+    }
+
+    .p5-icon-wrap[data-animated="true"] .icon-menu {
+      opacity: 0;
+      filter: blur(var(--p5-blur));
+      transform: scale(var(--p5-start-scale));
+    }
+    .p5-icon-wrap[data-animated="true"] .icon-close {
+      opacity: 1;
+      filter: blur(0);
+      transform: scale(1);
+    }
+
+    /* ============================================================ */
+    /* Prototype 6 — Text enter/exit                                 */
+    /* ============================================================ */
+    .p6-stage {
+      gap: 60px;
+    }
+
+    .p6-text {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 18px;
+      color: var(--text);
+      white-space: nowrap;
+      transform: translateY(0);
+      filter: blur(0);
+      opacity: 1;
+      transition:
+        transform var(--p6-dur) var(--p6-ease),
+        filter var(--p6-dur) var(--p6-ease),
+        opacity var(--p6-dur) var(--p6-ease);
+      will-change: transform, filter, opacity;
+    }
+
+    .p6-text.is-exit {
+      transform: translateY(calc(var(--p6-translate-y) * -1));
+      filter: blur(var(--p6-blur));
+      opacity: 0;
+    }
+
+    .p6-text.is-enter-start {
+      transform: translateY(var(--p6-translate-y));
+      filter: blur(var(--p6-blur));
+      opacity: 0;
+      transition: none;
+    }
+
+    /* ============================================================ */
+    /* Prototype 7 — Modal open/close                                */
+    /* ============================================================ */
+    .p7-stage {
+      gap: 0;
+      justify-content: center;
+      /* Reserve strip for pinned button (matches demo card-stage rhythm). */
+      padding-bottom: 64px;
+    }
+    .p7-stage > .btn {
+      position: absolute;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+    }
+
+    .p7-dropdown {
+      width: 261px;
+      height: 172px;
+      background: var(--modal-bg);
+      border-radius: var(--r-card);
+      box-shadow: var(--p7-shadow);
+      position: relative;
+      overflow: hidden;
+      transform-origin: center;
+      transform: scale(var(--p7-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--p7-open-dur) var(--p7-ease),
+        opacity var(--p7-open-dur) var(--p7-ease);
+      will-change: transform, opacity;
+    }
+
+    .p7-dropdown.is-open {
+      transform: scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .p7-dropdown.is-closing {
+      transform: scale(var(--p7-scale-close));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--p7-close-dur) var(--p7-ease),
+        opacity var(--p7-close-dur) var(--p7-ease);
+    }
+
+    .p7-dropdown .title {
+      position: absolute;
+      left: 16px;
+      top: 29px;
+      width: 167px;
+      height: 14px;
+      background: var(--skeleton);
+      border-radius: 4px;
+    }
+    .p7-dropdown .close-dot {
+      position: absolute;
+      left: 237px;
+      top: 8px;
+      width: 16px;
+      height: 16px;
+      background: var(--skeleton);
+      border-radius: 43px;
+    }
+    .p7-dropdown .pill {
+      position: absolute;
+      top: 135px;
+      width: 66px;
+      height: 21px;
+      background: var(--skeleton);
+      border-radius: 6px;
+    }
+    .p7-dropdown .pill-1 { left: 107px; }
+    .p7-dropdown .pill-2 { left: 179px; }
+
+    .p7-dropdown .body-1,
+    .p7-dropdown .body-2,
+    .p7-dropdown .body-3 {
+      position: absolute;
+      left: 16px;
+      height: 10px;
+      background: var(--skeleton);
+      border-radius: 4px;
+    }
+    .p7-dropdown .body-1 { top: 57px; width: 227px; }
+    .p7-dropdown .body-2 { top: 73px; width: 227px; }
+    .p7-dropdown .body-3 { top: 89px; width: 141px; }
+
+    /* ============================================================ */
+    /* Prototype 8 — Token list ↔ Amount screen                      */
+    /* ============================================================ */
+    .p8-stage { gap: 0; }
+
+    .p8-modal {
+      width: 260px;
+      height: 267px;
+      background: var(--modal-bg);
+      border-radius: var(--r-card);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Each page has a "resting direction" on its own side of the modal.
+       Page 1 rests to the left, Page 2 rests to the right. */
+    .p8-modal .page-1 { --p8-from-x: calc(var(--p8-distance) * -1); }
+    .p8-modal .page-2 { --p8-from-x: var(--p8-distance); }
+
+    /* Resting (inactive) state: translated to the page's side, blurred,
+       and fully transparent. The `--p8-exit-enabled` multiplier lets the
+       control panel turn the slide+blur off so the outgoing page just
+       fades in place. */
+    .p8-modal .page {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(calc(var(--p8-from-x, 0px) * var(--p8-exit-enabled)));
+      filter: blur(calc(var(--p8-blur) * var(--p8-exit-enabled)));
+      transition:
+        opacity var(--p8-fade-dur) var(--p8-fade-ease),
+        transform var(--p8-slide-dur) var(--p8-slide-ease),
+        filter var(--p8-slide-dur) var(--p8-slide-ease);
+      will-change: opacity, transform, filter;
+    }
+
+    /* Active (incoming) page: translate to 0, un-blur, fade in. The
+       stagger delay applies only to the incoming page, so the outgoing
+       page starts its exit immediately. */
+    .p8-modal[data-page="1"] .page-1,
+    .p8-modal[data-page="2"] .page-2 {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+      filter: blur(0);
+      transition-delay: var(--p8-stagger);
+    }
+
+    /* Chip icon button (close / back) — matches Figma bg rgba(244,244,244,0.5) */
+    .p8-modal .chip-btn {
+      appearance: none;
+      border: 0;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 60px;
+      background: rgba(244, 244, 244, 0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 120ms ease;
+    }
+    .p8-modal .chip-btn:hover { background: rgba(244, 244, 244, 0.9); }
+    .p8-modal .chip-btn svg { display: block; }
+
+    .p8-modal .page-title {
+      position: absolute;
+      left: 50%;
+      top: 25px;
+      transform: translateX(-50%);
+      width: 95px;
+      height: 14px;
+      background: var(--skeleton);
+      border-radius: 4px;
+    }
+
+    /* Back button is a persistent overlay: it lives outside both pages
+       so it doesn't slide with them. It simply fades in when the modal
+       is on page 2 and fades out when returning to page 1. */
+    .p8-modal .back-btn {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      z-index: 2;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--p8-fade-dur) var(--p8-fade-ease);
+    }
+    .p8-modal[data-page="2"] .back-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .p8-modal .back-btn svg {
+      transform: translateX(-1px);
+    }
+
+    /* ---- Page 1: token list ---- */
+    /* Token list container width matches Figma node 232:3181 (243px). */
+    .p8-modal .tokens {
+      position: absolute;
+      left: 8px;
+      top: 60.5px;
+      width: 243px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Rows span the full width of the token list column. */
+    .p8-modal .token-row {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px 8px 12px;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .p8-modal .token-row:hover { background: rgba(2, 2, 2, 0.02); }
+    .p8-modal .token-row:focus-visible {
+      outline: 2px solid #17181c;
+      outline-offset: 2px;
+    }
+
+    .p8-modal .token-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Token chip: pure-CSS avatar matching Figma 232:3349.
+       32×32 circle · translucent brand-tinted fill (α ≈ 10.2%) · letter
+       positioned via padding (Inter 13/22, left 12 / top 4.5). */
+    .p8-modal .token-icon {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      padding: 4.5px 0 0 12px;
+      border-radius: 50%;
+      font-family: var(--font-sans);
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 22px;
+      letter-spacing: 0;
+      white-space: nowrap;
+      color: var(--token-label);
+      background-color: rgba(var(--token-fill-rgb), 0.102);
+    }
+    .p8-modal .token-icon.eth  { --token-label: #4e6cc2; --token-fill-rgb: 108, 137, 235; }
+    .p8-modal .token-icon.avax { --token-label: #c24e4e; --token-fill-rgb: 245, 118, 118; }
+    .p8-modal .token-icon.bnb  { --token-label: #c2964e; --token-fill-rgb: 235, 167,  59; }
+
+    .p8-modal .token-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-bottom: 4px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 22px;
+      white-space: nowrap;
+    }
+    .p8-modal .token-text .name { color: #17171c; }
+    .p8-modal .token-text .sym { color: var(--muted); }
+
+    /* ---- Page 2: amount screen ---- */
+    /* Match horizontal inset of the token list (8px); full width so the
+       pill row fits and stays visually centered (184px was too narrow). */
+    .p8-modal .amount-screen {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: 78px;
+      width: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-sizing: border-box;
+    }
+
+    .p8-modal .amount-value {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 38px;
+      line-height: 48px;
+      color: #232323;
+      text-align: center;
+      width: 100%;
+    }
+    .p8-modal .amount-value .cur { color: #7c7c7c; }
+
+    .p8-modal .pills {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .p8-modal .pill {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 27px;
+      background: #f7f7f8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 16px;
+      color: #5e6773;
+      white-space: nowrap;
+    }
+
+    .p8-modal .amount-available {
+      font-family: var(--font-sans);
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 18px;
+      color: #232323;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* ============================================================ */
+    /* Prototype 9 — Random number digit pop-in                      */
+    /* ============================================================ */
+    .p9-number {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 18px;
+      line-height: 18px;
+      color: var(--text);
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: baseline;
+      user-select: none;
+      position: relative;
+    }
+
+    .p9-char {
+      display: inline-block;
+      transform: translateY(0);
+      opacity: 1;
+      will-change: transform, opacity;
+    }
+
+    /* When animating (class added by JS on every Animate click), each
+       .p9-char runs the pop-in keyframes. The last two characters get a
+       staggered delay driven by --p9-stagger. */
+    .p9-number.is-animating .p9-char {
+      animation: p9-pop-in var(--p9-dur) var(--p9-ease) both;
+    }
+    .p9-number.is-animating .p9-char[data-stagger="1"] {
+      animation-delay: var(--p9-stagger);
+    }
+    .p9-number.is-animating .p9-char[data-stagger="2"] {
+      animation-delay: calc(var(--p9-stagger) * 2);
+    }
+
+    /* Exit ghost: an absolutely-positioned copy of the previous number
+       that plays the reverse direction of the pop-in. Travels away in
+       the opposite direction of where the new number arrives from.
+       Selectors are scoped under `.p9-number` on purpose so they
+       out-specify the pop-in rule (`.p9-number.is-animating .p9-char`)
+       and guarantee the ghost's chars get pop-out, not pop-in. */
+    .p9-number .p9-ghost {
+      position: absolute;
+      inset: 0;
+      display: inline-flex;
+      align-items: baseline;
+      pointer-events: none;
+    }
+    .p9-number .p9-ghost .p9-char {
+      animation: p9-pop-out var(--p9-dur) var(--p9-ease) both;
+    }
+    .p9-number .p9-ghost .p9-char[data-stagger="1"] {
+      animation-delay: var(--p9-stagger);
+    }
+    .p9-number .p9-ghost .p9-char[data-stagger="2"] {
+      animation-delay: calc(var(--p9-stagger) * 2);
+    }
+
+    @keyframes p9-pop-in {
+      0%   {
+        transform: translate(
+          calc(var(--p9-distance) * var(--p9-dir-x)),
+          calc(var(--p9-distance) * var(--p9-dir-y))
+        );
+        opacity: 0;
+        filter: blur(var(--p9-blur));
+      }
+      100% {
+        transform: translate(0, 0);
+        opacity: 1;
+        filter: blur(0);
+      }
+    }
+
+    /* Exit travels in the opposite direction of entry: the outgoing
+       digits head the same way the incoming ones were moving, so if
+       new digits "rise from below" the old ones continue rising and
+       fade out above. */
+    @keyframes p9-pop-out {
+      0%   {
+        transform: translate(0, 0);
+        opacity: 1;
+        filter: blur(0);
+      }
+      100% {
+        transform: translate(
+          calc(var(--p9-distance) * var(--p9-dir-x) * -1),
+          calc(var(--p9-distance) * var(--p9-dir-y) * -1)
+        );
+        opacity: 0;
+        filter: blur(var(--p9-blur));
+      }
+    }
+
+    /* ============================================================ */
+    /* Control panel                                                 */
+    /* ============================================================ */
+    body {
+      padding-right: 340px;
+      transition: padding-right 250ms ease-out;
+    }
+    html[data-cp-collapsed="true"] body {
+      padding-right: 40px;
+    }
+
+    .cp {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 340px;
+      height: 100vh;
+      background: #fbfbfc;
+      border-left: 1px solid rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      font-family: var(--font-sans);
+      transition: transform 250ms ease-out;
+      will-change: transform;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    html[data-cp-collapsed="true"] .cp {
+      transform: translateX(calc(100% - 40px));
+    }
+
+    .cp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 14px 14px 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      flex-shrink: 0;
+      background: #ffffff;
+    }
+
+    .cp-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0;
+      color: #17181c;
+      letter-spacing: -0.01em;
+    }
+
+    .cp-collapse {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #5e6773;
+      border-radius: 6px;
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+    .cp-collapse:hover { background: rgba(0, 0, 0, 0.04); color: #17181c; }
+    .cp-collapse svg {
+      transition: transform 250ms ease-out;
+    }
+    html[data-cp-collapsed="true"] .cp-collapse svg {
+      transform: rotate(180deg);
+    }
+
+    .cp-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2px 0 40px;
+      scrollbar-width: thin;
+    }
+    .cp-body::-webkit-scrollbar { width: 8px; }
+    .cp-body::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.12);
+      border-radius: 8px;
+    }
+
+    .cp-section {
+      padding: 14px 16px 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .cp-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .cp-section-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: #17181c;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.72;
+    }
+
+    .cp-export {
+      appearance: none;
+      border: 0;
+      background: #17181c;
+      color: #ffffff;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 500;
+      height: 22px;
+      padding: 0 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      letter-spacing: 0;
+      transition: background-color 120ms ease;
+    }
+    .cp-export:hover { background: #000; }
+    .cp-export.is-copied { background: #0b8a3e; }
+
+    .cp-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 3px 0;
+    }
+
+    .cp-label {
+      color: #5e6773;
+      font-size: 11.5px;
+      line-height: 1.3;
+      font-weight: 400;
+      user-select: none;
+    }
+
+    .cp-row input,
+    .cp-row select {
+      width: 86px;
+      height: 24px;
+      padding: 0 6px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #17181c;
+      background: #ffffff;
+      text-align: right;
+      -moz-appearance: textfield;
+    }
+    .cp-row input::-webkit-outer-spin-button,
+    .cp-row input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .cp-row input:focus,
+    .cp-row select:focus {
+      outline: 2px solid #17181c;
+      outline-offset: 1px;
+      border-color: transparent;
+    }
+
+    /* Easing / direction select: a bit wider to accommodate preset names. */
+    .cp-row select.cp-ease,
+    .cp-row select.cp-dir {
+      width: 128px;
+      text-align: left;
+      padding-right: 4px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #5e6773 50%),
+        linear-gradient(135deg, #5e6773 50%, transparent 50%);
+      background-position:
+        calc(100% - 10px) 10px,
+        calc(100% - 6px) 10px;
+      background-size: 4px 4px, 4px 4px;
+      background-repeat: no-repeat;
+    }
+
+    /* Raw editable easing value sits directly under its select.
+       Full width so long cubic-bezier strings don't get clipped. */
+    .cp-row-ease-raw {
+      display: block;
+      padding: 2px 0 4px;
+      margin-top: -2px;
+    }
+    .cp-row-ease-raw .cp-ease-text {
+      width: 100%;
+      height: 24px;
+      padding: 0 8px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: #5e6773;
+      background: rgba(0, 0, 0, 0.025);
+      text-align: left;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .cp-row-ease-raw .cp-ease-text:focus {
+      color: #17181c;
+      background: #ffffff;
+      border-color: transparent;
+      outline: 2px solid #17181c;
+      outline-offset: 1px;
+    }
+    .cp-row-ease-raw .cp-ease-text.is-invalid {
+      color: #b42318;
+      border-color: rgba(180, 35, 24, 0.4);
+    }
+
+    /* ============================================================ */
+    /* Reduced motion                                                */
+    /* ============================================================ */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition-duration: 1ms !important;
+        animation-duration: 1ms !important;
+      }
+      .bell-badge,
+      .bell-badge-inner,
+      .p5-icon-wrap .icon,
+      .p6-text,
+      .p9-char {
+        transform: none !important;
+        filter: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="grid">
+    <!-- ================================================== -->
+    <!-- 1. Card resize                                      -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">1.pototype</p>
+      <div class="stage p4-stage">
+        <div class="p4-card" id="p4-card">
+          <div class="sk sk-1"></div>
+          <div class="sk sk-2"></div>
+          <div class="sk sk-3"></div>
+          <div class="sk sk-4"></div>
+          <div class="sk sk-5"></div>
+          <div class="sk sk-6"></div>
+        </div>
+        <button class="btn" data-proto="4">Animate</button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 2. Random number digit pop-in                       -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">2.pototype</p>
+      <div class="stage p9-stage">
+        <div class="p9-number" id="p9-number" aria-live="polite"
+             ><span class="p9-char">6</span
+             ><span class="p9-char">5</span
+             ><span class="p9-char">.</span
+             ><span class="p9-char">7</span
+             ><span class="p9-char">8</span
+        ></div>
+        <button class="btn" data-proto="9">Animate</button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 3. Notification badge open ↔ close                  -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">3.pototype</p>
+      <div class="stage p1-stage">
+        <div class="bell-btn" id="p1-bell" data-badge-open="false" aria-label="Notifications">
+          <img class="bell-icon" src="assets/bell-01.svg" alt="" width="16" height="16" />
+          <span class="bell-badge" aria-hidden="true"><span class="bell-badge-inner">1</span></span>
+        </div>
+        <button class="btn" data-proto="1">Animate</button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 4. Transaction completed text                       -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">4.pototype</p>
+      <div class="stage p6-stage">
+        <span class="p6-text" id="p6-text">Transaction processing...</span>
+        <button class="btn" data-proto="6">Animate</button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 5. Toggle menu dropdown                             -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">5.pototype</p>
+      <div class="stage p2-stage">
+        <button class="btn" data-proto="2">Toggle menu</button>
+        <div class="surface p2-dropdown is-open" id="p2-dropdown">
+          <div class="skeleton s1"></div>
+          <div class="skeleton s2"></div>
+          <div class="skeleton s3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 6. Modal open/close                                 -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">6.pototype</p>
+      <div class="stage p7-stage">
+        <div class="p7-dropdown is-open" id="p7-dropdown">
+          <div class="title"></div>
+          <div class="close-dot"></div>
+          <div class="body-1"></div>
+          <div class="body-2"></div>
+          <div class="body-3"></div>
+          <div class="pill pill-1"></div>
+          <div class="pill pill-2"></div>
+        </div>
+        <button class="btn" data-proto="7">Toggle modal</button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 7. Toggle panel (vertical)                          -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">7.pototype</p>
+      <div class="stage p3-stage">
+        <button class="btn" data-proto="3">Toggle panel</button>
+        <div class="p3-panel-clip">
+          <div class="p3-panel is-open" id="p3-panel">
+            <div class="lines">
+              <div class="skeleton l1"></div>
+              <div class="skeleton l2"></div>
+            </div>
+            <div class="tiles">
+              <div class="skeleton tile"></div>
+              <div class="skeleton tile"></div>
+              <div class="skeleton tile"></div>
+              <div class="skeleton tile"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 8. Token list ↔ Amount (side-by-side page slide)    -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">8.pototype</p>
+      <div class="stage p8-stage">
+        <div class="p8-modal" id="p8-modal" data-page="1">
+
+          <!-- Persistent title sits outside both pages so it doesn't
+               participate in the page-slide animation. -->
+          <div class="page-title"></div>
+
+          <!-- Page 1: token list -->
+          <div class="page page-1">
+            <div class="tokens">
+              <button class="token-row" type="button" data-token="ETH">
+                <div class="token-left">
+                  <div class="token-icon eth">E</div>
+                  <div class="token-text">
+                    <span class="name">Ethereum</span>
+                    <span class="sym">ETH</span>
+                  </div>
+                </div>
+              </button>
+              <button class="token-row" type="button" data-token="AVAX">
+                <div class="token-left">
+                  <div class="token-icon avax">A</div>
+                  <div class="token-text">
+                    <span class="name">Avalanche</span>
+                    <span class="sym">AVAX</span>
+                  </div>
+                </div>
+              </button>
+              <button class="token-row" type="button" data-token="BNB">
+                <div class="token-left">
+                  <div class="token-icon bnb">B</div>
+                  <div class="token-text">
+                    <span class="name">BNB</span>
+                    <span class="sym">BNB</span>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Persistent back button: sits outside both pages so it
+               doesn't participate in the slide animation — it simply
+               fades in/out when the current page changes. -->
+          <button class="chip-btn back-btn" type="button" aria-label="Back" data-p8-back>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 4L6 8L10 12" stroke="#17181C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- Page 2: amount screen -->
+          <div class="page page-2">
+            <div class="amount-screen">
+              <div class="amount-value"><span class="cur">$</span>10</div>
+              <div class="pills">
+                <div class="pill">25%</div>
+                <div class="pill">50%</div>
+                <div class="pill">Max</div>
+              </div>
+              <div class="amount-available">$66.11 available</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 9. Hamburger ↔ Close                                -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">9.pototype</p>
+      <div class="stage p5-stage">
+        <div class="p5-icon-wrap" id="p5-icon" data-animated="false">
+          <div class="icon icon-menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M4 7H20" stroke="#0D0D0D" stroke-width="1.75" stroke-linecap="round"/>
+              <path d="M4 12H20" stroke="#0D0D0D" stroke-width="1.75" stroke-linecap="round"/>
+              <path d="M4 17H20" stroke="#0D0D0D" stroke-width="1.75" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="icon icon-close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M6 6L18 18" stroke="#0D0D0D" stroke-width="1.75" stroke-linecap="round"/>
+              <path d="M18 6L6 18" stroke="#0D0D0D" stroke-width="1.75" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <button class="btn" data-proto="5">Animate</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================================================== -->
+  <!-- Control panel                                       -->
+  <!-- ================================================== -->
+  <aside class="cp" id="control-panel" aria-label="Transition controls">
+    <header class="cp-header">
+      <h2 class="cp-title">Controls</h2>
+      <button class="cp-collapse" id="cp-collapse" type="button" aria-label="Collapse panel">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </header>
+    <div class="cp-body">
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">1. Card resize</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p4-dur" data-unit="ms" min="0" max="2000" step="10" value="300"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p4-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p4-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">2. Number pop-in</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p9-dur" data-unit="ms" min="0" max="2000" step="10" value="500"></div>
+        <div class="cp-row"><span class="cp-label">Distance (px)</span><input type="number" data-var="--p9-distance" data-unit="px" min="0" max="40" step="1" value="8"></div>
+        <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p9-stagger" data-unit="ms" min="0" max="500" step="5" value="50"></div>
+        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p9-blur" data-unit="px" min="0" max="20" step="0.5" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Bounce</span><input type="number" data-var="--p9-bounce" data-unit="" data-ease-template="--p9-ease:cubic-bezier(0.34, {v}, 0.64, 1)" min="0" max="2.5" step="0.02" value="1.35"></div>
+        <div class="cp-row">
+          <span class="cp-label">Direction</span>
+          <select class="cp-dir" data-dir-vars="--p9-dir-x,--p9-dir-y">
+            <option value="0,1" selected>from below</option>
+            <option value="0,-1">from above</option>
+            <option value="-1,0">from left</option>
+            <option value="1,0">from right</option>
+            <option value="-0.7071,0.7071">from bottom-left</option>
+            <option value="0.7071,0.7071">from bottom-right</option>
+            <option value="-0.7071,-0.7071">from top-left</option>
+            <option value="0.7071,-0.7071">from top-right</option>
+            <option value="0,0">none (fade only)</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">3. Badge</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Open pos (ms)</span><input type="number" data-var="--p1-pos-open-dur" data-unit="ms" min="0" max="2000" step="10" value="260"></div>
+        <div class="cp-row"><span class="cp-label">Open scale (ms)</span><input type="number" data-var="--p1-scale-open-dur" data-unit="ms" min="0" max="2000" step="10" value="500"></div>
+        <div class="cp-row"><span class="cp-label">Close scale (ms)</span><input type="number" data-var="--p1-scale-close-dur" data-unit="ms" min="0" max="2000" step="10" value="180"></div>
+        <div class="cp-row"><span class="cp-label">Open opacity (ms)</span><input type="number" data-var="--p1-opacity-open-dur" data-unit="ms" min="0" max="2000" step="10" value="400"></div>
+        <div class="cp-row"><span class="cp-label">Close opacity (ms)</span><input type="number" data-var="--p1-opacity-close-dur" data-unit="ms" min="0" max="2000" step="10" value="180"></div>
+        <div class="cp-row"><span class="cp-label">Distance X (px)</span><input type="number" data-var="--p1-distance-x" data-unit="px" min="-40" max="40" step="0.1" value="-8.2"></div>
+        <div class="cp-row"><span class="cp-label">Distance Y (px)</span><input type="number" data-var="--p1-distance-y" data-unit="px" min="-40" max="40" step="0.1" value="12.4"></div>
+        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p1-blur" data-unit="px" min="0" max="20" step="0.5" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Bounce</span><input type="number" data-var="--p1-bounce" data-unit="" data-ease-template="--p1-ease-scale-open:cubic-bezier(0.34, {v}, 0.64, 1)" min="0" max="2.5" step="0.02" value="1.36"></div>
+        <div class="cp-row"><span class="cp-label">Pos open ease</span><select class="cp-ease" data-var="--p1-ease-pos-open"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p1-ease-pos-open" spellcheck="false" aria-label="Pos open ease value"></div>
+        <div class="cp-row"><span class="cp-label">Close ease</span><select class="cp-ease" data-var="--p1-ease-close"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p1-ease-close" spellcheck="false" aria-label="Close ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">4. Text swap</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p6-dur" data-unit="ms" min="0" max="2000" step="10" value="200"></div>
+        <div class="cp-row"><span class="cp-label">Translate Y (px)</span><input type="number" data-var="--p6-translate-y" data-unit="px" min="0" max="40" step="1" value="8"></div>
+        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p6-blur" data-unit="px" min="0" max="20" step="0.5" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p6-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p6-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">5. Dropdown</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Open (ms)</span><input type="number" data-var="--p2-open-dur" data-unit="ms" min="0" max="2000" step="10" value="250"></div>
+        <div class="cp-row"><span class="cp-label">Close (ms)</span><input type="number" data-var="--p2-close-dur" data-unit="ms" min="0" max="2000" step="10" value="150"></div>
+        <div class="cp-row"><span class="cp-label">Pre-open scale</span><input type="number" data-var="--p2-pre-scale" data-unit="" min="0" max="1.5" step="0.01" value="0.97"></div>
+        <div class="cp-row"><span class="cp-label">Closing scale</span><input type="number" data-var="--p2-closing-scale" data-unit="" min="0" max="1.5" step="0.01" value="0.99"></div>
+        <div class="cp-row">
+          <span class="cp-label">Origin</span>
+          <select data-var="--p2-origin">
+            <option value="top center" selected>top center</option>
+            <option value="top left">top left</option>
+            <option value="top right">top right</option>
+            <option value="center">center</option>
+            <option value="bottom center">bottom center</option>
+            <option value="bottom left">bottom left</option>
+            <option value="bottom right">bottom right</option>
+          </select>
+        </div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p2-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p2-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">6. Modal</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Open (ms)</span><input type="number" data-var="--p7-open-dur" data-unit="ms" min="0" max="2000" step="10" value="300"></div>
+        <div class="cp-row"><span class="cp-label">Close (ms)</span><input type="number" data-var="--p7-close-dur" data-unit="ms" min="0" max="2000" step="10" value="150"></div>
+        <div class="cp-row"><span class="cp-label">Open scale</span><input type="number" data-var="--p7-scale" data-unit="" min="0" max="1.5" step="0.01" value="0.95"></div>
+        <div class="cp-row"><span class="cp-label">Close scale</span><input type="number" data-var="--p7-scale-close" data-unit="" min="0" max="1.5" step="0.01" value="0.96"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p7-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p7-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">7. Panel</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Open (ms)</span><input type="number" data-var="--p3-open-dur" data-unit="ms" min="0" max="2000" step="10" value="400"></div>
+        <div class="cp-row"><span class="cp-label">Close (ms)</span><input type="number" data-var="--p3-close-dur" data-unit="ms" min="0" max="2000" step="10" value="250"></div>
+        <div class="cp-row"><span class="cp-label">Translate Y (px)</span><input type="number" data-var="--p3-translate-y" data-unit="px" min="-400" max="400" step="1" value="175"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p3-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p3-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">8. Page slide</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Slide (ms)</span><input type="number" data-var="--p8-slide-dur" data-unit="ms" min="0" max="2000" step="10" value="200"></div>
+        <div class="cp-row"><span class="cp-label">Fade (ms)</span><input type="number" data-var="--p8-fade-dur" data-unit="ms" min="0" max="2000" step="10" value="200"></div>
+        <div class="cp-row"><span class="cp-label">Distance (px)</span><input type="number" data-var="--p8-distance" data-unit="px" min="0" max="100" step="1" value="8"></div>
+        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p8-blur" data-unit="px" min="0" max="20" step="0.5" value="3"></div>
+        <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p8-stagger" data-unit="ms" min="0" max="1000" step="10" value="0"></div>
+        <div class="cp-row">
+          <span class="cp-label">Exit animation</span>
+          <select data-var="--p8-exit-enabled">
+            <option value="1" selected>on</option>
+            <option value="0">off</option>
+          </select>
+        </div>
+        <div class="cp-row"><span class="cp-label">Slide ease</span><select class="cp-ease" data-var="--p8-slide-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p8-slide-ease" spellcheck="false" aria-label="Slide ease value"></div>
+        <div class="cp-row"><span class="cp-label">Fade ease</span><select class="cp-ease" data-var="--p8-fade-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p8-fade-ease" spellcheck="false" aria-label="Fade ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">9. Hamburger ↔ Close</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p5-dur" data-unit="ms" min="0" max="2000" step="10" value="200"></div>
+        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p5-blur" data-unit="px" min="0" max="20" step="0.5" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Start scale</span><input type="number" data-var="--p5-start-scale" data-unit="" min="0" max="1.5" step="0.05" value="0.25"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p5-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p5-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+    </div>
+  </aside>
+
+  <script>
+    (function () {
+      // --- Prototype 1: notification badge open/close ----------
+      const p1Bell = document.getElementById("p1-bell");
+
+      // --- Prototype 2: Toggle menu ---------------------------
+      const p2Dropdown = document.getElementById("p2-dropdown");
+
+      // --- Prototype 3: Toggle panel --------------------------
+      const p3Panel = document.getElementById("p3-panel");
+
+      // --- Prototype 4: Card resize ---------------------------
+      const p4Card = document.getElementById("p4-card");
+
+      // --- Prototype 5: Hamburger ↔ Close ---------------------
+      const p5Icon = document.getElementById("p5-icon");
+
+      // --- Prototype 7: Modal open/close ----------------------
+      const p7Dropdown = document.getElementById("p7-dropdown");
+
+      // --- Prototype 6: Transaction text ----------------------
+      const p6Text = document.getElementById("p6-text");
+      const p6Messages = ["Transaction processing...", "Transaction completed"];
+      let p6Index = 0;
+      let p6Busy = false;
+
+      // --- Prototype 9: Random number digit pop-in ------------
+      const p9Number = document.getElementById("p9-number");
+
+      // --- Prototype 8: Token list ↔ Amount (side-by-side) ----
+      const p8Modal = document.getElementById("p8-modal");
+      if (p8Modal) {
+        p8Modal.addEventListener("click", function (e) {
+          if (e.target.closest("[data-token]")) {
+            p8Modal.setAttribute("data-page", "2");
+            return;
+          }
+          if (e.target.closest("[data-p8-back]")) {
+            p8Modal.setAttribute("data-page", "1");
+          }
+        });
+      }
+
+      document.addEventListener("click", function (e) {
+        const btn = e.target.closest("button[data-proto]");
+        if (!btn) return;
+        const proto = btn.getAttribute("data-proto");
+
+        switch (proto) {
+          case "1": {
+            const open = p1Bell.getAttribute("data-badge-open") === "true";
+            p1Bell.setAttribute("data-badge-open", open ? "false" : "true");
+            break;
+          }
+          case "2": {
+            if (p2Dropdown.classList.contains("is-open")) {
+              // Close: 1 -> 0.99 over 150ms, then return to pre-open rest.
+              p2Dropdown.classList.remove("is-open");
+              p2Dropdown.classList.add("is-closing");
+              window.setTimeout(function () {
+                p2Dropdown.classList.remove("is-closing");
+              }, 150);
+            } else {
+              // Open: 0.98 -> 1 over 250ms.
+              p2Dropdown.classList.remove("is-closing");
+              p2Dropdown.classList.add("is-open");
+            }
+            break;
+          }
+          case "3": {
+            p3Panel.classList.toggle("is-open");
+            break;
+          }
+          case "4": {
+            p4Card.classList.toggle("is-small");
+            break;
+          }
+          case "5": {
+            const current = p5Icon.getAttribute("data-animated") === "true";
+            p5Icon.setAttribute("data-animated", current ? "false" : "true");
+            break;
+          }
+          case "7": {
+            if (p7Dropdown.classList.contains("is-open")) {
+              p7Dropdown.classList.remove("is-open");
+              p7Dropdown.classList.add("is-closing");
+              window.setTimeout(function () {
+                p7Dropdown.classList.remove("is-closing");
+              }, readMs("--p7-close-dur", 150));
+            } else {
+              p7Dropdown.classList.remove("is-closing");
+              p7Dropdown.classList.add("is-open");
+            }
+            break;
+          }
+          case "9": {
+            if (!p9Number) break;
+            // Generate a new random number with the same digit pattern
+            // as the Figma spec: two integer digits + "." + two decimal digits.
+            const intPart = Math.floor(Math.random() * 90) + 10; // 10–99
+            const decPart = Math.floor(Math.random() * 100);     // 0–99
+            const str = String(intPart) + "." + String(decPart).padStart(2, "0");
+            const chars = str.split("");
+            const len = chars.length;
+
+            // Snapshot the currently-rendered digits into an absolutely-
+            // positioned ghost overlay, then play the exit animation on
+            // them. The ghost is removed once the animation completes.
+            // This runs in parallel with the entry animation below so
+            // old + new digits animate simultaneously in the same
+            // direction (old going out, new coming in).
+            const oldGhost = p9Number.querySelector(".p9-ghost");
+            if (oldGhost) oldGhost.remove();
+
+            const liveChars = p9Number.querySelectorAll(":scope > .p9-char");
+            if (liveChars.length) {
+              const ghost = document.createElement("span");
+              ghost.className = "p9-ghost";
+              liveChars.forEach(function (ch) {
+                ghost.appendChild(ch.cloneNode(true));
+              });
+              p9Number.appendChild(ghost);
+              const dur = readMs("--p9-dur", 500);
+              const stagger = readMs("--p9-stagger", 50);
+              window.setTimeout(function () {
+                if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+              }, dur + stagger * 2 + 50);
+            }
+
+            // Remove the animating class first so the next assignment
+            // restarts the CSS animation cleanly for each click.
+            p9Number.classList.remove("is-animating");
+            // Remove only the live (non-ghost) character spans so the
+            // in-flight ghost keeps playing its exit animation.
+            p9Number.querySelectorAll(":scope > .p9-char").forEach(function (el) {
+              el.remove();
+            });
+            chars.forEach(function (ch, i) {
+              const span = document.createElement("span");
+              span.className = "p9-char";
+              span.textContent = ch;
+              // Last two characters get staggered animation-delay via CSS.
+              if (i === len - 2) span.setAttribute("data-stagger", "1");
+              else if (i === len - 1) span.setAttribute("data-stagger", "2");
+              // Insert before the ghost so new digits occupy the flow
+              // and the ghost stays on top as the absolute overlay.
+              const ghostEl = p9Number.querySelector(".p9-ghost");
+              if (ghostEl) p9Number.insertBefore(span, ghostEl);
+              else p9Number.appendChild(span);
+            });
+            // Force reflow so the removed class is committed before we
+            // re-add it, guaranteeing the animation replays.
+            // eslint-disable-next-line no-unused-expressions
+            p9Number.offsetHeight;
+            p9Number.classList.add("is-animating");
+            break;
+          }
+          case "6": {
+            if (p6Busy) return;
+            p6Busy = true;
+            const p6Dur = readMs("--p6-dur", 200);
+            // Exit phase
+            p6Text.classList.add("is-exit");
+            window.setTimeout(function () {
+              // Swap to the next message while hidden, then prime the
+              // "entering from below" state without transition.
+              p6Index = (p6Index + 1) % p6Messages.length;
+              p6Text.textContent = p6Messages[p6Index];
+              p6Text.classList.remove("is-exit");
+              p6Text.classList.add("is-enter-start");
+              // Force reflow so starting styles apply before transitioning
+              // eslint-disable-next-line no-unused-expressions
+              p6Text.offsetHeight;
+              // Allow transitions again and animate to rest
+              p6Text.classList.remove("is-enter-start");
+              window.setTimeout(function () {
+                p6Busy = false;
+              }, p6Dur);
+            }, p6Dur);
+            break;
+          }
+        }
+      });
+
+      // --------------------------------------------------------
+      // Helper: read a duration CSS variable ("--foo-dur") and
+      // return it as milliseconds. Falls back to `fallback` if
+      // the variable is unset or unparseable.
+      // --------------------------------------------------------
+      function readMs(name, fallback) {
+        const raw = getComputedStyle(document.documentElement)
+          .getPropertyValue(name).trim();
+        if (!raw) return fallback;
+        if (raw.endsWith("ms")) return parseFloat(raw);
+        if (raw.endsWith("s"))  return parseFloat(raw) * 1000;
+        const n = parseFloat(raw);
+        return isNaN(n) ? fallback : n;
+      }
+
+      // --------------------------------------------------------
+      // Control panel: wire inputs to CSS variables + Export.
+      // --------------------------------------------------------
+      const cpRoot = document.documentElement;
+
+      // Collapse / expand
+      const cpCollapse = document.getElementById("cp-collapse");
+      if (cpCollapse) {
+        cpCollapse.addEventListener("click", function () {
+          const collapsed = cpRoot.getAttribute("data-cp-collapsed") === "true";
+          cpRoot.setAttribute("data-cp-collapsed", collapsed ? "false" : "true");
+          cpCollapse.setAttribute(
+            "aria-label",
+            collapsed ? "Collapse panel" : "Expand panel"
+          );
+        });
+      }
+
+      // --------------------------------------------------------
+      // Populate easing <select>s with a shared preset list and
+      // select the option matching each variable's current value.
+      // Non-matching values are preserved as a "custom" option so
+      // DevTools edits aren't clobbered on load.
+      // --------------------------------------------------------
+      const easingPresets = [
+        { label: "linear",         value: "linear" },
+        { label: "ease",           value: "ease" },
+        { label: "ease-in",        value: "ease-in" },
+        { label: "ease-out",       value: "ease-out" },
+        { label: "ease-in-out",    value: "ease-in-out" },
+        { label: "smooth out",     value: "cubic-bezier(0.22, 1, 0.36, 1)" },
+        { label: "spring",         value: "cubic-bezier(0.34, 1.56, 0.64, 1)" },
+        { label: "subtle bounce",  value: "cubic-bezier(0.34, 1.35, 0.64, 1)" },
+        { label: "material",       value: "cubic-bezier(0.4, 0, 0.2, 1)" },
+        { label: "snappy in",      value: "cubic-bezier(0.4, 0, 1, 1)" },
+        { label: "emphasised",     value: "cubic-bezier(0.2, 0, 0, 1)" },
+      ];
+
+      // Normalise "cubic-bezier( 0.1 , 0.2 , 0.3 , 0.4 )" → canonical form
+      // so a DevTools-set value still matches its preset.
+      function normaliseEase(raw) {
+        if (!raw) return "";
+        return raw.replace(/\s+/g, " ").trim();
+      }
+      const presetByValue = {};
+      easingPresets.forEach(function (p) {
+        presetByValue[normaliseEase(p.value)] = p;
+      });
+
+      // Populate every .cp-ease <select> with the preset options.
+      document.querySelectorAll("select.cp-ease").forEach(function (sel) {
+        const name = sel.getAttribute("data-var");
+        const current = normaliseEase(
+          getComputedStyle(cpRoot).getPropertyValue(name)
+        );
+        easingPresets.forEach(function (p) {
+          const opt = document.createElement("option");
+          opt.value = p.value;
+          opt.textContent = p.label;
+          sel.appendChild(opt);
+        });
+        if (current && presetByValue[current]) {
+          sel.value = presetByValue[current].value;
+        } else if (current) {
+          const opt = document.createElement("option");
+          opt.value = current;
+          opt.textContent = "custom";
+          opt.selected = true;
+          sel.appendChild(opt);
+        }
+      });
+
+      // Seed every raw-value text input from its current CSS variable.
+      document.querySelectorAll(".cp-ease-text[data-var]").forEach(function (input) {
+        const name = input.getAttribute("data-var");
+        const current = getComputedStyle(cpRoot).getPropertyValue(name).trim();
+        if (current) input.value = current;
+      });
+
+      // --------------------------------------------------------
+      // Direction selects: one select drives multiple CSS vars
+      // from a comma-separated option value (e.g. "0,1" for a pair
+      // of x/y multipliers). Loadtime: preselect the option that
+      // matches the current variable values.
+      // --------------------------------------------------------
+      document.querySelectorAll("select[data-dir-vars]").forEach(function (sel) {
+        const vars = sel.getAttribute("data-dir-vars")
+          .split(",").map(function (s) { return s.trim(); });
+
+        // Preselect the option that already matches live values.
+        const currentParts = vars.map(function (name) {
+          return getComputedStyle(cpRoot).getPropertyValue(name).trim();
+        });
+        const currentKey = currentParts.join(",");
+        const match = Array.from(sel.options).find(function (o) {
+          return o.value === currentKey;
+        });
+        if (match) sel.value = match.value;
+
+        function applyDir() {
+          const parts = sel.value.split(",");
+          vars.forEach(function (name, i) {
+            if (parts[i] !== undefined) {
+              cpRoot.style.setProperty(name, parts[i].trim());
+            }
+          });
+        }
+        sel.addEventListener("change", applyDir);
+        sel.addEventListener("input", applyDir);
+      });
+
+      // --------------------------------------------------------
+      // Sync helper: when any [data-var] element changes, mirror
+      // its new value onto every other control bound to the same
+      // variable (select ↔ text input pairing). If the value
+      // isn't a preset, the select grows a throw-away "custom"
+      // option so nothing is lost on round-trip.
+      // --------------------------------------------------------
+      function syncVar(name, rawValue, except) {
+        const value = rawValue;
+        const norm = normaliseEase(value);
+        document
+          .querySelectorAll('.cp [data-var="' + name + '"]')
+          .forEach(function (t) {
+            if (t === except) return;
+            if (t.tagName === "SELECT") {
+              // Try to find a built-in preset match first.
+              const preset = presetByValue[norm];
+              if (preset) {
+                t.value = preset.value;
+              } else {
+                // Reuse or create a dedicated "custom" option.
+                let custom = t.querySelector('option[data-custom="true"]');
+                if (!custom) {
+                  custom = document.createElement("option");
+                  custom.textContent = "custom";
+                  custom.setAttribute("data-custom", "true");
+                  t.appendChild(custom);
+                }
+                custom.value = value;
+                t.value = value;
+              }
+            } else if (t.value !== value) {
+              t.value = value;
+            }
+          });
+      }
+
+      // Is this value a legal CSS <easing-function>? Used to flag
+      // invalid strings in the raw text inputs without blocking
+      // the user from editing.
+      const easeProbe = document.createElement("div");
+      function isValidEase(v) {
+        if (!v) return false;
+        easeProbe.style.transitionTimingFunction = "";
+        easeProbe.style.transitionTimingFunction = v;
+        return easeProbe.style.transitionTimingFunction !== "";
+      }
+
+      // Bind every [data-var] control (inputs + selects) to its
+      // CSS custom property. Inputs may declare an extra
+      // `data-ease-template="--target-var:cubic-bezier(..., {v}, ...)"`
+      // to also drive a computed easing variable from the same value
+      // (used by the P1 Bounce scalar to rebuild its spring curve).
+      document.querySelectorAll(".cp [data-var]").forEach(function (el) {
+        const name = el.getAttribute("data-var");
+        const unit = el.getAttribute("data-unit") || "";
+        const isEaseText = el.classList.contains("cp-ease-text");
+        const tmpl = el.getAttribute("data-ease-template");
+        let tmplTarget = null;
+        let tmplBody = null;
+        if (tmpl) {
+          const colon = tmpl.indexOf(":");
+          if (colon > 0) {
+            tmplTarget = tmpl.slice(0, colon).trim();
+            tmplBody = tmpl.slice(colon + 1);
+          }
+        }
+
+        function apply() {
+          // Skip empty strings so we don't clobber the variable while
+          // the user is mid-edit with an incomplete value.
+          if (el.value === "") return;
+          const full = el.value + unit;
+
+          if (isEaseText) {
+            // Only push to CSS + siblings when the raw string parses
+            // as a valid easing. Otherwise flag the field and wait.
+            if (!isValidEase(full)) {
+              el.classList.add("is-invalid");
+              return;
+            }
+            el.classList.remove("is-invalid");
+          }
+
+          cpRoot.style.setProperty(name, full);
+
+          if (tmplTarget && tmplBody) {
+            cpRoot.style.setProperty(
+              tmplTarget,
+              tmplBody.replace(/\{v\}/g, el.value)
+            );
+            // Mirror the computed curve onto any siblings bound to
+            // the template target (e.g. a text input would reflect
+            // the newly-rebuilt cubic-bezier).
+            syncVar(tmplTarget, tmplBody.replace(/\{v\}/g, el.value), el);
+          }
+
+          syncVar(name, full, el);
+        }
+
+        el.addEventListener("input", apply);
+        el.addEventListener("change", apply);
+      });
+
+      // Export buttons: copy this section's values as a :root CSS block.
+      document.querySelectorAll(".cp-export").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const section = btn.closest(".cp-section");
+          if (!section) return;
+          const controls = section.querySelectorAll("[data-var]");
+          const seen = Object.create(null);
+          const lines = [];
+          controls.forEach(function (el) {
+            const name = el.getAttribute("data-var");
+            // A select and its paired text input share a data-var.
+            // Prefer the first occurrence (the select picks the
+            // canonical preset value; the text input mirrors it).
+            if (seen[name]) return;
+            seen[name] = true;
+            const unit = el.getAttribute("data-unit") || "";
+            lines.push("  " + name + ": " + el.value + unit + ";");
+          });
+          // Direction selects fan one value out across multiple CSS
+          // variables — include each resolved var in the export so the
+          // snippet round-trips.
+          section.querySelectorAll("select[data-dir-vars]").forEach(function (sel) {
+            const vars = sel.getAttribute("data-dir-vars")
+              .split(",").map(function (s) { return s.trim(); });
+            const parts = sel.value.split(",");
+            vars.forEach(function (name, i) {
+              if (seen[name] || parts[i] === undefined) return;
+              seen[name] = true;
+              lines.push("  " + name + ": " + parts[i].trim() + ";");
+            });
+          });
+          const css = ":root {\n" + lines.join("\n") + "\n}";
+          const done = function (ok) {
+            btn.classList.toggle("is-copied", ok);
+            const orig = "Export";
+            btn.textContent = ok ? "Copied!" : "Copy failed";
+            window.setTimeout(function () {
+              btn.textContent = orig;
+              btn.classList.remove("is-copied");
+            }, 1400);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(css)
+              .then(function () { done(true); })
+              .catch(function () { done(false); });
+          } else {
+            // Fallback: create a temporary textarea + execCommand('copy')
+            const ta = document.createElement("textarea");
+            ta.value = css;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "fixed";
+            ta.style.top = "-1000px";
+            document.body.appendChild(ta);
+            ta.select();
+            let ok = false;
+            try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+            document.body.removeChild(ta);
+            done(ok);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
