@@ -197,7 +197,12 @@
       --p3-open-dur: 400ms;
       --p3-close-dur: 250ms;
       --p3-panel-height: 187px;
-      --p3-translate-y: 187px;
+      /* Movement trajectory = 50% of the panel height. The panel
+         also fades opacity 0 ↔ 1 AND cross-blurs 2px ↔ 0 over the
+         same timing, so the shortened travel still reads as a full
+         open / close. */
+      --p3-translate-y: calc(var(--p3-panel-height) * 0.5);
+      --p3-blur: 2px;
       /* Gutter inside clip so box-shadow isn’t cropped.
          Top needs enough room for the 42px-blur shadow (blur 42 − offset 4 ≈ 38px reach);
          sides/bottom stay slim so the stack still fits the 260px stage. */
@@ -214,9 +219,14 @@
       /* Figma 213:1375 — Light Mode / Shadow 25.
          Left/right/bottom of the panel are flush with the stage, where
          `.card-stage::after` already draws a ring — so we only draw
-         the top edge here, plus the drop shadows. */
+         the top edge here, plus the drop shadows. The top hairline is
+         drawn as an *outer* shadow (0 -1px) instead of an inset one so
+         it sits on the stage background (for contrast with other
+         material surfaces like the dropdown / modal rings) rather
+         than over the panel's own white fill where it would be barely
+         visible. */
       --p3-shadow:
-        inset 0 1px 0 0 rgba(0, 0, 0, 0.06),
+        0 -1px 0 0 rgba(0, 0, 0, 0.06),
         0 2px 6px 0 rgba(0, 0, 0, 0.05),
         0 4px 42px 0 rgba(0, 0, 0, 0.06);
 
@@ -533,7 +543,10 @@
       height: 344px;
       min-height: 344px;
       max-height: 344px;
-      overflow: hidden;
+      /* overflow stays `visible` so the copy tooltip can extend
+         slightly past the card's rounded corners when the label
+         swaps to its wider "Copied" state. The stage clips its
+         own content via `.card-stage { overflow: hidden }`. */
       border-radius: 24px;
       background: var(--card-bg);
       box-shadow:
@@ -701,6 +714,140 @@
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
       filter: blur(0);
+    }
+
+    /* ─── Copy-button tooltip ──────────────────────────────── */
+    /* Centered above the copy button in every state. The parent
+       card's `overflow: hidden` is lifted (see `.card`) so the
+       wider "Copied" state can breathe past the card edge without
+       getting clipped by the rounded-corner mask. */
+    .card-copy-tooltip {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(100% + 8px);
+      box-sizing: border-box;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 12px;
+      border-radius: 40px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
+      letter-spacing: 0;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear 150ms;
+
+      /* Light theme — white pill with soft shadow (Figma 246:3650). */
+      background: #ffffff;
+      color: #17181c;
+      box-shadow:
+        0 2px 8px 0 rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 1px 1px 0 rgba(0, 0, 0, 0.04);
+    }
+
+    html[data-theme="dark"] .card-copy-tooltip {
+      /* Dark theme — near-black pill with a glow-like shadow and
+         layered inset borders (Figma 246:3653). */
+      background: #181818;
+      color: #e3e3e3;
+      box-shadow:
+        0 1px 16px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.08);
+    }
+
+    /* 50ms delay before the fade-in starts, so quickly passing the
+       cursor over the copy button doesn't flash the tooltip. The
+       `data-copied="true"` state overrides this delay below so the
+       "Copied" confirmation shows instantly on click. */
+    .card-copy:hover .card-copy-tooltip,
+    .card-copy:focus-visible .card-copy-tooltip,
+    .card-copy[data-copied="true"] .card-copy-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity 150ms cubic-bezier(0.22, 1, 0.36, 1) 50ms,
+        visibility 0s linear 50ms;
+    }
+    .card-copy[data-copied="true"] .card-copy-tooltip {
+      transition:
+        opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear;
+    }
+
+    .card-copy-tooltip .tt-text {
+      display: inline-flex;
+      align-items: baseline;
+      line-height: 16px;
+    }
+
+    /* Animated segment that swaps "y" ⟷ "ied" with a 2px cross blur.
+       Its width animates between two widths measured on init (exposed
+       as --tt-w-a / --tt-w-b custom properties by the init script).
+       .tt-a stays in normal flow so the container has a real text
+       baseline for the parent's `align-items: baseline`; .tt-b is
+       absolutely positioned on top so both glyphs share the same
+       top-left anchor and cross-blur in place. */
+    .card-copy-tooltip .tt-swap {
+      position: relative;
+      display: inline-block;
+      vertical-align: baseline;
+      line-height: 16px;
+      width: var(--tt-w-a, auto);
+      transition: width 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .card-copy-tooltip .tt-swap[data-state="copied"] {
+      width: var(--tt-w-b, auto);
+    }
+
+    .card-copy-tooltip .tt-label {
+      white-space: pre;
+      transition:
+        opacity 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 180ms cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: opacity, filter;
+    }
+
+    .card-copy-tooltip .tt-a {
+      display: inline-block;
+    }
+
+    .card-copy-tooltip .tt-b {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .card-copy-tooltip .tt-swap .tt-a { opacity: 1; filter: blur(0); }
+    .card-copy-tooltip .tt-swap .tt-b { opacity: 0; filter: blur(2px); }
+    .card-copy-tooltip .tt-swap[data-state="copied"] .tt-a {
+      opacity: 0;
+      filter: blur(2px);
+    }
+    .card-copy-tooltip .tt-swap[data-state="copied"] .tt-b {
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card-copy-tooltip,
+      .card-copy-tooltip .tt-swap,
+      .card-copy-tooltip .tt-label {
+        transition: none !important;
+      }
     }
 
     /* ─── Animate button (centered inside stage bottom) ──────── */
@@ -1014,30 +1161,42 @@
       background: var(--material-bg);
       box-shadow: var(--p3-shadow);
       position: relative;
+      /* Closed = open rest position + the 50% travel offset. The
+         panel is fully transparent at this point, so the shorter
+         travel combined with the opacity + blur fade reads cleanly
+         even though the panel never leaves the clip's viewport. */
       transform: translateY(
-        calc(
-          max(
-            var(--p3-translate-y) + var(--p3-clip-pad),
-            100cqh - var(--p3-clip-pad-top) + 4px
-          )
-        )
+        calc(-1 * var(--p3-open-lift) + var(--p3-translate-y))
       );
+      opacity: 0;
+      filter: blur(var(--p3-blur));
       pointer-events: none;
-      transition: transform var(--p3-close-dur) var(--p3-ease);
+      transition:
+        transform var(--p3-close-dur) var(--p3-ease),
+        opacity   var(--p3-close-dur) var(--p3-ease),
+        filter    var(--p3-close-dur) var(--p3-ease);
+      will-change: transform, opacity, filter;
     }
     /* Dark mode: only the top edge + outer drop shadow. We drop the
        side/bottom inset rings because the card-stage already draws a
        ring along the same edges the panel meets; keeping just the top
-       1px line defines the panel's free edge under the button. */
+       1px line defines the panel's free edge under the button. Like
+       light mode, the hairline is outer (0 -1px) so it sits on the
+       dark stage background rather than over the panel's own fill. */
     html[data-theme="dark"] .p3-panel {
       box-shadow:
-        inset 0 1px 0 0 rgba(196, 196, 196, 0.12),
+        0 -1px 0 0 rgba(196, 196, 196, 0.12),
         0 1px 3px 0 rgba(0, 0, 0, 0.04);
     }
     .p3-panel.is-open {
       transform: translateY(calc(-1 * var(--p3-open-lift)));
+      opacity: 1;
+      filter: blur(0);
       pointer-events: auto;
-      transition: transform var(--p3-open-dur) var(--p3-ease);
+      transition:
+        transform var(--p3-open-dur) var(--p3-ease),
+        opacity   var(--p3-open-dur) var(--p3-ease),
+        filter    var(--p3-open-dur) var(--p3-ease);
     }
     .p3-panel .lines {
       position: absolute;
@@ -2203,27 +2362,42 @@
             "      <!-- your panel contents -->\n" +
             "    </div>\n" +
             "\n" +
-            "  The panel slides on the Y axis only (no fade). Wrap it in\n" +
-            "  your own container with `overflow: hidden` if you want the\n" +
-            "  closed state fully clipped. Set --panel-translate-y to the\n" +
-            "  distance the panel should be hidden (e.g. its own height).",
+            "  The panel slides on the Y axis, fades opacity 0 ↔ 1,\n" +
+            "  and cross-blurs --panel-blur ↔ 0, all on the same\n" +
+            "  duration / ease so a shorter travel (e.g. 50% of the\n" +
+            "  panel height) still reads as a full open / close.\n" +
+            "  Wrap it in your own container with `overflow: hidden`\n" +
+            "  if you want the closed state fully clipped. Set\n" +
+            "  --panel-translate-y to the travel distance (e.g. half\n" +
+            "  the panel's own height).",
           vars: [
             ["--panel-open-dur",    "--p3-open-dur"],
             ["--panel-close-dur",   "--p3-close-dur"],
             ["--panel-translate-y", "--p3-translate-y"],
+            ["--panel-blur",        "--p3-blur"],
             ["--panel-ease",        "--p3-ease"]
           ],
           css:
             ".t-panel-slide {\n" +
             "  transform: translateY(var(--panel-translate-y));\n" +
+            "  opacity: 0;\n" +
+            "  filter: blur(var(--panel-blur));\n" +
             "  pointer-events: none;\n" +
-            "  transition: transform var(--panel-close-dur) var(--panel-ease);\n" +
-            "  will-change: transform;\n" +
+            "  transition:\n" +
+            "    transform var(--panel-close-dur) var(--panel-ease),\n" +
+            "    opacity   var(--panel-close-dur) var(--panel-ease),\n" +
+            "    filter    var(--panel-close-dur) var(--panel-ease);\n" +
+            "  will-change: transform, opacity, filter;\n" +
             "}\n" +
             ".t-panel-slide[data-open=\"true\"] {\n" +
             "  transform: translateY(0);\n" +
+            "  opacity: 1;\n" +
+            "  filter: blur(0);\n" +
             "  pointer-events: auto;\n" +
-            "  transition: transform var(--panel-open-dur) var(--panel-ease);\n" +
+            "  transition:\n" +
+            "    transform var(--panel-open-dur) var(--panel-ease),\n" +
+            "    opacity   var(--panel-open-dur) var(--panel-ease),\n" +
+            "    filter    var(--panel-open-dur) var(--panel-ease);\n" +
             "}\n" +
             "\n" +
             "@media (prefers-reduced-motion: reduce) {\n" +
@@ -2687,8 +2861,20 @@
 
           function markCopied() {
             copyBtn.setAttribute("data-copied", "true");
+            var swap = copyBtn.querySelector(".tt-swap");
+            if (swap) swap.setAttribute("data-state", "copied");
             window.setTimeout(function () {
               copyBtn.removeAttribute("data-copied");
+              // Defer reverting the text swap until after the tooltip's
+              // 150ms fade-out has finished, so if the pointer left the
+              // button mid-copied-state the tooltip fades out still
+              // reading "Copied" rather than morphing to "Copy code"
+              // on its way out. If the pointer is still on the button,
+              // the tooltip stays visible and the morph simply happens
+              // ~200ms later than the attribute swap.
+              window.setTimeout(function () {
+                if (swap) swap.setAttribute("data-state", "copy");
+              }, 200);
             }, 1600);
           }
 
@@ -2702,6 +2888,63 @@
           }
         }
       });
+
+      /* Build the hover tooltip for every copy button once on load.
+         The tooltip reads "Cop" + a swap slot that holds both "y"
+         and "ied" stacked on top of each other; toggling
+         data-state between "copy" and "copied" cross-blurs them
+         and animates the width between two measured values. */
+      (function initCopyTooltips() {
+        var buttons = document.querySelectorAll(".card-copy");
+        if (!buttons.length) return;
+
+        buttons.forEach(function (btn) {
+          if (btn.querySelector(".card-copy-tooltip")) return;
+
+          var tt = document.createElement("span");
+          tt.className = "card-copy-tooltip";
+          tt.setAttribute("role", "tooltip");
+          tt.setAttribute("aria-hidden", "true");
+          tt.innerHTML =
+            '<span class="tt-text">' +
+              '<span class="tt-stem">Cop</span>' +
+              '<span class="tt-swap" data-state="copy">' +
+                '<span class="tt-label tt-a">y code</span>' +
+                '<span class="tt-label tt-b">ied</span>' +
+              '</span>' +
+            '</span>';
+          btn.appendChild(tt);
+
+          // Measure each label in its natural (non-absolute) flow so
+          // the swap container can animate between the two widths.
+          var swap = tt.querySelector(".tt-swap");
+          var labels = swap.querySelectorAll(".tt-label");
+          var prevVis = tt.style.visibility;
+          var prevOp = tt.style.opacity;
+          // Make the tooltip laid out but invisible during measurement.
+          tt.style.visibility = "hidden";
+          tt.style.opacity = "0";
+          tt.style.display = "inline-flex";
+
+          var widths = [];
+          labels.forEach(function (lbl) {
+            var prevPos = lbl.style.position;
+            var prevDisp = lbl.style.display;
+            lbl.style.position = "static";
+            lbl.style.display = "inline-block";
+            widths.push(lbl.getBoundingClientRect().width);
+            lbl.style.position = prevPos;
+            lbl.style.display = prevDisp;
+          });
+
+          tt.style.visibility = prevVis;
+          tt.style.opacity = prevOp;
+          tt.style.display = "";
+
+          swap.style.setProperty("--tt-w-a", widths[0] + "px");
+          swap.style.setProperty("--tt-w-b", widths[1] + "px");
+        });
+      })();
 
       function fallbackCopy(text, onDone) {
         try {
