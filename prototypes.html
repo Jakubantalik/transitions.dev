@@ -62,10 +62,16 @@
       --p2-origin: top center;
       --p2-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-      /* P3 — Panel (Figma 213:1375 "Dropdown", 296×175) */
+      /* P3 — Panel (Figma 213:1375 "Dropdown", 296×187) */
       --p3-open-dur: 400ms;
-      --p3-close-dur: 250ms;
-      --p3-translate-y: 175px;
+      --p3-close-dur: 350ms;
+      --p3-panel-height: 187px;
+      /* Movement trajectory = 50% of the panel height. The panel
+         also fades opacity 0 ↔ 1 AND cross-blurs 2px ↔ 0 over the
+         same timing, so the shortened travel still reads as a full
+         open / close. */
+      --p3-translate-y: calc(var(--p3-panel-height) * 0.5);
+      --p3-blur: 2px;
       /* Gutter inside the clip so box-shadow is not clipped by overflow:hidden */
       --p3-clip-pad: 14px;
       --p3-open-lift: 30px;
@@ -430,7 +436,7 @@
        crops them). */
     .p3-panel-clip {
       width: calc(296px + 2 * var(--p3-clip-pad));
-      height: calc(175px + 2 * var(--p3-clip-pad));
+      height: calc(var(--p3-panel-height) + 2 * var(--p3-clip-pad));
       overflow: hidden;
       flex-shrink: 0;
       container-type: size;
@@ -438,31 +444,40 @@
 
     .p3-panel {
       width: 296px;
-      height: 175px;
+      height: var(--p3-panel-height);
       margin: var(--p3-clip-pad) auto 0;
       border-radius: var(--r-card);
       background: var(--p3-surface-bg);
       box-shadow: var(--p3-surface-shadow);
       overflow: hidden;
       position: relative;
+      /* Closed = open rest position + the 50% travel offset. Opacity
+         is 0 and blur is 2px here, so the shorter trajectory still
+         reads as a full open/close when combined with the fade. */
       transform: translateY(
-        calc(
-          max(
-            var(--p3-translate-y) + var(--p3-clip-pad),
-            100cqh - var(--p3-clip-pad) + 4px
-          )
-        )
+        calc(-1 * var(--p3-open-lift) + var(--p3-translate-y))
       );
+      opacity: 0;
+      filter: blur(var(--p3-blur));
       pointer-events: none;
       /* Base (close) transition — used when returning to hidden state. */
-      transition: transform var(--p3-close-dur) var(--p3-ease);
+      transition:
+        transform var(--p3-close-dur) var(--p3-ease),
+        opacity   var(--p3-close-dur) var(--p3-ease),
+        filter    var(--p3-close-dur) var(--p3-ease);
+      will-change: transform, opacity, filter;
     }
 
     .p3-panel.is-open {
       transform: translateY(calc(-1 * var(--p3-open-lift)));
+      opacity: 1;
+      filter: blur(0);
       pointer-events: auto;
       /* Open transition overrides the base timing. */
-      transition: transform var(--p3-open-dur) var(--p3-ease);
+      transition:
+        transform var(--p3-open-dur) var(--p3-ease),
+        opacity   var(--p3-open-dur) var(--p3-ease),
+        filter    var(--p3-open-dur) var(--p3-ease);
     }
 
     .p3-panel .lines {
@@ -1641,8 +1656,9 @@
           <button type="button" class="cp-export">Export</button>
         </header>
         <div class="cp-row"><span class="cp-label">Open (ms)</span><input type="number" data-var="--p3-open-dur" data-unit="ms" min="0" max="2000" step="10" value="400"></div>
-        <div class="cp-row"><span class="cp-label">Close (ms)</span><input type="number" data-var="--p3-close-dur" data-unit="ms" min="0" max="2000" step="10" value="250"></div>
-        <div class="cp-row"><span class="cp-label">Translate Y (px)</span><input type="number" data-var="--p3-translate-y" data-unit="px" min="-400" max="400" step="1" value="175"></div>
+        <div class="cp-row"><span class="cp-label">Close (ms)</span><input type="number" data-var="--p3-close-dur" data-unit="ms" min="0" max="2000" step="10" value="350"></div>
+        <div class="cp-row"><span class="cp-label">Translate Y (px)</span><input type="number" data-var="--p3-translate-y" data-unit="px" min="-400" max="400" step="0.5" value="93.5"></div>
+        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p3-blur" data-unit="px" min="0" max="20" step="0.5" value="2"></div>
         <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p3-ease"></select></div>
         <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p3-ease" spellcheck="false" aria-label="Ease value"></div>
       </section>
