@@ -1536,6 +1536,23 @@
          instead of the fixed 320px desktop width. */
       .cards { grid-template-columns: 1fr; }
       .card { width: 100%; }
+      /* Stage stretches to equal 12px insets on both sides so the
+         prototype area follows the wider card instead of leaving a
+         large right-side gap. All inner prototypes are flex-centered
+         or auto-centered, so widening the stage is safe. */
+      .card-stage {
+        right: 12px;
+        width: auto;
+        max-width: none;
+      }
+      /* P8 modal is absolutely positioned with a fixed left offset that
+         only centers it inside the default 296px stage. Re-center it
+         within the wider mobile stage without introducing a transform
+         (the page transitions inside rely on a clean baseline). */
+      .p8-modal {
+        left: 50%;
+        margin-left: -130px;
+      }
       .footer { padding: 64px 0 24px; }
     }
 
