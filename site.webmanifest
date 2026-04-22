@@ -12,14 +12,14 @@
   "theme_color": "#fdfdfd",
   "icons": [
     {
-      "src": "assets/icon%20light%202x.png",
-      "sizes": "272x280",
+      "src": "assets/favicon-light-mode.png",
+      "sizes": "218x218",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/icon-dark-2x.png",
-      "sizes": "272x280",
+      "src": "assets/favicon-darkmode.png",
+      "sizes": "218x218",
       "type": "image/png",
       "purpose": "any"
     }
