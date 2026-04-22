@@ -1517,8 +1517,8 @@
     }
 
     @media (max-width: 639px) {
-      .app { padding: 0 16px 48px; }
-      .top-bar { right: 16px; top: 12px; }
+      .app { padding: 0 20px 48px; }
+      .top-bar { right: 20px; top: 12px; }
       .header {
         height: auto;
         min-height: 180px;
@@ -1528,6 +1528,14 @@
       }
       .title { font-size: 20px; line-height: 28px; }
       .subtitle { font-size: 15px; line-height: 22px; }
+      /* Let the subtitle wrap naturally on narrow viewports;
+         the desktop layout uses a hardcoded <br/> after "that" which
+         produces awkward extra breaks on mobile. */
+      .subtitle br { display: none; }
+      /* Cards span the full available width (viewport − 20px margins)
+         instead of the fixed 320px desktop width. */
+      .cards { grid-template-columns: 1fr; }
+      .card { width: 100%; }
       .footer { padding: 64px 0 24px; }
     }
 
