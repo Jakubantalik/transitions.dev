@@ -1154,7 +1154,9 @@
       container-type: size;
     }
     .p3-panel {
-      width: 296px;
+      /* Full width of the clip (= full width of the stage, which for
+         the P3 card is full width of the card itself). */
+      width: 100%;
       height: var(--p3-panel-height);
       margin: var(--p3-clip-pad-top) auto 0;
       border-radius: 0;
@@ -1198,9 +1200,14 @@
         opacity   var(--p3-open-dur) var(--p3-ease),
         filter    var(--p3-open-dur) var(--p3-ease);
     }
+    /* Lines + tiles are horizontally centered inside the full-width
+       panel via left:50% + translateX(-50%). Their own fixed widths
+       (173px / 226px) then read as symmetric insets from both the
+       card's left and right edges. */
     .p3-panel .lines {
       position: absolute;
-      left: 35px;
+      left: 50%;
+      transform: translateX(-50%);
       top: 28px;
       width: 173px;
       display: flex;
@@ -1211,7 +1218,8 @@
     .p3-panel .lines .l2 { height: 10px; width: 131px; }
     .p3-panel .tiles {
       position: absolute;
-      left: 35px;
+      left: 50%;
+      transform: translateX(-50%);
       top: 73px;
       width: 226px;
       display: flex;
