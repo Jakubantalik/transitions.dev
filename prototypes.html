@@ -118,10 +118,10 @@
       /* P9 — Number pop-in */
       --p9-dur: 500ms;
       --p9-distance: 8px;
-      --p9-stagger: 50ms;
+      --p9-stagger: 70ms;
       --p9-blur: 2px;
-      --p9-bounce: 1.35;
-      --p9-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
+      --p9-bounce: 1.45;
+      --p9-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
       /* Direction multipliers: where each digit starts relative to its
          final resting position. (0, 1) = rises from below (default).
          The keyframe multiplies --p9-distance by these, so flipping a
@@ -1546,9 +1546,9 @@
         </header>
         <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p9-dur" data-unit="ms" min="0" max="2000" step="10" value="500"></div>
         <div class="cp-row"><span class="cp-label">Distance (px)</span><input type="number" data-var="--p9-distance" data-unit="px" min="0" max="40" step="1" value="8"></div>
-        <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p9-stagger" data-unit="ms" min="0" max="500" step="5" value="50"></div>
+        <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p9-stagger" data-unit="ms" min="0" max="500" step="5" value="70"></div>
         <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p9-blur" data-unit="px" min="0" max="20" step="0.5" value="2"></div>
-        <div class="cp-row"><span class="cp-label">Bounce</span><input type="number" data-var="--p9-bounce" data-unit="" data-ease-template="--p9-ease:cubic-bezier(0.34, {v}, 0.64, 1)" min="0" max="2.5" step="0.02" value="1.35"></div>
+        <div class="cp-row"><span class="cp-label">Bounce</span><input type="number" data-var="--p9-bounce" data-unit="" data-ease-template="--p9-ease:cubic-bezier(0.34, {v}, 0.64, 1)" min="0" max="2.5" step="0.02" value="1.45"></div>
         <div class="cp-row">
           <span class="cp-label">Direction</span>
           <select class="cp-dir" data-dir-vars="--p9-dir-x,--p9-dir-y">
@@ -1808,7 +1808,7 @@
               });
               p9Number.appendChild(ghost);
               const dur = readMs("--p9-dur", 500);
-              const stagger = readMs("--p9-stagger", 50);
+              const stagger = readMs("--p9-stagger", 70);
               window.setTimeout(function () {
                 if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
               }, dur + stagger * 2 + 50);
