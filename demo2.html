@@ -494,7 +494,12 @@
         transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .header-icon-wrap:hover .header-icon-img {
+    /* `.is-tapped` mirrors `:hover` so touch-only devices can trigger
+       the same pose via a JS click handler (see `initHeaderIconTap`).
+       The existing 500ms transition on `.header-icon-img` interpolates
+       both into and out of the pose when the class is added/removed. */
+    .header-icon-wrap:hover .header-icon-img,
+    .header-icon-wrap.is-tapped .header-icon-img {
       filter: hue-rotate(60deg) saturate(1.6);
       transform: rotate(8deg) scale(1.06);
     }
@@ -768,23 +773,39 @@
         inset 0 0 0 1px rgba(196, 196, 196, 0.08);
     }
 
-    /* 50ms delay before the fade-in starts, so quickly passing the
-       cursor over the copy button doesn't flash the tooltip. The
-       `data-copied="true"` state overrides this delay below so the
-       "Copied" confirmation shows instantly on click. */
-    .card-copy:hover .card-copy-tooltip,
-    .card-copy:focus-visible .card-copy-tooltip,
-    .card-copy[data-copied="true"] .card-copy-tooltip {
-      opacity: 1;
-      visibility: visible;
-      transition:
-        opacity 150ms cubic-bezier(0.22, 1, 0.36, 1) 50ms,
-        visibility 0s linear 50ms;
+    /* Hover / focus reveal is gated to pointer-capable devices so
+       iOS Safari's "sticky hover" doesn't keep the tooltip visible
+       after a tap — on touch, the tooltip only shows in the Copied
+       state (block further below). The 50ms delay before fade-in
+       prevents quick pointer flyovers from flashing the tooltip.
+       Clicking overrides the delay so the "Copied" confirmation
+       shows instantly. */
+    @media (hover: hover) {
+      .card-copy:hover .card-copy-tooltip,
+      .card-copy:focus-visible .card-copy-tooltip,
+      .card-copy[data-copied="true"] .card-copy-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 150ms cubic-bezier(0.22, 1, 0.36, 1) 50ms,
+          visibility 0s linear 50ms;
+      }
+      .card-copy[data-copied="true"] .card-copy-tooltip {
+        transition:
+          opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+          visibility 0s linear;
+      }
     }
-    .card-copy[data-copied="true"] .card-copy-tooltip {
-      transition:
-        opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
-        visibility 0s linear;
+    /* Touch-only devices: tooltip only appears in the Copied state
+       (triggered from JS on tap), stays stable, then fades out. */
+    @media (hover: none) {
+      .card-copy[data-copied="true"] .card-copy-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+          visibility 0s linear;
+      }
     }
 
     .card-copy-tooltip .tt-text {
@@ -1702,6 +1723,21 @@
       /* Cards span the full available width (viewport − 20px margins)
          instead of the fixed 320px desktop width. */
       .cards { grid-template-columns: 1fr; }
+      /* Compensate for mobile browsers down-sampling the backing
+         buffer used by `filter: blur()`. The same numeric radius
+         reads visually smaller on phones (especially alongside
+         animated transforms), so we lift the blur vars ~2× here.
+         Scoped to `.cards` rather than `:root` so `getComputedStyle`
+         on <html> (used by the snippet builder) still returns the
+         desktop defaults — the copied CSS stays identical regardless
+         of the device the user copied from. */
+      .cards {
+        --p1-blur: 4px;
+        --p3-blur: 4px;
+        --p5-blur: 4px;
+        --p6-blur: 4px;
+        --p9-blur: 3.5px;
+      }
       .card { width: 100%; }
       /* Stage stretches to equal 12px insets on both sides so the
          prototype area follows the wider card instead of leaving a
@@ -2888,6 +2924,14 @@
             copyBtn.setAttribute("data-copied", "true");
             var swap = copyBtn.querySelector(".tt-swap");
             if (swap) swap.setAttribute("data-state", "copied");
+            // Touch-only devices dwell longer (2000ms) since there's
+            // no hover to confirm the action — the tooltip is the only
+            // feedback the user sees. Desktop keeps 1600ms so the
+            // pointer doesn't linger on an already-confirmed state.
+            var isTouch =
+              window.matchMedia &&
+              window.matchMedia("(hover: none)").matches;
+            var dwell = isTouch ? 2000 : 1600;
             window.setTimeout(function () {
               copyBtn.removeAttribute("data-copied");
               // Defer reverting the text swap until after the tooltip's
@@ -2900,7 +2944,7 @@
               window.setTimeout(function () {
                 if (swap) swap.setAttribute("data-state", "copy");
               }, 200);
-            }, 1600);
+            }, dwell);
           }
 
           if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -2968,6 +3012,31 @@
 
           swap.style.setProperty("--tt-w-a", widths[0] + "px");
           swap.style.setProperty("--tt-w-b", widths[1] + "px");
+        });
+      })();
+
+      /* Touch-only devices don't receive the `:hover` animation on the
+         header icon. Tapping the icon adds `.is-tapped` long enough for
+         the CSS transition to reach the hover pose, then removes it so
+         the same transition interpolates back to rest — a self-contained
+         "tap-and-return" pulse. Re-adding via remove + reflow + add lets
+         rapid taps restart cleanly instead of being ignored mid-transition. */
+      (function initHeaderIconTap() {
+        var wrap = document.querySelector(".header-icon-wrap");
+        if (!wrap) return;
+        if (
+          !window.matchMedia ||
+          !window.matchMedia("(hover: none)").matches
+        ) {
+          return;
+        }
+        wrap.addEventListener("click", function () {
+          wrap.classList.remove("is-tapped");
+          void wrap.offsetWidth;
+          wrap.classList.add("is-tapped");
+          window.setTimeout(function () {
+            wrap.classList.remove("is-tapped");
+          }, 500);
         });
       })();
 
