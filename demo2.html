@@ -805,11 +805,12 @@
     }
     /* Touch-only devices: tooltip only appears in the Copied state
        (triggered from JS on tap), stays stable, then fades out.
-       The text swap and width transitions are disabled here too so
-       the tooltip fades in already reading "Copied" instead of
-       cross-blurring from "Copy code" mid-reveal — on touch the
-       user never saw "Copy code" pre-tap, so the morph would read
-       as a confusing mid-fade stutter. */
+       - text swap / label transitions are killed so the tooltip
+         fades in already reading "Copied" instead of cross-blurring
+         from "Copy code" mid-reveal.
+       - .tt-swap width is pinned to the Copied width (--tt-w-b)
+         in every state so the pill is born at the final size and
+         never snaps between widths when the attribute flips. */
     @media (hover: none) {
       .card-copy[data-copied="true"] .card-copy-tooltip {
         opacity: 1;
@@ -818,7 +819,10 @@
           opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
           visibility 0s linear;
       }
-      .card-copy-tooltip .tt-swap,
+      .card-copy-tooltip .tt-swap {
+        width: var(--tt-w-b, auto);
+        transition: none;
+      }
       .card-copy-tooltip .tt-label {
         transition: none;
       }
