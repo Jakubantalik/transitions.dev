@@ -494,11 +494,18 @@
         transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* `.is-tapped` mirrors `:hover` so touch-only devices can trigger
-       the same pose via a JS click handler (see `initHeaderIconTap`).
-       The existing 500ms transition on `.header-icon-img` interpolates
-       both into and out of the pose when the class is added/removed. */
-    .header-icon-wrap:hover .header-icon-img,
+    /* Hover pose is gated to pointer-capable devices so iOS Safari's
+       sticky-hover doesn't pin the icon into the hover state after a
+       tap (which would leave it permanently rotated/saturated until
+       the user taps elsewhere). On touch devices `.is-tapped` is the
+       only trigger and is added/removed by JS — the existing 500ms
+       transition on `.header-icon-img` interpolates both directions. */
+    @media (hover: hover) {
+      .header-icon-wrap:hover .header-icon-img {
+        filter: hue-rotate(60deg) saturate(1.6);
+        transform: rotate(8deg) scale(1.06);
+      }
+    }
     .header-icon-wrap.is-tapped .header-icon-img {
       filter: hue-rotate(60deg) saturate(1.6);
       transform: rotate(8deg) scale(1.06);
@@ -797,7 +804,12 @@
       }
     }
     /* Touch-only devices: tooltip only appears in the Copied state
-       (triggered from JS on tap), stays stable, then fades out. */
+       (triggered from JS on tap), stays stable, then fades out.
+       The text swap and width transitions are disabled here too so
+       the tooltip fades in already reading "Copied" instead of
+       cross-blurring from "Copy code" mid-reveal — on touch the
+       user never saw "Copy code" pre-tap, so the morph would read
+       as a confusing mid-fade stutter. */
     @media (hover: none) {
       .card-copy[data-copied="true"] .card-copy-tooltip {
         opacity: 1;
@@ -805,6 +817,10 @@
         transition:
           opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
           visibility 0s linear;
+      }
+      .card-copy-tooltip .tt-swap,
+      .card-copy-tooltip .tt-label {
+        transition: none;
       }
     }
 
