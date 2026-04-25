@@ -247,9 +247,9 @@
       --p6-ease: ease-out;
 
       /* P7 — Modal open/close */
-      --p7-open-dur: 300ms;
+      --p7-open-dur: 250ms;
       --p7-close-dur: 150ms;
-      --p7-scale: 0.95;
+      --p7-scale: 0.96;
       --p7-scale-close: 0.96;
       --p7-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -436,27 +436,58 @@
     }
     .icon-btn:hover svg { color: var(--icon-color); }
 
+    /* Mirrors the P5 "Icon swap" prototype architecture: both icons
+       live permanently in the DOM stacked on top of each other, and
+       the swap is driven by toggling a single `data-active` attribute
+       on the wrapper. This way both icons start their transitions in
+       the same frame — no per-click image decode, no asymmetric
+       enter/exit pacing. The `--p5-*` tokens are reused directly so
+       any future tweak to the prototype carries over automatically. */
+    .theme-icon-stack {
+      position: relative;
+      display: inline-flex;
+      width: 16px;
+      height: 16px;
+    }
     .theme-icon {
+      position: absolute;
+      inset: 0;
       width: 16px;
       height: 16px;
       display: block;
-      opacity: 0.6;
-      transition: opacity 0.5s ease, transform 0.5s ease, filter 0.15s ease;
       transform-origin: center;
       pointer-events: none;
       user-select: none;
-    }
-
-    .theme-toggle:hover .theme-icon { opacity: 1; }
-
-    .theme-icon.morph-out {
+      transition:
+        opacity   var(--p5-dur) var(--p5-ease),
+        filter    var(--p5-dur) var(--p5-ease),
+        transform var(--p5-dur) var(--p5-ease);
+      /* Default = inactive (hidden) state, matches P5 morph-out. */
       opacity: 0;
-      transform: scale(0.85) rotate(30deg);
+      transform: scale(var(--p5-start-scale));
+    }
+    .theme-icon-moon { filter: blur(var(--p5-blur)); }
+    /* Sun is filtered to white in both states; only the blur amount
+       changes, so the inversion can't briefly reveal native colors. */
+    .theme-icon-sun  { filter: brightness(0) invert(1) blur(var(--p5-blur)); }
+
+    /* Active icon = visible at rest. */
+    .theme-icon-stack[data-active="moon"] .theme-icon-moon,
+    .theme-icon-stack[data-active="sun"]  .theme-icon-sun {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    .theme-icon-stack[data-active="moon"] .theme-icon-moon { filter: blur(0); }
+    .theme-icon-stack[data-active="sun"]  .theme-icon-sun  { filter: brightness(0) invert(1); }
+
+    .theme-toggle:hover .theme-icon-stack[data-active="moon"] .theme-icon-moon,
+    .theme-toggle:hover .theme-icon-stack[data-active="sun"]  .theme-icon-sun {
+      opacity: 1;
     }
 
-    html[data-theme="dark"] .theme-icon {
-      filter: brightness(0) invert(1);
-    }
+    /* Suppresses the entry animation on first paint so the resting
+       icon doesn't appear to "fly in" when the page loads. */
+    .theme-icon-stack.no-anim .theme-icon { transition: none; }
 
     /* ─── Header (Figma demo page + border-beam vertical rhythm) ─ */
     .header {
@@ -560,7 +591,7 @@
          swaps to its wider "Copied" state. The stage clips its
          own content via `.card-stage { overflow: hidden }`. */
       border-radius: 24px;
-      background: var(--card-bg);
+      background-color: var(--card-bg);
       box-shadow:
         var(--card-shadow),
         inset 0 0 0 1px var(--card-border),
@@ -568,14 +599,21 @@
       transition: box-shadow 0.15s ease, background-color 0.2s ease;
     }
 
+    .card:hover {
+      background-color: color-mix(in srgb, var(--card-bg) 98%, #000 2%);
+    }
+
     html[data-theme="dark"] .card {
-      background: #181818;
+      background-color: #181818;
       box-shadow:
         0 1px 3px 0 rgba(0, 0, 0, 0.04),
         inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
         inset 0 0 0 1px rgba(0, 0, 0, 0.06),
         inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
         inset 0 0 0 1px rgba(196, 196, 196, 0.07);
+    }
+    html[data-theme="dark"] .card:hover {
+      background-color: color-mix(in srgb, #181818 99%, #fff 1%);
     }
 
     .card-stage {
@@ -1798,6 +1836,300 @@
         filter: none !important;
       }
     }
+
+    /* ─── Prototype detail modal ──────────────────────────────
+       Opens on card click, shows title + subtitle + code with
+       CSS / React tab switcher. The card itself becomes the
+       trigger (cursor: pointer), but nested buttons still keep
+       their own click behaviour (animate / toggle / etc.).
+       ---------------------------------------------------------- */
+    .card[data-proto-card] {
+      cursor: pointer;
+    }
+
+    /* Reuses the P7 "Modal open / close" prototype transition so the
+       detail modal opens and closes with the same motion as the demo:
+         open  → scale(--p7-scale)      → scale(1)    over --p7-open-dur
+         close → scale(1)               → scale(--p7-scale-close)
+                                                      over --p7-close-dur */
+    .proto-modal-root {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 56px 20px 40px;
+      overflow-y: auto;
+      pointer-events: none;
+      visibility: hidden;
+    }
+    .proto-modal-root.is-open,
+    .proto-modal-root.is-closing {
+      pointer-events: auto;
+      visibility: visible;
+    }
+    .proto-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transition: opacity var(--p7-open-dur) var(--p7-ease);
+    }
+    .proto-modal-root.is-open .proto-modal-backdrop { opacity: 1; }
+    .proto-modal-root.is-closing .proto-modal-backdrop {
+      opacity: 0;
+      transition: opacity var(--p7-close-dur) var(--p7-ease);
+    }
+    .proto-modal-dialog {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+      background: var(--material-bg);
+      border-radius: 20px;
+      box-shadow:
+        0 24px 48px -16px rgba(0, 0, 0, 0.11),
+        0 2px 6px rgba(0, 0, 0, 0.03);
+      padding: 28px;
+      transform-origin: center;
+      transform: scale(var(--p7-scale));
+      opacity: 0;
+      transition:
+        transform var(--p7-open-dur) var(--p7-ease),
+        opacity   var(--p7-open-dur) var(--p7-ease);
+      will-change: transform, opacity;
+    }
+    html[data-theme="dark"] .proto-modal-dialog {
+      box-shadow:
+        0 24px 48px -16px rgba(0, 0, 0, 0.3);
+    }
+    .proto-modal-root.is-open .proto-modal-dialog {
+      transform: scale(1);
+      opacity: 1;
+    }
+    .proto-modal-root.is-closing .proto-modal-dialog {
+      transform: scale(var(--p7-scale-close));
+      opacity: 0;
+      transition:
+        transform var(--p7-close-dur) var(--p7-ease),
+        opacity   var(--p7-close-dur) var(--p7-ease);
+    }
+    /* Close affordance — Figma "Button/Small/Tertiary/Default
+       Icon only" (255:326). 32px pill with a persistent fill at
+       rest (#f4f4f4 light, low-alpha white in dark) and a 16px X
+       icon centered. Hover/pressed darken the fill. */
+    .proto-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border: 0;
+      padding: 6px;
+      border-radius: 24px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #f4f4f4;
+      color: var(--icon-color);
+      transition: background-color 150ms ease, color 150ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html[data-theme="dark"] .proto-modal-close {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--icon-color);
+    }
+    .proto-modal-close:hover,
+    .proto-modal-close:active {
+      background: #eae9e9;
+      color: var(--icon-color);
+    }
+    html[data-theme="dark"] .proto-modal-close:hover,
+    html[data-theme="dark"] .proto-modal-close:active {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .proto-modal-close:focus-visible {
+      outline: 2px solid var(--icon-color);
+      outline-offset: 2px;
+    }
+    .proto-modal-close svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+    }
+    .proto-modal-title {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      line-height: 1.3;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 0 0 4px;
+      padding-right: 40px;
+    }
+    .proto-modal-subtitle {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      margin: 0 0 20px;
+    }
+    .proto-modal-tabs {
+      position: relative;
+      display: inline-flex;
+      gap: 2px;
+      padding: 3px;
+      /* ~30% darker than --stage-bg so the pill is more visible. */
+      background: rgba(194, 194, 194, 0.13);
+      border-radius: 40px;
+      margin-bottom: 14px;
+    }
+    html[data-theme="dark"] .proto-modal-tabs {
+      background: #0d0d0d;
+    }
+    /* Sliding pill that follows the selected tab. JS reads each
+       tab's offsetLeft/offsetWidth and sets transform + width on
+       this element, so any change in tab text or font metrics is
+       handled automatically. The indicator sits *behind* the tab
+       buttons (z-index 0 vs 1) so the labels stay crisp on top. */
+    .proto-modal-tabs-indicator {
+      position: absolute;
+      top: 3px;
+      left: 0;
+      height: calc(100% - 6px);
+      width: 0;
+      background: var(--card-bg);
+      border-radius: 40px;
+      transform: translateX(0);
+      transition:
+        transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+        width     200ms cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+      z-index: 0;
+    }
+    html[data-theme="dark"] .proto-modal-tabs-indicator {
+      background: #242424;
+    }
+    .proto-modal-tab {
+      position: relative;
+      z-index: 1;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: transparent;
+      border: 0;
+      padding: 6px 14px;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: color 150ms;
+    }
+    .proto-modal-tab:hover {
+      color: var(--text);
+    }
+    .proto-modal-tab[aria-selected="true"] {
+      color: var(--text);
+    }
+    .proto-modal-tab:focus-visible {
+      outline: 2px solid var(--text-muted);
+      outline-offset: 2px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .proto-modal-tabs-indicator {
+        transition: none;
+      }
+    }
+    /* Wrap the scrolling code area + the copy button so the copy
+       button (and its tooltip) can sit OUTSIDE the scroll container
+       — otherwise `.proto-modal-code`'s `overflow: auto` would clip
+       the tooltip when it floats above the button. */
+    .proto-modal-code-wrap {
+      position: relative;
+    }
+    .proto-modal-code {
+      background: var(--stage-bg);
+      border-radius: 14px;
+      padding: 0;
+      max-height: min(60vh, 520px);
+      overflow: auto;
+      /* Subtle 12px fade on scrollable edges. The two CSS variables
+         are toggled via [data-fade-top|bottom] which JS sets based on
+         scrollTop/scrollHeight, so the first/last line is only dimmed
+         when there is actually content hidden in that direction. */
+      --fade-top: 0px;
+      --fade-bottom: 0px;
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade-top),
+        #000 calc(100% - var(--fade-bottom)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade-top),
+        #000 calc(100% - var(--fade-bottom)),
+        transparent 100%
+      );
+    }
+    .proto-modal-code[data-fade-top="true"]    { --fade-top: 12px; }
+    .proto-modal-code[data-fade-bottom="true"] { --fade-bottom: 12px; }
+    .proto-modal-code pre {
+      margin: 0;
+      padding: 16px 56px 16px 18px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text);
+      white-space: pre;
+      tab-size: 2;
+    }
+    /* Reuses `.card-copy` (icon swap + tooltip auto-attached by
+       initCopyTooltips) but overrides the resting fill so the
+       button reads as a ghost icon, and re-anchors it to the
+       top-right of the code area. */
+    .proto-modal-copy {
+      top: 8px;
+      right: 8px;
+      bottom: auto;
+      background: transparent;
+      background-image: none;
+    }
+    html[data-theme="dark"] .proto-modal-copy {
+      background: transparent;
+      background-image: none;
+    }
+
+    body.is-modal-open {
+      overflow: hidden;
+    }
+
+    @media (max-width: 639px) {
+      .proto-modal-root {
+        padding: 20px;
+      }
+      .proto-modal-dialog {
+        padding: 22px 20px 20px;
+      }
+      .proto-modal-title {
+        font-size: 17px;
+      }
+      .proto-modal-subtitle {
+        font-size: 13px;
+      }
+      .proto-modal-code pre {
+        font-size: 11px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .proto-modal-backdrop,
+      .proto-modal-dialog {
+        transition: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1811,15 +2143,24 @@
         id="theme-toggle"
         aria-label="Toggle color theme"
       >
-        <img
-          src="assets/theme-moon-01.svg"
-          id="theme-icon"
-          alt="Toggle theme"
-          class="theme-icon"
-          width="16"
-          height="16"
-          decoding="async"
-        />
+        <span class="theme-icon-stack no-anim" id="theme-icon-stack" data-active="moon" aria-hidden="true">
+          <img
+            src="assets/theme-moon-01.svg"
+            alt=""
+            class="theme-icon theme-icon-moon"
+            width="16"
+            height="16"
+            decoding="async"
+          />
+          <img
+            src="assets/theme-sun.svg"
+            alt=""
+            class="theme-icon theme-icon-sun"
+            width="16"
+            height="16"
+            decoding="async"
+          />
+        </span>
       </button>
       <a
         class="icon-btn"
@@ -2200,6 +2541,361 @@
     </footer>
   </main>
 
+  <!-- ─── Prototype detail modal ──────────────────────────────── -->
+  <div class="proto-modal-root" role="presentation" aria-hidden="true">
+    <div class="proto-modal-backdrop" data-proto-close></div>
+    <div
+      class="proto-modal-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="proto-modal-title"
+      tabindex="-1"
+    >
+      <button
+        type="button"
+        class="proto-modal-close"
+        data-proto-close
+        aria-label="Close details"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M4 4l8 8M12 4l-8 8"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+      <h2 class="proto-modal-title" id="proto-modal-title"></h2>
+      <p class="proto-modal-subtitle" data-proto-modal-subtitle></p>
+      <div class="proto-modal-tabs" role="tablist" aria-label="Code format">
+        <span class="proto-modal-tabs-indicator" aria-hidden="true"></span>
+        <button
+          type="button"
+          role="tab"
+          class="proto-modal-tab"
+          data-proto-tab="css"
+          aria-selected="true"
+        >CSS</button>
+        <button
+          type="button"
+          role="tab"
+          class="proto-modal-tab"
+          data-proto-tab="react"
+          aria-selected="false"
+        >React</button>
+      </div>
+      <div class="proto-modal-code-wrap">
+        <button
+          type="button"
+          class="card-copy proto-modal-copy"
+          data-proto-copy
+          aria-label="Copy code"
+        >
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+        <div class="proto-modal-code">
+          <pre><code data-proto-codeblock></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── React code templates (one per prototype) ────────────── -->
+  <script type="text/plain" data-react-key="p1">import { useState } from "react";
+
+// Pair with the CSS from the CSS tab (classes + data-open).
+export function NotificationBadge({ children }) {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <button
+      type="button"
+      style={{ position: "relative" }}
+      onClick={() => setOpen((v) => !v)}
+    >
+      {children /* your trigger (bell icon, etc.) */}
+      <span className="t-badge" data-open={open}>
+        <span className="t-badge-dot">1</span>
+      </span>
+    </button>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p2">import { useEffect, useState } from "react";
+
+// Pair with the CSS from the CSS tab (.t-dropdown + .is-open / .is-closing).
+export function MenuDropdown() {
+  // "closed" | "open" | "closing"
+  const [state, setState] = useState("closed");
+
+  // Hold `.is-closing` for the exit duration, then fully unmount state.
+  useEffect(() => {
+    if (state !== "closing") return;
+    const ms = readMs("--dropdown-close-dur", 200);
+    const id = window.setTimeout(() => setState("closed"), ms);
+    return () => window.clearTimeout(id);
+  }, [state]);
+
+  const toggle = () =>
+    setState((s) => (s === "open" ? "closing" : "open"));
+
+  return (
+    <>
+      <button type="button" onClick={toggle}>Toggle menu</button>
+      <div
+        role="menu"
+        data-origin="top-center"
+        className={
+          "t-dropdown" +
+          (state === "open" ? " is-open" : "") +
+          (state === "closing" ? " is-closing" : "")
+        }
+      >
+        <button type="button" role="menuitem">Item 1</button>
+        <button type="button" role="menuitem">Item 2</button>
+      </div>
+    </>
+  );
+}
+
+function readMs(name, fallback) {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  const n = parseFloat(raw);
+  return Number.isFinite(n) ? n : fallback;
+}
+</script>
+
+  <script type="text/plain" data-react-key="p3">import { useState } from "react";
+
+// Pair with the CSS from the CSS tab (.t-panel-slide + data-open).
+export function PanelReveal({ children }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button type="button" onClick={() => setOpen((v) => !v)}>
+        {open ? "Hide" : "Show"} panel
+      </button>
+
+      {/* Wrap the panel in a container that clips the travel area. */}
+      <div style={{ overflow: "hidden" }}>
+        <div className="t-panel-slide" data-open={open}>
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p4">import { useState } from "react";
+
+// Pair with the CSS from the CSS tab (.t-resize tweens width + height).
+export function CardResize() {
+  const [small, setSmall] = useState(false);
+
+  return (
+    <>
+      <button type="button" onClick={() => setSmall((v) => !v)}>
+        {small ? "Expand" : "Shrink"}
+      </button>
+      <div
+        className="t-resize"
+        style={{
+          width: small ? 160 : 260,
+          height: small ? 100 : 180,
+        }}
+      />
+    </>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p5">import { useState } from "react";
+
+// Pair with the CSS from the CSS tab (.t-icon-swap + data-state a/b).
+export function IconSwap({ iconA, iconB }) {
+  const [state, setState] = useState("a");
+
+  return (
+    <button
+      type="button"
+      aria-label={state === "a" ? "Show B" : "Show A"}
+      onClick={() => setState((s) => (s === "a" ? "b" : "a"))}
+    >
+      <span className="t-icon-swap" data-state={state}>
+        <span className="t-icon" data-icon="a">{iconA}</span>
+        <span className="t-icon" data-icon="b">{iconB}</span>
+      </span>
+    </button>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p6">import { useRef, useState } from "react";
+
+// Pair with the CSS from the CSS tab.
+// Three-phase text swap: exit old ->  swap text ->  enter new.
+const MESSAGES = [
+  "Transaction processing...",
+  "Transaction completed",
+];
+
+export function TextStatesSwap() {
+  const [index, setIndex] = useState(0);
+  const ref = useRef(null);
+  const busy = useRef(false);
+
+  const next = () => {
+    if (busy.current) return;
+    const el = ref.current;
+    if (!el) return;
+    busy.current = true;
+    const dur = readMs("--text-swap-dur", 200);
+
+    el.classList.add("is-exit");
+    window.setTimeout(() => {
+      setIndex((i) => (i + 1) % MESSAGES.length);
+
+      // Jump below (no transition), then release so it animates back.
+      el.classList.remove("is-exit");
+      el.classList.add("is-enter-start");
+      void el.offsetWidth; // force reflow
+      el.classList.remove("is-enter-start");
+      busy.current = false;
+    }, dur);
+  };
+
+  return (
+    <>
+      <span className="t-text-swap" ref={ref}>{MESSAGES[index]}</span>
+      <button type="button" onClick={next}>Next</button>
+    </>
+  );
+}
+
+function readMs(name, fallback) {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  const n = parseFloat(raw);
+  return Number.isFinite(n) ? n : fallback;
+}
+</script>
+
+  <script type="text/plain" data-react-key="p7">import { useEffect, useState } from "react";
+
+// Pair with the CSS from the CSS tab (.t-modal + .is-open / .is-closing).
+export function Modal({ children }) {
+  // "closed" | "open" | "closing"
+  const [state, setState] = useState("closed");
+
+  useEffect(() => {
+    if (state !== "closing") return;
+    const ms = readMs("--modal-close-dur", 150);
+    const id = window.setTimeout(() => setState("closed"), ms);
+    return () => window.clearTimeout(id);
+  }, [state]);
+
+  const open = () => setState("open");
+  const close = () => setState("closing");
+
+  return (
+    <>
+      <button type="button" onClick={open}>Open modal</button>
+
+      {state !== "closed" && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className={
+            "t-modal" +
+            (state === "open" ? " is-open" : "") +
+            (state === "closing" ? " is-closing" : "")
+          }
+        >
+          {children}
+          <button type="button" onClick={close}>Close</button>
+        </div>
+      )}
+    </>
+  );
+}
+
+function readMs(name, fallback) {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  const n = parseFloat(raw);
+  return Number.isFinite(n) ? n : fallback;
+}
+</script>
+
+  <script type="text/plain" data-react-key="p8">import { useState } from "react";
+
+// Pair with the CSS from the CSS tab (.t-page-slide + data-page 1|2).
+export function PageSlide() {
+  const [page, setPage] = useState(1);
+
+  return (
+    <div className="t-page-slide" data-page={page}>
+      <section className="t-page" data-page-id="1">
+        <h2>Page 1</h2>
+        <button type="button" onClick={() => setPage(2)}>Next</button>
+      </section>
+      <section className="t-page" data-page-id="2">
+        <h2>Page 2</h2>
+        <button type="button" onClick={() => setPage(1)}>Back</button>
+      </section>
+    </div>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p9">import { useState } from "react";
+
+// Pair with the CSS from the CSS tab.
+// Toggle `.is-animating` to replay the pop-in sequence.
+export function NumberPopIn({ value = "123" }) {
+  const [playing, setPlaying] = useState(true);
+
+  // Replay: strip the class, force a reflow via rAF, then re-add.
+  const replay = () => {
+    setPlaying(false);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => setPlaying(true))
+    );
+  };
+
+  return (
+    <>
+      <button type="button" onClick={replay}>Animate</button>
+      <span className={"t-digit-group" + (playing ? " is-animating" : "")}>
+        {value.split("").map((ch, i) => (
+          <span
+            key={i}
+            className="t-digit"
+            data-stagger={i > 0 ? i : undefined}
+          >
+            {ch}
+          </span>
+        ))}
+      </span>
+    </>
+  );
+}
+</script>
+
   <script>
     (function () {
       /* ── Theme toggle ──────────────────────────────────────── */
@@ -2208,7 +2904,7 @@
          across reloads. If the OS theme changes while the page is open and the
          user hasn't manually toggled this session, we mirror the OS change. */
       var html = document.documentElement;
-      var themeIcon = document.getElementById("theme-icon");
+      var iconStack = document.getElementById("theme-icon-stack");
       var userOverride = false;
 
       function currentSystemTheme() {
@@ -2216,19 +2912,24 @@
           ? "dark" : "light";
       }
 
+      // Mirrors the P5 "Icon swap" prototype: both icons live in the
+      // DOM permanently and the swap is driven by toggling a single
+      // attribute on the wrapper. CSS handles the cross-fade.
       function updateThemeIcon(theme, animate) {
-        if (!themeIcon) return;
-        var nextSrc = theme === "light" ? "assets/theme-moon-01.svg" : "assets/theme-sun.svg";
+        if (!iconStack) return;
+        var nextActive = theme === "light" ? "moon" : "sun";
         if (!animate) {
-          themeIcon.setAttribute("src", nextSrc);
-          themeIcon.classList.remove("morph-out");
+          iconStack.classList.add("no-anim");
+          iconStack.setAttribute("data-active", nextActive);
+          // Force layout, then re-enable transitions on the next frame
+          // so the resting state is committed before transitions resume.
+          void iconStack.offsetWidth;
+          window.requestAnimationFrame(function () {
+            iconStack.classList.remove("no-anim");
+          });
           return;
         }
-        themeIcon.classList.add("morph-out");
-        window.setTimeout(function () {
-          themeIcon.setAttribute("src", nextSrc);
-          themeIcon.classList.remove("morph-out");
-        }, 250);
+        iconStack.setAttribute("data-active", nextActive);
       }
 
       function applyTheme(theme, animateIcon) {
@@ -2775,6 +3476,340 @@
           tpl.css
         ].join("\n\n");
       }
+
+      // ── React snippet lookup (sourced from inline <script type="text/plain">) ──
+      var REACT_TEMPLATES = (function () {
+        var map = {};
+        var nodes = document.querySelectorAll("script[data-react-key]");
+        for (var i = 0; i < nodes.length; i++) {
+          var n = nodes[i];
+          var key = n.getAttribute("data-react-key");
+          if (!key) continue;
+          // textContent preserves the source exactly as authored in the file.
+          map[key] = n.textContent.replace(/^\n+/, "").replace(/\s+$/, "") + "\n";
+        }
+        return map;
+      })();
+
+      function buildReactSnippet(key) {
+        var tpl = PROTO_TEMPLATES[key];
+        var src = REACT_TEMPLATES[key];
+        if (!src) return "";
+
+        // Build the same CSS the CSS tab shows (live :root values
+        // resolved from the page) so the React file is fully
+        // self-contained — no companion stylesheet required.
+        var cssBody = "";
+        if (tpl) {
+          var cs = getComputedStyle(document.documentElement);
+          var rootLines = tpl.vars
+            .map(function (pair) {
+              return "  " + pair[0] + ": " +
+                cs.getPropertyValue(pair[1]).trim() + ";";
+            })
+            .join("\n");
+          cssBody = ":root {\n" + rootLines + "\n}\n\n" + tpl.css;
+        }
+
+        var styleId = "transitions-" + key;
+        var stylesBlock = cssBody
+          ? "// ── Styles ──────────────────────────────────────────────\n" +
+            "// Auto-injected on first import. Idempotent (guarded by\n" +
+            "// the element id) and SSR-safe (no-ops without document).\n" +
+            "const __TRANSITION_STYLES = `\n" + cssBody + "\n`;\n" +
+            "if (typeof document !== \"undefined\" && " +
+            "!document.getElementById(\"" + styleId + "\")) {\n" +
+            "  const __style = document.createElement(\"style\");\n" +
+            "  __style.id = \"" + styleId + "\";\n" +
+            "  __style.textContent = __TRANSITION_STYLES;\n" +
+            "  document.head.appendChild(__style);\n" +
+            "}\n\n"
+          : "";
+
+        var header = tpl
+          ? "// Transitions.dev — " + tpl.name + " (React, self-contained)\n" +
+            "// Drop into any React project — no extra CSS file needed.\n\n"
+          : "";
+
+        // Insert the styles block AFTER the leading ESM import lines so
+        // the file remains a valid module (imports must come first).
+        var importMatch = src.match(/^((?:import [^\n]*\n)+)\n*/);
+        if (importMatch) {
+          var prefix = importMatch[0];
+          var rest = src.slice(prefix.length);
+          return header + prefix + stylesBlock + rest;
+        }
+        return header + stylesBlock + src;
+      }
+
+      // ── Prototype detail modal ───────────────────────────────
+      (function initProtoModal() {
+        var root = document.querySelector(".proto-modal-root");
+        if (!root) return;
+        var dialog    = root.querySelector(".proto-modal-dialog");
+        var titleEl   = root.querySelector(".proto-modal-title");
+        var subtitleEl = root.querySelector("[data-proto-modal-subtitle]");
+        var codeEl    = root.querySelector("[data-proto-codeblock]");
+        var copyBtn   = root.querySelector("[data-proto-copy]");
+        var codeScroller = root.querySelector(".proto-modal-code");
+        var tabs      = Array.prototype.slice.call(
+          root.querySelectorAll("[data-proto-tab]")
+        );
+        var tabsRoot     = root.querySelector(".proto-modal-tabs");
+        var tabIndicator = root.querySelector(".proto-modal-tabs-indicator");
+
+        var currentKey = null;
+        var currentTab = "css";
+        var lastTrigger = null;
+        var copyResetTimer = null;
+
+        // Move the sliding pill behind the currently selected tab.
+        // `animate=false` snaps without easing — used on first paint
+        // and when re-opening the modal so the pill doesn't ride in
+        // from a stale position. `animate=true` is the 200ms slide.
+        function setTabIndicator(animate) {
+          if (!tabIndicator || !tabsRoot) return;
+          var active = tabsRoot.querySelector(
+            '.proto-modal-tab[aria-selected="true"]'
+          );
+          if (!active) return;
+          var left = active.offsetLeft;
+          var width = active.offsetWidth;
+          if (!animate) {
+            // Suspend the transition for a single style mutation, then
+            // force a reflow so the next change re-engages it.
+            var prev = tabIndicator.style.transition;
+            tabIndicator.style.transition = "none";
+            tabIndicator.style.transform = "translateX(" + left + "px)";
+            tabIndicator.style.width = width + "px";
+            void tabIndicator.offsetWidth;
+            tabIndicator.style.transition = prev;
+          } else {
+            tabIndicator.style.transform = "translateX(" + left + "px)";
+            tabIndicator.style.width = width + "px";
+          }
+        }
+
+        // Pre-position on init so the pill is correctly placed under
+        // the default-selected tab before the modal is ever opened.
+        // The tabs are in the DOM with layout from page load, so
+        // offsetLeft/offsetWidth are reliable here.
+        setTabIndicator(false);
+
+        // Toggle the 12px scroll fades on the code container when its
+        // content actually overflows in that direction. Driven by data
+        // attributes so the CSS mask gradient stays declarative.
+        function updateScrollFades() {
+          if (!codeScroller) return;
+          var top = codeScroller.scrollTop;
+          var max = codeScroller.scrollHeight - codeScroller.clientHeight;
+          // Fudge factor: sub-pixel rounding can leave `max - top` at
+          // 0.5px even when fully scrolled, so treat <1px as "bottom".
+          codeScroller.toggleAttribute("data-fade-top", top > 0);
+          codeScroller.toggleAttribute("data-fade-bottom", max - top > 1);
+        }
+        if (codeScroller) {
+          codeScroller.addEventListener("scroll", updateScrollFades, {
+            passive: true,
+          });
+        }
+
+        // Window resize would otherwise leave the pill at a stale
+        // pixel offset; re-snap (no slide) while the modal is open.
+        // The fade-top/bottom flags also depend on clientHeight so we
+        // recompute them here too.
+        window.addEventListener("resize", function () {
+          if (root.classList.contains("is-open")) {
+            setTabIndicator(false);
+            updateScrollFades();
+          }
+        });
+
+        function snippetForTab(tab) {
+          return tab === "react"
+            ? buildReactSnippet(currentKey)
+            : buildSnippet(currentKey);
+        }
+
+        function render(animate) {
+          if (!currentKey) return;
+          codeEl.textContent = snippetForTab(currentTab);
+          tabs.forEach(function (t) {
+            var on = t.getAttribute("data-proto-tab") === currentTab;
+            t.setAttribute("aria-selected", on ? "true" : "false");
+          });
+          // Defaults to slide; openModal passes `false` to avoid
+          // an unwanted slide when a different prototype is opened.
+          setTabIndicator(animate !== false);
+          if (codeScroller) codeScroller.scrollTop = 0;
+          // The new content may have a different height; re-evaluate
+          // whether the bottom fade should be on. Top fade is off by
+          // definition because we just reset scrollTop to 0.
+          updateScrollFades();
+          resetCopy();
+        }
+
+        function resetCopy() {
+          if (copyResetTimer) {
+            window.clearTimeout(copyResetTimer);
+            copyResetTimer = null;
+          }
+          copyBtn.removeAttribute("data-copied");
+          copyBtn.setAttribute("aria-label", "Copy code");
+          var swap = copyBtn.querySelector(".tt-swap");
+          if (swap) swap.setAttribute("data-state", "copy");
+        }
+
+        var closeTimer = null;
+
+        function openModal(card) {
+          var copyTrigger = card.querySelector("[data-copy-key]");
+          var key = copyTrigger
+            ? copyTrigger.getAttribute("data-copy-key")
+            : null;
+          if (!key || !PROTO_TEMPLATES[key]) return;
+          currentKey = key;
+          currentTab = "css";
+
+          var titleNode = card.querySelector(".card-title");
+          var subtitleNode = card.querySelector(".card-subtitle");
+          titleEl.textContent = titleNode
+            ? titleNode.textContent
+            : (PROTO_TEMPLATES[key].name || "");
+          subtitleEl.textContent = subtitleNode
+            ? subtitleNode.textContent
+            : "";
+
+          render(false);
+          root.setAttribute("aria-hidden", "false");
+          document.body.classList.add("is-modal-open");
+          lastTrigger = card;
+
+          // Cancel any pending close and rebuild from the resting state
+          // (scale(--p7-scale), opacity 0) before flipping to .is-open so
+          // the transform transition runs cleanly.
+          if (closeTimer) { window.clearTimeout(closeTimer); closeTimer = null; }
+          root.classList.remove("is-closing");
+          root.classList.remove("is-open");
+          void root.offsetWidth;
+          root.classList.add("is-open");
+
+          window.setTimeout(function () {
+            try { dialog.focus(); } catch (e) {}
+          }, 20);
+        }
+
+        function closeModal() {
+          if (!root.classList.contains("is-open")) return;
+          // Hand off from .is-open → .is-closing, mirroring the P7 modal
+          // state machine: scale out to --p7-scale-close + fade opacity
+          // over --p7-close-dur, then clear state.
+          root.classList.remove("is-open");
+          root.classList.add("is-closing");
+          root.setAttribute("aria-hidden", "true");
+          document.body.classList.remove("is-modal-open");
+          resetCopy();
+
+          if (closeTimer) window.clearTimeout(closeTimer);
+          closeTimer = window.setTimeout(function () {
+            root.classList.remove("is-closing");
+            currentKey = null;
+            closeTimer = null;
+          }, readMs("--p7-close-dur", 150));
+
+          if (lastTrigger && typeof lastTrigger.focus === "function") {
+            try { lastTrigger.focus({ preventScroll: true }); } catch (e) {}
+          }
+        }
+
+        function isInsideModal(el) { return el && root.contains(el); }
+
+        // Tabs + close + copy delegated to the modal root.
+        root.addEventListener("click", function (e) {
+          var closeHit = e.target.closest("[data-proto-close]");
+          if (closeHit) { closeModal(); return; }
+
+          var tab = e.target.closest("[data-proto-tab]");
+          if (tab) {
+            var next = tab.getAttribute("data-proto-tab");
+            if (next && next !== currentTab) {
+              currentTab = next;
+              render();
+            }
+            return;
+          }
+
+          var copyHit = e.target.closest("[data-proto-copy]");
+          if (copyHit) {
+            var text = snippetForTab(currentTab);
+            var done = function () {
+              copyBtn.setAttribute("data-copied", "true");
+              copyBtn.setAttribute("aria-label", "Copied");
+              // Drive the shared `.card-copy` tooltip's text swap
+              // (Copy code → Copied) the same way the card buttons do.
+              var swap = copyBtn.querySelector(".tt-swap");
+              if (swap) swap.setAttribute("data-state", "copied");
+              if (copyResetTimer) window.clearTimeout(copyResetTimer);
+              copyResetTimer = window.setTimeout(function () {
+                copyBtn.removeAttribute("data-copied");
+                copyBtn.setAttribute("aria-label", "Copy code");
+                // Defer reverting the text swap until after the
+                // tooltip's 150ms fade-out so it doesn't morph back
+                // to "Copy code" mid-fade.
+                window.setTimeout(function () {
+                  if (swap) swap.setAttribute("data-state", "copy");
+                }, 200);
+              }, 1600);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(done).catch(function () {
+                fallbackCopy(text, done);
+              });
+            } else {
+              fallbackCopy(text, done);
+            }
+            return;
+          }
+        });
+
+        // Card click → open modal. Ignore clicks on interactive children so
+        // Animate / token / copy buttons keep their own behaviour.
+        document.addEventListener("click", function (e) {
+          if (isInsideModal(e.target)) return;
+          var card = e.target.closest(".card[data-proto-card]");
+          if (!card) return;
+          if (e.target.closest("button, a, input, textarea, select, label")) {
+            return;
+          }
+          openModal(card);
+        });
+
+        // Escape closes the modal whenever it is visible.
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && root.classList.contains("is-open")) {
+            closeModal();
+            return;
+          }
+        });
+
+        // Make each card keyboard-reachable for discoverability. We keep it
+        // focusable but DO NOT set role="button" — the card already contains
+        // real buttons (Animate / token rows / …) and nesting button roles
+        // would confuse screen readers and automated clients.
+        Array.prototype.forEach.call(
+          document.querySelectorAll(".card[data-proto-card]"),
+          function (card) {
+            if (!card.hasAttribute("tabindex")) card.setAttribute("tabindex", "0");
+            card.addEventListener("keydown", function (e) {
+              if (e.target !== card) return;
+              if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+                e.preventDefault();
+                openModal(card);
+              }
+            });
+          }
+        );
+      })();
 
       // ── Prototype 6 message cycle ────────────────────────────
       var p6Messages = ["Transaction processing...", "Transaction completed"];
