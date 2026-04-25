@@ -1848,9 +1848,11 @@
       min-height: 284px;
       max-height: 284px;
     }
+    /* Only hide copy/meta on gallery cards — the detail modal reuses
+       `.card-copy` and must stay visible. */
     .card-meta,
-    .card-copy,
-    .card-copy-tooltip {
+    .card .card-copy,
+    .card .card-copy-tooltip {
       display: none !important;
     }
 
@@ -2065,11 +2067,14 @@
       position: relative;
     }
     .proto-modal-code {
+      position: relative;
+      z-index: 0;
       background: var(--stage-bg);
       border-radius: 14px;
       padding: 0;
       max-height: min(60vh, 520px);
-      overflow: auto;
+      overflow-x: hidden;
+      overflow-y: auto;
       /* Subtle 12px fade on scrollable edges. The two CSS variables
          are toggled via [data-fade-top|bottom] which JS sets based on
          scrollTop/scrollHeight, so the first/last line is only dimmed
@@ -2100,7 +2105,9 @@
       font-size: 12px;
       line-height: 1.6;
       color: var(--text);
-      white-space: pre;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
       tab-size: 2;
     }
     /* Reuses `.card-copy` (icon swap + tooltip auto-attached by
@@ -2108,6 +2115,7 @@
        button reads as a ghost icon, and re-anchors it to the
        top-right of the code area. */
     .proto-modal-copy {
+      z-index: 2;
       top: 8px;
       right: 8px;
       bottom: auto;
@@ -2125,6 +2133,7 @@
 
     @media (max-width: 639px) {
       .proto-modal-root {
+        align-items: safe center;
         padding: 20px;
       }
       .proto-modal-dialog {
@@ -2138,6 +2147,7 @@
       }
       .proto-modal-code pre {
         font-size: 11px;
+        padding: 16px 52px 16px 14px;
       }
     }
 
