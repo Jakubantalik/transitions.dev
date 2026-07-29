@@ -2681,7 +2681,8 @@
       .app { padding: 0 12px 48px; }
       /* Collapse the inline nav pills into the hamburger; the GitHub
          pill keeps its live star count (the metric people came for). */
-      .brand-word { display: none; }
+      /* Scoped to the top bar — the footer keeps its full wordmark. */
+      .site-nav .brand-word { display: none; }
       .site-nav-menu { display: none; }
       #more-anchor { display: none; }
       .nav-burger { display: inline-flex; }

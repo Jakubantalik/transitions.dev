@@ -4435,7 +4435,8 @@
     /* Mobile top bar: keep it uncrowded — brand icon + Search icon + Sign in
        + burger. GitHub, X and the 3-dot menu collapse into the menus/footer. */
     @media (max-width: 639px) {
-      .brand-word { display: none; }
+      /* Scoped to the top bar — the footer keeps its full wordmark. */
+      .site-nav .brand-word { display: none; }
       #more-anchor { display: none; }
       .site-nav-right #gh-stars-btn,
       .site-nav-right a[href*="x.com"] { display: none; }

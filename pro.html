@@ -4670,6 +4670,36 @@
       .pro-bento { grid-template-columns: 1fr; grid-auto-rows: auto; }
       .pro-bento-card--tall { grid-row: auto; min-height: 360px; }
       .pro-bento-card--sm { min-height: 300px; }
+      /* The two mockups are absolutely positioned at a fixed top offset
+         that assumes ~2 lines of copy. Narrow screens wrap the text to 4,
+         so the art slid underneath it. Put them back in normal flow here
+         (still bleeding past the card's right/bottom edges, which the
+         card clips) so they always start below the description. */
+      .pro-bento-card--sm { display: flex; flex-direction: column; }
+      .pro-bento-card--sm .pro-bento-code,
+      .pro-bento-card--sm .pro-refine-frame {
+        position: relative;
+        left: auto;
+        top: auto;
+        bottom: auto;
+        /* basis 0 so the art fills the leftover height rather than its own
+           content height — otherwise the long code snippet stretches this
+           card far taller than its neighbour. Both are already clipped
+           (overflow + fade mask), so showing less of it is fine. */
+        flex: 1 1 0;
+        min-height: 120px;
+        margin-top: 16px;
+      }
+      .pro-bento-card--sm .pro-bento-code {
+        right: auto;
+        margin-right: -32px;
+        margin-bottom: -28px;
+      }
+      .pro-bento-card--sm .pro-refine-frame {
+        right: auto;
+        margin-right: -182px;
+        margin-bottom: -52px;
+      }
       .pro-bento-title { font-size: 18px; }
       /* Square minis on mobile: 320×320 native (296×296 stage keeps the
          12px pad equal on every side) → 227×227 rendered. width is
@@ -4769,11 +4799,23 @@
       /* Parity bar: let the sentence wrap to two centred lines instead
          of clipping off the right edge. */
       .pro-ppp-bar { white-space: normal; height: auto; min-height: 28px; padding: 5px 14px; }
+      /* The "2 months free" / "pay once" notes sit to the RIGHT of the
+         billing toggle on desktop (left:100%), which reaches past a phone
+         viewport and gives the whole page a horizontal scroll. Drop them
+         under the toggle instead. */
+      .pro-annual-note {
+        left: 50%;
+        top: calc(100% + 6px);
+        transform: translateX(-50%);
+        margin-left: 0;
+      }
+      .pro-billing { margin-bottom: 34px; }
     }
     /* Mobile top bar: brand icon + Search icon + GitHub + X + Sign in
        + burger. The 3-dot menu collapses into the menus/footer. */
     @media (max-width: 639px) {
-      .brand-word { display: none; }
+      /* Scoped to the top bar — the footer keeps its full wordmark. */
+      .site-nav .brand-word { display: none; }
       #more-anchor { display: none; }
       /* With the nav pills collapsed into the burger the bar has room
          again — bring the GitHub and X buttons back (they hide at

@@ -2200,7 +2200,8 @@
     @media (max-width: 640px) {
       .site-nav-menu { gap: 2px; }
       .nav-pill { padding: 0 10px; }
-      .brand-word { display: none; }
+      /* Scoped to the top bar — the footer keeps its full wordmark. */
+      .site-nav .brand-word { display: none; }
     }
     @media (max-width: 460px) {
       .site-nav-inner { padding: 12px 16px; gap: 8px; }

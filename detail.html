@@ -4532,7 +4532,8 @@
       .app { padding: 0 12px 48px; }
       /* Collapse the inline nav pills into the hamburger; the GitHub
          pill keeps its live star count (the metric people came for). */
-      .brand-word { display: none; }
+      /* Scoped to the top bar — the footer keeps its full wordmark. */
+      .site-nav .brand-word { display: none; }
       .site-nav-menu { display: none; }
       #more-anchor { display: none; }
       .nav-burger { display: inline-flex; }
@@ -5161,6 +5162,12 @@
     .is-detail .course-cta { display: none; }
     .is-detail .cards { display: none; }
 
+    /* The base footer is capped to the homepage card grid (1008px), but
+       this page's content is the docs grid, which fills the whole content
+       column. Match it so the footer lines up with the nav and the docs
+       above it on wide screens. */
+    .is-detail .footer { max-width: none; }
+
     /* No horizontal padding/centering of its own — `.docs` sits directly
        inside `.app`, so its left/right edges share the exact inset the
        nav (`.site-nav-inner`) uses, and the sidebar lines up with the
@@ -5187,6 +5194,23 @@
       padding-bottom: 8px;
       scrollbar-width: none;
       -ms-overflow-style: none;
+      /* Soft edges instead of a hard cut where the list scrolls out of
+         view. The fade sizes are driven by JS (see initDocsFade) so an
+         edge only fades while there is actually more list past it. */
+      --fade-start: 0px;
+      --fade-end: 0px;
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade-start),
+        #000 calc(100% - var(--fade-end)),
+        transparent 100%);
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade-start),
+        #000 calc(100% - var(--fade-end)),
+        transparent 100%);
     }
     .docs-sidebar::-webkit-scrollbar { display: none; }
     .docs-group { display: flex; flex-direction: column; min-width: 0; }
@@ -5824,6 +5848,19 @@
         overflow-x: auto;
         padding-bottom: 4px;
         scrollbar-width: none;
+        /* Same edge fade, but the strip scrolls sideways here. */
+        -webkit-mask-image: linear-gradient(
+          to right,
+          transparent 0,
+          #000 var(--fade-start),
+          #000 calc(100% - var(--fade-end)),
+          transparent 100%);
+        mask-image: linear-gradient(
+          to right,
+          transparent 0,
+          #000 var(--fade-start),
+          #000 calc(100% - var(--fade-end)),
+          transparent 100%);
       }
       .docs-group-label { display: none; }
       .docs-group,
@@ -11583,6 +11620,34 @@ export function Surface({ open, children }) {
           window.addEventListener("resize", function () {
             if (docsMain && !docsMain.classList.contains("is-doc")) positionIndicator(false);
           });
+
+          /* Sidebar edge fade — grow the mask only on the side that still
+             has list scrolled past it, so a fully-scrolled end stays crisp.
+             Vertical on desktop, horizontal once the sidebar collapses into
+             the pill strip. */
+          (function initDocsFade() {
+            var sidebar = document.querySelector(".docs-sidebar");
+            if (!sidebar) return;
+            var SIZE = 24;
+            function update() {
+              var horizontal = window.matchMedia("(max-width: 860px)").matches;
+              var pos = horizontal ? sidebar.scrollLeft : sidebar.scrollTop;
+              var visible = horizontal ? sidebar.clientWidth : sidebar.clientHeight;
+              var total = horizontal ? sidebar.scrollWidth : sidebar.scrollHeight;
+              var max = Math.max(total - visible, 0);
+              if (max <= 1) {
+                sidebar.style.setProperty("--fade-start", "0px");
+                sidebar.style.setProperty("--fade-end", "0px");
+                return;
+              }
+              sidebar.style.setProperty("--fade-start", Math.min(pos, SIZE) + "px");
+              sidebar.style.setProperty("--fade-end", Math.min(max - pos, SIZE) + "px");
+            }
+            sidebar.addEventListener("scroll", update, { passive: true });
+            window.addEventListener("resize", update);
+            if (window.ResizeObserver) new ResizeObserver(update).observe(sidebar);
+            update();
+          })();
 
           Array.prototype.forEach.call(
             document.querySelectorAll(".detail-code-copy"),

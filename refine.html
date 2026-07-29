@@ -3875,7 +3875,8 @@
     @media (max-width: 640px) {
       .site-nav-menu { gap: 2px; }
       .nav-pill { padding: 0 10px; }
-      .brand-word { display: none; }
+      /* Scoped to the top bar — the footer keeps its full wordmark. */
+      .site-nav .brand-word { display: none; }
       .get-started-grid { grid-template-columns: 1fr; gap: 24px; }
       .title { font-size: 26px; line-height: 32px; }
       .subtitle { font-size: 15px; line-height: 22px; }
