@@ -6056,11 +6056,11 @@
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv57">
               <div class="pv54" id="pv54">
-                <img alt="" src="assets/proto-images/Screenshot%202026-05-17%20at%2019.58.27.png" draggable="false" />
+                <img alt="" src="assets/proto-images/photo-1773236759289-251d9687b6e3.avif" draggable="false" />
               </div>
               <div class="pv58" id="pv58">
                 <span class="pv3c">Drag &amp; drop<br />it here</span>
-                <img class="pv4b" id="pv4b" alt="" src="assets/proto-images/Screenshot%202026-05-17%20at%2019.58.27.png" />
+                <img class="pv4b" id="pv4b" alt="" src="assets/proto-images/photo-1773236759289-251d9687b6e3.avif" />
                 <!-- Smoke as SVG content: the turbulence filter applies to
                      shapes inside the svg, which WebKit renders correctly
                      (its displacement bug is CSS url() on HTML content).
@@ -6362,7 +6362,7 @@
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1u">
             <button type="button" class="pv28" id="pv28" aria-expanded="false" aria-label="Open image">
-              <img class="pv2i" id="pv1t" alt="" src="assets/proto-images/Screenshot%202026-05-17%20at%2019.58.27.png" />
+              <img class="pv2i" id="pv1t" alt="" src="assets/proto-images/photo-1773236759289-251d9687b6e3.avif" />
               <!-- Bend render layer. The old feImage + feDisplacementMap
                    filter never worked in WebKit (feImage data URIs don't
                    load → no bend in Safari, broken repaints on iOS), so
@@ -6561,7 +6561,7 @@
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1y">
             <div class="pv2c" id="pv2c">
-              <img alt="" src="assets/proto-images/Screenshot%202026-05-17%20at%2019.58.27.png" />
+              <img alt="" src="assets/proto-images/photo-1773236759289-251d9687b6e3.avif" />
               <button type="button" class="pv1m" id="pv1m" aria-label="Delete image">
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -12693,6 +12693,7 @@ let pointerId = null;
 let startX = 0, startY = 0;
 let dx = 0, dy = 0;
 let lastX = 0, lastT = 0;
+let moved = false;   
 let revertTimer = null;
 function setVars(x, y, tilt, lift) {
 chip.style.setProperty("--dx", x.toFixed(1) + "px");
@@ -12778,6 +12779,7 @@ startX = e.clientX - dx;
 startY = e.clientY - dy;
 lastX = e.clientX;
 lastT = performance.now();
+moved = false;
 chip.classList.remove("is-returning", "is-dropping", "is-respawning");
 chip.classList.add("is-dragging");
 chip.style.setProperty("--lift", String(readNum("--pv35", 1.05)));
@@ -12786,6 +12788,7 @@ chip.addEventListener("pointermove", function (e) {
 if (!dragging || e.pointerId !== pointerId) return;
 dx = e.clientX - startX;
 dy = e.clientY - startY;
+if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
 const now = performance.now();
 const dt = Math.max(now - lastT, 1);
 const vx = (e.clientX - lastX) / dt; 
@@ -12820,6 +12823,15 @@ settling = false;
 }
 chip.addEventListener("pointerup", release);
 chip.addEventListener("pointercancel", release);
+const wrap = chip.parentElement;
+if (wrap) {
+wrap.addEventListener("click", function (e) {
+if (!moved) return;
+moved = false;
+e.stopPropagation();
+e.preventDefault();
+}, true);
+}
 })();
 (function initPro9() {
 const badge = document.getElementById("pv4t");
