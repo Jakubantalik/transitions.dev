@@ -164,6 +164,11 @@
     if (navSigninLabel) {
       navSigninLabel.textContent = state.authenticated ? "Account" : "Sign in";
     }
+    // Footer "Sign in" link (present on every page): label follows auth state.
+    var footerLink = document.getElementById("footer-signin");
+    if (footerLink) {
+      footerLink.textContent = state.authenticated ? "Account" : "Sign in";
+    }
     // CTA reflects entitlement: entitled users manage their plan instead of buying.
     var cta = document.getElementById("pro-price-cta");
     if (cta && state.pro) {
