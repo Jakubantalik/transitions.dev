@@ -5927,6 +5927,13 @@
             renew = (sub.cancel_at_period_end
               ? "Your subscription ends on "
               : "Your subscription will auto renew on ") + fmtDate(sub.current_period_end) + ".";
+          } else if (!s.pro) {
+            // No plan on THIS account: by far the most common cause is having
+            // purchased with a different email — say so instead of a bare
+            // "No active plan" (support case: lifetime buyer signed in with
+            // another address saw "unsubscribed" with no explanation).
+            renew = "You're signed in as " + (s.email || "this account") +
+              ", which has no plan. Bought Pro with a different email? Sign out and use that one.";
           }
           el("acc-plan-renew").textContent = renew;
         }
@@ -6200,7 +6207,9 @@
               setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
             });
             return r.json().catch(function () { return {}; }).then(function (d) {
-              setNote(noteId, d && d.error === "no_pro_entitlement" ? "Your Pro plan isn't active." : "Download unavailable right now.", "err");
+              setNote(noteId, d && d.error === "no_pro_entitlement"
+                ? "This account (" + ((TP.state && TP.state.email) || "unknown") + ") has no active Pro plan. Bought with a different email? Sign out and use that one."
+                : "Download unavailable right now.", "err");
             });
           })
           .catch(function () { setNote(noteId, "Download failed. Please try again.", "err"); })
