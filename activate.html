@@ -347,6 +347,18 @@
         <button class="btn-primary" type="submit" id="a-signin-btn">Send login link</button>
       </form>
 
+      <!-- Typed sign-in code (shown after a link is sent; rescues in-app-browser opens) -->
+      <form id="a-codeform" novalidate hidden>
+        <div class="field">
+          <label class="field-label" for="a-signin-code">Or enter the code from the email</label>
+          <input class="field-input" type="text" id="a-signin-code" placeholder="XXXX-XXXX"
+                 autocomplete="one-time-code" spellcheck="false" style="text-transform:uppercase" />
+          <p class="field-error" id="a-code-error" role="alert" hidden>That code didn’t work — check it and try again.</p>
+        </div>
+        <div style="height:24px"></div>
+        <button class="btn-primary" type="submit" id="a-code-btn">Sign in with code</button>
+      </form>
+
       <!-- Approve button (signed-in + device code present) -->
       <button class="btn-primary" id="a-approve" hidden>Approve this device</button>
 
@@ -399,7 +411,7 @@
     </footer>
   </main>
 
-  <script src="assets/pro-client.js?v=15" defer></script>
+  <script src="assets/pro-client.js?v=16" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;
@@ -456,9 +468,48 @@
         setEmailError(false);
         signinBtn.disabled = true; signinBtn.textContent = "Sending…";
         TP.magicLink(email, deviceCode || null, inviteToken || null)
-          .then(function () { setNote("Check your email for a sign-in link.", "ok"); })
+          .then(function () {
+            setNote("Check your email — click the link, or type the code below.", "ok");
+            var cf = document.getElementById("a-codeform");
+            if (cf) { cf.hidden = false; document.getElementById("a-signin-code").focus(); }
+          })
           .catch(function () { setNote("Couldn't send the link. Please try again.", "err"); })
           .finally(function () { signinBtn.disabled = false; signinBtn.textContent = "Send login link"; });
+      });
+
+      // Typed-code sign-in: works even when the emailed link opened in a mail
+      // app's in-app browser (the cookie lands there, not here). The code signs
+      // THIS browser in, and carries the same device/invite side effects.
+      document.getElementById("a-codeform").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var cInput = document.getElementById("a-signin-code");
+        var cErr = document.getElementById("a-code-error");
+        var cBtn = document.getElementById("a-code-btn");
+        var code = cInput.value.trim();
+        if (!code) { cErr.hidden = false; cInput.focus(); return; }
+        cErr.hidden = true;
+        cBtn.disabled = true; cBtn.textContent = "Signing in…";
+        fetch(TP.apiBase + "/auth/code", {
+          method: "POST", credentials: "include",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email: emailInput.value.trim(), code: code })
+        }).then(function (r) { return r.json().catch(function () { return {}; }); })
+          .then(function (r) {
+            if (!r || !r.ok) {
+              cErr.textContent = r && r.error === "too_many_attempts"
+                ? "Too many tries — request a fresh link and use its new code."
+                : "That code didn’t work — check it and try again.";
+              cErr.hidden = false;
+              cInput.classList.remove("is-shaking"); void cInput.offsetWidth; cInput.classList.add("is-shaking");
+              setTimeout(function () { cInput.classList.remove("is-shaking"); }, 300);
+              return;
+            }
+            if (r.next === "device_approved") { setNote("Device approved — return to your terminal.", "ok"); return; }
+            if (r.next === "device_denied") { setNote("Signed in, but this account has no active Pro plan, so the device wasn't approved.", "err"); return; }
+            location.href = "account.html?signed_in=1" + (r.next === "joined" ? "&joined=1" : "");
+          })
+          .catch(function () { cErr.hidden = false; })
+          .finally(function () { cBtn.disabled = false; cBtn.textContent = "Sign in with code"; });
       });
 
       approveBtn.addEventListener("click", function () {

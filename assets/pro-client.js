@@ -325,6 +325,14 @@
           '<button class="tp-modal-btn" type="submit">Send login link</button>' +
         '</form>' +
         '<p class="tp-modal-note" role="status" hidden></p>' +
+        '<form class="tp-modal-form tp-modal-code-form" novalidate hidden>' +
+          '<div class="tp-modal-field">' +
+            '<label class="tp-modal-label" for="tp-modal-code">Or enter the code from the email</label>' +
+            '<input class="tp-modal-input" id="tp-modal-code" type="text" name="code" placeholder="XXXX-XXXX" autocomplete="one-time-code" spellcheck="false" style="text-transform:uppercase" />' +
+            '<p class="tp-modal-error" role="alert" hidden>That code didn\u2019t work \u2014 check it and try again.</p>' +
+          '</div>' +
+          '<button class="tp-modal-btn" type="submit">Sign in with code</button>' +
+        '</form>' +
         '<p class="tp-modal-foot">No access? <a href="pro.html">Get Pro</a></p>' +
       "</div>";
     document.body.appendChild(modalEl);
@@ -360,9 +368,43 @@
       setError(false);
       btn.disabled = true; btn.textContent = "Sending…";
       magicLink(email)
-        .then(function () { setModalNote(note, "Check your email for a sign-in link.", "ok"); })
+        .then(function () {
+          setModalNote(note, "Check your email — click the link, or type the code below.", "ok");
+          var cf = modalEl.querySelector(".tp-modal-code-form");
+          if (cf) { cf.hidden = false; cf.querySelector("input").focus(); }
+        })
         .catch(function () { setModalNote(note, "Couldn’t send the link. Please try again.", "err"); })
         .finally(function () { btn.disabled = false; btn.textContent = "Send login link"; });
+    });
+
+    // Typed-code path: signs this browser in even when the emailed link was
+    // opened elsewhere (mail apps often open links in their own in-app browser).
+    var codeForm = modalEl.querySelector(".tp-modal-code-form");
+    codeForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var cInput = codeForm.querySelector("input");
+      var cErr = codeForm.querySelector(".tp-modal-error");
+      var cBtn = codeForm.querySelector(".tp-modal-btn");
+      var note = modalEl.querySelector(".tp-modal-note");
+      var code = cInput.value.trim();
+      if (!code) { cErr.hidden = false; cInput.focus(); return; }
+      cErr.hidden = true;
+      cBtn.disabled = true; cBtn.textContent = "Signing in…";
+      apiJSON("/auth/code", "POST", { email: input.value.trim(), code: code })
+        .then(function (r) {
+          if (r && r.ok) {
+            setModalNote(note, "Signed in.", "ok");
+            return refreshMe().then(function () { closeAuthModal(); });
+          }
+          cErr.textContent = r && r.error === "too_many_attempts"
+            ? "Too many tries — request a fresh link and use its new code."
+            : "That code didn’t work — check it and try again.";
+          cErr.hidden = false;
+          cInput.classList.remove("is-shaking"); void cInput.offsetWidth; cInput.classList.add("is-shaking");
+          setTimeout(function () { cInput.classList.remove("is-shaking"); }, 300);
+        })
+        .catch(function () { cErr.hidden = false; })
+        .finally(function () { cBtn.disabled = false; cBtn.textContent = "Sign in with code"; });
     });
     return modalEl;
   }
