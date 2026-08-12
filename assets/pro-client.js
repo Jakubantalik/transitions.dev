@@ -570,7 +570,12 @@
     }
     var navSignin = document.getElementById("nav-signin-btn");
     if (navSignin) {
-      navSignin.addEventListener("click", function (e) { e.preventDefault(); signIn(); });
+      navSignin.addEventListener("click", function (e) {
+        e.preventDefault();
+        // Label reads "Account" once signed in — go there, don't re-prompt.
+        if (state.authenticated) location.href = "account.html";
+        else signIn();
+      });
     }
     // Footer "Sign in" — opens the modal on pages that load this client;
     // its href="/pro.html" is the fallback on pages that don't.
