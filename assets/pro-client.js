@@ -122,8 +122,10 @@
   window.addEventListener("pageshow", function (e) {
     if (e.persisted) refreshMe();
   });
+  // Always re-verify on return to the tab — entitlement may have changed in
+  // another tab (purchase, sign-in, sign-out) and stale state must never stick.
   document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible" && !state.resolved) refreshMe();
+    if (document.visibilityState === "visible") refreshMe();
   });
 
   // Sign out (this device, or ?all=1 for every device), then refresh state.
