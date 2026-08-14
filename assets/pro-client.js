@@ -196,6 +196,15 @@
     else el.removeAttribute("aria-busy");
   }
 
+  // A ?code= on the pricing page URL (comp / press / sponsor codes) is passed to
+  // checkout, where it takes precedence over the automatic parity discount.
+  function urlPromoCode() {
+    try {
+      var c = new URLSearchParams(location.search).get("code");
+      return c ? c.trim().toUpperCase().slice(0, 40) : null;
+    } catch (e) { return null; }
+  }
+
   function startCheckout() {
     // Team → per-seat subscription (buyer adjusts seat count on Stripe Checkout).
     // The billing toggle carries monthly / annual / lifetime; lifetime is a
@@ -211,6 +220,8 @@
     }
     var cta = document.getElementById("pro-price-cta");
     setBusy(cta, true);
+    var promo = urlPromoCode();
+    if (promo) payload.code = promo;
     apiJSON("/checkout", "POST", payload)
       .then(function (data) {
         if (data && data.url) location.href = data.url;
