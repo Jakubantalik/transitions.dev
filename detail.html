@@ -1122,6 +1122,8 @@
     .mobile-menu-link--4 { transition-delay: 120ms; }
     .mobile-menu-link--pro { color: #0053e3; }
     html[data-theme="dark"] .mobile-menu-link--pro { color: #7cd4ff; }
+    .mobile-menu-link--pro[data-state="account"] { color: var(--text); }
+    html[data-theme="dark"] .mobile-menu-link--pro[data-state="account"] { color: var(--text); }
     body.menu-open .mobile-menu-link {
       opacity: 1;
       transform: translateY(0);
@@ -5010,6 +5012,12 @@
     .nav-get-pro:hover { background: rgba(0, 115, 255, 0.14); }
     html[data-theme="dark"] .nav-get-pro { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
     html[data-theme="dark"] .nav-get-pro:hover { background: rgba(85, 207, 255, 0.22); }
+    /* Signed in with Pro: nothing left to buy, so the pill drops the accent
+       and reads as a plain Account link (same grey as the GitHub pill). */
+    .nav-get-pro[data-state="account"] { background: var(--chip-bg); color: var(--text); }
+    .nav-get-pro[data-state="account"]:hover { background: var(--chip-bg-hover); }
+    html[data-theme="dark"] .nav-get-pro[data-state="account"] { background: var(--chip-bg); color: var(--text); }
+    html[data-theme="dark"] .nav-get-pro[data-state="account"]:hover { background: var(--chip-bg-hover); }
 
     /* 3-dot dropdown — exact Refine tool component */
     .pm-anchor { position: relative; display: inline-flex; }
@@ -14527,7 +14535,7 @@ revertTimer = window.setTimeout(reset, readNum("--pv5c", 2000));
 })();
 </script>
   <!-- Pro platform client: unlocks Pro code for entitled viewers (fires pro:me). -->
-  <script src="assets/pro-client.js?v=19" defer></script>
+  <script src="assets/pro-client.js?v=20" defer></script>
 </body>
 </html>
 

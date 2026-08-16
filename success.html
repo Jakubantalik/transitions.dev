@@ -3617,6 +3617,12 @@
     .nav-get-pro:hover { background: rgba(0, 115, 255, 0.14); }
     html[data-theme="dark"] .nav-get-pro { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
     html[data-theme="dark"] .nav-get-pro:hover { background: rgba(85, 207, 255, 0.22); }
+    /* Signed in with Pro: nothing left to buy, so the pill drops the accent
+       and reads as a plain Account link (same grey as the GitHub pill). */
+    .nav-get-pro[data-state="account"] { background: var(--chip-bg); color: var(--text); }
+    .nav-get-pro[data-state="account"]:hover { background: var(--chip-bg-hover); }
+    html[data-theme="dark"] .nav-get-pro[data-state="account"] { background: var(--chip-bg); color: var(--text); }
+    html[data-theme="dark"] .nav-get-pro[data-state="account"]:hover { background: var(--chip-bg-hover); }
 
     /* 3-dot dropdown — exact Refine tool component */
     .pm-anchor { position: relative; display: inline-flex; }
@@ -4635,7 +4641,7 @@
     })();
   </script>
   <!-- Post-purchase: sign the buyer in by emailing a magic link (no typing). -->
-  <script src="assets/pro-client.js?v=19" defer></script>
+  <script src="assets/pro-client.js?v=20" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;

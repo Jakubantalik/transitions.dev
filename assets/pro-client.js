@@ -166,6 +166,30 @@
     if (navSigninLabel) {
       navSigninLabel.textContent = state.authenticated ? "Account" : "Sign in";
     }
+    // "Get Pro" nav pill (every page except /pro): once the visitor is signed
+    // in AND entitled there is nothing left to sell, so the pill becomes a
+    // neutral "Account" link. data-state drives the styling swap.
+    var getPro = document.querySelector(".nav-get-pro");
+    if (getPro) {
+      var entitled = state.authenticated && state.pro;
+      var getProLabel = getPro.querySelector(".nav-get-pro-label");
+      if (getProLabel) {
+        getProLabel.innerHTML = entitled
+          ? "Account"
+          : '<span class="nav-get-pro-word">Get </span>Pro';
+      }
+      getPro.setAttribute("href", entitled ? "account.html" : "/pro.html");
+      getPro.setAttribute("data-state", entitled ? "account" : "get-pro");
+      getPro.setAttribute("aria-label", entitled ? "Account" : "Get Transitions Pro");
+    }
+    // Same swap in the mobile menu.
+    var mobilePro = document.querySelector(".mobile-menu-link--pro");
+    if (mobilePro) {
+      var mobileEntitled = state.authenticated && state.pro;
+      mobilePro.textContent = mobileEntitled ? "Account" : "Get Pro";
+      mobilePro.setAttribute("href", mobileEntitled ? "account.html" : "/pro.html");
+      mobilePro.setAttribute("data-state", mobileEntitled ? "account" : "get-pro");
+    }
     // Footer "Sign in" link (present on every page): label follows auth state.
     var footerLink = document.getElementById("footer-signin");
     if (footerLink) {
