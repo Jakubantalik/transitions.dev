@@ -32,6 +32,35 @@
   // transient fetch failure paints a signed-in user as logged out.
   var state = { authenticated: false, email: null, pro: false, subscription: null, ppp: null, resolved: false };
 
+  // Last-known auth state, cached so a navigation can paint the signed-in UI
+  // on the FIRST frame instead of flashing the signed-out version for the
+  // length of a /me round-trip. Only the two booleans the nav needs are kept,
+  // and /me still overwrites them the moment it answers.
+  var AUTH_CACHE_KEY = "tdev:auth";
+  var AUTH_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+
+  function readAuthCache() {
+    try {
+      var raw = localStorage.getItem(AUTH_CACHE_KEY);
+      if (!raw) return null;
+      var c = JSON.parse(raw);
+      if (!c || typeof c.t !== "number" || Date.now() - c.t > AUTH_CACHE_TTL) return null;
+      return c;
+    } catch (e) { return null; }
+  }
+  function writeAuthCache() {
+    try {
+      localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({
+        a: !!state.authenticated,
+        p: !!state.pro,
+        t: Date.now(),
+      }));
+    } catch (e) {}
+  }
+  function clearAuthCache() {
+    try { localStorage.removeItem(AUTH_CACHE_KEY); } catch (e) {}
+  }
+
   function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
 
   // Expose a tiny global so other page scripts (index gallery, activate page) can use it.
@@ -99,6 +128,7 @@
         state.lifetime = !!me.lifetime;
         state.subscription = me.subscription || null;
         state.resolved = true;
+        writeAuthCache();
         paintAuth();
         document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
         return state;
@@ -130,6 +160,7 @@
 
   // Sign out (this device, or ?all=1 for every device), then refresh state.
   function logout(allDevices) {
+    clearAuthCache();
     return api("/auth/logout" + (allDevices ? "?all=1" : ""), { method: "POST" })
       .then(function () { return refreshMe(); });
   }
@@ -631,6 +662,15 @@
         if (state.authenticated) location.href = "account.html";
         else signIn();
       });
+    }
+    // Paint the cached (optimistic) auth state first so the nav doesn't flash
+    // "Get Pro" before /me answers. `resolved` stays false, so nothing that
+    // needs a confirmed answer treats this as authoritative.
+    var cached = readAuthCache();
+    if (cached) {
+      state.authenticated = !!cached.a;
+      state.pro = !!cached.p;
+      paintAuth();
     }
     mountProBadges();
     wireProCopy();

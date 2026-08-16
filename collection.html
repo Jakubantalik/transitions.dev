@@ -1,0 +1,2722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <title>Transitions.dev — Collection</title>
+  <meta name="description" content="Live showcase of the transitions.dev library — every component demos its transition through real interaction." />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#fdfdfd" />
+
+  <link rel="icon" href="assets/favicon-light-mode.png?v=4" type="image/png" sizes="any" />
+  <link rel="icon" href="assets/favicon-light-mode.png?v=4" media="(prefers-color-scheme: light)" type="image/png" />
+  <link rel="icon" href="assets/favicon-darkmode.png?v=4" media="(prefers-color-scheme: dark)" type="image/png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ══ Site foundations (from index.html) ═════════════════════ */
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --chip-bg: #f4f4f4;
+      --chip-bg-hover: #f1f1f1;
+      --skeleton: #eeeeef;
+      --material-bg: #ffffff;
+      --material-shadow:
+        0 4px 42px 0 rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(0, 0, 0, 0.06);
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+
+      /* ══ transitions-dev motion tokens (skills/transitions-dev/_root.css) ══ */
+      /* Avatar group hover */
+      --avatar-lift: -4px;
+      --avatar-dur: 320ms;
+      --avatar-scale: 1.05;
+      --avatar-falloff: 0.45;
+      --avatar-ease-in: cubic-bezier(0.22, 1, 0.36, 1);
+      --avatar-ease-out: cubic-bezier(0.34, 3.85, 0.64, 1);
+      /* Card resize */
+      --resize-dur: 300ms;
+      --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Card hover tilt */
+      --tilt-perspective: 1000px;
+      --tilt-return: 1000ms;
+      --tilt-return-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --tilt-follow: 400ms;
+      --tilt-follow-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --tilt-glare-opacity: 0.32;
+      --tilt-glare-fade: 300ms;
+      --tilt-glare-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Like button */
+      --like-color: #f40051;
+      --like-fill: 150ms;
+      --like-pop: 350ms;
+      --like-pop-ease: cubic-bezier(0.34, 1.96, 0.64, 1);
+      --like-particle-dur: 600ms;
+      --like-particle-dist: 20px;
+      --like-particle-size: 2.5px;
+      --like-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Plus to menu morph */
+      --morph-open-dur: 350ms;
+      --morph-close-dur: 250ms;
+      --morph-ease: cubic-bezier(0.34, 1.25, 0.64, 1);
+      --morph-close-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --morph-r-closed: 40px;
+      --morph-r-open: 20px;
+      --morph-fade-dur: 200ms;
+      --morph-slide: 40px;
+      --morph-rotate: 45deg;
+      --morph-scale: 0.97;
+      --morph-blur: 2px;
+      /* Toggle */
+      --toggle-dur: 350ms;
+      --toggle-travel: 14.66px;
+      --toggle-ov1: 1px;
+      --toggle-ov2: 0px;
+      --toggle-track: 0ms;
+      --toggle-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
+      /* Number pop-in (02) */
+      --digit-dur: 500ms;
+      --digit-distance: 8px;
+      --digit-stagger: 70ms;
+      --digit-blur: 2px;
+      --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
+      --digit-dir-x: 0;
+      --digit-dir-y: 1;
+      /* Shimmer text */
+      --shimmer-dur: 2000ms;
+      --shimmer-base: #7c7c7c;
+      --shimmer-highlight: #0d0d0d;
+      --shimmer-band: 400%;
+      --shimmer-ease: linear;
+      /* Checkbox check */
+      --check-box: 150ms;
+      --check-draw: 350ms;
+      --check-delay: 0ms;
+      --check-uncheck: 150ms;
+      --check-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Tabs sliding */
+      --tabs-dur: 250ms;
+      --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --tabs-text-muted: rgba(15, 15, 15, 0.8);
+      --tabs-text-active: #0f0f0f;
+      --tabs-bar-bg: #f1f1f1;
+      --tabs-pill-bg: #ffffff;
+      /* Learn more hover */
+      --learn-shift: 2px;
+      --learn-spread: 8deg;
+      --learn-in: 350ms;
+      --learn-out: 350ms;
+      --learn-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Accordion expand */
+      --acc-expand: 250ms;
+      --acc-collapse: 250ms;
+      --acc-chevron: 250ms;
+      --acc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Menu dropdown */
+      --dropdown-open-dur: 250ms;
+      --dropdown-close-dur: 150ms;
+      --dropdown-pre-scale: 0.97;
+      --dropdown-closing-scale: 0.99;
+      --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Skeleton loader and reveal */
+      --pulse-dur: 1000ms;
+      --pulse-count: 1;
+      --pulse-min: 0.5;
+      --reveal-dur: 400ms;
+      --reveal-blur: 2px;
+      --reveal-ease: ease-in-out;
+      /* Tooltip open/close (17) */
+      --tt-in-dur: 150ms;
+      --tt-out-dur: 50ms;
+      --tt-scale: 0.98;
+      --tt-delay: 80ms;
+      --tt-in-ease: ease-out;
+      --tt-out-ease: ease-out;
+      --tt-bg: #ffffff;
+      --tt-fg: #2f2f2f;
+    }
+
+    * { box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body { min-height: 100dvh; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      display: grid;
+      place-items: center;
+      overflow-x: hidden;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    /* ══ Stage — Figma frame 2420:20473, 686×515, slots at exact
+       design coordinates (the design's gaps embody the 20px rule) ══ */
+    .stage-scale { transform-origin: center center; }
+    .stage {
+      position: relative;
+      width: 800px;
+      height: 540px;
+    }
+    .slot { position: absolute; }
+
+    /* Shared white "material" surface (index --material tokens) */
+    .surface {
+      background: var(--material-bg);
+      box-shadow: var(--material-shadow);
+      border-radius: 12px;
+    }
+
+    /* ── 1 · Avatar group hover (11) — slot (270,37) 157×47 ────── */
+    #avatars {
+      left: 270px; top: 51px; width: 157px; height: 47px;
+      display: flex; align-items: center;
+    }
+    .t-avatar-group { position: relative; display: flex; }
+    /* Avatar hover tooltip — the exact component the demo app uses
+       (example.html .avatar-tooltip): a single shared pill that stays
+       mounted and animates its x-position + width to retarget as you
+       move across avatars, showing each person's name. */
+    .avatar-tooltip {
+      position: absolute;
+      left: 0; bottom: calc(100% + 8px);
+      transform: translateX(0);
+      height: 32px;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0; border-radius: 40px;
+      font-size: 12px; font-weight: 400; line-height: 16px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 80;
+      opacity: 0; visibility: hidden;
+      width: 0; overflow: hidden;
+      background: #ffffff; color: #17181c;
+      box-shadow:
+        0 2px 8px 0 rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 1px 1px 0 rgba(0, 0, 0, 0.04);
+      transition:
+        transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        width 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 120ms cubic-bezier(0.22, 1, 0.36, 1) 50ms,
+        visibility 0s linear 170ms;
+    }
+    .avatar-tooltip[data-show="true"] {
+      opacity: 1; visibility: visible;
+      transition:
+        transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        width 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 120ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear 0s;
+    }
+    .avatar-tooltip-text { display: inline-block; white-space: nowrap; padding: 0; line-height: 32px; }
+    .t-avatar {
+      transform-origin: center;
+      /* translateY before scale so scale doesn't amplify the lift offset. */
+      transform: translateY(var(--shift, 0px)) scale(var(--scale-active, 1));
+      transition: transform var(--avatar-dur) var(--avatar-ease-in);
+      will-change: transform;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--chip-bg);
+    }
+    .t-avatar + .t-avatar { margin-left: -8px; }
+    .t-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .t-avatar.is-more {
+      display: grid; place-items: center;
+      background: #e9e9e9;
+      font-size: 11px; font-weight: 500; color: var(--text-muted);
+    }
+
+    /* ── 2 · Image open tilt (Pro, from index .pv28) ──────────────
+       A small image that zooms open to full size with a 3D tilt/bend
+       and follows the pointer while open. Ported from the index Pro
+       prototype "Image open tilt" (the CSS zoom + 3D bend; the optional
+       pixel-warp canvas is omitted). z-index is raised so the opened
+       image sits above neighbouring components. ── */
+    #resize {
+      left: 446px; top: 53px;
+      width: 66px; height: 48px;   /* closed footprint (220×160 · 0.3) */
+      overflow: visible;
+      z-index: 60;                 /* opened image sits on top */
+      --img-perspective: 900px;
+      --img-w: 220px;
+      --img-h: 160px;
+      --img-closed-scale: 0.3;
+      --img-open-dur: 450ms;
+      --img-open-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --img-close-dur: 350ms;
+      --img-close-ease: cubic-bezier(0.34, 1.25, 0.64, 1);
+      --img-depth: 70px;
+      --img-rx: 0deg;
+      --img-ry: 0deg;
+      /* Bend (canvas warp) — index tokens read by the port. */
+      --pv27: 50;                              /* bend strength */
+      --pv12: 350ms;                           /* bend duration */
+      --pvu: cubic-bezier(0.22, 1, 0.36, 1);   /* bend ease */
+      --pvw: cubic-bezier(0.22, 1, 0.36, 1);   /* open flight ease */
+      --pvl: cubic-bezier(0.34, 1.25, 0.64, 1);/* close flight ease */
+      --pv13: 450ms;                           /* open flight dur */
+      --pvv: 350ms;                            /* close flight dur */
+      --pro-surface-shadow:
+        0 0 0 1px rgba(0,0,0,0.06),
+        0 2px 6px rgba(0,0,0,0.05),
+        0 4px 42px rgba(0,0,0,0.06);
+    }
+    .pv1u { perspective: var(--img-perspective); position: absolute; inset: 0; }
+    /* Bend render layer — a canvas that draws the warped image while
+       .is-bending is set (the real image is hidden underneath). */
+    .pv1g { position: absolute; display: none; pointer-events: none; }
+    .pv28.is-bending { background: transparent; }
+    .pv28.is-bending .pv2i { visibility: hidden; }
+    .pv28.is-bending .pv1g { display: block; }
+    .pv28 {
+      appearance: none; border: 0; padding: 0;
+      position: absolute;
+      left: 50%; top: 50%;
+      margin-left: calc(var(--img-w) / -2);
+      margin-top: calc(var(--img-h) / -2);
+      width: var(--img-w); height: var(--img-h);
+      border-radius: 32px;
+      overflow: visible;
+      cursor: pointer;
+      background: #eeeeef;
+      box-shadow: var(--pro-surface-shadow);
+      -webkit-tap-highlight-color: transparent;
+      transform-origin: center;
+      scale: var(--img-closed-scale);
+      transform: rotateX(0deg) rotateY(0deg) translateZ(0);
+      will-change: scale, transform;
+      transition:
+        scale var(--img-close-dur) var(--img-close-ease),
+        border-radius var(--img-close-dur) var(--img-close-ease);
+    }
+    .pv28.is-open {
+      border-radius: 16px;
+      scale: 1;
+      transition:
+        scale var(--img-open-dur) var(--img-open-ease),
+        border-radius var(--img-open-dur) var(--img-open-ease);
+      animation: pv2a var(--img-open-dur) var(--img-open-ease) both;
+    }
+    .pv28.is-closing { animation: pv1s var(--img-close-dur) var(--img-close-ease) both; }
+    .pv28 .pv2i {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; display: block; pointer-events: none;
+      border-radius: inherit;
+    }
+    @keyframes pv2a {
+      0%   { transform: rotateX(0deg) rotateY(0deg) translateZ(calc(var(--img-depth) * -1)); }
+      45%  { transform: rotateX(var(--img-rx)) rotateY(var(--img-ry)) translateZ(calc(var(--img-depth) * -0.4)); }
+      100% { transform: rotateX(0deg) rotateY(0deg) translateZ(0); }
+    }
+    @keyframes pv1s {
+      0%   { transform: rotateX(0deg) rotateY(0deg) translateZ(0); }
+      45%  { transform: rotateX(calc(var(--img-rx) * -0.45)) rotateY(calc(var(--img-ry) * -0.45)) translateZ(calc(var(--img-depth) * -0.4)); }
+      100% { transform: rotateX(0deg) rotateY(0deg) translateZ(0); }
+    }
+
+    /* ── 3 · Card stack hover (Pro, from index .pv1r/.pv24) ───────
+       Three stacked cards; on hover the outer two fan out and rotate
+       with a spring, and any hovered card lifts + scales above. Ported
+       faithfully from the index Pro prototype "Card stack hover". ── */
+    #tilt {
+      left: 297px; top: 106px;  /* centres the 120px stack in the region */
+      width: 120px; height: 120px;
+      z-index: 5;
+      --stack-spread-dur: 410ms;
+      --stack-spread-ease: cubic-bezier(0.31, 1.84, 0.64, 1);
+      --stack-return-dur: 360ms;
+      --stack-return-ease: cubic-bezier(0.34, 1.5, 0.64, 1);
+      --stack-scale-dur: 610ms;
+      --stack-scale-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --stack-dx-mult: 1.42;
+      --stack-drot-mult: 1;
+      --stack-hover-scale: 1.04;
+      --pro-surface-shadow:
+        0 0 0 1px rgba(0,0,0,0.06),
+        0 2px 6px rgba(0,0,0,0.05),
+        0 4px 42px rgba(0,0,0,0.06);
+    }
+    .pv1r { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+    /* When the stack fans open (hover / touch) lift it above neighbours. */
+    #tilt:hover, #tilt:has(.pv1r.is-open) { z-index: 70; }
+    .pv24 {
+      appearance: none; border: 0; padding: 0;
+      position: absolute; top: 0; left: 0;
+      width: 78px; height: 78px;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: var(--pro-surface-shadow);
+      overflow: hidden; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      translate: var(--cx) var(--cy);
+      rotate: var(--rot);
+      scale: 1;
+      opacity: var(--card-op, 1);
+      transition:
+        translate var(--stack-return-dur) var(--stack-return-ease),
+        rotate var(--stack-return-dur) var(--stack-return-ease),
+        scale var(--stack-scale-dur) var(--stack-scale-ease),
+        opacity var(--stack-return-dur) var(--stack-return-ease);
+      will-change: translate, rotate, scale, opacity;
+    }
+    .pv24 img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    @media (hover: hover) {
+      .pv1r:hover .pv24 {
+        translate: calc(var(--cx) + var(--dx) * var(--stack-dx-mult)) calc(var(--cy) + var(--dy));
+        rotate: calc(var(--rot) + var(--drot) * var(--stack-drot-mult));
+        opacity: 1;
+        transition:
+          translate var(--stack-spread-dur) var(--stack-spread-ease),
+          rotate var(--stack-spread-dur) var(--stack-spread-ease),
+          scale var(--stack-scale-dur) var(--stack-scale-ease),
+          opacity var(--stack-spread-dur) var(--stack-spread-ease);
+      }
+      .pv24:hover { scale: var(--stack-hover-scale); z-index: 30; }
+    }
+    .pv1r.is-open .pv24 {
+      translate: calc(var(--cx) + var(--dx) * var(--stack-dx-mult)) calc(var(--cy) + var(--dy));
+      rotate: calc(var(--rot) + var(--drot) * var(--stack-drot-mult));
+      opacity: 1;
+      transition:
+        translate var(--stack-spread-dur) var(--stack-spread-ease),
+        rotate var(--stack-spread-dur) var(--stack-spread-ease),
+        scale var(--stack-scale-dur) var(--stack-scale-ease),
+        opacity var(--stack-spread-dur) var(--stack-spread-ease);
+    }
+
+    /* ── 4 · Like button (23) — slot (445,125) 75×36 ───────────── */
+    #like { left: 445px; top: 125px; }
+    .t-like {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 36px; padding: 0 14px 0 12px;
+      border-radius: 50px;
+      font-size: 13px; font-weight: 500;
+      background: var(--material-bg);
+      box-shadow: var(--material-shadow);
+      cursor: pointer;
+      transition: background-color 130ms ease;
+    }
+    .t-like:hover { background: color-mix(in srgb, var(--material-bg) 98%, #000); }
+    .t-like-icon { display: inline-flex; }
+    .t-like-heart { color: currentColor; transition: color var(--like-fill) var(--like-ease); }
+    .t-like-heart path {
+      fill: transparent; stroke: currentColor;
+      transition: fill var(--like-fill) var(--like-ease), stroke var(--like-fill) var(--like-ease);
+    }
+    .t-like[data-liked="true"] .t-like-heart { color: var(--like-color); }
+    .t-like[data-liked="true"] .t-like-heart path { fill: currentColor; }
+    /* Pop scale lives on an HTML wrapper, never the <svg> itself. */
+    .t-like[data-liked="true"] .t-like-icon { animation: t-like-pop var(--like-pop) var(--like-pop-ease); }
+    @keyframes t-like-pop { 0% { transform: scale(1); } 30% { transform: scale(0.82); } 100% { transform: scale(1); } }
+    /* Burst origin centred on the heart glyph: padding-left 12px +
+       half of the 16px icon = 20px from the button's left edge. */
+    .t-like-particles {
+      position: absolute; left: 20px; top: 50%;
+      width: 0; height: 0; pointer-events: none;
+      color: var(--like-color);
+    }
+    .t-like-particles i {
+      position: absolute;
+      left: calc(var(--like-particle-size) * var(--psize, 1) / -2);
+      top: calc(var(--like-particle-size) * var(--psize, 1) / -2);
+      width: calc(var(--like-particle-size) * var(--psize, 1));
+      height: calc(var(--like-particle-size) * var(--psize, 1));
+      border-radius: 50%; background: currentColor; opacity: 0;
+    }
+    @keyframes t-like-burst {
+      0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+      20%  { opacity: 1; transform: translate(calc(var(--px) * 0.25), calc(var(--py) * 0.25)) scale(1); }
+      100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(var(--p-end-scale, 0.6)); }
+    }
+    .t-like.is-bursting .t-like-particles i {
+      animation: t-like-burst var(--pdur, var(--like-particle-dur)) ease-out var(--pdelay, 0ms) forwards;
+    }
+
+    /* ── 5 · Plus to menu morph (20) — slot (129,153) 78×65 ────── */
+    /* The 40px circle sits centred in the slot; the panel grows
+       up-and-left out of it, so the circle's corner stays pinned
+       (right/bottom anchoring per the recipe). */
+    #morph {
+      /* 20px clear of the Pro text on the left; bottom edge rests on
+         the Pro text baseline (y=207.5) so the two share a base line. */
+      right: calc(800px - 208px);     /* circle right edge at x=208 */
+      bottom: calc(540px - 207.5px);  /* circle bottom edge at y=207.5 */
+      z-index: 30;
+      --morph-close-anticip: 5px;
+      --morph-close-anticip-dur: 700ms;
+      --morph-close-anticip-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .t-morph {
+      position: relative;
+      width: 40px; height: 40px;
+      border-radius: var(--morph-r-closed);
+      overflow: hidden;
+      background: var(--material-bg);
+      box-shadow: var(--material-shadow);
+      transition:
+        width var(--morph-close-dur) var(--morph-close-ease),
+        height var(--morph-close-dur) var(--morph-close-ease),
+        border-radius var(--morph-close-dur) var(--morph-close-ease);
+    }
+    .t-morph[data-open="true"] {
+      /* Height fits the three menu rows (3 × 40px + 8px top/bottom pad). */
+      width: 200px; height: 136px;
+      border-radius: var(--morph-r-open);
+      transition:
+        width var(--morph-open-dur) var(--morph-ease),
+        height var(--morph-open-dur) var(--morph-ease),
+        border-radius var(--morph-open-dur) var(--morph-ease);
+    }
+    .t-morph-plus {
+      position: absolute;
+      inset: auto 0 0 auto;
+      width: 40px; height: 40px;
+      display: grid; place-items: center;
+      transition:
+        opacity var(--morph-fade-dur) var(--morph-close-ease),
+        transform var(--morph-open-dur) var(--morph-close-ease),
+        filter var(--morph-fade-dur) var(--morph-close-ease);
+    }
+    .t-morph-plus svg {
+      transition: transform var(--morph-open-dur) var(--morph-close-ease);
+    }
+    .t-morph[data-open="true"] .t-morph-plus {
+      opacity: 0;
+      transform: translateX(calc(-1 * var(--morph-slide)));
+      filter: blur(var(--morph-blur));
+      pointer-events: none;
+    }
+    .t-morph[data-open="true"] .t-morph-plus svg {
+      transform: scale(var(--morph-scale)) rotate(var(--morph-rotate));
+    }
+    /* Close anticipation (index .p20-morph.is-closing): the circle nudges
+       diagonally then settles as the menu collapses into it — this is
+       the "close bounce". */
+    .t-morph.is-closing {
+      animation: t-morph-close-anticip var(--morph-close-anticip-dur) var(--morph-close-anticip-ease);
+    }
+    @keyframes t-morph-close-anticip {
+      0%   { transform: translate(0, 0); }
+      35%  { transform: translate(var(--morph-close-anticip), var(--morph-close-anticip)); }
+      100% { transform: translate(0, 0); }
+    }
+    .t-morph-menu {
+      position: absolute;
+      inset: 0;
+      padding: 8px;
+      display: flex; flex-direction: column; justify-content: center; gap: 2px;
+      opacity: 0;
+      transform: translateX(var(--morph-slide)) scale(var(--morph-scale));
+      filter: blur(var(--morph-blur));
+      pointer-events: none;
+      transition:
+        opacity var(--morph-fade-dur) var(--morph-close-ease),
+        transform var(--morph-open-dur) var(--morph-close-ease),
+        filter var(--morph-fade-dur) var(--morph-close-ease);
+    }
+    .t-morph[data-open="true"] .t-morph-menu {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      filter: blur(0);
+      pointer-events: auto;
+    }
+    .morph-item {
+      display: flex; align-items: center; gap: 10px;
+      height: 40px; padding: 0 12px;
+      border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      white-space: nowrap; text-align: left;
+      color: var(--text-on-dropdown, #17181c);
+      transition: background-color 120ms ease;
+    }
+    .morph-item:hover { background: rgba(61, 61, 61, 0.04); }
+    .morph-item svg { color: var(--text); flex-shrink: 0; }
+
+    /* ── 6 · Toggle (27) — slot (226,149) 44×22 ────────────────── */
+    #toggle { left: 226px; top: 133px; }
+    .t-toggle {
+      display: block;
+      width: 44px; height: 22px;
+      border-radius: 22px;
+      background: #e2e2e2;
+      position: relative;
+      transition: background var(--toggle-track) var(--toggle-ease),
+                  background-color 200ms ease;
+    }
+    .t-toggle[data-on="true"] { background: #34c759; }
+    .t-toggle-thumb {
+      position: absolute;
+      left: 3.66px; top: 3.66px;
+      width: 22px; height: 14.66px;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+      translate: 0 0;
+      will-change: translate;
+    }
+    .t-toggle[data-on="true"] .t-toggle-thumb { translate: var(--toggle-travel) 0; }
+    .t-toggle.is-init[data-on="true"] .t-toggle-thumb { animation: t-toggle-on var(--toggle-dur) var(--toggle-ease) both; }
+    .t-toggle.is-init[data-on="false"] .t-toggle-thumb { animation: t-toggle-off var(--toggle-dur) var(--toggle-ease) both; }
+    @keyframes t-toggle-on {
+      0% { translate: 0 0; }
+      55% { translate: calc(var(--toggle-travel) + var(--toggle-ov1)) 0; }
+      80% { translate: calc(var(--toggle-travel) - var(--toggle-ov2)) 0; }
+      100% { translate: var(--toggle-travel) 0; }
+    }
+    @keyframes t-toggle-off {
+      0% { translate: var(--toggle-travel) 0; }
+      55% { translate: calc(0px - var(--toggle-ov1)) 0; }
+      80% { translate: var(--toggle-ov2) 0; }
+      100% { translate: 0 0; }
+    }
+
+    /* ── 7 · Number pop-in (02) — slot (457,187), whole number ─── */
+    #counter {
+      /* Left-aligned with the Like button (x=445). */
+      left: 445px; top: 187px;
+      font-variant-numeric: tabular-nums;
+      font-size: 20px; font-weight: 600;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+    @keyframes t-digit-pop-in {
+      0% {
+        transform: translate(
+          calc(var(--digit-distance) * var(--digit-dir-x)),
+          calc(var(--digit-distance) * var(--digit-dir-y))
+        );
+        opacity: 0;
+        filter: blur(var(--digit-blur));
+      }
+      100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+    }
+    .t-digit-group { position: relative; display: inline-flex; align-items: baseline; }
+    .t-digit { display: inline-block; will-change: transform, opacity, filter; }
+    /* Leading chars ("32,") never animate — plain static spans. Only
+       the last three digits live inside .t-digit-tail, which is the
+       positioning context for the ghost, so the pop in/out is scoped
+       to the tail and the prefix holds perfectly still. */
+    .t-digit-static { display: inline-block; }
+    .t-digit-tail { position: relative; display: inline-flex; align-items: baseline; }
+    /* Every digit pops in (per the library recipe); the last two ride
+       1× / 2× --digit-stagger behind via the data-stagger delays. */
+    .t-digit-group.is-animating .t-digit {
+      animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;
+    }
+    .t-digit-group.is-animating .t-digit[data-stagger="1"] { animation-delay: var(--digit-stagger); }
+    .t-digit-group.is-animating .t-digit[data-stagger="2"] { animation-delay: calc(var(--digit-stagger) * 2); }
+    /* Ghost layer (from index P9): the OLD digits are snapshotted into
+       an absolutely-stacked ghost that pops out upward in parallel with
+       the new digits popping in from below. These rules sit after the
+       .is-animating pop-in rules on purpose — equal specificity, later
+       wins — so ghost chars play the pop-out, not the pop-in. */
+    .t-digit-group .t-digit-ghost {
+      position: absolute;
+      inset: 0;
+      display: inline-flex;
+      align-items: baseline;
+      pointer-events: none;
+    }
+    .t-digit-group .t-digit-ghost .t-digit {
+      animation: t-digit-pop-out var(--digit-dur) var(--digit-ease) both;
+    }
+    .t-digit-group .t-digit-ghost .t-digit[data-stagger="1"] { animation-delay: var(--digit-stagger); }
+    .t-digit-group .t-digit-ghost .t-digit[data-stagger="2"] { animation-delay: calc(var(--digit-stagger) * 2); }
+    @keyframes t-digit-pop-out {
+      0%   { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+      100% {
+        transform: translate(
+          calc(var(--digit-distance) * var(--digit-dir-x) * -1),
+          calc(var(--digit-distance) * var(--digit-dir-y) * -1)
+        );
+        opacity: 0;
+        filter: blur(var(--digit-blur));
+      }
+    }
+
+    /* ── 8 · Pro gradient text (from index .pv7) — animates on hover
+       Seven rotated radial washes over a grey ramp, clipped to the
+       glyphs. At rest the gradient sits static; hover runs the hue +
+       perimeter-drift loop (same keyframes as the index Pro title). ── */
+    #shimmer { left: 228px; top: 180px; }
+    .pro-grad {
+      display: inline-block;
+      font-size: 32px; font-weight: 600; line-height: 1;
+      letter-spacing: -0.01em;
+      cursor: default;
+      background-image:
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.88'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.34726 -1.3118e-7 8.6482e-7 0.89585 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.5'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-1.3 0.25 -1.2633 -2.7471 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.4'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.05 -0.8 0.46018 3.6184 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='0.71709'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.51067 -3.3275e-16 -4.3352e-14 -1.1396 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.45 -0.75 1.9052 -0.7091 33.5 21)'><stop stop-color='rgba(255,173,85,1)' offset='0'/><stop stop-color='rgba(255,173,85,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.25 -0.35 -0.4013 3.5959 33.5 21)'><stop stop-color='rgba(0,204,68,1)' offset='0'/><stop stop-color='rgba(0,196,102,0.75)' offset='0.25'/><stop stop-color='rgba(0,187,136,0.5)' offset='0.5'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87391 0.73043 -4.1482 -1.9503 33.5 21)'><stop stop-color='rgba(0,170,204,1)' offset='0'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        linear-gradient(rgb(108,108,108) 0%, rgb(216,216,216) 100%);
+      background-size: 180% 180%, 180% 180%, 180% 180%, 180% 180%, 180% 180%, 180% 180%, 180% 180%, 100% 100%;
+      background-repeat: no-repeat;
+      background-position: 100% 0%, 0% 50%, 100% 50%, 0% 100%, 0% 0%, 50% 0%, 50% 100%, 0 0;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .pro-grad {
+      animation: pro-grad-hue 4s linear infinite, pro-grad-drift 5s ease-in-out infinite;
+    }
+    @keyframes pro-grad-hue {
+      from { filter: hue-rotate(0deg) saturate(1.3); }
+      to   { filter: hue-rotate(-360deg) saturate(1.3); }
+    }
+    @keyframes pro-grad-drift {
+      0%,100% { background-position: 100% 0%, 0% 50%, 100% 50%, 0% 100%, 0% 0%, 50% 0%, 50% 100%, 0 0; }
+      25%     { background-position: 100% 100%, 50% 0%, 50% 100%, 0% 0%, 100% 0%, 100% 50%, 0% 50%, 0 0; }
+      50%     { background-position: 0% 100%, 100% 50%, 0% 50%, 100% 0%, 100% 100%, 50% 100%, 50% 0%, 0 0; }
+      75%     { background-position: 0% 0%, 50% 100%, 50% 0%, 100% 100%, 0% 100%, 0% 50%, 100% 50%, 0 0; }
+    }
+
+    /* ── 9 · Checkbox check (25) — slot (445,227), no box ─────── */
+    #notify {
+      /* Vertically centre-aligned with the Learn more button (center y≈256). */
+      left: 445px; top: 248px;
+      display: inline-flex; align-items: center; gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .t-check {
+      width: 16px; height: 16px;
+      flex-shrink: 0;
+      border-radius: 5px;
+      background: var(--material-bg);
+      box-shadow: inset 0 0 0 1.5px #c9c9c9;
+      display: grid; place-items: center;
+      transition:
+        background var(--check-box) var(--check-ease),
+        box-shadow var(--check-box) var(--check-ease);
+    }
+    .t-check[aria-checked="true"] {
+      background: var(--text);
+      box-shadow: inset 0 0 0 1.5px var(--text);
+    }
+    .t-check svg { width: 10px; height: 10px; display: block; }
+    .t-check svg path {
+      fill: none; stroke: #ffffff; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: var(--check-len, 15);
+      stroke-dashoffset: var(--check-len, 15);
+      transition: stroke-dashoffset var(--check-uncheck) var(--check-ease);
+    }
+    .t-check[aria-checked="true"] svg path {
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset var(--check-draw) var(--check-ease) var(--check-delay);
+    }
+    .notify-label { font-size: 13px; font-weight: 500; }
+
+    /* ── 10 · Tabs sliding (16) — slot (100,236) 176×36 ────────── */
+    #tabs { left: 100px; top: 236px; }
+    .t-tabs {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      border-radius: 48px;
+      background: var(--tabs-bar-bg);
+    }
+    .t-tab {
+      position: relative;
+      height: 30px;
+      padding: 4px 12px;
+      color: var(--tabs-text-muted);
+      font-size: 13px; font-weight: 500;
+      border-radius: 48px;
+      z-index: 1;
+      transition: color var(--tabs-dur) var(--tabs-ease);
+    }
+    .t-tab:not([aria-selected="true"]):hover,
+    .t-tab[aria-selected="true"] { color: var(--tabs-text-active); }
+    .t-tabs-pill {
+      position: absolute;
+      top: 3px; left: 0;
+      height: 30px; width: 0;
+      background: var(--tabs-pill-bg);
+      border-radius: 48px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transform: translateX(0);
+      transition:
+        transform var(--tabs-dur) var(--tabs-ease),
+        width     var(--tabs-dur) var(--tabs-ease);
+      will-change: transform, width;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── 11 · Learn more hover (24) — slot (299,236) 117×40 ────── */
+    #learn { left: 299px; top: 236px; }
+    .t-learn {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 40px; padding: 0 10px 0 16px;
+      border-radius: 50px;
+      font-size: 13px; font-weight: 500;
+      background: var(--material-bg);
+      box-shadow: var(--material-shadow);
+      transition: background-color 130ms ease;
+    }
+    .t-learn:hover { background: color-mix(in srgb, var(--material-bg) 98%, #000); }
+    .t-learn-chevron {
+      display: inline-flex;
+      color: var(--text-muted);   /* muted chevron */
+      transform: translateX(0);
+      transition: transform var(--learn-out) var(--learn-ease);
+    }
+    .t-learn-chevron svg { display: block; }
+    .t-learn-arm {
+      fill: none; stroke: currentColor; stroke-width: 1.5;
+      stroke-linecap: round;
+      transform-box: view-box;
+      transform-origin: 10px 8px;
+      vector-effect: non-scaling-stroke;
+      transition: transform var(--learn-out) var(--learn-ease);
+    }
+    .t-learn:hover .t-learn-chevron { transform: translateX(var(--learn-shift)); transition-duration: var(--learn-in); }
+    .t-learn:hover .t-learn-arm { transition-duration: var(--learn-in); }
+    .t-learn:hover .t-learn-arm-top { transform: rotate(var(--learn-spread)); }
+    .t-learn:hover .t-learn-arm-bot { transform: rotate(calc(var(--learn-spread) * -1)); }
+
+    /* ── 12 · Accordion (21) — slot (85,295) 197×42 collapsed ──── */
+    #accordion { left: 85px; top: 295px; width: 197px; z-index: 10; }
+    .t-acc { border-radius: 12px; }
+    .t-acc-head {
+      width: 100%;
+      height: 42px;
+      padding: 0 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; font-weight: 500;
+      border-radius: 12px;
+      transition: background-color 120ms ease;
+    }
+    /* Hover fill only while collapsed — once open the header is a
+       state indicator, not an invitation, so the wash drops away. */
+    .t-acc[data-open="false"] .t-acc-head:hover { background: rgba(0, 0, 0, 0.02); }
+    .t-acc-chevron {
+      display: inline-flex;
+      color: var(--text-muted);
+      transform: scaleY(1);
+      transform-origin: center;
+      transition: transform var(--acc-chevron) var(--acc-ease);
+    }
+    .t-acc-chevron svg { display: block; }
+    .t-acc-chevron path {
+      fill: none; stroke: currentColor; stroke-width: 1.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+    .t-acc[data-open="true"] .t-acc-chevron { transform: scaleY(-1); }
+    .t-acc-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows var(--acc-collapse) var(--acc-ease);
+    }
+    .t-acc[data-open="true"] .t-acc-panel {
+      grid-template-rows: 1fr;
+      transition: grid-template-rows var(--acc-expand) var(--acc-ease);
+    }
+    .t-acc-panel-inner {
+      overflow: hidden;
+      opacity: 0;
+      filter: blur(2px);
+      transition:
+        opacity var(--acc-collapse) var(--acc-ease),
+        filter var(--acc-collapse) var(--acc-ease);
+    }
+    .t-acc[data-open="true"] .t-acc-panel-inner {
+      opacity: 1;
+      filter: blur(0);
+      transition:
+        opacity var(--acc-expand) var(--acc-ease),
+        filter var(--acc-expand) var(--acc-ease);
+    }
+    .acc-rows { padding: 0 6px 8px; display: flex; flex-direction: column; gap: 2px; }
+    .acc-row {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 32px; padding: 0 8px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+    .acc-row:hover { background: var(--chip-bg); }
+    .acc-row[aria-checked="true"] { color: var(--text); font-weight: 500; }
+    .acc-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text);
+      opacity: 0;
+      transition: opacity 120ms ease;
+    }
+    .acc-row[aria-checked="true"] .acc-dot { opacity: 1; }
+
+    /* ── 13 · Share dropdown (from example-dropdown.html / skill-refine)
+       Combines: menu dropdown (05) + sliding tabs (16) + card resize
+       (01) + page side-by-side (08) + text swap (04) + icon swap (09).
+       Faithful to the canonical component; scoped under #share so it
+       can't collide with the standalone tabs / dropdown recipes. ──── */
+    #share {
+      left: 307px; top: 295px; z-index: 20;
+      /* Local component tokens (light values from example-dropdown.html) */
+      --bg-modal: #ffffff;
+      --bg-tab-active: rgba(94, 94, 94, 0.08);
+      --bg-ghost-hover: rgba(61, 61, 61, 0.04);
+      --text-strong: #1b1b1b;
+      --text-body: #474747;
+      --text-muted-2: #676767;
+      --text-tab-idle: #717171;
+      --text-on-dropdown: #17181c;
+      --stroke-btn:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1);
+      --shadow-modal:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+      --shadow-btn: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+      --radius-menu: 18px;
+      --radius-row: 12px;
+      --radius-tab: 50px;
+      --radius-btn: 36px;
+      /* Tab content slide (08 — page side-by-side) */
+      --page-slide-dur: 250ms;
+      --page-fade-dur: 250ms;
+      --page-slide-distance: 8px;
+      --page-blur: 3px;
+      --page-stagger: 0ms;
+      --page-exit-enabled: 1;
+      --page-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --page-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Icon swap (09) */
+      --icon-swap-dur: 200ms;
+      --icon-swap-blur: 2px;
+      --icon-swap-start-scale: 0.25;
+      --icon-swap-ease: ease-in-out;
+      /* Text states swap (04) */
+      --text-swap-dur: 150ms;
+      --text-swap-enter-delay: 0ms;
+      --text-swap-translate-y: 4px;
+      --text-swap-blur: 2px;
+      --text-swap-ease: ease-in-out;
+    }
+    /* Share button (Figma 632:3925 — Secondary/Default) */
+    /* Trigger button removed — the dropdown is shown open in place,
+       matching the Figma collage. */
+    #share .share-anchor {
+      position: relative;
+      overflow: visible;
+      display: inline-flex;
+      width: 200px;
+    }
+
+    /* Dropdown shell / menu (Figma 632:3816) */
+    #share .dd-shell {
+      position: static;
+      z-index: 50;
+      overflow: visible;
+    }
+    #share .dropdown {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 200px;
+      box-sizing: border-box;
+      padding: 8px;
+      background: var(--bg-modal);
+      border-radius: var(--radius-menu);
+      box-shadow: var(--shadow-modal);
+      overflow: visible;
+    }
+
+    /* Tab row + sliding pill (16 — tabs sliding) */
+    #share .dd-tabs { position: relative; display: inline-flex; align-items: center; gap: 4px; height: 32px; }
+    #share .dd-tabs-pill {
+      position: absolute; top: 0; left: 0; height: 32px; width: 0;
+      background: var(--bg-tab-active); border-radius: var(--radius-tab);
+      transform: translateX(0);
+      transition: transform var(--tabs-dur) var(--tabs-ease), width var(--tabs-dur) var(--tabs-ease);
+      will-change: transform, width; z-index: 0; pointer-events: none;
+    }
+    #share .dd-tab {
+      position: relative; z-index: 1; appearance: none; border: 0; background: transparent;
+      height: 32px; padding: 0 12px; border-radius: var(--radius-tab);
+      font-weight: 500; font-size: 14px; line-height: 16px; color: var(--text-tab-idle);
+      cursor: pointer; white-space: nowrap;
+      transition: color var(--tabs-dur) var(--tabs-ease);
+    }
+    #share .dd-tab:not([aria-selected="true"]):hover,
+    #share .dd-tab[aria-selected="true"] { color: var(--text-strong); }
+
+    /* Panels container — height tween (01) + page slide (08) */
+    #share .dd-body.t-page-slide {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      transition: height var(--resize-dur) var(--resize-ease);
+      will-change: height;
+    }
+    #share .t-page-slide .t-page[data-page-id="1"] { --t-page-from-x: calc(var(--page-slide-distance) * -1); }
+    #share .t-page-slide .t-page[data-page-id="2"] { --t-page-from-x: var(--page-slide-distance); }
+    #share .t-page-slide .t-page {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(calc(var(--t-page-from-x, 0px) * var(--page-exit-enabled)));
+      filter: blur(calc(var(--page-blur) * var(--page-exit-enabled)));
+      transition:
+        opacity   var(--page-fade-dur)  var(--page-fade-ease),
+        transform var(--page-slide-dur) var(--page-slide-ease),
+        filter    var(--page-slide-dur) var(--page-slide-ease);
+      will-change: opacity, transform, filter;
+    }
+    #share .t-page-slide[data-page="1"] .t-page[data-page-id="1"],
+    #share .t-page-slide[data-page="2"] .t-page[data-page-id="2"] {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+      filter: blur(0);
+      transition-delay: var(--page-stagger);
+    }
+
+    /* Social rows */
+    #share .social-row {
+      display: flex; align-items: center; gap: 6px;
+      height: 40px; padding: 0 12px; border: 0;
+      background: transparent; border-radius: var(--radius-row);
+      color: var(--text-on-dropdown); cursor: pointer; text-align: left; width: 100%;
+      font-family: inherit; font-size: 14px; line-height: 22px;
+      transition: background-color 120ms ease;
+    }
+    #share .social-row:hover { background: var(--bg-ghost-hover); }
+    #share .social-row .icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; flex: 0 0 16px; line-height: 0; opacity: 0.85;
+    }
+    #share .social-row .icon svg { display: block; }
+    #share .social-row .label { white-space: nowrap; }
+    #share #copyRow { gap: 8px; }
+
+    /* Copy icon slot — fixed 16×16 grid so swap icons stay centered */
+    #share .copy-icon-slot {
+      position: relative; display: inline-grid;
+      width: 16px; height: 16px; flex: 0 0 16px; line-height: 0; opacity: 0.85;
+    }
+    #share .copy-icon-slot .t-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px;
+    }
+    #share .copy-icon-slot .t-icon svg { display: block; }
+
+    /* Copy row — width-pinned text slot so "Copied" doesn't shift the icon */
+    #share .copy-text-slot { position: relative; display: inline-block; line-height: 22px; }
+    #share .copy-text-slot::before { content: 'Copy link'; display: inline-block; visibility: hidden; white-space: nowrap; }
+    #share .copy-text-slot .t-text-swap { position: absolute; top: 0; left: 0; right: 0; text-align: left; white-space: nowrap; }
+
+    /* People rows */
+    #share .people-row {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 6px; border: 0; background: transparent; border-radius: var(--radius-row);
+      cursor: pointer; text-align: left; width: 100%; font-family: inherit;
+      transition: background-color 120ms ease;
+    }
+    #share .people-row:hover { background: var(--bg-ghost-hover); }
+    #share .people-row .avatar {
+      width: 32px; height: 32px; border-radius: 50%; flex: 0 0 32px;
+      object-fit: cover; background: rgba(120, 120, 120, 0.16);
+    }
+    #share .people-row .person { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    #share .people-row .person-name { font-weight: 500; font-size: 13px; line-height: 16px; color: var(--text-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #share .people-row .person-mail { font-weight: 400; font-size: 13px; line-height: 16px; color: var(--text-muted-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Menu dropdown (05) — translateZ(0) pre-promotes the layer so the
+       box-shadow rides in with the scale animation (Safari quirk). */
+    #share .t-dropdown {
+      transform-origin: top left;
+      transform: scale(var(--dropdown-pre-scale)) translateZ(0);
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--dropdown-open-dur) var(--dropdown-ease),
+        opacity   var(--dropdown-open-dur) var(--dropdown-ease);
+      will-change: transform, opacity;
+    }
+    #share .t-dropdown.is-open { transform: scale(1) translateZ(0); opacity: 1; pointer-events: auto; }
+    #share .t-dropdown.is-closing {
+      transform: scale(var(--dropdown-closing-scale)) translateZ(0);
+      opacity: 0; pointer-events: none;
+      transition:
+        transform var(--dropdown-close-dur) var(--dropdown-ease),
+        opacity   var(--dropdown-close-dur) var(--dropdown-ease);
+    }
+
+    /* Icon swap (09) */
+    #share .t-icon-swap { position: relative; display: inline-grid; }
+    #share .t-icon-swap .t-icon {
+      grid-area: 1 / 1;
+      transition:
+        opacity   var(--icon-swap-dur) var(--icon-swap-ease),
+        filter    var(--icon-swap-dur) var(--icon-swap-ease),
+        transform var(--icon-swap-dur) var(--icon-swap-ease);
+      will-change: opacity, filter, transform;
+    }
+    #share .t-icon-swap[data-state="a"] .t-icon[data-icon="a"],
+    #share .t-icon-swap[data-state="b"] .t-icon[data-icon="b"] { opacity: 1; filter: blur(0); transform: scale(1); }
+    #share .t-icon-swap[data-state="a"] .t-icon[data-icon="b"],
+    #share .t-icon-swap[data-state="b"] .t-icon[data-icon="a"] { opacity: 0; filter: blur(var(--icon-swap-blur)); transform: scale(var(--icon-swap-start-scale)); }
+
+    /* Text states swap (04) */
+    #share .t-text-swap {
+      display: inline-block; transform: translateY(0); filter: blur(0); opacity: 1;
+      transition:
+        transform var(--text-swap-dur) var(--text-swap-ease),
+        filter    var(--text-swap-dur) var(--text-swap-ease),
+        opacity   var(--text-swap-dur) var(--text-swap-ease);
+      will-change: transform, filter, opacity;
+    }
+    #share .t-text-swap.is-exit { transform: translateY(var(--text-swap-translate-y)); filter: blur(var(--text-swap-blur)); opacity: 0; }
+    #share .t-text-swap.is-enter-start { transform: translateY(calc(var(--text-swap-translate-y) * -1)); filter: blur(var(--text-swap-blur)); opacity: 0; transition: none; }
+
+    /* ── 14 · Skeleton reveal (14) — slot (174,361) 117×105 ────── */
+    /* Right edge aligned with the Appearance accordion's right edge
+       (85 + 197 = 282 → 282 − 120 = 162). Slot is the smoky-dissolve stage. */
+    #skeleton { left: 162px; top: 361px; width: 120px; height: 120px; }
+    .t-skel {
+      position: relative;
+      width: 100%; height: 100%;
+      border-radius: 12px;
+      box-shadow: var(--material-shadow);
+    }
+    .t-skel-skeleton,
+    .t-skel-content {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .t-skel-skeleton {
+      z-index: 1;
+      opacity: 1;
+      filter: blur(0);
+      transition:
+        opacity var(--reveal-dur) var(--reveal-ease),
+        filter  var(--reveal-dur) var(--reveal-ease);
+    }
+    .skel-fill { width: 100%; height: 100%; background: var(--skeleton); }
+    .t-skel-content {
+      z-index: 2;
+      opacity: 0;
+      filter: blur(var(--reveal-blur));
+      transition:
+        opacity var(--reveal-dur) var(--reveal-ease),
+        filter  var(--reveal-dur) var(--reveal-ease);
+    }
+    .t-skel-content img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+    .t-skel.is-revealed .t-skel-skeleton {
+      opacity: 0;
+      filter: blur(var(--reveal-blur));
+    }
+    .t-skel.is-revealed .t-skel-content {
+      opacity: 1;
+      filter: blur(0);
+    }
+    .t-skel.is-resetting .t-skel-skeleton,
+    .t-skel.is-resetting .t-skel-content {
+      transition: none !important;
+    }
+    .t-skel-skeleton.is-pulsing > * {
+      animation: t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
+    }
+    @keyframes t-skel-pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: var(--pulse-min); }
+    }
+    .skel-close {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.92);
+      color: #17181c;
+      display: grid; place-items: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      transition: background-color 120ms ease;
+    }
+    .skel-close:hover { background: #ffffff; }
+    .skel-close svg { display: block; }
+
+    /* ── 15 · Organic shimmer (Pro, from index .pv1e) ─────────────
+       A wavy, masked colour shimmer with an edge glow — pure CSS masks
+       + SVG turbulence displacement. Auto-plays (data-playing="true"). */
+    #shimmer-card {
+      /* Left-aligned with the publish card above; 36px below it. */
+      left: 551px; top: 292px; width: 142px; height: 142px;
+      --pve: 3000ms; --pvj: ease-out; --pvp: 26%;
+      --pv0: 1; --pv4: 0.7; --pv5: 1; --pvs: 20px;
+    }
+    .pv1e {
+      position: relative; width: 142px; height: 142px;
+      border-radius: 12px; background: #eeeeee;
+      overflow: hidden; isolation: isolate;
+      box-shadow: var(--material-shadow);
+      cursor: pointer;
+      scale: 1;
+      transition: scale 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .pv1e:active { scale: 0.96; }
+    .pv1e[data-playing="false"] .pva,
+    .pv1e[data-playing="false"] .pv25 { animation-play-state: paused; }
+    .pv16 { position: absolute; inset: -20px; filter: url(#pvt) blur(5px); opacity: var(--pv0); pointer-events: none; }
+    .pva {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 90px 70px at 20% 15%, rgba(40,140,255,0.14), transparent),
+        radial-gradient(ellipse 80px 60px at 65% 25%, rgba(255,50,100,0.13), transparent),
+        radial-gradient(ellipse 70px 80px at 30% 55%, rgba(50,200,80,0.12), transparent),
+        radial-gradient(ellipse 90px 70px at 75% 65%, rgba(180,40,240,0.13), transparent),
+        radial-gradient(ellipse 70px 60px at 45% 85%, rgba(255,120,40,0.12), transparent),
+        radial-gradient(ellipse 60px 60px at 10% 85%, rgba(30,185,170,0.11), transparent),
+        linear-gradient(rgba(90,90,100,0.05), rgba(90,90,100,0.05));
+      -webkit-mask-image: linear-gradient(135deg, transparent 0%, transparent calc(50% - var(--pvp) * 0.8), rgba(255,255,255,0.25) calc(50% - var(--pvp) * 0.45), rgba(255,255,255,0.7) calc(50% - var(--pvp) * 0.18), white 50%, rgba(255,255,255,0.7) calc(50% + var(--pvp) * 0.18), rgba(255,255,255,0.25) calc(50% + var(--pvp) * 0.45), transparent calc(50% + var(--pvp) * 0.8), transparent 100%);
+      -webkit-mask-size: 280% 280%; -webkit-mask-repeat: no-repeat; -webkit-mask-position: 100% 100%;
+      mask-image: linear-gradient(135deg, transparent 0%, transparent calc(50% - var(--pvp) * 0.8), rgba(255,255,255,0.25) calc(50% - var(--pvp) * 0.45), rgba(255,255,255,0.7) calc(50% - var(--pvp) * 0.18), white 50%, rgba(255,255,255,0.7) calc(50% + var(--pvp) * 0.18), rgba(255,255,255,0.25) calc(50% + var(--pvp) * 0.45), transparent calc(50% + var(--pvp) * 0.8), transparent 100%);
+      mask-size: 280% 280%; mask-repeat: no-repeat; mask-position: 100% 100%;
+      animation: pvk var(--pve) var(--pvj) infinite; pointer-events: none;
+    }
+    .pv25 {
+      position: absolute; inset: -20px; z-index: 1; opacity: var(--pv4); pointer-events: none;
+      -webkit-mask-image: linear-gradient(135deg, transparent 0%, transparent calc(50% - var(--pvp) * 1.4), rgba(255,255,255,0.06) calc(50% - var(--pvp) * 1), rgba(255,255,255,0.18) calc(50% - var(--pvp) * 0.6), rgba(255,255,255,0.45) calc(50% - var(--pvp) * 0.25), white 50%, rgba(255,255,255,0.5) calc(50% + var(--pvp) * 0.18), transparent calc(50% + var(--pvp) * 0.35), transparent 100%);
+      -webkit-mask-size: 280% 280%; -webkit-mask-repeat: no-repeat; -webkit-mask-position: 100% 100%;
+      mask-image: linear-gradient(135deg, transparent 0%, transparent calc(50% - var(--pvp) * 1.4), rgba(255,255,255,0.06) calc(50% - var(--pvp) * 1), rgba(255,255,255,0.18) calc(50% - var(--pvp) * 0.6), rgba(255,255,255,0.45) calc(50% - var(--pvp) * 0.25), white 50%, rgba(255,255,255,0.5) calc(50% + var(--pvp) * 0.18), transparent calc(50% + var(--pvp) * 0.35), transparent 100%);
+      mask-size: 280% 280%; mask-repeat: no-repeat; mask-position: 100% 100%;
+      animation: pvk var(--pve) var(--pvj) infinite;
+    }
+    @keyframes pvk {
+      0%   { -webkit-mask-position: 100% 100%; mask-position: 100% 100%; }
+      100% { -webkit-mask-position: 0% 0%; mask-position: 0% 0%; }
+    }
+    .pvr, .pvq, .pvi { position: absolute; inset: 20px; border-radius: 12px; pointer-events: none; }
+    .pvr {
+      padding: 1px; opacity: var(--pv5);
+      background:
+        radial-gradient(ellipse 42px 24px at 33% -7.4%, rgba(255,50,100,0.62), transparent),
+        radial-gradient(ellipse 36px 21px at 12% -5%, rgba(40,140,255,0.48), transparent),
+        radial-gradient(ellipse 24px 42px at 2.1% 68.3%, rgba(50,200,80,0.55), transparent),
+        radial-gradient(ellipse 12px 21px at 2.1% 68.3%, rgba(30,185,170,0.44), transparent),
+        radial-gradient(ellipse 108px 19px at 74.4% 100%, rgba(100,70,255,0.58), transparent),
+        radial-gradient(ellipse 51px 16px at 55% 100%, rgba(40,140,255,0.51), transparent),
+        radial-gradient(ellipse 44px 19px at 93.9% 0%, rgba(255,120,40,0.65), transparent),
+        radial-gradient(ellipse 16px 25px at 100% 27.1%, rgba(240,50,180,0.5), transparent),
+        radial-gradient(ellipse 31px 29px at 100% 27.1%, rgba(180,40,240,0.56), transparent),
+        linear-gradient(rgba(90,90,100,0.22), rgba(90,90,100,0.22));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+    }
+    .pvq {
+      background:
+        radial-gradient(ellipse 39px 21px at 33% -7.4%, rgba(255,50,100,0.34), transparent),
+        radial-gradient(ellipse 33px 18px at 12% -5%, rgba(40,140,255,0.28), transparent),
+        radial-gradient(ellipse 21px 39px at 2.1% 68.3%, rgba(50,200,80,0.3), transparent),
+        radial-gradient(ellipse 9px 18px at 2.1% 68.3%, rgba(30,185,170,0.25), transparent),
+        radial-gradient(ellipse 104px 17px at 74.4% 100%, rgba(100,70,255,0.32), transparent),
+        radial-gradient(ellipse 48px 13px at 55% 100%, rgba(40,140,255,0.28), transparent),
+        radial-gradient(ellipse 41px 17px at 93.9% 0%, rgba(255,120,40,0.35), transparent),
+        radial-gradient(ellipse 13px 23px at 100% 27.1%, rgba(240,50,180,0.28), transparent),
+        radial-gradient(ellipse 28px 26px at 100% 27.1%, rgba(180,40,240,0.3), transparent),
+        radial-gradient(ellipse 36px 36px at 0% 0%, rgba(90,90,100,0.14), transparent 70%),
+        radial-gradient(ellipse 36px 36px at 100% 0%, rgba(90,90,100,0.14), transparent 70%),
+        radial-gradient(ellipse 36px 36px at 0% 100%, rgba(90,90,100,0.14), transparent 70%),
+        radial-gradient(ellipse 36px 36px at 100% 100%, rgba(90,90,100,0.14), transparent 70%);
+      box-shadow: inset 0 0 14px 1px rgba(90,90,100,0.12);
+      filter: blur(2px);
+      -webkit-mask-image: linear-gradient(white, transparent 44px, transparent calc(100% - 44px), white), linear-gradient(to right, white, transparent 44px, transparent calc(100% - 44px), white);
+      -webkit-mask-composite: source-over;
+      mask-image: linear-gradient(white, transparent 44px, transparent calc(100% - 44px), white), linear-gradient(to right, white, transparent 44px, transparent calc(100% - 44px), white);
+      mask-composite: add;
+    }
+    .pvi {
+      background:
+        radial-gradient(ellipse 55px 31px at 33% -7.4%, rgba(255,50,100,0.4), transparent),
+        radial-gradient(ellipse 47px 27px at 12% -5%, rgba(40,140,255,0.34), transparent),
+        radial-gradient(ellipse 31px 55px at 2.1% 68.3%, rgba(50,200,80,0.38), transparent),
+        radial-gradient(ellipse 140px 25px at 74.4% 100%, rgba(100,70,255,0.4), transparent),
+        radial-gradient(ellipse 66px 20px at 55% 100%, rgba(40,140,255,0.35), transparent),
+        radial-gradient(ellipse 58px 25px at 93.9% 0%, rgba(255,120,40,0.44), transparent),
+        radial-gradient(ellipse 40px 38px at 100% 27.1%, rgba(180,40,240,0.38), transparent);
+      box-shadow: inset 0 0 calc(var(--pvs) * 3) calc(var(--pvs) / 2) rgba(90,90,100,0.1);
+      filter: blur(var(--pvs));
+      -webkit-mask-image: linear-gradient(white, transparent 26px, transparent calc(100% - 26px), white), linear-gradient(to right, white, transparent 26px, transparent calc(100% - 26px), white);
+      -webkit-mask-composite: source-over;
+      mask-image: linear-gradient(white, transparent 26px, transparent calc(100% - 26px), white), linear-gradient(to right, white, transparent 26px, transparent calc(100% - 26px), white);
+      mask-composite: add;
+    }
+
+    /* ── 14 · Smoky dissolve (Pro, from index .pv2c) ──────────────
+       Delete the image and it shreds + falls into smoke, drawn on a
+       GPU canvas (displacement warp + box-blur). Ported from index's
+       initPro6. The slot is the "stage" the canvas positions against. */
+    #skeleton {
+      --pv2d: 120px;
+      --pv2k: 550ms;  /* dissolve dur */
+      --pv19: 150;    /* gravity */
+      --pv2g: 30;     /* warp */
+      --pv2b: 12px;   /* max blur */
+      --pv2f: 0px;    /* sway */
+      --pv2e: 3deg;   /* spin */
+      --pv1x: 30;     /* churn */
+      --pv1n: 0;      /* spread */
+      --pv14: 2000ms; /* warp dur */
+      --pv1a: 800ms;  /* respawn delay */
+      --pvz: cubic-bezier(0.22, 1, 0.36, 1); /* warp ease */
+      --pvy: ease-in;  /* blur ease */
+      --pvc: ease-in;  /* gravity ease */
+      --pv8: ease-out; /* dissolve ease */
+      --pro-surface-shadow:
+        0 0 0 1px rgba(0,0,0,0.06),
+        0 2px 6px rgba(0,0,0,0.05),
+        0 4px 42px rgba(0,0,0,0.06);
+    }
+    .pv2c {
+      position: relative;
+      width: var(--pv2d); height: var(--pv2d);
+      border-radius: 16px; overflow: hidden;
+      background: #eeeeef;
+      box-shadow: var(--pro-surface-shadow);
+      will-change: transform, opacity;
+    }
+    .pv1l { position: absolute; z-index: 3; pointer-events: none; will-change: transform, opacity; }
+    .pv2c img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    /* Respawn: a clean fade-in (no scale) so there's no "jump" — this
+       reads well whether or not the smoke frames played. */
+    .pv2c.is-respawning { animation: pv1a 250ms cubic-bezier(0.22, 1, 0.36, 1); }
+    @keyframes pv1a { from { opacity: 0; } to { opacity: 1; } }
+    .pv1m {
+      position: absolute; top: 8px; right: 8px; z-index: 2;
+      width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%;
+      background: rgba(255,255,255,0.92); color: #17181c;
+      display: grid; place-items: center; cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 120ms ease;
+    }
+    .pv1m:hover { background: #ffffff; }
+    .pv1m:focus-visible { outline: 2px solid #17181c; outline-offset: 2px; }
+    .pv1m svg { display: block; }
+
+    /* ── 16 · Publish (from example.html / skill good example) ────
+       Figma 2427:20571 — 188×155 card. Same two-phase choreography
+       as the skill demo's publish flow: everything fades out via
+       t-fade-blur, the layout snaps while invisible (badge slot
+       grows, copy + button swap), then the new content fades back
+       in while the success check plays its canonical entry. */
+    #publish {
+      /* 20px clear of the nearest left neighbour ("Notify me", right
+         edge 531) — it overlaps this card vertically, so it, not the
+         Like button, sets the gap. */
+      left: 551px; top: 101px;
+      /* Local text-swap retune (matches example.html's publish hero:
+         pronounced rise, slower beat, decelerating entry). */
+      --text-swap-dur: 200ms;
+      --text-swap-translate-y: 10px;
+      --text-swap-blur: 2px;
+      --text-swap-ease: ease-out;
+      /* Success check (example.html tokens) */
+      --check-opacity-dur: 550ms;
+      --check-rotate-dur: 550ms;
+      --check-rotate-from: 80deg;
+      --check-bob-dur: 450ms;
+      --check-y-amount: 24px;
+      --check-blur-dur: 500ms;
+      --check-blur-from: 10px;
+      --check-path-dur: 550ms;
+      --check-path-delay: 80ms;
+      --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
+      --check-ease-rotate: cubic-bezier(0.22, 1, 0.36, 1);
+      --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
+      --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .publish-card {
+      position: relative;
+      width: 188px; height: 155px;   /* fixed — never grows on publish */
+      padding: 28px 17px;
+      border-radius: 18px;
+      background: var(--material-bg);
+      box-shadow: var(--material-shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 13px;
+      text-align: center;
+    }
+    /* The badge is absolutely centred in the card: in the published
+       (success) state it's the ONLY thing shown — the copy and button
+       fade out, leaving just the checkmark centred. The card height is
+       fixed so nothing grows or shifts. */
+    .publish-card .badge-slot {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .published-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px; height: 40px;
+      line-height: 0;
+    }
+    .published-badge svg { display: block; }
+    .publish-copy {
+      margin: 0;
+      width: 153px;
+      font-size: 13px;
+      line-height: 16px;
+      font-weight: 400;
+      color: #676767;
+    }
+    .publish-action {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 50px;
+      background: var(--chip-bg);
+      color: var(--text);
+      font-size: 13px; font-weight: 500; line-height: 16px;
+      transition: background-color 120ms ease, box-shadow 120ms ease;
+    }
+    .publish-action:hover { background: var(--chip-bg-hover); }
+    .publish-action:active { background: #eae9e9; }
+    /* Published — copy + button are hidden entirely; only the checkmark
+       remains (fades via t-fade-blur, no reflow since the card height is
+       fixed and the badge is absolutely centred). */
+    /* #publish prefix is load-bearing: the `.t-fade-blur` rest rule
+       below is ID-scoped, so without a matching ID here it outranks
+       this state and the fade-out never runs. */
+    .publish-card[data-published="true"] { cursor: pointer; }
+    #publish .publish-card[data-published="true"] .publish-copy,
+    #publish .publish-card[data-published="true"] .publish-action {
+      opacity: 0;
+      filter: blur(var(--text-swap-blur));
+      pointer-events: none;
+    }
+    .publish-card[data-published="true"] .publish-action:hover { background: rgba(0, 0, 0, 0.04); }
+
+    /* Plain fade + blur — no translate (example.html t-fade-blur). */
+    #publish .t-fade-blur {
+      opacity: 1;
+      filter: blur(0);
+      transition:
+        filter  var(--text-swap-dur) var(--text-swap-ease),
+        opacity var(--text-swap-dur) var(--text-swap-ease);
+      will-change: filter, opacity;
+    }
+    #publish .t-fade-blur.is-fading {
+      opacity: 0;
+      filter: blur(var(--text-swap-blur));
+      pointer-events: none;
+    }
+    /* Fade-blur + text-swap combined: re-declare the full triplet so
+       the entry rise actually transitions (see example.html notes). */
+    #publish .t-fade-blur.t-text-swap {
+      transition:
+        transform var(--text-swap-dur) var(--text-swap-ease),
+        filter    var(--text-swap-dur) var(--text-swap-ease),
+        opacity   var(--text-swap-dur) var(--text-swap-ease);
+    }
+    /* Entry parking pose — rises from BELOW (publish-hero flip). */
+    #publish .t-fade-blur.t-text-swap.is-enter-start {
+      transform: translateY(var(--text-swap-translate-y));
+      filter: blur(var(--text-swap-blur));
+      opacity: 0;
+      transition: none;
+    }
+
+    /* Success check (10-success-check) — verbatim from the skill. */
+    .t-success-check {
+      display: inline-block;
+      transform-origin: center;
+      opacity: 0;
+      will-change: transform, opacity, filter;
+    }
+    .t-success-check svg { display: block; overflow: visible; }
+    .t-success-check svg path {
+      stroke-dasharray: 20;
+      stroke-dashoffset: 20;
+    }
+    .t-success-check[data-state="in"] {
+      animation:
+        t-check-fade   var(--check-opacity-dur) var(--check-ease-opacity) forwards,
+        t-check-rotate var(--check-rotate-dur)  var(--check-ease-rotate)  forwards,
+        t-check-blur   var(--check-blur-dur)    var(--check-ease-out)     forwards,
+        t-check-bob    var(--check-bob-dur)     var(--check-ease-bob)     forwards;
+    }
+    .t-success-check[data-state="in"] svg path {
+      animation: t-check-draw var(--check-path-dur) var(--check-ease-path) var(--check-path-delay, 0ms) forwards;
+    }
+    @keyframes t-check-fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes t-check-rotate {
+      from { transform: rotate(var(--check-rotate-from)); }
+      to   { transform: rotate(0deg); }
+    }
+    @keyframes t-check-blur {
+      from { filter: blur(var(--check-blur-from)); }
+      to   { filter: blur(0); }
+    }
+    @keyframes t-check-bob {
+      from { translate: 0 var(--check-y-amount); }
+      to   { translate: 0 0; }
+    }
+    @keyframes t-check-draw { to { stroke-dashoffset: 0; } }
+
+    /* ══ Reduced motion — required guard from every recipe ══════ */
+    @media (prefers-reduced-motion: reduce) {
+      .t-avatar { transition: none !important; transform: none !important; }
+      .t-resize { transition: none !important; }
+      .t-tilt-card { transform: none !important; transition: none !important; }
+      .t-like-icon, .t-like-particles i { animation: none !important; }
+      .t-morph, .t-morph-plus, .t-morph-menu { transition: none !important; }
+      .t-toggle-thumb { animation: none !important; }
+      .t-digit-group .t-digit { animation: none !important; }
+      .t-check, .t-check svg path { transition: none !important; }
+      .t-tabs-pill, .t-tab { transition: none !important; }
+      .t-learn-chevron, .t-learn-arm { transition: none !important; }
+      .t-acc-panel, .t-acc-panel-inner, .t-acc-chevron { transition: none !important; }
+      .t-dropdown { transition: none !important; }
+      .t-skel-skeleton, .t-skel-content { transition: none !important; }
+      .t-skel-skeleton.is-pulsing > * { animation: none !important; }
+      #publish .t-fade-blur, #publish .t-text-swap { transition: none !important; }
+      .t-success-check, .t-success-check svg path { animation: none !important; }
+      .t-success-check[data-state="in"] { opacity: 1; }
+      .t-success-check[data-state="in"] svg path { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Vertical-only motion blur for the spinning counter reels -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="reel-blur" x="-20%" y="-50%" width="140%" height="200%">
+        <feGaussianBlur stdDeviation="0 3" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="stage-scale">
+    <main class="stage" aria-label="Transitions collection showcase">
+
+      <!-- 1 · Avatar group hover -->
+      <div class="slot" id="avatars">
+        <div class="t-avatar-group" aria-label="Project members">
+          <div class="t-avatar" data-name="Sofia Nguyen"><img src="assets/avatars/avatar-1.webp" alt="Sofia Nguyen" width="32" height="32"></div>
+          <div class="t-avatar" data-name="Elena Fisher"><img src="assets/avatars/avatar-2.webp" alt="Elena Fisher" width="32" height="32"></div>
+          <div class="t-avatar" data-name="Marcus Bailey"><img src="assets/avatars/avatar-3.webp" alt="Marcus Bailey" width="32" height="32"></div>
+          <div class="t-avatar" data-name="Noah Hall"><img src="assets/avatars/avatar-4.webp" alt="Noah Hall" width="32" height="32"></div>
+          <div class="t-avatar" data-name="Daniel Osei"><img src="assets/avatars/avatar-5.webp" alt="Daniel Osei" width="32" height="32"></div>
+          <div class="t-avatar is-more" data-name="2 more">+2</div>
+        </div>
+      </div>
+
+      <!-- 2 · Image open tilt (Pro) -->
+      <div class="slot" id="resize">
+        <div class="pv1u">
+          <button type="button" class="pv28" id="pv28" aria-expanded="false" aria-label="Open image">
+            <img class="pv2i" id="pv1t" alt="" src="assets/proto-images/Untitled4.jpg">
+            <canvas class="pv1g" aria-hidden="true"></canvas>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3 · Card stack hover (Pro) -->
+      <div class="slot" id="tilt">
+        <div class="pv1r" aria-label="Card stack">
+          <button type="button" class="pv24" aria-label="Card 1"
+                  style="--cx: 10.87px; --cy: 19.77px; --rot: -8deg; --dx: -34px; --dy: 0px; --drot: -6deg; --card-op: 0.5; z-index: 1;"><img src="assets/proto-images/photo-1773236759289-251d9687b6e3.avif" alt=""></button>
+          <button type="button" class="pv24" aria-label="Card 2"
+                  style="--cx: 29.47px; --cy: 18.37px; --rot: 4deg; --dx: 34px; --dy: 0px; --drot: 6deg; --card-op: 0.5; z-index: 0;"><img src="assets/proto-images/Screenshot 2026-05-17 at 19.58.27.png" alt=""></button>
+          <button type="button" class="pv24" aria-label="Card 3"
+                  style="--cx: 21px; --cy: 21px; --rot: 0deg; --dx: 0px; --dy: 0px; --drot: 0deg; z-index: 2;"><img src="assets/proto-images/Screenshot 2026-05-17 at 19.53.15.png" alt=""></button>
+        </div>
+      </div>
+
+      <!-- 4 · Like button -->
+      <div class="slot" id="like">
+        <button type="button" class="t-like" data-liked="false">
+          <span class="t-like-icon">
+            <svg class="t-like-heart" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 13.8C8 13.8 1.75 10.3 1.75 6.05C1.75 4.13 3.3 2.58 5.22 2.58C6.4 2.58 7.44 3.17 8 4.07C8.56 3.17 9.6 2.58 10.78 2.58C12.7 2.58 14.25 4.13 14.25 6.05C14.25 10.3 8 13.8 8 13.8Z" stroke-width="1.4" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="t-like-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          Like
+        </button>
+      </div>
+
+      <!-- 5 · Plus to menu morph -->
+      <div class="slot" id="morph">
+        <div class="t-morph" data-open="false">
+          <div class="t-morph-menu" role="menu" aria-label="Share">
+            <button type="button" class="morph-item" role="menuitem">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M9.52 6.77L15.48 0h-1.41L8.9 5.88L4.77 0H0l6.25 8.9L0 16h1.41l5.47-6.21L11.23 16H16L9.52 6.77zm-1.94 2.2l-.63-.89L1.92 1.04h2.17l4.07 5.7l.63.89l5.29 7.41h-2.17L7.58 8.97z"/></svg>
+              Share on X
+            </button>
+            <button type="button" class="morph-item" role="menuitem">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 7.7A6 6 0 0 1 8.1 13.7a6.2 6.2 0 0 1-2.6-.55L2 14l.87-3.4a5.8 5.8 0 0 1-.63-2.66A6 6 0 0 1 8.14 2a6 6 0 0 1 5.86 5.7z"/></svg>
+              Share via Chat
+            </button>
+            <button type="button" class="morph-item" role="menuitem">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="9" height="9" rx="1.5"/><path d="M10.5 5.5V3A1.5 1.5 0 0 0 9 1.5H3A1.5 1.5 0 0 0 1.5 3v6A1.5 1.5 0 0 0 3 10.5h2.5"/></svg>
+              Copy link
+            </button>
+          </div>
+          <button type="button" class="t-morph-plus" aria-expanded="false" aria-label="Open menu">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 6 · Toggle -->
+      <div class="slot" id="toggle">
+        <button type="button" class="t-toggle" role="switch" data-on="false" aria-checked="false" aria-label="Toggle">
+          <span class="t-toggle-thumb"></span>
+        </button>
+      </div>
+
+      <!-- 7 · Number pop-in -->
+      <div class="slot" id="counter" role="button" tabindex="0" aria-label="Update the number">
+        <span class="t-digit-group" data-value="32,547"></span>
+      </div>
+
+      <!-- 8 · Pro gradient text (hover to animate) -->
+      <div class="slot" id="shimmer">
+        <span class="pro-grad">Pro</span>
+      </div>
+
+      <!-- 9 · Checkbox check -->
+      <label class="slot" id="notify">
+        <button type="button" class="t-check" role="checkbox" aria-checked="false" aria-label="Notify me">
+          <svg viewBox="0 0 10.1668 10.1668" aria-hidden="true">
+            <path d="M1 5.52L3.92 9.17L9.17 1"/>
+          </svg>
+        </button>
+        <span class="notify-label">Notify me</span>
+      </label>
+
+      <!-- 10 · Tabs sliding -->
+      <div class="slot" id="tabs">
+        <div class="t-tabs" role="tablist" aria-label="Mode">
+          <span class="t-tabs-pill" aria-hidden="true"></span>
+          <button type="button" class="t-tab" role="tab" aria-selected="true">Plan</button>
+          <button type="button" class="t-tab" role="tab" aria-selected="false">Debug</button>
+          <button type="button" class="t-tab" role="tab" aria-selected="false">Ask</button>
+        </div>
+      </div>
+
+      <!-- 11 · Learn more hover -->
+      <div class="slot" id="learn">
+        <button type="button" class="t-learn">Learn more
+          <span class="t-learn-chevron">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path class="t-learn-arm t-learn-arm-top" d="M6 4L10 8"/>
+              <path class="t-learn-arm t-learn-arm-bot" d="M10 8L6 12"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- 12 · Accordion -->
+      <div class="slot" id="accordion">
+        <div class="t-acc surface" data-open="false">
+          <button type="button" class="t-acc-head" aria-expanded="false">
+            Appearance
+            <span class="t-acc-chevron">
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6.5L8 10.5L12 6.5"/></svg>
+            </span>
+          </button>
+          <div class="t-acc-panel">
+            <div class="t-acc-panel-inner">
+              <div class="acc-rows" role="radiogroup" aria-label="Appearance">
+                <button type="button" class="acc-row" role="radio" aria-checked="true">Light</button>
+                <button type="button" class="acc-row" role="radio" aria-checked="false">Dark</button>
+                <button type="button" class="acc-row" role="radio" aria-checked="false">System</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13 · Share dropdown (from example-dropdown.html / skill-refine)
+           Shown open in place — no trigger button (matches the Figma). -->
+      <div class="slot" id="share">
+        <div class="share-anchor">
+          <div class="dd-shell" id="ddShell">
+            <div class="t-dropdown dropdown is-open" id="dropdown" role="menu" aria-label="Share options">
+              <div class="dd-tabs" id="ddTabs" role="tablist" aria-label="Share destinations">
+                <span class="dd-tabs-pill" aria-hidden="true"></span>
+                <button class="dd-tab" data-tab="social" role="tab" aria-selected="true"  type="button">Social</button>
+                <button class="dd-tab" data-tab="people" role="tab" aria-selected="false" type="button">People</button>
+              </div>
+              <div class="dd-body t-page-slide" id="ddBody" data-page="1">
+                <!-- Social panel -->
+                <div class="t-page" data-page-id="1" data-tab="social">
+                  <button class="social-row" type="button" role="menuitem">
+                    <span class="icon" id="iconShareX"></span>
+                    <span class="label">Share on X</span>
+                  </button>
+                  <button class="social-row" type="button" role="menuitem">
+                    <span class="icon" id="iconChat"></span>
+                    <span class="label">Share via Chat</span>
+                  </button>
+                  <button class="social-row" id="copyRow" type="button" role="menuitem" aria-label="Copy link">
+                    <span class="copy-icon-slot t-icon-swap" id="copyIconSwap" data-state="a">
+                      <span class="t-icon" data-icon="a" id="copyIconA"></span>
+                      <span class="t-icon" data-icon="b" id="copyIconB"></span>
+                    </span>
+                    <span class="label copy-text-slot">
+                      <span class="t-text-swap" id="copyLinkText">Copy link</span>
+                    </span>
+                  </button>
+                </div>
+                <!-- People panel -->
+                <div class="t-page" data-page-id="2" data-tab="people" id="peoplePanel"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 14 · Smoky dissolve (Pro) — the slot is the canvas stage -->
+      <div class="slot" id="skeleton">
+        <div class="pv2c" id="pv2c">
+          <img alt="" src="assets/proto-images/Untitled2.jpg">
+          <button type="button" class="pv1m" id="pv1m" aria-label="Delete image">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+        <canvas class="pv1l" id="pv1l" aria-hidden="true"></canvas>
+      </div>
+
+      <!-- 15 · Organic shimmer (Pro) -->
+      <div class="slot" id="shimmer-card">
+        <div class="pv1e" data-playing="false" role="button" tabindex="0" aria-label="Play organic shimmer">
+          <span class="pv16"><span class="pva"></span></span>
+          <span class="pv25">
+            <span class="pvi"></span>
+            <span class="pvq"></span>
+            <span class="pvr"></span>
+          </span>
+        </div>
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+          <filter id="pv26" x="-30%" y="-30%" width="160%" height="160%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012 0.03" numOctaves="2" seed="7" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+          <filter id="pvt" x="-40%" y="-40%" width="180%" height="180%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.009 0.015" numOctaves="2" seed="7" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="46" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </svg>
+      </div>
+
+      <!-- 16 · Publish (from example.html / skill good example) -->
+      <div class="slot" id="publish">
+        <div class="publish-card" data-published="false">
+          <div class="badge-slot" aria-hidden="true">
+            <span class="t-success-check published-badge" data-state="out">
+              <svg viewBox="0 0 40 40" width="40" height="40" fill="none" aria-hidden="true">
+                <circle cx="20" cy="20" r="17" fill="#35BA00"
+                        style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18))"/>
+                <path d="M14.4 20.4L17.6 23.8L25.6 15.4"
+                      stroke="#ffffff" stroke-width="2.4"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+          <p class="publish-copy t-fade-blur t-text-swap">When published to web, anyone can view</p>
+          <button type="button" class="publish-action t-fade-blur">Publish</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+      var docStyle = getComputedStyle(document.documentElement);
+      function cssNum(name, fb) {
+        var v = parseFloat(docStyle.getPropertyValue(name));
+        return Number.isFinite(v) ? v : fb;
+      }
+      function cssEase(name, fb) {
+        return docStyle.getPropertyValue(name).trim() || fb;
+      }
+
+      /* ── Responsive: scale the fixed 686×515 stage down ──────── */
+      var scaleWrap = document.querySelector(".stage-scale");
+      function fitStage() {
+        var s = Math.min(1, (window.innerWidth - 32) / 800);
+        scaleWrap.style.transform = s < 1 ? "scale(" + s + ")" : "";
+      }
+      fitStage();
+      window.addEventListener("resize", fitStage);
+
+      /* ── 1 · Avatar group hover (recipe 11) ──────────────────── */
+      (function () {
+        var root = document.querySelector(".t-avatar-group");
+        var avatars = Array.prototype.slice.call(root.querySelectorAll(".t-avatar"));
+        function setShifts(activeIdx, phase) {
+          var lift = cssNum("--avatar-lift", -4);
+          var falloff = cssNum("--avatar-falloff", 0.45);
+          var scale = cssNum("--avatar-scale", 1.05);
+          var tf = phase === "out"
+            ? cssEase("--avatar-ease-out", "cubic-bezier(0.34, 3.85, 0.64, 1)")
+            : cssEase("--avatar-ease-in", "cubic-bezier(0.22, 1, 0.36, 1)");
+          avatars.forEach(function (el, i) {
+            el.style.transitionTimingFunction = tf;
+            if (activeIdx == null) {
+              el.style.setProperty("--shift", "0px");
+              el.style.setProperty("--scale-active", "1");
+              return;
+            }
+            var d = Math.abs(i - activeIdx);
+            el.style.setProperty("--shift", (lift * Math.pow(falloff, d)).toFixed(3) + "px");
+            el.style.setProperty("--scale-active", i === activeIdx ? String(scale) : "1");
+          });
+        }
+        avatars.forEach(function (el, i) {
+          el.addEventListener("mouseenter", function () { setShifts(i, "in"); });
+        });
+        root.addEventListener("mouseleave", function () { setShifts(null, "out"); });
+
+        /* Shared name tooltip (example.html .avatar-tooltip): one bubble
+           that stays mounted and animates its x-position + width to
+           retarget across avatars, showing each person's name. */
+        var canHover = window.matchMedia && window.matchMedia("(hover: hover)").matches;
+        if (canHover) {
+          var tip = document.createElement("span");
+          tip.className = "avatar-tooltip";
+          tip.setAttribute("role", "tooltip");
+          tip.setAttribute("aria-hidden", "true");
+          tip.setAttribute("data-show", "false");
+          var tipText = document.createElement("span");
+          tipText.className = "avatar-tooltip-text";
+          tip.appendChild(tipText);
+          root.appendChild(tip);
+          var hideTimer = null;
+          function cancelHide() { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } }
+          function hideSoon() {
+            cancelHide();
+            hideTimer = setTimeout(function () {
+              tip.setAttribute("data-show", "false");
+              tip.setAttribute("aria-hidden", "true");
+            }, 50);
+          }
+          function place(wrap, text) {
+            cancelHide();
+            tipText.textContent = text;
+            var nextWidth = Math.ceil(tipText.scrollWidth + 24);
+            var stackRect = root.getBoundingClientRect();
+            var wrapRect = wrap.getBoundingClientRect();
+            var center = (wrapRect.left - stackRect.left) + wrapRect.width / 2;
+            var nextX = center - nextWidth / 2;
+            var maxX = Math.max(0, stackRect.width - nextWidth);
+            if (nextX < 0) nextX = 0;
+            if (nextX > maxX) nextX = maxX;
+            tip.style.width = nextWidth + "px";
+            tip.style.transform = "translateX(" + nextX + "px)";
+            tip.setAttribute("data-show", "true");
+            tip.setAttribute("aria-hidden", "false");
+          }
+          avatars.forEach(function (el) {
+            el.addEventListener("mouseenter", function () { place(el, el.getAttribute("data-name") || ""); });
+          });
+          root.addEventListener("mouseenter", cancelHide);
+          root.addEventListener("mouseleave", hideSoon);
+        }
+      })();
+
+      /* ── 2 · Image open tilt + bend (Pro, ported from index initPro4)
+         Click zooms the image open with a 3D forward dip (CSS pv2a) and
+         a per-pixel canvas BEND that bows the edges; click again closes
+         with the reverse bend. */
+      (function initPro4() {
+        var card = document.getElementById("pv28");
+        if (!card) return;
+        var img = card.querySelector(".pv2i");
+        var canvas = card.querySelector(".pv1g");
+        var cctx = canvas ? canvas.getContext("2d") : null;
+        var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var readNum = function (name, fb) { var v = parseFloat(getComputedStyle(card).getPropertyValue(name)); return Number.isFinite(v) ? v : fb; };
+        var readStr = function (name) { return getComputedStyle(card).getPropertyValue(name).trim(); };
+        function makeBendEase(raw) {
+          var kw = { "linear":[0,0,1,1], "ease":[0.25,0.1,0.25,1], "ease-in":[0.42,0,1,1], "ease-out":[0,0,0.58,1], "ease-in-out":[0.42,0,0.58,1] };
+          var c = kw[(raw || "").trim()];
+          if (!c) { var m = (raw || "").match(/cubic-bezier\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/); if (m) c = [+m[1],+m[2],+m[3],+m[4]]; }
+          if (!c) c = kw["ease"];
+          var x1 = c[0], y1 = c[1], x2 = c[2], y2 = c[3];
+          var cx = 3*x1, bx = 3*(x2-x1)-cx, ax = 1-cx-bx, cy = 3*y1, by = 3*(y2-y1)-cy, ay = 1-cy-by;
+          var sx = function (t) { return ((ax*t+bx)*t+cx)*t; }, dxf = function (t) { return (3*ax*t+2*bx)*t+cx; }, sy = function (t) { return ((ay*t+by)*t+cy)*t; };
+          return function (x) { if (x <= 0) return 0; if (x >= 1) return 1; var t = x; for (var i = 0; i < 6; i++) { var e = sx(t)-x; if (Math.abs(e) < 1e-4) break; var d = dxf(t); if (Math.abs(d) < 1e-6) break; t -= e/d; } return sy(t); };
+        }
+        var bendRaf = null, dprB = Math.min(window.devicePixelRatio || 1, 2), NB = 64;
+        var bnR = new Float32Array(NB * NB), bnG = new Float32Array(NB * NB);
+        (function seedBend() { var s = 11; for (var i = 0; i < NB*NB; i++) { s = (s*1664525+1013904223)>>>0; bnR[i] = s/2147483648-1; s = (s*1664525+1013904223)>>>0; bnG[i] = s/2147483648-1; } })();
+        function bGrid(g, x, y) {
+          var xi = Math.floor(x), yi = Math.floor(y), fx = x-xi, fy = y-yi;
+          fx = fx*fx*(3-2*fx); fy = fy*fy*(3-2*fy);
+          var x0 = ((xi%NB)+NB)%NB, x1 = (x0+1)%NB, y0 = ((yi%NB)+NB)%NB, y1 = (y0+1)%NB;
+          var top = g[y0*NB+x0] + (g[y0*NB+x1]-g[y0*NB+x0])*fx, bot = g[y1*NB+x0] + (g[y1*NB+x1]-g[y1*NB+x0])*fx;
+          return top + (bot-top)*fy;
+        }
+        function bNoise(g, px, py) { return (bGrid(g, px/110, py/70) + 0.5*bGrid(g, px/55+37.7, py/35+11.3)) / 1.5; }
+        var LATB = 8, snapData = null, outData = null, latFX = null, latFY = null, latWB = 0, latHB = 0, padB = 0, padDevB = 0, sw = 0, sh = 0;
+        function prepareBend(strength) {
+          var cw = card.offsetWidth, chh = card.offsetHeight;
+          sw = Math.max(2, Math.round(cw*dprB)); sh = Math.max(2, Math.round(chh*dprB));
+          padB = Math.ceil(Math.abs(strength)*0.32) + 4; padDevB = Math.round(padB*dprB);
+          canvas.style.left = -padB + "px"; canvas.style.top = -padB + "px";
+          canvas.style.width = (cw + padB*2) + "px"; canvas.style.height = (chh + padB*2) + "px";
+          canvas.width = sw + padDevB*2; canvas.height = sh + padDevB*2;
+          outData = cctx.createImageData(canvas.width, canvas.height);
+          var sc = document.createElement("canvas"); sc.width = sw; sc.height = sh;
+          var scx = sc.getContext("2d");
+          if (img && img.naturalWidth) { var k = Math.max(sw/img.naturalWidth, sh/img.naturalHeight), dw = img.naturalWidth*k, dh = img.naturalHeight*k; scx.drawImage(img, (sw-dw)/2, (sh-dh)/2, dw, dh); }
+          snapData = scx.getImageData(0, 0, sw, sh).data;
+          latWB = Math.ceil(canvas.width/LATB) + 2; latHB = Math.ceil(canvas.height/LATB) + 2;
+          latFX = new Float32Array(latWB*latHB); latFY = new Float32Array(latWB*latHB);
+          for (var ly = 0; ly < latHB; ly++) {
+            var py = (ly*LATB - padDevB) / dprB;
+            for (var lx = 0; lx < latWB; lx++) {
+              var px = (lx*LATB - padDevB) / dprB, q = (2*px - cw) / (1.4*cw), li = ly*latWB + lx;
+              latFX[li] = 0.0016 + 0.09*bNoise(bnR, px, py);
+              latFY[li] = 0.4116*(1 - q*q) - 0.41 + 0.09*bNoise(bnG, px, py);
+            }
+          }
+        }
+        function renderBend(s, rCss) {
+          var rr = rCss*dprB, W = canvas.width, H = canvas.height, src = snapData, dst = outData.data, sDev = s*dprB, invLat = 1/LATB, di = 0;
+          for (var y = 0; y < H; y++) {
+            var gy = y*invLat, gy0 = gy|0, fyL = gy-gy0, row0 = gy0*latWB, row1 = row0+latWB;
+            for (var x = 0; x < W; x++, di += 4) {
+              var gx = x*invLat, gx0 = gx|0, fxL = gx-gx0, a = row0+gx0, b = row1+gx0;
+              var Fx = (latFX[a] + (latFX[a+1]-latFX[a])*fxL)*(1-fyL) + (latFX[b] + (latFX[b+1]-latFX[b])*fxL)*fyL;
+              var Fy = (latFY[a] + (latFY[a+1]-latFY[a])*fxL)*(1-fyL) + (latFY[b] + (latFY[b+1]-latFY[b])*fxL)*fyL;
+              var sxf = x - padDevB + sDev*Fx, syf = y - padDevB + sDev*Fy;
+              var dx1 = Math.min(sxf, sw-sxf), dy1 = Math.min(syf, sh-syf), d;
+              if (dx1 < rr && dy1 < rr) { var ax = rr-dx1, ay = rr-dy1; d = rr - Math.sqrt(ax*ax+ay*ay); } else { d = Math.min(dx1, dy1); }
+              if (d <= 0) { dst[di+3] = 0; continue; }
+              var sx0 = Math.floor(sxf), sy0 = Math.floor(syf);
+              if (sx0 < 0) sx0 = 0; else if (sx0 > sw-2) sx0 = sw-2;
+              if (sy0 < 0) sy0 = 0; else if (sy0 > sh-2) sy0 = sh-2;
+              var u = Math.min(Math.max(sxf-sx0, 0), 1), v = Math.min(Math.max(syf-sy0, 0), 1);
+              var w00 = (1-u)*(1-v), w10 = u*(1-v), w01 = (1-u)*v, w11 = u*v;
+              var i00 = (sy0*sw+sx0)*4, i10 = i00+4, i01 = i00+sw*4, i11 = i01+4;
+              dst[di] = src[i00]*w00+src[i10]*w10+src[i01]*w01+src[i11]*w11;
+              dst[di+1] = src[i00+1]*w00+src[i10+1]*w10+src[i01+1]*w01+src[i11+1]*w11;
+              dst[di+2] = src[i00+2]*w00+src[i10+2]*w10+src[i01+2]*w01+src[i11+2]*w11;
+              dst[di+3] = d >= 1 ? 255 : 255*d;
+            }
+          }
+          cctx.putImageData(outData, 0, 0);
+        }
+        function runBend(sign, flightMs) {
+          if (!canvas || !cctx || reduced) return;
+          var strength = readNum("--pv27", 0); if (!strength) return;
+          var explicit = readNum("--pv12", 0), durMs = explicit > 0 ? explicit : flightMs; if (durMs <= 0) return;
+          var ease = makeBendEase(readStr("--pvu"));
+          var rFrom = parseFloat(getComputedStyle(card).borderTopLeftRadius) || 0, rTo = sign > 0 ? 16 : 32;
+          var flightEase = makeBendEase(readStr(sign > 0 ? "--pvw" : "--pvl"));
+          if (bendRaf) cancelAnimationFrame(bendRaf);
+          prepareBend(strength);
+          card.classList.add("is-bending");
+          var t0 = performance.now();
+          (function tick(now) {
+            var p = Math.min((now-t0)/durMs, 1), e = Math.min(Math.max(ease(p), 0), 1), env = Math.sin(Math.PI*e);
+            var p2 = Math.min((now-t0)/Math.max(flightMs, 1), 1);
+            renderBend(strength*sign*env, rFrom + (rTo-rFrom)*flightEase(p2));
+            if (p < 1) { bendRaf = requestAnimationFrame(tick); } else { bendRaf = null; card.classList.remove("is-bending"); }
+          })(t0);
+        }
+        card.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var open = card.classList.contains("is-open");
+          if (open) {
+            card.classList.remove("is-open"); card.classList.add("is-closing"); card.setAttribute("aria-expanded", "false");
+            runBend(-0.6, readNum("--pvv", 420));
+          } else {
+            card.classList.remove("is-closing"); card.classList.add("is-open"); card.setAttribute("aria-expanded", "true");
+            runBend(1, readNum("--pv13", 620));
+          }
+        });
+        card.addEventListener("animationend", function (e) { if (e.animationName === "pv1s") card.classList.remove("is-closing"); });
+        document.addEventListener("click", function (e) {
+          if (card.classList.contains("is-open") && !card.contains(e.target)) {
+            card.classList.remove("is-open"); card.classList.add("is-closing"); card.setAttribute("aria-expanded", "false");
+            runBend(-0.6, readNum("--pvv", 420));
+          }
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && card.classList.contains("is-open")) {
+            card.classList.remove("is-open"); card.classList.add("is-closing"); card.setAttribute("aria-expanded", "false");
+            runBend(-0.6, readNum("--pvv", 420));
+          }
+        });
+      })();
+
+      /* ── 3 · Card stack hover (Pro) ──────────────────────────────
+         Hover fan-out is pure CSS. On touch devices (no hover) a tap
+         toggles .is-open so the stack still fans, matching the index
+         prototype's touch fallback. */
+      (function () {
+        var stack = document.querySelector(".pv1r");
+        if (!stack) return;
+        if (window.matchMedia && window.matchMedia("(hover: none)").matches) {
+          stack.addEventListener("click", function () {
+            stack.classList.toggle("is-open");
+          });
+        }
+      })();
+
+      /* ── 4 · Like button (recipe 23) ─────────────────────────── */
+      (function () {
+        var like = document.querySelector(".t-like");
+        var dots = like.querySelectorAll(".t-like-particles i");
+        var burstTimer = null;
+        like.addEventListener("click", function () {
+          var liked = like.getAttribute("data-liked") === "true";
+          like.setAttribute("data-liked", String(!liked));
+          if (liked) return; // celebration only on the way in
+          var dist = cssNum("--like-particle-dist", 20);
+          var dur = cssNum("--like-particle-dur", 600);
+          dots.forEach(function (dot, i) {
+            var angle = (i / dots.length) * Math.PI * 2 + (Math.random() - 0.5) * 0.9;
+            var d = dist * (0.75 + Math.random() * 0.5);
+            dot.style.setProperty("--px", (Math.cos(angle) * d).toFixed(1) + "px");
+            dot.style.setProperty("--py", (Math.sin(angle) * d).toFixed(1) + "px");
+            dot.style.setProperty("--pdur", Math.round(dur * (0.8 + Math.random() * 0.4)) + "ms");
+            dot.style.setProperty("--pdelay", Math.round(Math.random() * 60) + "ms");
+            dot.style.setProperty("--psize", (0.8 + Math.random() * 0.7).toFixed(2));
+            dot.style.setProperty("--p-end-scale", (0.4 + Math.random() * 0.4).toFixed(2));
+          });
+          like.classList.remove("is-bursting");
+          void like.offsetWidth;
+          like.classList.add("is-bursting");
+          clearTimeout(burstTimer);
+          burstTimer = setTimeout(function () {
+            like.classList.remove("is-bursting");
+          }, dur * 1.4 + 80);
+        });
+      })();
+
+      /* ── 5 · Plus to menu morph (recipe 20) ──────────────────────
+         On close, replay the close-anticipation bounce (index initP20):
+         add .is-closing after a reflow, remove it on animationend. */
+      (function () {
+        var morph = document.querySelector(".t-morph");
+        var plus = morph.querySelector(".t-morph-plus");
+        function setOpen(open) {
+          var wasOpen = morph.getAttribute("data-open") === "true";
+          morph.setAttribute("data-open", String(open));
+          plus.setAttribute("aria-expanded", String(open));
+          morph.classList.remove("is-closing");
+          if (!open && wasOpen) {
+            void morph.offsetWidth;
+            morph.classList.add("is-closing");
+          }
+        }
+        morph.addEventListener("animationend", function (e) {
+          if (e.target === morph) morph.classList.remove("is-closing");
+        });
+        plus.addEventListener("click", function (e) {
+          e.stopPropagation();
+          setOpen(morph.getAttribute("data-open") !== "true");
+        });
+        document.addEventListener("click", function (e) {
+          if (morph.getAttribute("data-open") !== "true") return;
+          if (!morph.contains(e.target)) setOpen(false);
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && morph.getAttribute("data-open") === "true") setOpen(false);
+        });
+      })();
+
+      /* ── 6 · Toggle (recipe 27) ──────────────────────────────── */
+      (function () {
+        var toggle = document.querySelector(".t-toggle");
+        toggle.addEventListener("click", function () {
+          // .is-init on first interaction so the off keyframes don't
+          // play once at page load.
+          toggle.classList.add("is-init");
+          var on = toggle.getAttribute("data-on") === "true";
+          toggle.setAttribute("data-on", String(!on));
+          toggle.setAttribute("aria-checked", String(!on));
+        });
+      })();
+
+      /* ── 7 · Number pop-in (recipe 02) ───────────────────────── */
+      (function () {
+        var slot = document.getElementById("counter");
+        var group = slot.querySelector(".t-digit-group");
+        // A pool of plausible whole numbers to cycle through on click.
+        // Fixed prefix; only the last two digits change (and pop), so the
+        // update reads as the tail ticking rather than the whole number swapping.
+        var values = ["32,547", "32,562", "32,589", "32,514", "32,573"];
+        var idx = 0;
+
+        var digitDur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--digit-dur")) || 500;
+        var digitStagger = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--digit-stagger")) || 70;
+
+        // Replay (index P9 ghost choreography, scoped to the tail): the
+        // leading chars render once as static spans and never move; only
+        // the last three digits pop. The old tail is snapshotted into a
+        // ghost stacked over .t-digit-tail so it pops out upward while
+        // the new tail pops in from below, last two staggering 1×/2×.
+        function setDigits(str) {
+          var prefix = str.slice(0, -3);
+          var tailStr = str.slice(-3);
+
+          var tail = group.querySelector(".t-digit-tail");
+          if (!tail) {
+            prefix.split("").forEach(function (ch) {
+              var span = document.createElement("span");
+              span.className = "t-digit-static";
+              span.textContent = ch;
+              group.appendChild(span);
+            });
+            tail = document.createElement("span");
+            tail.className = "t-digit-tail";
+            group.appendChild(tail);
+          }
+
+          var oldGhost = tail.querySelector(".t-digit-ghost");
+          if (oldGhost) oldGhost.remove();
+
+          var liveChars = tail.querySelectorAll(":scope > .t-digit");
+          if (liveChars.length) {
+            var ghost = document.createElement("span");
+            ghost.className = "t-digit-ghost";
+            liveChars.forEach(function (ch) {
+              ghost.appendChild(ch.cloneNode(true));
+            });
+            tail.appendChild(ghost);
+            setTimeout(function () {
+              if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+            }, digitDur + digitStagger * 2 + 50);
+          }
+
+          group.classList.remove("is-animating");
+          tail.querySelectorAll(":scope > .t-digit").forEach(function (el) { el.remove(); });
+          var chars = tailStr.split("");
+          chars.forEach(function (ch, i) {
+            var span = document.createElement("span");
+            span.className = "t-digit";
+            span.textContent = ch;
+            if (i === chars.length - 2) span.dataset.stagger = "1";
+            else if (i === chars.length - 1) span.dataset.stagger = "2";
+            var ghostEl = tail.querySelector(".t-digit-ghost");
+            if (ghostEl) tail.insertBefore(span, ghostEl);
+            else tail.appendChild(span);
+          });
+          void group.offsetHeight;
+          group.classList.add("is-animating");
+        }
+        function next() {
+          idx = (idx + 1) % values.length;
+          setDigits(values[idx]);
+        }
+        setDigits(values[0]); // pop in on load
+        slot.addEventListener("click", next);
+        slot.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); next(); }
+        });
+      })();
+
+      /* ── 9 · Checkbox check (recipe 25) ──────────────────────── */
+      (function () {
+        var check = document.querySelector(".t-check");
+        var path = check.querySelector("path");
+        // Calibrate the draw to the real path length so it never
+        // over/under-draws.
+        var len = Math.ceil(path.getTotalLength());
+        check.style.setProperty("--check-len", String(len));
+        check.addEventListener("click", function () {
+          var on = check.getAttribute("aria-checked") === "true";
+          check.setAttribute("aria-checked", String(!on));
+        });
+      })();
+
+      /* ── 10 + 13 · Tabs sliding (recipe 16), both tab bars ───── */
+      function initTabs(bar, onChange) {
+        var pill = bar.querySelector(".t-tabs-pill");
+        var tabs = Array.prototype.slice.call(bar.querySelectorAll(".t-tab"));
+        function moveTo(tab, animate) {
+          if (!animate) {
+            var prev = pill.style.transition;
+            pill.style.transition = "none";
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+            void pill.offsetWidth;
+            pill.style.transition = prev;
+          } else {
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+          }
+        }
+        function active() {
+          return tabs.find(function (t) { return t.getAttribute("aria-selected") === "true"; }) || tabs[0];
+        }
+        tabs.forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            tabs.forEach(function (t) {
+              t.setAttribute("aria-selected", t === tab ? "true" : "false");
+            });
+            moveTo(tab, true);
+            if (onChange) onChange(tab);
+          });
+        });
+        requestAnimationFrame(function () { moveTo(active(), false); });
+        window.addEventListener("resize", function () { moveTo(active(), false); });
+        return { sync: function () { moveTo(active(), false); } };
+      }
+      initTabs(document.querySelector("#tabs .t-tabs"));
+
+      /* ── 12 · Accordion (recipe 21) ──────────────────────────── */
+      (function () {
+        var acc = document.querySelector(".t-acc");
+        var head = acc.querySelector(".t-acc-head");
+        head.addEventListener("click", function () {
+          var open = acc.getAttribute("data-open") === "true";
+          acc.setAttribute("data-open", String(!open));
+          head.setAttribute("aria-expanded", String(!open));
+        });
+        acc.querySelectorAll(".acc-row").forEach(function (row) {
+          row.addEventListener("click", function () {
+            acc.querySelectorAll(".acc-row").forEach(function (r) {
+              r.setAttribute("aria-checked", String(r === row));
+            });
+          });
+        });
+      })();
+
+      /* ── 13 · Share dropdown (from example-dropdown.html) ─────────
+         Menu dropdown (05) + sliding tabs (16) + card resize (01) +
+         page side-by-side (08) + text swap (04) + icon swap (09). */
+      (function () {
+        var slot = document.getElementById("share");
+        var $ = function (id) { return slot.querySelector("#" + id); };
+
+        /* Inline icons (16×16, currentColor) — from the source component */
+        function iconCopy() {
+          return '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">'
+            + '<path d="M3.33333 10C2.71208 10 2.40145 10 2.15642 9.89851C1.82972 9.76318 1.57015 9.50361 1.43483 9.17691C1.33333 8.93188 1.33333 8.62125 1.33333 8V3.46667C1.33333 2.71993 1.33333 2.34656 1.47866 2.06135C1.60649 1.81046 1.81046 1.60649 2.06135 1.47866C2.34656 1.33333 2.71993 1.33333 3.46667 1.33333H8C8.62125 1.33333 8.93188 1.33333 9.17691 1.43483C9.50361 1.57015 9.76318 1.82972 9.89851 2.15642C10 2.40145 10 2.71208 10 3.33333M8.13333 14.6667H12.5333C13.2801 14.6667 13.6534 14.6667 13.9387 14.5213C14.1895 14.3935 14.3935 14.1895 14.5213 13.9387C14.6667 13.6534 14.6667 13.2801 14.6667 12.5333V8.13333C14.6667 7.3866 14.6667 7.01323 14.5213 6.72801C14.3935 6.47713 14.1895 6.27316 13.9387 6.14532C13.6534 6 13.2801 6 12.5333 6H8.13333C7.3866 6 7.01323 6 6.72801 6.14532C6.47713 6.27316 6.27316 6.47713 6.14532 6.72801C6 7.01323 6 7.3866 6 8.13333V12.5333C6 13.2801 6 13.6534 6.14532 13.9387C6.27316 14.1895 6.47713 14.3935 6.72801 14.5213C7.01323 14.6667 7.3866 14.6667 8.13333 14.6667Z"'
+            + ' stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
+        function iconCheck() {
+          return '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">'
+            + '<path transform="translate(2.25 4.25)" fill-rule="evenodd" clip-rule="evenodd" '
+            + 'd="M11.2803 0.21967C11.5732 0.512563 11.5732 0.987437 11.2803 1.28033L4.28033 8.28033C3.98744 8.57322 3.51256 8.57322 3.21967 8.28033L0.21967 5.28033C-0.0732233 4.98744 -0.0732233 4.51256 0.21967 4.21967C0.512563 3.92678 0.987437 3.92678 1.28033 4.21967L3.75 6.68934L10.2197 0.21967C10.5126 -0.0732233 10.9874 -0.0732233 11.2803 0.21967Z"'
+            + ' fill="currentColor"/></svg>';
+        }
+        function iconChevron() {
+          return '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">'
+            + '<path transform="translate(4.25 6.25)" fill-rule="evenodd" clip-rule="evenodd" '
+            + 'd="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z"'
+            + ' fill="currentColor"/></svg>';
+        }
+        function iconX() {
+          return '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">'
+            + '<path fill="currentColor" d="M9.55 2.6h1.86l-4.06 4.64L12.13 13.4H8.4L5.48 9.58 2.14 13.4H.28l4.34-4.96L.05 2.6h3.82l2.64 3.49L9.55 2.6Zm-.65 9.68h1.03L3.94 3.66H2.83l6.07 8.62Z"/></svg>';
+        }
+        function iconChat() {
+          return '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">'
+            + '<path d="M8 14.2c3.48 0 6.3-2.6 6.3-5.8S11.48 2.6 8 2.6 1.7 5.2 1.7 8.4c0 1 .28 1.94.77 2.77L1.7 14.3l3.3-.72c.9.4 1.92.62 3 .62Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>'
+            + '<path d="M5.4 7.6h5.2M5.4 9.9h3.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+        }
+
+        var people = [
+          { name: "Sofia Nguyen",  mail: "sofia@gmail.com",  avatar: "assets/avatars/avatar-1.webp" },
+          { name: "Marcus Bailey", mail: "marcus@gmail.com", avatar: "assets/avatars/avatar-4.webp" },
+          { name: "Elena Fisher",  mail: "elena@gmail.com",  avatar: "assets/avatars/avatar-3.webp" },
+          { name: "Daniel Osei",   mail: "daniel@gmail.com", avatar: "assets/avatars/avatar-6.webp" }
+        ];
+
+        var dropdown = $("dropdown");
+        var ddTabs = $("ddTabs");
+        var ddBody = $("ddBody");
+        var peoplePanel = $("peoplePanel");
+        var copyRow = $("copyRow");
+        var copyLinkText = $("copyLinkText");
+        var copyIconSwap = $("copyIconSwap");
+
+        $("iconShareX").innerHTML = iconX();
+        $("iconChat").innerHTML = iconChat();
+        $("copyIconA").innerHTML = iconCopy();
+        $("copyIconB").innerHTML = iconCheck();
+        peoplePanel.innerHTML = people.map(function (p) {
+          return '<button class="people-row" type="button" role="menuitem">'
+            + '<img class="avatar" alt="" loading="lazy" src="' + p.avatar + '">'
+            + '<span class="person"><span class="person-name">' + p.name + '</span>'
+            + '<span class="person-mail">' + p.mail + '</span></span></button>';
+        }).join("");
+
+        var TAB_PAGE = { social: "1", people: "2" };
+        var panels = Array.prototype.slice.call(ddBody.querySelectorAll(".t-page"));
+        var tabs = Array.prototype.slice.call(ddTabs.querySelectorAll(".dd-tab"));
+        var pill = ddTabs.querySelector(".dd-tabs-pill");
+        function activeTab() { return tabs.find(function (t) { return t.getAttribute("aria-selected") === "true"; }) || tabs[0]; }
+        function activePanel() {
+          var id = ddBody.getAttribute("data-page") || "1";
+          return panels.find(function (p) { return p.dataset.pageId === id; }) || panels[0];
+        }
+        function panelForTab(name) { return panels.find(function (p) { return p.dataset.tab === name; }) || panels[0]; }
+
+        /* Sliding tab pill (16) */
+        function movePill(tab, animate) {
+          if (!animate) {
+            var prev = pill.style.transition;
+            pill.style.transition = "none";
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+            void pill.offsetWidth;
+            pill.style.transition = prev;
+          } else {
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+          }
+        }
+        /* Card resize between tab panels (01) */
+        function panelHeight(panel) {
+          if (!panel) return 0;
+          var measured = panel.offsetHeight;
+          return measured > 0 ? measured : panel.scrollHeight;
+        }
+        function sizeBody(animate, tabName) {
+          var panel = tabName ? panelForTab(tabName) : activePanel();
+          var nextH = panelHeight(panel);
+          if (!animate) {
+            var prev = ddBody.style.transition;
+            ddBody.style.transition = "none";
+            ddBody.style.height = nextH + "px";
+            void ddBody.offsetHeight;
+            ddBody.style.transition = prev;
+          } else {
+            ddBody.style.height = nextH + "px";
+          }
+        }
+        function selectTab(tab, animate) {
+          tabs.forEach(function (t) { t.setAttribute("aria-selected", t === tab ? "true" : "false"); });
+          var name = tab.dataset.tab;
+          ddBody.setAttribute("data-page", TAB_PAGE[name] || "1");
+          movePill(tab, animate);
+          sizeBody(animate, name);
+        }
+        tabs.forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            if (tab.getAttribute("aria-selected") === "true") return;
+            selectTab(tab, true);
+          });
+        });
+
+        /* The dropdown is shown open in place (no trigger button), so
+           there is no open/close logic — just prime the pill + height. */
+
+        /* Copy link — text swap (04) + icon swap (09) */
+        var textSwapDur = cssNum("--text-swap-dur", 150);
+        var textEnterDelay = cssNum("--text-swap-enter-delay", 0);
+        var textSwapAt = Math.max(0, textSwapDur + textEnterDelay);
+        function swapText(el, next) {
+          el.classList.add("is-exit");
+          setTimeout(function () {
+            el.textContent = next;
+            el.classList.remove("is-exit");
+            el.classList.add("is-enter-start");
+            void el.offsetHeight;
+            el.classList.remove("is-enter-start");
+          }, textSwapAt);
+        }
+        var copyResetTimer = null;
+        copyRow.addEventListener("click", function () {
+          try { navigator.clipboard && navigator.clipboard.writeText("https://transitions.dev/example"); } catch (_) {}
+          copyIconSwap.setAttribute("data-state", "b");
+          swapText(copyLinkText, "Copied");
+          clearTimeout(copyResetTimer);
+          copyResetTimer = setTimeout(function () {
+            copyIconSwap.setAttribute("data-state", "a");
+            swapText(copyLinkText, "Copy link");
+          }, 1400);
+        });
+
+        /* Prime the pill + body height for the always-open dropdown. */
+        requestAnimationFrame(function () { movePill(activeTab(), false); sizeBody(false); });
+        window.addEventListener("resize", function () { movePill(activeTab(), false); sizeBody(false); });
+      })();
+
+      /* ── 14 · Smoky dissolve (Pro, ported from index initPro6) ────
+         Delete → the image shreds via a per-pixel displacement warp,
+         box-blurs, falls under gravity, and fades to smoke on a GPU
+         canvas, then the card respawns. */
+      (function initPro6() {
+        var stage = document.getElementById("skeleton");
+        var card = document.getElementById("pv2c");
+        var btn = document.getElementById("pv1m");
+        var canvas = document.getElementById("pv1l");
+        if (!stage || !card || !btn || !canvas) return;
+        var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var readNum = function (name, fb) {
+          var v = parseFloat(getComputedStyle(card).getPropertyValue(name));
+          return Number.isFinite(v) ? v : fb;
+        };
+        var readStr = function (name) { return getComputedStyle(card).getPropertyValue(name).trim(); };
+        function makeEaseSampler(raw) {
+          var kw = { "linear":[0,0,1,1], "ease":[0.25,0.1,0.25,1], "ease-in":[0.42,0,1,1], "ease-out":[0,0,0.58,1], "ease-in-out":[0.42,0,0.58,1] };
+          var c = kw[(raw || "").trim()];
+          if (!c) { var m = (raw || "").match(/cubic-bezier\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/); if (m) c = [+m[1], +m[2], +m[3], +m[4]]; }
+          if (!c) c = kw["ease"];
+          var x1 = c[0], y1 = c[1], x2 = c[2], y2 = c[3];
+          var cx = 3*x1, bx = 3*(x2-x1)-cx, ax = 1-cx-bx;
+          var cy = 3*y1, by = 3*(y2-y1)-cy, ay = 1-cy-by;
+          var sx = function (t) { return ((ax*t+bx)*t+cx)*t; };
+          var dxf = function (t) { return (3*ax*t+2*bx)*t+cx; };
+          var sy = function (t) { return ((ay*t+by)*t+cy)*t; };
+          return function (x) {
+            if (x <= 0) return 0; if (x >= 1) return 1;
+            var t = x;
+            for (var i = 0; i < 6; i++) { var e = sx(t)-x; if (Math.abs(e) < 1e-4) break; var d = dxf(t); if (Math.abs(d) < 1e-6) break; t -= e/d; }
+            return sy(t);
+          };
+        }
+        var ctx = canvas.getContext("2d");
+        var workHalf = document.createElement("canvas");
+        var snap = document.createElement("canvas");
+        var whctx = workHalf.getContext("2d");
+        var running = false;
+        var LAT = 4;
+        var snapPre = null, workData = null, halfData = null, blurTmp = null;
+        var pad = 0, padDev = 0, latW = 0, latH = 0;
+        var workW = 0, workH = 0, wW2 = 0, wH2 = 0;
+        var latDX = null, latDY = null;
+        function boxH(srcA, dstA, w, h, r) {
+          var inv = 1 / (2 * r + 1);
+          for (var y = 0; y < h; y++) {
+            var base = y * w * 4, sr = 0, sg = 0, sb = 0, sa = 0;
+            for (var x = 0; x <= r && x < w; x++) { var i = base + x * 4; sr += srcA[i]; sg += srcA[i+1]; sb += srcA[i+2]; sa += srcA[i+3]; }
+            for (x = 0; x < w; x++) {
+              var o = base + x * 4;
+              dstA[o] = sr*inv; dstA[o+1] = sg*inv; dstA[o+2] = sb*inv; dstA[o+3] = sa*inv;
+              var xa = x + r + 1; if (xa < w) { var ia = base + xa*4; sr += srcA[ia]; sg += srcA[ia+1]; sb += srcA[ia+2]; sa += srcA[ia+3]; }
+              var xs = x - r; if (xs >= 0) { var is = base + xs*4; sr -= srcA[is]; sg -= srcA[is+1]; sb -= srcA[is+2]; sa -= srcA[is+3]; }
+            }
+          }
+        }
+        function boxV(srcA, dstA, w, h, r, straight) {
+          var stride = w * 4, inv = 1 / (2 * r + 1);
+          for (var x = 0; x < w; x++) {
+            var base = x * 4, sr = 0, sg = 0, sb = 0, sa = 0;
+            for (var y = 0; y <= r && y < h; y++) { var i = base + y*stride; sr += srcA[i]; sg += srcA[i+1]; sb += srcA[i+2]; sa += srcA[i+3]; }
+            for (y = 0; y < h; y++) {
+              var o = base + y*stride, aOut = sa*inv;
+              if (straight && aOut > 0.5 && aOut < 254.6) { var k = 255/aOut; dstA[o] = sr*inv*k; dstA[o+1] = sg*inv*k; dstA[o+2] = sb*inv*k; }
+              else { dstA[o] = sr*inv; dstA[o+1] = sg*inv; dstA[o+2] = sb*inv; }
+              dstA[o+3] = aOut;
+              var ya = y + r + 1; if (ya < h) { var ia = base + ya*stride; sr += srcA[ia]; sg += srcA[ia+1]; sb += srcA[ia+2]; sa += srcA[ia+3]; }
+              var ys = y - r; if (ys >= 0) { var is = base + ys*stride; sr -= srcA[is]; sg -= srcA[is+1]; sb -= srcA[is+2]; sa -= srcA[is+3]; }
+            }
+          }
+        }
+        function remap(dstArr, dw, dh, s, straight) {
+          var snapW = snap.width, snapH = snap.height, src = snapPre, invLat = 1 / LAT, di = 0;
+          for (var yD = 0; yD < dh; yD++) {
+            var yF = yD * s, gy = yF * invLat, gy0 = gy | 0, fy = gy - gy0, row0 = gy0 * latW, row1 = row0 + latW;
+            for (var xD = 0; xD < dw; xD++, di += 4) {
+              var xF = xD * s, gx = xF * invLat, gx0 = gx | 0, fx = gx - gx0, a = row0 + gx0, b = row1 + gx0;
+              var dxv = (latDX[a] + (latDX[a+1]-latDX[a])*fx)*(1-fy) + (latDX[b] + (latDX[b+1]-latDX[b])*fx)*fy;
+              var dyv = (latDY[a] + (latDY[a+1]-latDY[a])*fx)*(1-fy) + (latDY[b] + (latDY[b+1]-latDY[b])*fx)*fy;
+              var sxf = xF - padDev + dxv, syf = yF - padDev + dyv, sx0 = Math.floor(sxf), sy0 = Math.floor(syf);
+              var rC = 0, gC = 0, bC = 0, aC = 0;
+              if (sx0 >= 0 && sx0 < snapW - 1 && sy0 >= 0 && sy0 < snapH - 1) {
+                var u = sxf - sx0, v = syf - sy0, w00 = (1-u)*(1-v), w10 = u*(1-v), w01 = (1-u)*v, w11 = u*v;
+                var i00 = (sy0*snapW+sx0)*4, i10 = i00+4, i01 = i00+snapW*4, i11 = i01+4;
+                rC = src[i00]*w00+src[i10]*w10+src[i01]*w01+src[i11]*w11;
+                gC = src[i00+1]*w00+src[i10+1]*w10+src[i01+1]*w01+src[i11+1]*w11;
+                bC = src[i00+2]*w00+src[i10+2]*w10+src[i01+2]*w01+src[i11+2]*w11;
+                aC = src[i00+3]*w00+src[i10+3]*w10+src[i01+3]*w01+src[i11+3]*w11;
+              } else if (sx0 >= -1 && sx0 <= snapW - 1 && sy0 >= -1 && sy0 <= snapH - 1) {
+                var u2 = sxf - sx0, v2 = syf - sy0, w, si;
+                if (sx0 >= 0 && sy0 >= 0) { w = (1-u2)*(1-v2); si = (sy0*snapW+sx0)*4; rC += src[si]*w; gC += src[si+1]*w; bC += src[si+2]*w; aC += src[si+3]*w; }
+                if (sx0+1 < snapW && sy0 >= 0) { w = u2*(1-v2); si = (sy0*snapW+sx0+1)*4; rC += src[si]*w; gC += src[si+1]*w; bC += src[si+2]*w; aC += src[si+3]*w; }
+                if (sx0 >= 0 && sy0+1 < snapH) { w = (1-u2)*v2; si = ((sy0+1)*snapW+sx0)*4; rC += src[si]*w; gC += src[si+1]*w; bC += src[si+2]*w; aC += src[si+3]*w; }
+                if (sx0+1 < snapW && sy0+1 < snapH) { w = u2*v2; si = ((sy0+1)*snapW+sx0+1)*4; rC += src[si]*w; gC += src[si+1]*w; bC += src[si+2]*w; aC += src[si+3]*w; }
+              } else { dstArr[di] = 0; dstArr[di+1] = 0; dstArr[di+2] = 0; dstArr[di+3] = 0; continue; }
+              if (straight && aC > 0.5 && aC < 254.6) { var k = 255/aC; rC *= k; gC *= k; bC *= k; }
+              dstArr[di] = rC; dstArr[di+1] = gC; dstArr[di+2] = bC; dstArr[di+3] = aC;
+            }
+          }
+        }
+        var N = 64, noiseR = new Float32Array(N * N), noiseG = new Float32Array(N * N);
+        (function seedNoise() { var s = 4; for (var i = 0; i < N*N; i++) { s = (s*1664525+1013904223)>>>0; noiseR[i] = s/2147483648-1; s = (s*1664525+1013904223)>>>0; noiseG[i] = s/2147483648-1; } })();
+        function gridAt(gArr, x, y) {
+          var xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi;
+          fx = fx*fx*(3-2*fx); fy = fy*fy*(3-2*fy);
+          var x0 = ((xi%N)+N)%N, x1 = (x0+1)%N, y0 = ((yi%N)+N)%N, y1 = (y0+1)%N;
+          var top = gArr[y0*N+x0] + (gArr[y0*N+x1]-gArr[y0*N+x0])*fx;
+          var bot = gArr[y1*N+x0] + (gArr[y1*N+x1]-gArr[y1*N+x0])*fx;
+          return top + (bot-top)*fy;
+        }
+        function noise2(gArr, px, py) { return (gridAt(gArr, px/28, py/28) + 0.5*gridAt(gArr, px/14+37.7, py/14+11.3)) / 1.5; }
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var cardX = 0, cardY = 0, cardW = 0, cardH = 0;
+        function prepare(padCss) {
+          // Layout (offset*) metrics, NOT getBoundingClientRect: the whole
+          // stage sits inside a transform: scale() wrapper (.stage-scale),
+          // so bounding rects come back pre-scaled — sizing the canvas
+          // with them scales it TWICE and the smoke render pops smaller
+          // than the card (the "scale down jump"). offsetLeft/offsetWidth
+          // are unscaled and match the card's local coordinate space.
+          cardX = card.offsetLeft; cardY = card.offsetTop;
+          cardW = card.offsetWidth; cardH = card.offsetHeight;
+          snap.width = Math.max(1, Math.round(cardW*dpr)); snap.height = Math.max(1, Math.round(cardH*dpr));
+          pad = Math.min(Math.ceil(padCss) + 6, 80); padDev = Math.round(pad*dpr);
+          workW = snap.width + padDev*2; workH = snap.height + padDev*2;
+          canvas.width = workW; canvas.height = workH;
+          canvas.style.left = (cardX - pad) + "px"; canvas.style.top = (cardY - pad) + "px";
+          canvas.style.width = (cardW + pad*2) + "px"; canvas.style.height = (cardH + pad*2) + "px";
+          ctx.imageSmoothingQuality = "high";
+          var sc = snap.getContext("2d");
+          sc.setTransform(dpr, 0, 0, dpr, 0, 0); sc.clearRect(0, 0, cardW, cardH);
+          var r = 16;
+          sc.beginPath(); sc.moveTo(r, 0); sc.arcTo(cardW, 0, cardW, cardH, r); sc.arcTo(cardW, cardH, 0, cardH, r); sc.arcTo(0, cardH, 0, 0, r); sc.arcTo(0, 0, cardW, 0, r); sc.closePath(); sc.clip();
+          var img = card.querySelector("img");
+          if (img && img.naturalWidth) { var s = Math.max(cardW/img.naturalWidth, cardH/img.naturalHeight), dw = img.naturalWidth*s, dh = img.naturalHeight*s; sc.drawImage(img, (cardW-dw)/2, (cardH-dh)/2, dw, dh); }
+          else { sc.fillStyle = "#e9e9ec"; sc.fillRect(0, 0, cardW, cardH); }
+          var bx = cardW - 8 - 12, by = 8 + 12;
+          sc.beginPath(); sc.arc(bx, by, 12, 0, Math.PI*2); sc.fillStyle = "rgba(255,255,255,0.92)"; sc.fill();
+          sc.strokeStyle = "#17181c"; sc.lineWidth = 1.5; sc.lineCap = "round";
+          sc.beginPath(); sc.moveTo(bx-3.5, by-3.5); sc.lineTo(bx+3.5, by+3.5); sc.moveTo(bx+3.5, by-3.5); sc.lineTo(bx-3.5, by+3.5); sc.stroke();
+          var sd = sc.getImageData(0, 0, snap.width, snap.height).data;
+          snapPre = new Uint8ClampedArray(sd.length);
+          for (var i = 0; i < sd.length; i += 4) { var aP = sd[i+3]; snapPre[i] = sd[i]*aP/255; snapPre[i+1] = sd[i+1]*aP/255; snapPre[i+2] = sd[i+2]*aP/255; snapPre[i+3] = aP; }
+          workData = ctx.createImageData(workW, workH);
+          wW2 = Math.ceil(workW/2); wH2 = Math.ceil(workH/2);
+          workHalf.width = wW2; workHalf.height = wH2;
+          halfData = whctx.createImageData(wW2, wH2); blurTmp = new Uint8ClampedArray(halfData.data.length);
+          latW = Math.ceil(workW/LAT) + 2; latH = Math.ceil(workH/LAT) + 2;
+          latDX = new Float32Array(latW*latH); latDY = new Float32Array(latW*latH);
+        }
+        function dissolve() {
+          if (running || reduced) return;
+          running = true;
+          // When the document is hidden, requestAnimationFrame is paused, so
+          // the per-frame canvas smoke can't animate. CSS transitions still
+          // render, so approximate the dissolve with a fall + blur + fade,
+          // then respawn after the same --pv1a delay as the real effect.
+          if (document.hidden) {
+            var fallMs = readNum("--pv2k", 550);
+            card.style.transition =
+              "opacity " + fallMs + "ms ease-out, " +
+              "transform " + fallMs + "ms ease-in, " +
+              "filter " + fallMs + "ms ease-in";
+            card.offsetWidth;
+            card.style.transform = "translateY(16px) rotate(2deg)";
+            card.style.filter = "blur(8px)";
+            card.style.opacity = "0";
+            setTimeout(function () {
+              // Respawn with a transition (not the keyframe animation):
+              // hidden documents pause CSS animations but still run
+              // transitions, so this fades back in reliably everywhere.
+              card.style.transition = "none";
+              card.style.transform = "";
+              card.style.filter = "";
+              card.style.opacity = "0";
+              card.offsetWidth;
+              card.style.transition = "opacity 250ms cubic-bezier(0.22, 1, 0.36, 1)";
+              card.style.opacity = "1";
+              setTimeout(function () {
+                card.style.transition = "";
+                card.style.opacity = "";
+                running = false;
+              }, 300);
+            }, fallMs + readNum("--pv1a", 800));
+            return;
+          }
+          var durMs = readNum("--pv2k", 900), g = readNum("--pv19", 900), warp = readNum("--pv2g", 90);
+          var maxBlur = readNum("--pv2b", 18), sway = readNum("--pv2f", 14), spin = readNum("--pv2e", 8);
+          var churn = readNum("--pv1x", 200), spread = readNum("--pv1n", 30);
+          var warpEase = makeEaseSampler(readStr("--pvz")), blurEase = makeEaseSampler(readStr("--pvy"));
+          var gravityEase = makeEaseSampler(readStr("--pvc")), dissolveEase = makeEaseSampler(readStr("--pv8"));
+          var warpDurRaw = readNum("--pv14", 0), warpDurMs = warpDurRaw > 0 ? warpDurRaw : durMs;
+          prepare(warp/2 + maxBlur*2);
+          // Hide the DOM card in a SINGLE frame (matches index): the
+          // synchronous first tick below draws the identical image onto
+          // the canvas in the same JS turn, so the swap is atomic — no
+          // fade, no settle, no perceived scale-down. (Easing the shadow
+          // out over time instead reads as the card "shrinking".)
+          card.style.visibility = "hidden";
+          var t0 = performance.now(), frame = 0;
+          (function tick(now) {
+            var t = (now - t0) / 1000, rawP = Math.min((now - t0) / Math.max(durMs, 1), 1), p = dissolveEase(rawP);
+            var teff = gravityEase(p) * (durMs / 1000), fallY = 0.5 * g * teff * teff, swayX = Math.sin(t*5) * sway * p;
+            var pw = Math.min((now - t0) / Math.max(warpDurMs, 1), 1), dispScale = warp * warpEase(pw);
+            var blur = maxBlur * blurEase(p), alpha = 1 - Math.pow(p, 1.6), driftY = churn * t, driftX = Math.sin(t*3.2) * churn * 0.3;
+            if (frame % 2 === 0 || rawP >= 1) {
+              var halfDev = (dispScale / 2) * dpr;
+              for (var ly = 0; ly < latH; ly++) {
+                var py = (ly * LAT - padDev) / dpr;
+                for (var lx = 0; lx < latW; lx++) { var px = (lx * LAT - padDev) / dpr, li = ly*latW+lx; latDX[li] = halfDev * noise2(noiseR, px - driftX, py - driftY); latDY[li] = halfDev * noise2(noiseG, px - driftX, py - driftY); }
+              }
+              var rBox = blur > 0.3 ? Math.round(blur * dpr * 1.22) : 0;
+              if (rBox >= 2) {
+                remap(halfData.data, wW2, wH2, 2, false);
+                var rHalf = Math.max(1, Math.round(rBox / 2));
+                boxH(halfData.data, blurTmp, wW2, wH2, rHalf); boxH(blurTmp, halfData.data, wW2, wH2, rHalf);
+                boxV(halfData.data, blurTmp, wW2, wH2, rHalf, false); boxV(blurTmp, halfData.data, wW2, wH2, rHalf, true);
+                whctx.putImageData(halfData, 0, 0); ctx.clearRect(0, 0, workW, workH); ctx.drawImage(workHalf, 0, 0, wW2, wH2, 0, 0, workW, workH);
+              } else { remap(workData.data, workW, workH, 1, true); ctx.putImageData(workData, 0, 0); }
+            }
+            frame++;
+            canvas.style.transform = "translate(" + swayX.toFixed(1) + "px, " + fallY.toFixed(1) + "px) rotate(" + (spin*p).toFixed(2) + "deg) scale(" + (1 + (spread/100)*p).toFixed(3) + ")";
+            canvas.style.opacity = alpha.toFixed(3);
+            if (rawP < 1) { requestAnimationFrame(tick); return; }
+            ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.transform = ""; canvas.style.opacity = "";
+            window.setTimeout(function () {
+              card.style.visibility = "";
+              card.classList.remove("is-respawning");
+              card.offsetWidth;
+              card.classList.add("is-respawning");
+              running = false;
+            }, readNum("--pv1a", 800));
+          })(t0);
+        }
+        btn.addEventListener("click", dissolve);
+        // Drop .is-respawning once the pop-in finishes (matches index):
+        // leaving it on means the next respawn restarts from a dirty
+        // state and the card visibly jumps.
+        card.addEventListener("animationend", function (e) {
+          if (e.animationName === "pv1a") card.classList.remove("is-respawning");
+        });
+      })();
+
+      /* ── 15 · Organic shimmer (Pro) — paused by default, click
+         toggles play/pause (the card also presses down via CSS). */
+      (function () {
+        var el = document.querySelector(".pv1e");
+        if (!el) return;
+        function toggle() {
+          var playing = el.getAttribute("data-playing") === "true";
+          el.setAttribute("data-playing", String(!playing));
+        }
+        el.addEventListener("click", toggle);
+        el.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+        });
+      })();
+
+      /* ── 16 · Publish (from example.html / skill good example) ────
+         Click Publish: the copy + button fade out (t-fade-blur, driven
+         by [data-published]) and the success check plays on its own —
+         the published state shows ONLY the checkmark. After a short
+         hold it reverts: the checkmark fades out as the copy + button
+         fade back in, so the demo loops. */
+      (function () {
+        var slot = document.getElementById("publish");
+        var card = slot.querySelector(".publish-card");
+        var badge = slot.querySelector(".published-badge");
+        var btn = slot.querySelector(".publish-action");
+
+        var publishTextDur = parseFloat(
+          getComputedStyle(slot).getPropertyValue("--text-swap-dur")
+        ) || 200;
+        var published = false;
+
+        function playSuccessCheck() {
+          badge.style.transition = "";
+          badge.style.opacity = "";
+          badge.setAttribute("data-state", "out");
+          void badge.offsetWidth; // reflow to replay keyframes from 0
+          badge.setAttribute("data-state", "in");
+        }
+        function fadeBadgeOut() {
+          // Freeze the badge's current opacity, then ease it to 0 so the
+          // checkmark leaves smoothly as the copy + button return.
+          var cs = getComputedStyle(badge);
+          badge.style.opacity = cs.opacity;
+          badge.setAttribute("data-state", "out"); // drop the keyframes
+          void badge.offsetWidth;
+          badge.style.transition = "opacity " + publishTextDur + "ms ease";
+          badge.style.opacity = "0";
+        }
+
+        function publish() {
+          if (published) return;
+          published = true;
+          card.dataset.published = "true"; // CSS fades copy + button out
+          playSuccessCheck();              // checkmark pops in, centred
+        }
+        function revert() {
+          if (!published) return;
+          published = false;
+          fadeBadgeOut();                   // checkmark fades out
+          card.dataset.published = "false"; // CSS fades copy + button in
+        }
+
+        // Publish on the button; in the check state the button is hidden,
+        // so the whole card takes the click to go back.
+        btn.addEventListener("click", function (e) { e.stopPropagation(); publish(); });
+        card.addEventListener("click", function () { if (published) revert(); });
+      })();
+    })();
+  </script>
+</body>
+</html>
