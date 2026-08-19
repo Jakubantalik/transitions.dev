@@ -4332,6 +4332,16 @@
     }
     html[data-theme="dark"] .pro-quote-text { color: #c9c9c9; }
     .pro-quote-author { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    /* Avatar links to the same X profile as the name. It's skipped in the
+       tab order (tabindex="-1") because the adjacent name link already
+       carries that destination — one stop per person, not two. */
+    .pro-quote-avatar-link {
+      flex: none;
+      display: inline-flex;
+      border-radius: 50px;
+      transition: opacity 150ms var(--ease-smooth-out);
+    }
+    .pro-quote-avatar-link:hover { opacity: 0.85; }
     .pro-quote-avatar {
       flex: none;
       width: 36px;
@@ -5171,7 +5181,9 @@
         <li class="pro-quote">
           <p class="pro-quote-text">I'm an early user of Transitions.dev Pro and have used Jakub's libraries throughout the interface of krafa.ai. Transitions has become one of my go-to resources for adding motion that feels polished and intentional without spending hours building animations from scratch.</p>
           <div class="pro-quote-author">
-            <img class="pro-quote-avatar" src="assets/testimonials/haaarshsingh.jpg" alt="" width="36" height="36" loading="lazy" decoding="async" />
+            <a class="pro-quote-avatar-link" href="https://x.com/haaarshsingh" target="_blank" rel="noopener noreferrer" aria-label="Harsh on X" tabindex="-1">
+              <img class="pro-quote-avatar" src="assets/testimonials/haaarshsingh.jpg" alt="" width="36" height="36" loading="lazy" decoding="async" />
+            </a>
             <span class="pro-quote-id">
               <a class="pro-quote-name" href="https://x.com/haaarshsingh" target="_blank" rel="noopener noreferrer">Harsh</a>
               <span class="pro-quote-role">Founder of Krafa.ai</span>
@@ -5181,7 +5193,9 @@
         <li class="pro-quote">
           <p class="pro-quote-text">The Transitions.dev Pro library is super useful. I've been using it in a couple of my projects, and it saves so much time. The UI looks much smoother and more polished with it.</p>
           <div class="pro-quote-author">
-            <img class="pro-quote-avatar" src="assets/testimonials/jakubkrehel.jpg" alt="" width="36" height="36" loading="lazy" decoding="async" />
+            <a class="pro-quote-avatar-link" href="https://x.com/jakubkrehel" target="_blank" rel="noopener noreferrer" aria-label="Jakub Krehel on X" tabindex="-1">
+              <img class="pro-quote-avatar" src="assets/testimonials/jakubkrehel.jpg" alt="" width="36" height="36" loading="lazy" decoding="async" />
+            </a>
             <span class="pro-quote-id">
               <a class="pro-quote-name" href="https://x.com/jakubkrehel" target="_blank" rel="noopener noreferrer">Jakub Krehel</a>
               <span class="pro-quote-role">Founding Design Engineer at Interfere.com</span>
@@ -5191,7 +5205,9 @@
         <li class="pro-quote">
           <p class="pro-quote-text">Most meticulously crafted transitions I've seen.</p>
           <div class="pro-quote-author">
-            <img class="pro-quote-avatar" src="assets/testimonials/ilyamiskov.jpg" alt="" width="36" height="36" loading="lazy" decoding="async" />
+            <a class="pro-quote-avatar-link" href="https://x.com/ilyamiskov" target="_blank" rel="noopener noreferrer" aria-label="Ilya Miskov on X" tabindex="-1">
+              <img class="pro-quote-avatar" src="assets/testimonials/ilyamiskov.jpg" alt="" width="36" height="36" loading="lazy" decoding="async" />
+            </a>
             <span class="pro-quote-id">
               <a class="pro-quote-name" href="https://x.com/ilyamiskov" target="_blank" rel="noopener noreferrer">Ilya Miskov</a>
               <span class="pro-quote-role">Product Designer</span>
