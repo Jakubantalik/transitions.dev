@@ -4292,6 +4292,89 @@
       }
     }
 
+    /* ── Testimonials (Figma 2622:6757) ────────────────────────────
+       Figma lays three fixed 453px cards side by side; here they're
+       equal fluid columns so the row always fits the viewport, and the
+       card grows to its quote instead of clipping at the 293px frame. */
+    .pro-quotes {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      align-items: stretch;
+    }
+    .pro-quote {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-width: 0;
+      min-height: 293px;
+      padding: 32px;
+      border-radius: 24px;
+      background: rgba(246, 246, 246, 0.7);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02), inset 0 -1px 0 0 rgba(0, 0, 0, 0.03);
+    }
+    html[data-theme="dark"] .pro-quote {
+      background: #141414;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 -1px 0 0 rgba(255, 255, 255, 0.03);
+    }
+    .pro-quote-text {
+      margin: 0;
+      /* The author row is pinned to the card's bottom edge in Figma, so
+         the quote takes the slack above it. */
+      flex: 1 1 auto;
+      font-size: 16px;
+      line-height: 24.2px;
+      color: #393939;
+      overflow-wrap: anywhere;
+    }
+    html[data-theme="dark"] .pro-quote-text { color: #c9c9c9; }
+    .pro-quote-author { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .pro-quote-avatar {
+      flex: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50px;
+      object-fit: cover;
+      /* Fallback state (no avatar yet) renders the initial on the same
+         tinted circle the Figma placeholder uses. */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.03);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      overflow: hidden;
+    }
+    html[data-theme="dark"] .pro-quote-avatar { background: rgba(255, 255, 255, 0.06); }
+    .pro-quote-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    /* Name links through to the person's X profile — same "text colour,
+       underline on hover" treatment the docs links use. */
+    .pro-quote-name {
+      align-self: flex-start;
+      font-size: 13px;
+      line-height: 16px;
+      font-weight: 500;
+      color: #0d0d0d;
+      text-decoration: none;
+    }
+    a.pro-quote-name:hover { text-decoration: underline; text-underline-offset: 2px; }
+    html[data-theme="dark"] .pro-quote-name { color: #ededed; }
+    .pro-quote-role { font-size: 13px; line-height: 16px; color: #737373; overflow-wrap: anywhere; }
+    @media (max-width: 900px) {
+      .pro-quotes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      /* Odd card out spans the full row rather than leaving a gap. */
+      .pro-quote:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    }
+    @media (max-width: 640px) {
+      .pro-quotes { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+      .pro-quote { min-height: 0; padding: 24px; gap: 20px; }
+      .pro-quote-text { font-size: 15px; line-height: 23px; }
+    }
+
     /* ── "What you will get" bento ─────────────────────────────── */
     .pro-bento {
       display: grid;
@@ -5077,6 +5160,46 @@
            filled by pro-client.js when the visitor's country qualifies. -->
       <div class="pro-ppp" id="pro-ppp" hidden></div>
     </div>
+
+    <!-- ─── Testimonials (Figma 2622:6757) ─────────────────────────
+         Three equal cards on desktop; they reflow to two columns and
+         then one as the viewport narrows. Card heights come from the
+         content (the Figma frame's fixed 293px would clip the longest
+         quote once the columns get narrower). -->
+    <section class="pro-section pro-block" aria-label="What people say">
+      <ul class="pro-quotes">
+        <li class="pro-quote">
+          <p class="pro-quote-text">I'm an early user of Transitions.dev Pro and have used Jakub's libraries throughout the interface of krafa.ai. Transitions has become one of my go-to resources for adding motion that feels polished and intentional without spending hours building animations from scratch.</p>
+          <div class="pro-quote-author">
+            <img class="pro-quote-avatar" src="assets/testimonials/haaarshsingh.jpg" alt="" width="36" height="36" loading="lazy" decoding="async" />
+            <span class="pro-quote-id">
+              <a class="pro-quote-name" href="https://x.com/haaarshsingh" target="_blank" rel="noopener noreferrer">Harsh</a>
+              <span class="pro-quote-role">Founder of Krafa.ai</span>
+            </span>
+          </div>
+        </li>
+        <li class="pro-quote">
+          <p class="pro-quote-text">The Transitions.dev Pro library is super useful. I've been using it in a couple of my projects, and it saves so much time. The UI looks much smoother and more polished with it.</p>
+          <div class="pro-quote-author">
+            <img class="pro-quote-avatar" src="assets/testimonials/jakubkrehel.jpg" alt="" width="36" height="36" loading="lazy" decoding="async" />
+            <span class="pro-quote-id">
+              <a class="pro-quote-name" href="https://x.com/jakubkrehel" target="_blank" rel="noopener noreferrer">Jakub Krehel</a>
+              <span class="pro-quote-role">Founding Design Engineer at Interfere.com</span>
+            </span>
+          </div>
+        </li>
+        <li class="pro-quote">
+          <p class="pro-quote-text">Most meticulously crafted transitions I've seen.</p>
+          <div class="pro-quote-author">
+            <img class="pro-quote-avatar" src="assets/testimonials/ilyamiskov.jpg" alt="" width="36" height="36" loading="lazy" decoding="async" />
+            <span class="pro-quote-id">
+              <a class="pro-quote-name" href="https://x.com/ilyamiskov" target="_blank" rel="noopener noreferrer">Ilya Miskov</a>
+              <span class="pro-quote-role">Product Designer</span>
+            </span>
+          </div>
+        </li>
+      </ul>
+    </section>
 
     <!-- ─── What you will get ──────────────────────────────────── -->
     <section class="pro-section pro-block" aria-labelledby="pro-get-title">
