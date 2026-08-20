@@ -671,6 +671,12 @@
       state.authenticated = !!cached.a;
       state.pro = !!cached.p;
       paintAuth();
+      // Page gates (detail paywall, index badges) listen for pro:me — without
+      // this they stayed locked until /me answered, so a returning Pro user saw
+      // an "Account" nav above a signed-out paywall for the whole round trip.
+      // `resolved` is still false, so nothing treats this as authoritative, and
+      // /me re-locks the moment it disagrees.
+      document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
     }
     mountProBadges();
     wireProCopy();
