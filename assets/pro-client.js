@@ -30,7 +30,7 @@
   // `resolved` flips true only once /me has actually ANSWERED (2xx JSON) —
   // pages must not present a definitive "signed out" UI before that, or a
   // transient fetch failure paints a signed-in user as logged out.
-  var state = { authenticated: false, email: null, pro: false, subscription: null, ppp: null, resolved: false };
+  var state = { authenticated: false, email: null, pro: false, lifetime: false, billing: false, subscription: null, ppp: null, resolved: false };
 
   // Last-known auth state, cached so a navigation can paint the signed-in UI
   // on the FIRST frame instead of flashing the signed-out version for the
@@ -127,6 +127,7 @@
         state.pro = !!(me.entitlements && me.entitlements.pro);
         state.lifetime = !!me.lifetime;
         state.subscription = me.subscription || null;
+        state.billing = !!me.billing;
         state.resolved = true;
         writeAuthCache();
         paintAuth();
@@ -304,6 +305,8 @@
   function startPortal() {
     apiJSON("/portal", "POST").then(function (data) {
       if (data && data.url) location.href = data.url;
+      else if (data && data.error === "no_billing_customer")
+        notify("There's no billing history on this account.\nIf you bought Pro with a different email, sign out and sign in with that one.");
       else notify("Billing portal is unavailable right now." + (data && data.detail ? "\n(" + data.detail + ")" : ""));
     }).catch(function () { notify("Couldn't open the billing portal."); });
   }

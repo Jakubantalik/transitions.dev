@@ -4940,7 +4940,7 @@
               <span class="settings-label">Cancel plan</span>
               <button type="button" class="row-btn" id="acc-cancel">Cancel</button>
             </div>
-            <div class="settings-row">
+            <div class="settings-row" id="acc-payment-row">
               <span class="settings-label">Payment</span>
               <button type="button" class="row-btn" id="acc-portal">Manage in Stripe</button>
             </div>
@@ -5848,7 +5848,7 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=23" defer></script>
+  <script src="assets/pro-client.js?v=24" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;
@@ -5920,8 +5920,10 @@
           el("acc-plan-renew").textContent = "Pay once, yours forever — includes every future transition.";
         } else {
           el("acc-plan-name").textContent = s.pro ? "Pro plan" : "No active plan";
-          el("acc-plan-price").textContent = yearly ? "$90" : "$9";
-          el("acc-plan-per").textContent = yearly ? "/yr" : "/mo";
+          // Quoting "$9 /mo" to somebody with no plan reads as a charge they
+          // are already paying. Show a price only when one is actually billed.
+          el("acc-plan-price").textContent = s.pro ? (yearly ? "$90" : "$9") : "—";
+          el("acc-plan-per").textContent = s.pro ? (yearly ? "/yr" : "/mo") : "";
           var renew = "";
           if (sub && sub.current_period_end) {
             renew = (sub.cancel_at_period_end
@@ -5937,10 +5939,24 @@
           }
           el("acc-plan-renew").textContent = renew;
         }
+        // Only offer controls that can actually do something. Previously these
+        // were hidden for lifetime buyers alone, so an account with no plan got
+        // a Cancel button with nothing to cancel and a Stripe button whose only
+        // possible outcome was "Billing portal is unavailable right now".
+        var liveSub = !!(sub && sub.status && sub.status !== "canceled");
         var cancelRow = el("acc-cancel-row");
-        if (cancelRow) cancelRow.hidden = !!s.lifetime;
+        if (cancelRow) cancelRow.hidden = !!s.lifetime || !liveSub;
         var adjust = el("acc-adjust");
-        if (adjust) adjust.hidden = !!s.lifetime;
+        if (adjust) {
+          adjust.hidden = !!s.lifetime;
+          // No plan yet: this is a buy action, not a change-plan action.
+          adjust.textContent = s.pro ? "Adjust plan" : "Get Pro";
+        }
+        // The portal is the only place to read past invoices, so a lapsed
+        // subscriber keeps it — but an account that never bought has no Stripe
+        // customer behind it and the button can only error.
+        var payRow = el("acc-payment-row");
+        if (payRow) payRow.hidden = !s.billing;
 
         // Delete account is blocked while a personal subscription is still live
         // and billing (not yet set to cancel). The user must cancel first via
