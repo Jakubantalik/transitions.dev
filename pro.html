@@ -4137,7 +4137,9 @@
     /* min-width:0 lets the wrap shrink below the parity bar's nowrap
        min-content width — without it the whole column blows out past the
        viewport on mobile, un-centering the card and cropping the bar. */
-    .pro-price-wrap { display: flex; flex-direction: column; align-items: center; gap: 20px; margin: 0 auto 96px; min-width: 0; max-width: 100%; }
+    /* 48px (half the usual block rhythm) so the logo strip below reads as
+       part of the pricing group rather than a separate section. */
+    .pro-price-wrap { display: flex; flex-direction: column; align-items: center; gap: 20px; margin: 0 auto 48px; min-width: 0; max-width: 100%; }
     .pro-price-card {
       display: flex;
       flex-direction: column;
@@ -4298,7 +4300,7 @@
        60% opacity like the design; dark mode inverts the glyphs to
        light so they stay readable. The row wraps on narrow screens. */
     /* Doubled class beats the later `.pro-section { margin: 0 auto }`. */
-    .pro-customers.pro-customers { margin: 0 auto 96px; }
+    .pro-customers.pro-customers { margin: 0 auto 48px; }
     .pro-customers-label {
       margin: 0 0 24px;
       font-size: 11px;
@@ -4323,7 +4325,7 @@
       opacity: 0.55;
     }
     @media (max-width: 640px) {
-      .pro-customers.pro-customers { margin-bottom: 64px; }
+      .pro-customers.pro-customers { margin-bottom: 32px; }
       .pro-customers-row { gap: 18px 28px; }
       /* Slightly smaller so all four still read as one group. */
       .pro-customer-logo { height: calc(var(--logo-h, 32px) * 0.85); }
@@ -4924,7 +4926,7 @@
       .pro-section { padding: 0 16px; }
       .pro-section-title { font-size: 23px; margin-bottom: 28px; }
       .pro-block { margin-bottom: 64px; }
-      .pro-price-wrap { margin-bottom: 64px; }
+      .pro-price-wrap { margin-bottom: 32px; }
       .cmdk-overlay { padding: 8vh 12px 12px; }
       /* Parity bar: let the sentence wrap to two centred lines instead
          of clipping off the right edge. */
@@ -5215,9 +5217,9 @@
       <p class="pro-customers-label">Customers who use Transitions Pro</p>
       <div class="pro-customers-row">
         <img class="pro-customer-logo" src="assets/customers/higgsfield.png" alt="Higgsfield" style="--logo-h: 26px" loading="lazy" decoding="async" />
-        <img class="pro-customer-logo" src="assets/customers/mercado-libre.png" alt="Mercado Libre" style="--logo-h: 40px" loading="lazy" decoding="async" />
+        <img class="pro-customer-logo" src="assets/customers/mercado-libre.png" alt="Mercado Libre" style="--logo-h: 34px" loading="lazy" decoding="async" />
         <img class="pro-customer-logo" src="assets/customers/cathay-hospital.png" alt="Cathay General Hospital" style="--logo-h: 34px" loading="lazy" decoding="async" />
-        <img class="pro-customer-logo" src="assets/customers/asu.png" alt="Arizona State University" style="--logo-h: 40px" loading="lazy" decoding="async" />
+        <img class="pro-customer-logo" src="assets/customers/asu.svg" alt="Arizona State University" style="--logo-h: 24px" loading="lazy" decoding="async" />
       </div>
     </section>
 
