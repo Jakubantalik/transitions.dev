@@ -4292,6 +4292,43 @@
       }
     }
 
+    /* ── Customer logos (Figma 2626:1382) ──────────────────────────
+       Label + one centred row. Every logo asset is a near-black glyph
+       on transparency, sized by height (--logo-h per image), shown at
+       60% opacity like the design; dark mode inverts the glyphs to
+       light so they stay readable. The row wraps on narrow screens. */
+    /* Doubled class beats the later `.pro-section { margin: 0 auto }`. */
+    .pro-customers.pro-customers { margin: 0 auto 96px; }
+    .pro-customers-label {
+      margin: 0 0 24px;
+      font-size: 11px;
+      line-height: 18px;
+      text-align: center;
+      color: #979797;
+    }
+    .pro-customers-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 24px 37px;
+    }
+    .pro-customer-logo {
+      height: var(--logo-h, 32px);
+      width: auto;
+      opacity: 0.6;
+    }
+    html[data-theme="dark"] .pro-customer-logo {
+      filter: invert(1);
+      opacity: 0.55;
+    }
+    @media (max-width: 640px) {
+      .pro-customers.pro-customers { margin-bottom: 64px; }
+      .pro-customers-row { gap: 18px 28px; }
+      /* Slightly smaller so all four still read as one group. */
+      .pro-customer-logo { height: calc(var(--logo-h, 32px) * 0.85); }
+    }
+
     /* ── Testimonials (Figma 2622:6757) ────────────────────────────
        Figma lays three fixed 453px cards side by side; here they're
        equal fluid columns so the row always fits the viewport, and the
@@ -5170,6 +5207,19 @@
            filled by pro-client.js when the visitor's country qualifies. -->
       <div class="pro-ppp" id="pro-ppp" hidden></div>
     </div>
+
+    <!-- ─── Customer logos (Figma 2626:1382) ───────────────────────
+         Logos are normalized to a near-black glyph on transparency so a
+         single asset serves both themes: dark mode just inverts them. -->
+    <section class="pro-section pro-customers" aria-label="Customers who use Transitions Pro">
+      <p class="pro-customers-label">Customers who use Transitions Pro</p>
+      <div class="pro-customers-row">
+        <img class="pro-customer-logo" src="assets/customers/higgsfield.png" alt="Higgsfield" style="--logo-h: 26px" loading="lazy" decoding="async" />
+        <img class="pro-customer-logo" src="assets/customers/mercado-libre.png" alt="Mercado Libre" style="--logo-h: 40px" loading="lazy" decoding="async" />
+        <img class="pro-customer-logo" src="assets/customers/cathay-hospital.png" alt="Cathay General Hospital" style="--logo-h: 34px" loading="lazy" decoding="async" />
+        <img class="pro-customer-logo" src="assets/customers/asu.png" alt="Arizona State University" style="--logo-h: 40px" loading="lazy" decoding="async" />
+      </div>
+    </section>
 
     <!-- ─── Testimonials (Figma 2622:6757) ─────────────────────────
          Three equal cards on desktop; they reflow to two columns and
