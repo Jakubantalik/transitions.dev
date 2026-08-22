@@ -1424,16 +1424,18 @@
     }
     .cards-filter:hover { background: #f7f7f7; }
     .cards-filter[data-active="true"] { background: #f1f1f1; color: #080808; }
+    /* Dark tabs (Figma 1332:6438): translucent white fills over the page,
+       4% resting / 14% selected, with a 1px top-lit inset ring. */
     html[data-theme="dark"] .cards-filter {
-      background: #181818;
-      color: rgba(237, 237, 237, 0.8);
+      background: rgba(255, 255, 255, 0.04);
+      color: #fbfbfb;
       box-shadow:
-        0 1px 3px 0 rgba(0, 0, 0, 0.2),
-        inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(196, 196, 196, 0.12);
+        0 1px 1px 0 rgba(0, 0, 0, 0.24),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
     }
-    html[data-theme="dark"] .cards-filter:hover { background: #1d1d1d; }
-    html[data-theme="dark"] .cards-filter[data-active="true"] { background: #2a2a2c; color: #ffffff; }
+    html[data-theme="dark"] .cards-filter:hover { background: rgba(255, 255, 255, 0.08); }
+    html[data-theme="dark"] .cards-filter[data-active="true"] { background: rgba(255, 255, 255, 0.14); color: #fbfbfb; }
     .cards-sort-anchor { flex: none; }
     .cards-sort {
       appearance: none;
@@ -1460,15 +1462,15 @@
     .cards-sort[aria-expanded="true"] { background: #f1f1f1; }
     .cards-sort svg { width: 16px; height: 16px; display: block; }
     html[data-theme="dark"] .cards-sort {
-      background: #181818;
-      color: #ededed;
+      background: rgba(255, 255, 255, 0.04);
+      color: #fbfbfb;
       box-shadow:
-        0 1px 3px 0 rgba(0, 0, 0, 0.2),
-        inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(196, 196, 196, 0.12);
+        0 1px 1px 0 rgba(0, 0, 0, 0.24),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
     }
-    html[data-theme="dark"] .cards-sort:hover { background: #1d1d1d; }
-    html[data-theme="dark"] .cards-sort[aria-expanded="true"] { background: #2a2a2c; }
+    html[data-theme="dark"] .cards-sort:hover { background: rgba(255, 255, 255, 0.08); }
+    html[data-theme="dark"] .cards-sort[aria-expanded="true"] { background: rgba(255, 255, 255, 0.14); }
     .cards-sort-menu { width: 180px; }
     .cards-sort-opt .tl-menu-check { visibility: hidden; }
     .cards-sort-opt[aria-checked="true"] .tl-menu-check { visibility: visible; }
