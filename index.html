@@ -4613,9 +4613,25 @@
 
     @media (max-width: 740px) {
       .cards { grid-template-columns: 320px; gap: 16px; }
-      /* Toolbar keeps the full row width (pills wrap); at the single
-         320px column it hugs the card column like everything else. */
-      .cards-toolbar { max-width: 320px; }
+      /* Narrow screens: tabs become one horizontally scrolling strip
+         with the sort button pinned on the right. The strip's right
+         edge fades out so pills scroll "under" the button instead of
+         colliding with it. */
+      .cards-toolbar { max-width: none; }
+      .cards-filters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 2px;
+        margin: -2px;
+        -webkit-overflow-scrolling: touch;
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+        mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+      }
+      .cards-filters::-webkit-scrollbar { display: none; }
+      /* Lets the last pill scroll fully out of the faded zone. */
+      .cards-filter:last-child { margin-right: 36px; }
       /* Sponsors stack vertically on narrow screens; the course card's
          text + pill re-stack so the pill sits below the copy. */
       .sponsors { max-width: 320px; margin: 56px auto; }
