@@ -1379,6 +1379,99 @@
       gap: 24px;
       align-items: start;
     }
+    /* Filtered-out cards leave the grid entirely. */
+    .card[hidden] { display: none; }
+
+    /* ── Category filter + sort toolbar (Figma 1332:6109) ────────
+       Sits on the card grid's own width (1008px = 3×320 + 2×24) so the
+       pills align with the first card column and the sort button with
+       the last. Pills are individual 36px capsules; the active one
+       fills with the pressed grey. */
+    .cards-toolbar {
+      width: 100%;
+      max-width: 1008px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .cards-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+    .cards-filter {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      padding: 0 15px;
+      border: 0;
+      border-radius: 48px;
+      background: #fff;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: rgba(38, 38, 38, 0.8);
+      cursor: pointer;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 150ms var(--ease-smooth-out), color 150ms var(--ease-smooth-out);
+    }
+    .cards-filter:hover { background: #f7f7f7; }
+    .cards-filter[data-active="true"] { background: #f1f1f1; color: #080808; }
+    html[data-theme="dark"] .cards-filter {
+      background: #181818;
+      color: rgba(237, 237, 237, 0.8);
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.2),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.12);
+    }
+    html[data-theme="dark"] .cards-filter:hover { background: #1d1d1d; }
+    html[data-theme="dark"] .cards-filter[data-active="true"] { background: #2a2a2c; color: #ffffff; }
+    .cards-sort-anchor { flex: none; }
+    .cards-sort {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 0;
+      border-radius: 48px;
+      background: #fff;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+      color: var(--text);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 150ms var(--ease-smooth-out);
+    }
+    .cards-sort:hover { background: #f7f7f7; }
+    .cards-sort[aria-expanded="true"] { background: #f1f1f1; }
+    .cards-sort svg { width: 16px; height: 16px; display: block; }
+    html[data-theme="dark"] .cards-sort {
+      background: #181818;
+      color: #ededed;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.2),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.12);
+    }
+    html[data-theme="dark"] .cards-sort:hover { background: #1d1d1d; }
+    html[data-theme="dark"] .cards-sort[aria-expanded="true"] { background: #2a2a2c; }
+    .cards-sort-menu { width: 180px; }
+    .cards-sort-opt .tl-menu-check { visibility: hidden; }
+    .cards-sort-opt[aria-checked="true"] .tl-menu-check { visibility: visible; }
 
     /* ─── Card ────────────────────────────────────────────────── */
     .card {
@@ -4510,6 +4603,7 @@
       /* Matches .cards at 2 columns (320px × 2 + 24px gap = 664px). */
       .sponsors { max-width: 664px; }
       .footer { max-width: 664px; }
+      .cards-toolbar { max-width: 664px; }
       /* Two columns puts each sponsor card at ~320px — too narrow for the
          course copy beside the pill, so stack the text over the button. */
       .sponsor-card--course { flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -4519,6 +4613,9 @@
 
     @media (max-width: 740px) {
       .cards { grid-template-columns: 320px; gap: 16px; }
+      /* Toolbar keeps the full row width (pills wrap); at the single
+         320px column it hugs the card column like everything else. */
+      .cards-toolbar { max-width: 320px; }
       /* Sponsors stack vertically on narrow screens; the course card's
          text + pill re-stack so the pill sits below the copy. */
       .sponsors { max-width: 320px; margin: 56px auto; }
@@ -4561,6 +4658,7 @@
       /* Cards span the full available width (viewport − 12px margins)
          instead of the fixed 320px desktop width. */
       .cards { grid-template-columns: 1fr; }
+      .cards-toolbar { max-width: none; }
       /* Sponsors follow the cards' full width instead of the fixed
          320px tablet cap. */
       .sponsors { max-width: none; }
@@ -5349,10 +5447,41 @@
       </div>
     </header>
 
+    <!-- ─── Category filter + sort (Figma 1332:6109) ─────────────
+         Pills filter the card grid by data-cat (Pro filters data-pro);
+         the icon button opens a Newest/Oldest sort menu. Reordering is
+         done with CSS `order`, so card prototypes never move in the DOM
+         and their JS keeps working. -->
+    <div class="cards-toolbar" id="cards-toolbar">
+      <div class="cards-filters" role="tablist" aria-label="Filter transitions by category">
+        <button type="button" class="cards-filter" data-filter="all" data-active="true" role="tab" aria-selected="true"><span class="cards-filter-label">All</span></button>
+        <button type="button" class="cards-filter" data-filter="essential" data-active="false" role="tab" aria-selected="false"><span class="cards-filter-label">Essential</span></button>
+        <button type="button" class="cards-filter" data-filter="ai" data-active="false" role="tab" aria-selected="false"><span class="cards-filter-label">AI Agents</span></button>
+        <button type="button" class="cards-filter" data-filter="effects" data-active="false" role="tab" aria-selected="false"><span class="cards-filter-label">Effects</span></button>
+        <button type="button" class="cards-filter" data-filter="texts" data-active="false" role="tab" aria-selected="false"><span class="cards-filter-label">Texts</span></button>
+        <button type="button" class="cards-filter" data-filter="pro" data-active="false" role="tab" aria-selected="false"><span class="cards-filter-label">Pro</span></button>
+      </div>
+      <div class="pm-anchor cards-sort-anchor">
+        <button type="button" class="cards-sort" id="cards-sort-btn" aria-label="Sort transitions" aria-haspopup="menu" aria-expanded="false">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 3.33H12.67V4.67H2V3.33ZM12.67 6.67V11.06L14 9.72L14.94 10.67L12 13.61L9.06 10.67L10 9.72L11.33 11.06V6.67H12.67ZM2 7.33H8V8.67H2V7.33ZM2 11.33H6.67V12.67H2V11.33Z" fill="currentColor"/></svg>
+        </button>
+        <div class="tl-menu t-dropdown cards-sort-menu" id="cards-sort-menu" data-origin="top-right" role="menu" aria-label="Sort order">
+          <div class="tl-menu-item cards-sort-opt" data-sort="oldest" role="menuitemradio" aria-checked="true" tabindex="0">
+            <span class="tl-menu-item-label">Oldest first</span>
+            <span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="tl-menu-item cards-sort-opt" data-sort="newest" role="menuitemradio" aria-checked="false" tabindex="0">
+            <span class="tl-menu-item-label">Newest first</span>
+            <span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <section class="cards" id="components" aria-label="Transition prototypes" style="scroll-margin-top: 24px;">
 
       <!-- 1. Card resize -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="1">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p4-card" data-proto-resize>
@@ -5382,7 +5511,7 @@
       </article>
 
       <!-- 2. Number pop-in -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts" data-seq="2">
         <div class="card-stage">
           <div class="stage-inner p9-stage-inner">
             <div class="p9-number" data-proto-number aria-live="polite"
@@ -5411,7 +5540,7 @@
       </article>
 
       <!-- 3. Notification badge -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="3">
         <div class="card-stage">
           <div class="stage-inner p1-stage-inner">
             <div class="p1-bell" data-proto-bell data-badge-open="false" aria-label="Notifications">
@@ -5439,7 +5568,7 @@
       </article>
 
       <!-- 4. Text states swap -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts ai" data-seq="4">
         <div class="card-stage">
           <div class="stage-inner p6-stage-inner">
             <span class="p6-text" data-proto-text>Transaction processing...</span>
@@ -5462,7 +5591,7 @@
       </article>
 
       <!-- 5. Menu dropdown -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="5">
         <div class="card-stage">
           <div class="stage-inner p2-stage-inner">
             <button type="button" class="btn-animate" data-proto="2">Toggle menu</button>
@@ -5489,7 +5618,7 @@
       </article>
 
       <!-- 6. Confetti burst (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="confetti-burst">
+      <article class="card" data-proto-card data-cat="effects" data-seq="28" data-pro="true" data-pro-id="confetti-burst">
         <div class="card-stage" id="pv1p">
           <canvas class="pv1c" id="pv1c" aria-hidden="true"></canvas>
           <button type="button" class="btn-animate" id="pv2h" data-proto="pro1">Animate</button>
@@ -5510,7 +5639,7 @@
       </article>
 
       <!-- 7. Modal open/close -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="6">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p7-dropdown is-open" data-proto-modal>
@@ -5541,7 +5670,7 @@
       </article>
 
       <!-- 8. Panel reveal -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="7">
         <div class="card-stage">
           <div class="stage-inner p3-stage-inner">
             <button type="button" class="btn-animate" data-proto="3">Toggle panel</button>
@@ -5576,7 +5705,7 @@
         </button>
       </article>
 <!-- 33. Gooey plus menu (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="gooey-plus-menu">
+      <article class="card" data-proto-card data-cat="effects" data-seq="29" data-pro="true" data-pro-id="gooey-plus-menu">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv4k" id="pv52" data-open="false">
@@ -5678,7 +5807,7 @@
       </article>
 
       <!-- 9. Side-by-side page slide -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="8">
         <div class="card-stage">
           <div class="stage-inner p8-stage-inner">
             <div class="p8-modal" data-proto-p8 data-page="1">
@@ -5749,7 +5878,7 @@
       </article>
 
       <!-- 10. Icon swap -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="9">
         <div class="card-stage">
           <div class="stage-inner p5-stage-inner">
             <div class="p5-icon-wrap" data-proto-icon data-animated="false">
@@ -5786,7 +5915,7 @@
       </article>
 
       <!-- 11. Success check -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="10">
         <div class="card-stage">
           <div class="stage-inner p10-stage-inner">
             <div class="p10-check" data-proto-check data-state="out" aria-hidden="true">
@@ -5820,7 +5949,7 @@
       </article>
 
       <!-- 12. Avatar group hover spring -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects" data-seq="11">
         <div class="card-stage">
           <div class="stage-inner p11-stage-inner">
             <div class="p11-avatars" data-proto-avatars>
@@ -5862,7 +5991,7 @@
       </article>
 
       <!-- 13. Card stack hover (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="card-stack-hover">
+      <article class="card" data-proto-card data-cat="effects" data-seq="30" data-pro="true" data-pro-id="card-stack-hover">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv1r" aria-label="Card stack">
@@ -5891,7 +6020,7 @@
       </article>
 
       <!-- 14. Input shake on error -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="12">
         <div class="card-stage">
           <div class="stage-inner p12-stage-inner">
             <div class="p12-input-wrap" data-proto-shake>
@@ -5922,7 +6051,7 @@
       </article>
 
       <!-- 15. Input clear with dissolve -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects" data-seq="13">
         <div class="card-stage">
           <div class="stage-inner p13-stage-inner">
             <div class="p13-search has-value" data-proto-p13>
@@ -5967,7 +6096,7 @@
       </article>
 
       <!-- 16. Skeleton loader and reveal -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential ai" data-seq="14">
         <div class="card-stage">
           <div class="stage-inner p14-stage-inner">
             <div class="p14-card" data-proto-skeleton>
@@ -6008,7 +6137,7 @@
       </article>
 
       <!-- 17. Texts reveal -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts" data-seq="15">
         <div class="card-stage">
           <div class="stage-inner p18-stage-inner">
             <div class="p18-text" data-proto-stagger>
@@ -6034,7 +6163,7 @@
       </article>
 
       <!-- 18. Tabs sliding -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="16">
         <div class="card-stage">
           <div class="stage-inner p16-stage-inner">
             <div class="p16-tabs" data-proto-tabs role="tablist" aria-label="Mode">
@@ -6060,7 +6189,7 @@
         </button>
       </article>
 <!-- 34. Drag &amp; drop with physics (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="drag-drop-physics">
+      <article class="card" data-proto-card data-cat="effects" data-seq="31" data-pro="true" data-pro-id="drag-drop-physics">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv57">
@@ -6111,7 +6240,7 @@
       </article>
 
       <!-- 19. Shimmer text -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts ai" data-seq="17">
         <div class="card-stage">
           <div class="stage-inner p15-stage-inner">
             <span class="p15-shimmer" data-proto-shimmer data-text="Planning next moves">Planning next moves</span>
@@ -6134,7 +6263,7 @@
       </article>
 
       <!-- 20. Organic shimmer (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="organic-shimmer">
+      <article class="card" data-proto-card data-cat="effects ai" data-seq="32" data-pro="true" data-pro-id="organic-shimmer">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="pv63" data-playing="false" aria-hidden="true">
@@ -6167,7 +6296,7 @@
       </article>
 
       <!-- 21. Tooltip open/close -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="18">
         <div class="card-stage">
           <div class="stage-inner p17-stage-inner">
             <span class="p17-wrap">
@@ -6192,7 +6321,7 @@
       </article>
 
       <!-- 22. Tilt card -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects" data-seq="19">
         <div class="card-stage">
           <div class="stage-inner p19-stage-inner">
             <div class="p19-tilt" id="p19-tilt">
@@ -6224,7 +6353,7 @@
       </article>
 
       <!-- 23. Plus → menu morph -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="20">
         <div class="card-stage">
           <div class="stage-inner p20-stage-inner">
             <div class="p20-anchor">
@@ -6260,7 +6389,7 @@
       </article>
 
       <!-- 24. Accordion expand/collapse -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="21">
         <div class="card-stage">
           <div class="stage-inner p21-stage-inner">
             <div class="p21-accordion" id="p21-accordion">
@@ -6302,7 +6431,7 @@
       </article>
 
       <!-- 25. Toast open / close -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="22">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p22-toast" data-proto-toast role="status" aria-hidden="true">
@@ -6328,7 +6457,7 @@
       </article>
 
       <!-- 26. Like button: fill + pop + particle burst -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects" data-seq="23">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="p-pill p23-like" data-proto-like data-liked="false" aria-pressed="false">
@@ -6360,7 +6489,7 @@
       </article>
 
       <!-- 27. Image open tilt (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="image-open-tilt">
+      <article class="card" data-proto-card data-cat="effects" data-seq="33" data-pro="true" data-pro-id="image-open-tilt">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1u">
             <button type="button" class="pv28" id="pv28" aria-expanded="false" aria-label="Open image">
@@ -6392,7 +6521,7 @@
       </article>
 
       <!-- 28. Learn more hover: chevron shift + spread -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="24">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="p-pill p24-btn">Learn more
@@ -6421,7 +6550,7 @@
       </article>
 
       <!-- 29. Checkbox with check path draw -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="25">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="p25-field">
@@ -6449,7 +6578,7 @@
         </button>
       </article>
 <!-- 35. Spinner to check morph (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="spinner-check-morph">
+      <article class="card" data-proto-card data-cat="essential ai" data-seq="34" data-pro="true" data-pro-id="spinner-check-morph">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv5j">
@@ -6490,7 +6619,7 @@
       </article>
 
       <!-- 30. Spinning reel counter -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts" data-seq="26">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p26-value" data-proto-reel aria-label="Count"></div>
@@ -6513,7 +6642,7 @@
       </article>
 
       <!-- 31. Toggle with double-bounce thumb -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential" data-seq="27">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="p27-switch" data-proto-toggle role="switch" aria-checked="false" data-on="false" aria-label="Toggle">
@@ -6537,7 +6666,7 @@
       </article>
 
       <!-- 32. Pro gradient text (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="pro-gradient-text">
+      <article class="card" data-proto-card data-cat="texts ai" data-seq="35" data-pro="true" data-pro-id="pro-gradient-text">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1w">
             <h2 class="pv17"><span class="pv7">Pro</span></h2>
@@ -6559,7 +6688,7 @@
       </article>
 
       <!-- 33. Delete image with smoky dissolve (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="smoky-dissolve">
+      <article class="card" data-proto-card data-cat="effects" data-seq="36" data-pro="true" data-pro-id="smoky-dissolve">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1y">
             <div class="pv2c" id="pv2c">
@@ -11845,6 +11974,87 @@ return pool.slice(0, count).map(function (name) {
 return "assets/proto-images/" + encodeURIComponent(name);
 });
 }
+/* ── Category filter + sort (Figma 1332:6109) ─────────────────
+   Filtering toggles [hidden] on the cards; sorting flips CSS `order`
+   (grid reorders visually, DOM stays put so prototype JS keeps its
+   references). Sort menu reuses the dropdown recipe (t-dropdown). */
+(function initCardsToolbar() {
+  var toolbar = document.getElementById("cards-toolbar");
+  var grid = document.getElementById("components");
+  if (!toolbar || !grid) return;
+  var cards = Array.prototype.slice.call(grid.querySelectorAll(".card[data-seq]"));
+  var tabs = Array.prototype.slice.call(toolbar.querySelectorAll(".cards-filter"));
+
+  function applyFilter(key) {
+    tabs.forEach(function (t) {
+      var on = t.getAttribute("data-filter") === key;
+      t.setAttribute("data-active", String(on));
+      t.setAttribute("aria-selected", String(on));
+    });
+    cards.forEach(function (c) {
+      var show =
+        key === "all" ||
+        (key === "pro"
+          ? c.getAttribute("data-pro") === "true"
+          : (c.getAttribute("data-cat") || "").split(" ").indexOf(key) !== -1);
+      if (show) c.removeAttribute("hidden");
+      else c.setAttribute("hidden", "");
+    });
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener("click", function () { applyFilter(t.getAttribute("data-filter")); });
+  });
+
+  function applySort(mode) {
+    cards.forEach(function (c) {
+      var seq = parseInt(c.getAttribute("data-seq"), 10) || 0;
+      c.style.order = mode === "newest" ? String(-seq) : String(seq);
+    });
+    Array.prototype.forEach.call(toolbar.querySelectorAll(".cards-sort-opt"), function (o) {
+      o.setAttribute("aria-checked", String(o.getAttribute("data-sort") === mode));
+    });
+  }
+  applySort("oldest");
+
+  // Sort dropdown — same open/close pattern as the nav's 3-dot menu.
+  var sortBtn = document.getElementById("cards-sort-btn");
+  var sortMenu = document.getElementById("cards-sort-menu");
+  var closeMs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--dropdown-close-dur")) || 150;
+  var closeT = null;
+  function openMenu() {
+    clearTimeout(closeT);
+    sortMenu.classList.remove("is-closing");
+    sortMenu.classList.add("is-open");
+    sortBtn.setAttribute("aria-expanded", "true");
+  }
+  function closeMenu() {
+    if (!sortMenu.classList.contains("is-open")) return;
+    sortMenu.classList.remove("is-open");
+    sortMenu.classList.add("is-closing");
+    sortBtn.setAttribute("aria-expanded", "false");
+    closeT = setTimeout(function () { sortMenu.classList.remove("is-closing"); }, closeMs);
+  }
+  sortBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (sortMenu.classList.contains("is-open")) closeMenu();
+    else openMenu();
+  });
+  Array.prototype.forEach.call(toolbar.querySelectorAll(".cards-sort-opt"), function (o) {
+    o.addEventListener("click", function () {
+      applySort(o.getAttribute("data-sort"));
+      closeMenu();
+    });
+    o.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); o.click(); }
+    });
+  });
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".cards-sort-anchor")) closeMenu();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeMenu();
+  });
+})();
 (function initProtoImages() {
 var STACK_IMAGES = [
 "photo-1773236759289-251d9687b6e3.avif",
