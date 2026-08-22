@@ -411,7 +411,7 @@
     </footer>
   </main>
 
-  <script src="assets/pro-client.js?v=24" defer></script>
+  <script src="assets/pro-client.js?v=25" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;
@@ -468,7 +468,14 @@
         setEmailError(false);
         signinBtn.disabled = true; signinBtn.textContent = "Sending…";
         TP.magicLink(email, deviceCode || null, inviteToken || null)
-          .then(function () {
+          .then(function (data) {
+            // Refusals resolve rather than reject — say so instead of telling
+            // the user to watch for a mail that was never sent.
+            if (data && data.error === "no_plan") {
+              setNote("No Transitions.dev plan is attached to that email. " +
+                      "If you bought Pro with a different address, use that one.", "err");
+              return;
+            }
             setNote("Check your email — click the link, or type the code below.", "ok");
             var cf = document.getElementById("a-codeform");
             if (cf) { cf.hidden = false; document.getElementById("a-signin-code").focus(); }

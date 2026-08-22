@@ -439,7 +439,17 @@
       setError(false);
       btn.disabled = true; btn.textContent = "Sending…";
       magicLink(email)
-        .then(function () {
+        .then(function (data) {
+          // apiJSON resolves on any status, so a refusal arrives here, not in
+          // .catch — without this the modal promised an email that was never
+          // sent.
+          if (data && data.error === "no_plan") {
+            setModalNote(note,
+              "No Transitions.dev plan is attached to that email.\n" +
+              "Bought Pro with a different address? Try that one — otherwise pick a plan to get started.",
+              "err");
+            return;
+          }
           setModalNote(note, "Check your email — click the link, or type the code below.", "ok");
           var cf = modalEl.querySelector(".tp-modal-code-form");
           if (cf) { cf.hidden = false; cf.querySelector("input").focus(); }
