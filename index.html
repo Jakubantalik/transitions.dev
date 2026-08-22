@@ -5485,7 +5485,11 @@
           <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 3.33H12.67V4.67H2V3.33ZM12.67 6.67V11.06L14 9.72L14.94 10.67L12 13.61L9.06 10.67L10 9.72L11.33 11.06V6.67H12.67ZM2 7.33H8V8.67H2V7.33ZM2 11.33H6.67V12.67H2V11.33Z" fill="currentColor"/></svg>
         </button>
         <div class="tl-menu t-dropdown cards-sort-menu" id="cards-sort-menu" data-origin="top-right" role="menu" aria-label="Sort order">
-          <div class="tl-menu-item cards-sort-opt" data-sort="oldest" role="menuitemradio" aria-checked="true" tabindex="0">
+          <div class="tl-menu-item cards-sort-opt" data-sort="default" role="menuitemradio" aria-checked="true" tabindex="0">
+            <span class="tl-menu-item-label">Default</span>
+            <span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="tl-menu-item cards-sort-opt" data-sort="oldest" role="menuitemradio" aria-checked="false" tabindex="0">
             <span class="tl-menu-item-label">Oldest first</span>
             <span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
@@ -12026,6 +12030,10 @@ return "assets/proto-images/" + encodeURIComponent(name);
 
   function applySort(mode) {
     cards.forEach(function (c) {
+      // "default" drops the override entirely, so the grid falls back to
+      // the curated DOM order (Pro cards interleaved through the free ones)
+      // — that's neither oldest nor newest.
+      if (mode === "default") { c.style.removeProperty("order"); return; }
       var seq = parseInt(c.getAttribute("data-seq"), 10) || 0;
       c.style.order = mode === "newest" ? String(-seq) : String(seq);
     });
@@ -12033,7 +12041,7 @@ return "assets/proto-images/" + encodeURIComponent(name);
       o.setAttribute("aria-checked", String(o.getAttribute("data-sort") === mode));
     });
   }
-  applySort("oldest");
+  applySort("default");
 
   // Sort dropdown — same open/close pattern as the nav's 3-dot menu.
   var sortBtn = document.getElementById("cards-sort-btn");
