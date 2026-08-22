@@ -1428,7 +1428,8 @@
        4% resting / 14% selected, with a 1px top-lit inset ring. */
     html[data-theme="dark"] .cards-filter {
       background: rgba(255, 255, 255, 0.04);
-      color: #fbfbfb;
+      /* Unselected label sits at 80%; the selected one goes full white. */
+      color: rgba(251, 251, 251, 0.8);
       box-shadow:
         0 1px 1px 0 rgba(0, 0, 0, 0.24),
         inset 0 0 0 1px rgba(255, 255, 255, 0.04),
