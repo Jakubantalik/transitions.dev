@@ -4567,18 +4567,19 @@
        which lets both halves animate at once. */
     .p28-swap {
       position: relative;
-      display: block;
-      width: 224px;
+      display: inline-block;
       text-align: left;
       line-height: 18px;
     }
-    .p28-text.is-leaving-layer {
+    .p28-sizer {
+      display: block;
+      visibility: hidden;
+      white-space: nowrap;
+    }
+    .p28-text {
       position: absolute;
       top: 0;
       left: 0;
-    }
-    .p28-text {
-      position: relative;
       display: inline-block;
       font-family: var(--font-sans);
       font-weight: 500;
@@ -7868,7 +7869,7 @@
       <article class="card" data-proto-card>
         <div class="card-stage">
           <div class="stage-inner">
-            <span class="p28-swap" data-proto-think role="status"><span class="p28-text" data-text="Setting up a workplace">Setting up a workplace</span></span>
+            <span class="p28-swap" data-proto-think role="status"><span class="p28-sizer" aria-hidden="true">Setting up a workplace</span><span class="p28-text" data-text="Setting up a workplace">Setting up a workplace</span></span>
           </div>
           <button type="button" class="btn-animate" data-proto="28">Play</button>
         </div>
@@ -9819,6 +9820,11 @@ export function Surface({ open, children }) {
         box._p28Toggle = function () {
           var paused = box.classList.toggle("is-paused");
           window.clearTimeout(timer);
+          // Clearing the timer mid-swap would strand the outgoing
+          // line on top of the live one, so drop it here.
+          Array.prototype.forEach.call(box.querySelectorAll(".p28-text.is-exit"), function (el) {
+            if (el.parentNode) el.parentNode.removeChild(el);
+          });
           if (!paused) cycle();
           return paused;
         };
