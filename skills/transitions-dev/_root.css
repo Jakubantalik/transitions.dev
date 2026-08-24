@@ -253,7 +253,7 @@
   --think-highlight: #0d0d0d;
   --think-ease: ease-in-out;
   /* Reasoning stream */
-  --reason-hold: 1200ms;
+  --reason-hold: 840ms;
   --reason-step: 500ms;
   --reason-lines: 2;
   --reason-fade: 28px;

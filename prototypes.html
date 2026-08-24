@@ -502,7 +502,7 @@
          step and holding between steps; soft fades at the card's top
          and bottom edges sell the "more above / more below". The
          content is duplicated once so the wrap is seamless. */
-      --p29-hold:            1200ms;
+      --p29-hold:            840ms;
       --p29-step-dur:        500ms;
       --p29-lines:           2;
       --p29-fade:            28px;
@@ -4995,7 +4995,7 @@
           <span class="cp-section-title">29. Reasoning stream</span>
           <button type="button" class="cp-export">Export</button>
         </header>
-        <div class="cp-row"><span class="cp-label">Hold (ms)</span><input type="number" data-var="--p29-hold" data-unit="ms" min="200" max="6000" step="100" value="1200"></div>
+        <div class="cp-row"><span class="cp-label">Hold (ms)</span><input type="number" data-var="--p29-hold" data-unit="ms" min="200" max="6000" step="20" value="840"></div>
         <div class="cp-row"><span class="cp-label">Step (ms)</span><input type="number" data-var="--p29-step-dur" data-unit="ms" min="100" max="2000" step="50" value="500"></div>
         <div class="cp-row"><span class="cp-label">Lines per step</span><input type="number" data-var="--p29-lines" data-unit="" min="1" max="4" step="1" value="2"></div>
         <div class="cp-row"><span class="cp-label">Edge fade (px)</span><input type="number" data-var="--p29-fade" data-unit="px" min="0" max="60" step="2" value="28"></div>
@@ -6144,7 +6144,7 @@
               }
               step();
             }, dur + 30);
-          }, readVar("--p29-hold", 1200));
+          }, readVar("--p29-hold", 840));
         }
         play.addEventListener("click", function () {
           playing = !playing;

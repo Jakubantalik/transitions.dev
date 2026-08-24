@@ -31,7 +31,7 @@ text), so the card background can be anything.
 
 | Variable | Default | Notes |
 | --- | --- | --- |
-| `--reason-hold` | `1200ms` | sourced from `--p29-hold` |
+| `--reason-hold` | `840ms` | sourced from `--p29-hold` |
 | `--reason-step` | `500ms` | sourced from `--p29-step-dur` |
 | `--reason-lines` | `2` | sourced from `--p29-lines` |
 | `--reason-fade` | `28px` | sourced from `--p29-fade` |
@@ -41,7 +41,7 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
 
 ```css
 :root {
-  --reason-hold: 1200ms;
+  --reason-hold: 840ms;
   --reason-step: 500ms;
   --reason-lines: 2;
   --reason-fade: 28px;

@@ -599,7 +599,7 @@
          between steps; soft fades at the card's top and bottom
          edges sell the "more above / more below". The content is
          duplicated once so the wrap is seamless. */
-      --p29-hold:            1200ms;
+      --p29-hold:            840ms;
       --p29-step-dur:        500ms;
       --p29-lines:           2;
       --p29-fade:            28px;
@@ -4769,7 +4769,7 @@
       width: 256px;
       height: 144px;
       background: var(--surface-bg);
-      border-radius: 16px;
+      border-radius: 12px;
       box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
       overflow: hidden;
       position: relative;
@@ -8966,7 +8966,7 @@ export function Surface({ open, children }) {
               }
               step();
             }, dur + 30);
-          }, readMs("--p29-hold", 1200));
+          }, readMs("--p29-hold", 840));
         }
       })();
 
