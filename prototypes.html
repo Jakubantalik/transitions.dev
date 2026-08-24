@@ -476,6 +476,117 @@
       --p27-ov2:             0px;
       --p27-track-dur:       0ms;
       --p27-ease:            cubic-bezier(0.34, 1.35, 0.64, 1);
+
+      /* P28 — AI thinking states (Figma 1342:34739-41). One line of
+         "what the agent is doing" text: shimmer sweeps while a state
+         holds (P15's construction), then the line swaps to the next
+         state with the text-swap transition (P6's motion) and keeps
+         shimmering. --p28-hold is how long each state stays.
+         Outgoing and incoming lines run at the same time, so a swap
+         costs one --p28-swap-dur, not two; --p28-swap-gap holds the
+         incoming line back if the crossover should breathe. */
+      --p28-hold:            2000ms;
+      --p28-swap-dur:        150ms;
+      --p28-swap-gap:        50ms;
+      --p28-swap-distance:   8px;
+      --p28-swap-blur:       2px;
+      --p28-shimmer-dur:     2000ms;
+      --p28-base:            #7c7c7c;
+      --p28-highlight:       #0d0d0d;
+      --p28-band:            400%;
+      --p28-ease:            ease-in-out;
+
+      /* P29 — Agent reasoning stream (Figma 1342:34742). A 256×144
+         card is a viewport onto a tall reasoning transcript that
+         steps up --p29-lines lines at a time on a loop, easing each
+         step and holding between steps; soft fades at the card's top
+         and bottom edges sell the "more above / more below". The
+         content is duplicated once so the wrap is seamless. */
+      --p29-hold:            1200ms;
+      --p29-step-dur:        500ms;
+      --p29-lines:           2;
+      --p29-fade:            28px;
+      --p29-ease:            var(--ease-smooth-out);
+
+      /* P30 — Streaming text (Figma 1342:34758). Words materialise
+         one after another the way model output streams: each word
+         fades in through a small cross-blur, --p30-word-gap apart.
+         Loops after a beat so the stream can be watched again. */
+      --p30-word-gap:        60ms;
+      --p30-word-dur:        350ms;
+      --p30-blur:            1px;
+      --p30-ease:            var(--ease-smooth-out);
+
+      /* P31 — Image-generation placeholder (Figma 1342:34706). Grey
+         card filled with a dense lattice of dots; every dot breathes
+         in and out of existence on its own randomized clock (grow +
+         fade in, shrink + fade out), so the field reads as shifting
+         generation noise — no two moments alike, nothing sweeping.
+         --p31-cycle scales every dot's tempo live; phases and tempo
+         spread are baked per dot at build. */
+      --p31-dot:             2px;
+      --p31-pitch:           5px;
+      --p31-dot-color:       rgba(0, 0, 0, 0.28);
+      --p31-cycle:           1400ms;
+      /* Per-dot tempo lands in [1 − spread, 1 + spread] × cycle and
+         the phase offset spans --p31-phase; both are baked at build,
+         so changing either rebuilds the field. */
+      --p31-spread:          0.1;
+      --p31-phase:           6000ms;
+      --p31-scale-min:       0;
+      --p31-peak:            1;
+      --p31-ease:            ease-in-out;
+      /* Reveal: the dot field and the finished image cross-fade
+         through each other, each crossing --p31-reveal-blur. */
+      --p31-reveal-dur:      650ms;
+      --p31-reveal-blur:     3px;
+      --p31-reveal-ease:     var(--ease-smooth-out);
+
+      /* P32 — Get Pro button (Figma 1342:34720). The Pro wordmark's
+         drifting colour blobs (hue orbit + perimeter drift), pulled
+         inside a white pill button as a wash that hugs the rim.
+         --p32-strength is the whole effect's opacity; it can run
+         high because the mask (--p32-core, --p32-core-blur) keeps
+         the middle of the pill clean under the label. */
+      --p32-strength:        0.7;
+      --p32-core:            50%;
+      /* Width of the ramp from the clean core out to full wash — the
+         softness of the core's edge, not a real blur (a blurred mask
+         would cost a filter pass on every frame of the drift). */
+      --p32-core-blur:       150%;
+      --p32-blur:            6px;
+      --p32-hue-dur:         4000ms;
+      --p32-drift-dur:       5000ms;
+
+      /* P33 — Matrix dot loaders (Figma 1342:34767+). 4×4 grids of
+         2px dots (rounded variants drop the corners), four motion
+         characters: column scan, random twinkle, perimeter orbit,
+         centre pulse. Colour pulses base → active per dot on a
+         shared cycle with per-dot delays. */
+      --p33-cycle:           1200ms;
+      --p33-base:            #d9d9d9;
+      --p33-active:          #85858f;
+      --p33-ease:            var(--ease-in-out);
+
+      /* P34 — Banner stacking (Figma 1342:34725, sonner-style). New
+         banners rise in with the toast motion (P22); existing ones
+         push back — smaller, higher, dimmer — instead of moving
+         away. Max 3 visible; the oldest fades out when a fourth
+         arrives. Depth steps: −--p34-peek px, ×(1 − depth·scale),
+         opacity −depth·fade. */
+      --p34-open-dur:        350ms;
+      --p34-close-dur:       250ms;
+      --p34-distance:        80px;
+      --p34-blur:            var(--blur-small);
+      --p34-scale-in:        0.97;
+      --p34-peek:            12px;
+      /* Hovering the stack fans the banners into a list: each one
+         climbs its own height plus --p34-spread-gap and drops the
+         depth scale and fade. */
+      --p34-spread-gap:      8px;
+      --p34-depth-scale:     0.06;
+      --p34-depth-fade:      0.4;
+      --p34-ease:            cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     * {
@@ -3166,6 +3277,485 @@
     }
 
     /* ============================================================ */
+    /* Prototype 28 — AI thinking states: shimmer + text swap        */
+    /* ============================================================ */
+    /* One line, two borrowed mechanisms: P15's glyph-clipped shimmer
+       runs continuously while a state holds, and P6's exit-up /
+       enter-from-below cross-blur swaps the line between states.
+       The shimmer lives on ::before (content: attr(data-text)), so
+       swapping textContent + data-text swaps both layers at once. */
+    /* The live line stays in flow so the box keeps its width; the
+       one being replaced is lifted out of flow and centred over it,
+       which lets both halves animate at once. */
+    .p28-swap {
+      position: relative;
+      display: block;
+      width: 224px;
+      text-align: left;
+      line-height: 18px;
+    }
+    .p28-text.is-leaving-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .p28-swap.is-paused .p28-text::before {
+      animation-play-state: paused;
+    }
+    .p28-text {
+      position: relative;
+      display: inline-block;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 18px;
+      color: var(--p28-base);
+      white-space: nowrap;
+      transform: translateY(0);
+      filter: blur(0);
+      opacity: 1;
+      transition:
+        transform var(--p28-swap-dur) var(--p28-ease),
+        filter var(--p28-swap-dur) var(--p28-ease),
+        opacity var(--p28-swap-dur) var(--p28-ease);
+      will-change: transform, filter, opacity;
+    }
+    .p28-text::before {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(
+        90deg,
+        transparent          0%,
+        transparent         40%,
+        var(--p28-highlight) 50%,
+        transparent         60%,
+        transparent        100%
+      );
+      background-size: var(--p28-band) 100%;
+      background-repeat: no-repeat;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: p28-shimmer var(--p28-shimmer-dur) var(--ease-linear) infinite;
+    }
+    @keyframes p28-shimmer {
+      0%   { background-position: 100% 0; }
+      100% { background-position: 0% 0; }
+    }
+    .p28-text.is-exit {
+      transform: translateY(calc(var(--p28-swap-distance) * -1));
+      filter: blur(var(--p28-swap-blur));
+      opacity: 0;
+    }
+    .p28-text.is-enter-start {
+      transition: none;
+      transform: translateY(var(--p28-swap-distance));
+      filter: blur(var(--p28-swap-blur));
+      opacity: 0;
+    }
+
+    /* ============================================================ */
+    /* Prototype 29 — Agent reasoning stream                         */
+    /* ============================================================ */
+    /* Figma 1342:34742: 256×144 white card, radius 16, 1px 6% ring.
+       The card clips a tall transcript; JS steps the inner block up
+       two lines at a time. Fades are a mask on the viewport (not
+       gradients painted over the text), so the card background can
+       be anything. The transcript renders twice back-to-back and the
+       offset wraps by one copy's height mid-hold — the loop never
+       shows a jump. */
+    .p29-card {
+      width: 256px;
+      height: 144px;
+      background: var(--modal-bg);
+      border-radius: 16px;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      position: relative;
+    }
+    .p29-viewport {
+      position: absolute;
+      inset: 0 16px;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(
+        transparent 0,
+        black var(--p29-fade),
+        black calc(100% - var(--p29-fade)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        transparent 0,
+        black var(--p29-fade),
+        black calc(100% - var(--p29-fade)),
+        transparent 100%
+      );
+    }
+    .p29-scroll {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 14px;
+      transform: translateY(0);
+      will-change: transform;
+    }
+    .p29-text {
+      font-family: var(--font-sans);
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #2d2d2d;
+    }
+    .p29-text p { margin: 0 0 18.2px; }
+    .p29-text p:last-child { margin-bottom: 18.2px; }
+
+    /* ============================================================ */
+    /* Prototype 30 — Streaming text: word-by-word cross-blur        */
+    /* ============================================================ */
+    /* Figma 1342:34758: 224px column of 13px body text. JS wraps
+       each word in a span; spans rest hidden + blurred and resolve
+       in sequence. The blur is per-word and small (2px), so the
+       stream reads as text condensing out of thin air rather than a
+       fade-in. */
+    .p30-block {
+      width: 224px;
+      font-family: var(--font-sans);
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #2d2d2d;
+    }
+    .p30-w {
+      opacity: 0;
+      filter: blur(var(--p30-blur));
+      transition:
+        opacity var(--p30-word-dur) var(--p30-ease),
+        filter var(--p30-word-dur) var(--p30-ease);
+    }
+    .p30-w.is-in {
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    /* ============================================================ */
+    /* Prototype 31 — Image-generation placeholder                   */
+    /* ============================================================ */
+    /* Figma 1342:34706: 142×142 grey card, radius 12. Three layers:
+       the card colour, a static dot lattice, and a light band that
+       sweeps diagonally forever. The band's element is masked by the
+       SAME dot lattice (aligned: both layers fill the card), so the
+       sweep only ever lights dots — the card body stays flat. The
+       band animates transform only. */
+    .p31-card {
+      position: relative;
+      width: 142px;
+      height: 142px;
+      border-radius: var(--r-card);
+      background: #eaeaea;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .p31-field {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      transition:
+        opacity var(--p31-reveal-dur) var(--p31-reveal-ease),
+        filter var(--p31-reveal-dur) var(--p31-reveal-ease);
+    }
+    .p31-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+      opacity: 0;
+      filter: blur(var(--p31-reveal-blur));
+      transition:
+        opacity var(--p31-reveal-dur) var(--p31-reveal-ease),
+        filter var(--p31-reveal-dur) var(--p31-reveal-ease);
+    }
+    .p31-card.is-revealed .p31-field {
+      opacity: 0;
+      filter: blur(var(--p31-reveal-blur));
+    }
+    .p31-card.is-revealed .p31-img {
+      opacity: 1;
+      filter: blur(0);
+    }
+    /* Each dot owns a randomized clock: --k multiplies the shared
+       cycle and --delay is a negative phase offset, so the field is
+       already mid-shimmer on first paint. Grow-in / shrink-out reads
+       as dots condensing rather than blinking. */
+    /* At rest every dot holds --v, the value its twinkle would have
+       at its own phase — so the idle card is a frozen frame of the
+       loader rather than a solid grid. */
+    .p31-field i {
+      position: absolute;
+      width: var(--p31-dot);
+      height: var(--p31-dot);
+      border-radius: 50%;
+      background: var(--p31-dot-color);
+      opacity: calc(var(--p31-peak) * var(--v, 1));
+      transform: scale(
+        calc(var(--p31-scale-min) + (1 - var(--p31-scale-min)) * var(--v, 1))
+      );
+    }
+    /* The lattice only breathes while the card is generating; at rest
+       it is a plain static field. */
+    .p31-card.is-loading .p31-field i {
+      animation: p31-twinkle calc(var(--p31-cycle) * var(--k, 1))
+        var(--p31-ease) var(--delay, 0ms) infinite;
+    }
+    @keyframes p31-twinkle {
+      0%, 100% {
+        opacity: 0;
+        transform: scale(var(--p31-scale-min));
+      }
+      50% {
+        opacity: var(--p31-peak);
+        transform: scale(1);
+      }
+    }
+
+    /* ============================================================ */
+    /* Prototype 32 — Get Pro button: subtle gradient wash           */
+    /* ============================================================ */
+    /* The Pro wordmark's colour system (7 radial blobs orbiting the
+       perimeter + hue rotation) rendered as a whole-body wash inside
+       the shared white pill. Differences from the wordmark: no grey
+       base ramp (the pill supplies the body), a soft blur so the
+       blobs read as atmosphere rather than shapes, and the entire
+       overlay held at --p32-strength. Label sits above the wash. */
+    .p32-btn {
+      height: 40px;
+      padding: 0 18px;
+      overflow: hidden;
+    }
+    .p32-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background-image:
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.88'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.34726 -1.3118e-7 8.6482e-7 0.89585 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.5'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-1.3 0.25 -1.2633 -2.7471 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.4'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.05 -0.8 0.46018 3.6184 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='0.71709'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.51067 -3.3275e-16 -4.3352e-14 -1.1396 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.45 -0.75 1.9052 -0.7091 33.5 21)'><stop stop-color='rgba(255,173,85,1)' offset='0'/><stop stop-color='rgba(255,173,85,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.25 -0.35 -0.4013 3.5959 33.5 21)'><stop stop-color='rgba(0,204,68,1)' offset='0'/><stop stop-color='rgba(0,196,102,0.75)' offset='0.25'/><stop stop-color='rgba(0,187,136,0.5)' offset='0.5'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87391 0.73043 -4.1482 -1.9503 33.5 21)'><stop stop-color='rgba(0,170,204,1)' offset='0'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>");
+      background-size: 180% 180%, 180% 180%, 180% 180%, 180% 180%,
+                       180% 180%, 180% 180%, 180% 180%;
+      background-repeat: no-repeat;
+      /* Rim-only wash: the mask clears the centre so the label sits
+         on clean white and the colour reads as a glow creeping in
+         from the edges. The ellipse is deliberately smaller than the
+         pill (46%) so full opacity is reached INSIDE the border —
+         sizing it past the edge would clip the opaque end of the
+         ramp and leave the whole wash near-invisible. */
+      -webkit-mask-image: radial-gradient(
+        ellipse 46% 46% at 50% 50%,
+        transparent var(--p32-core),
+        black calc(var(--p32-core) + var(--p32-core-blur))
+      );
+      mask-image: radial-gradient(
+        ellipse 46% 46% at 50% 50%,
+        transparent var(--p32-core),
+        black calc(var(--p32-core) + var(--p32-core-blur))
+      );
+      opacity: var(--p32-strength);
+      animation:
+        p32-hue var(--p32-hue-dur) linear infinite,
+        p32-drift var(--p32-drift-dur) ease-in-out infinite;
+    }
+    .p32-label {
+      position: relative;
+      z-index: 1;
+    }
+    @keyframes p32-hue {
+      from { filter: hue-rotate(0deg) saturate(1.3) blur(var(--p32-blur)); }
+      to   { filter: hue-rotate(-360deg) saturate(1.3) blur(var(--p32-blur)); }
+    }
+    /* Same perimeter orbit as the Pro wordmark, minus its static
+       grey-ramp layer. */
+    @keyframes p32-drift {
+      0%, 100% {
+        background-position:
+          100% 0%, 0% 50%, 100% 50%, 0% 100%,
+          0% 0%, 50% 0%, 50% 100%;
+      }
+      25% {
+        background-position:
+          100% 100%, 50% 0%, 50% 100%, 0% 0%,
+          100% 0%, 100% 50%, 0% 50%;
+      }
+      50% {
+        background-position:
+          0% 100%, 100% 0%, 0% 100%, 100% 0%,
+          100% 100%, 100% 100%, 0% 0%;
+      }
+      75% {
+        background-position:
+          0% 0%, 100% 100%, 0% 0%, 100% 100%,
+          50% 100%, 0% 100%, 100% 50%;
+      }
+    }
+
+    /* ============================================================ */
+    /* Prototype 33 — Matrix dot loaders                             */
+    /* ============================================================ */
+    /* Figma 1342:34767+: 16×16 loaders, 4×4 lattice of 2px dots on
+       a 4px pitch; the rounded pair drops the four corners. Four
+       motion characters share one colour pulse keyframe; JS builds
+       the dots and hands each a --d delay (ms). */
+    .p33-row {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .p33-loader {
+      display: grid;
+      grid-template-columns: repeat(4, var(--p33-dot-size, 2px));
+      grid-auto-rows: var(--p33-dot-size, 2px);
+      gap: 2px;
+      width: 14px;
+      height: 14px;
+    }
+    .p33-loader i {
+      display: block;
+      background: var(--p33-base);
+      animation: p33-pulse var(--p33-cycle) var(--p33-ease) infinite;
+      animation-delay: calc(var(--d, 0) * 1ms);
+    }
+    /* Hole positions (rounded variants) render nothing. */
+    .p33-loader i.is-gap {
+      visibility: hidden;
+      animation: none;
+    }
+    @keyframes p33-pulse {
+      0%, 45%, 100% { background-color: var(--p33-base); }
+      15%           { background-color: var(--p33-active); }
+    }
+
+    /* ============================================================ */
+    /* Prototype 34 — Banner stacking (sonner-style)                 */
+    /* ============================================================ */
+    /* New banners arrive with the toast motion (P22: rise + cross-
+       blur + slight scale). Instead of leaving, older banners push
+       back: each depth step is --p34-peek higher, a bit smaller
+       (transform-origin bottom, so they retreat upward) and dimmer.
+       Depth ≥ 3 fades away and is removed. All movement is the same
+       transition on transform/opacity/filter — arriving, pushing
+       back and leaving share one motion voice. */
+    /* Tall enough that a spread stack clears the label. */
+    .p34-stage {
+      min-height: 360px;
+    }
+    .p34-stack {
+      position: relative;
+      width: 261px;
+      height: 46px;
+    }
+    .p34-banner {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 261px;
+      height: 46px;
+      padding: 0 16px;
+      background: var(--modal-bg);
+      border-radius: 52px;
+      box-shadow: var(--shadow);
+      /* Centre origin so an arriving banner scales exactly like the
+         toast recipe; the push-back states below switch to the bottom
+         edge, which they can do freely because the swap happens while
+         the banner sits at identity. */
+      transform-origin: 50% 50%;
+      /* Explicit blur(0) rather than an unset filter — blur → none is
+         not reliably interpolated, and the cross-blur would snap. */
+      filter: blur(0);
+      will-change: transform, opacity, filter;
+      transition:
+        transform var(--p34-open-dur) var(--p34-ease),
+        opacity var(--p34-open-dur) var(--p34-ease),
+        filter var(--p34-open-dur) var(--p34-ease);
+    }
+    .p34-banner[data-depth="0"] {
+      z-index: 3;
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    .p34-banner[data-depth="1"] {
+      z-index: 2;
+      transform-origin: 50% 100%;
+      transform: translateY(calc(var(--p34-peek) * -1))
+                 scale(calc(1 - var(--p34-depth-scale)));
+      opacity: calc(1 - var(--p34-depth-fade));
+    }
+    .p34-banner[data-depth="2"] {
+      z-index: 1;
+      transform-origin: 50% 100%;
+      transform: translateY(calc(var(--p34-peek) * -2))
+                 scale(calc(1 - var(--p34-depth-scale) * 2));
+      opacity: calc(1 - var(--p34-depth-fade) * 1.6);
+    }
+    /* Spread: the stack reads as a list. Newest stays put and the
+       older ones climb by one banner height each. Driven by a class,
+       not :hover — the gaps between spread banners belong to no
+       element, so hover alone would drop the moment the pointer
+       crossed one. */
+    .p34-stack.is-spread .p34-banner[data-depth="1"],
+    .p34-stack.is-spread .p34-banner[data-depth="2"] {
+      opacity: 1;
+    }
+    .p34-stack.is-spread .p34-banner[data-depth="1"] {
+      transform: translateY(calc((46px + var(--p34-spread-gap)) * -1)) scale(1);
+    }
+    .p34-stack.is-spread .p34-banner[data-depth="2"] {
+      transform: translateY(calc((46px + var(--p34-spread-gap)) * -2)) scale(1);
+    }
+    .p34-banner.is-enter {
+      transition: none;
+      transform: translateY(var(--p34-distance)) scale(var(--p34-scale-in));
+      opacity: 0;
+      filter: blur(var(--p34-blur));
+    }
+    .p34-banner.is-leaving {
+      z-index: 0;
+      transform-origin: 50% 100%;
+      transform: translateY(calc(var(--p34-peek) * -3))
+                 scale(calc(1 - var(--p34-depth-scale) * 3));
+      opacity: 0;
+      filter: blur(var(--p34-blur));
+      transition:
+        transform var(--p34-close-dur) var(--p34-ease),
+        opacity var(--p34-close-dur) var(--p34-ease),
+        filter var(--p34-close-dur) var(--p34-ease);
+    }
+    .p34-avatar {
+      flex: 0 0 auto;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--skeleton);
+    }
+    .p34-bar {
+      width: 178px;
+      height: 14px;
+      border-radius: 4px;
+      background: var(--skeleton);
+    }
+
+    /* ============================================================ */
     /* Touch targets — invisible ≥16px hit-area expander so the small
        controls (like button, checkbox, toggle) are comfortable to tap
        on mobile without changing their visual size. The pseudo is a
@@ -3227,6 +3817,34 @@
       }
       .p15-shimmer::before {
         display: none !important;
+      }
+      .p28-text {
+        color: var(--p28-base) !important;
+        transform: none !important;
+        filter: none !important;
+      }
+      .p28-text::before {
+        display: none !important;
+      }
+      .p29-scroll,
+      .p30-w,
+      .p34-banner {
+        transform: none !important;
+        filter: none !important;
+        transition: none !important;
+      }
+      .p30-w {
+        opacity: 1 !important;
+      }
+      .p31-card.is-loading .p31-field i,
+      .p32-btn::before,
+      .p33-loader i {
+        animation: none !important;
+      }
+      .p31-field,
+      .p31-img {
+        filter: none !important;
+        transition: none !important;
       }
     }
   </style>
@@ -3796,6 +4414,100 @@
         </button>
       </div>
     </section>
+
+    <!-- ================================================== -->
+    <!-- 28. AI thinking states: shimmer + text swap         -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">28.pototype</p>
+      <div class="stage">
+        <span class="p28-swap" id="p28-swap" role="status"><span class="p28-text" data-text="Setting up a workplace">Setting up a workplace</span></span>
+        <button type="button" class="btn" id="p28-toggle">Pause</button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 29. Agent reasoning stream                          -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">29.pototype</p>
+      <div class="stage">
+        <div class="p29-card" aria-hidden="true">
+          <div class="p29-viewport">
+            <div class="p29-scroll" id="p29-scroll">
+              <div class="p29-text" id="p29-text">
+                <p>Two things could explain the lag: the blur is re-running every frame, or the mask is forcing a repaint. Worth separating them before picking a fix.</p>
+                <p>Animating mask-position never composites — it repaints the element. And the element being repainted sits inside a displacement chain, so the whole filter re-executes on the CPU each frame. That compounds: it isn't one cost, it's the repaint feeding the filter.</p>
+                <p>So the fix isn't tuning the blur radius. The animated property has to leave the paint path entirely. If the field is painted statically and covered by a same-coloured curtain, translating the curtain is visually identical to masking — and transform composites.</p>
+                <p>One trade-off: the waves travel with the band instead of rippling through noise fixed in space. In motion, near-indistinguishable.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn" id="p29-play">Play</button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 30. Streaming text: word-by-word cross-blur         -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">30.pototype</p>
+      <div class="stage">
+        <div class="p30-block" id="p30-block" aria-hidden="true">Animating mask-position never composites — it repaints the element. And the element being repainted sits inside a displacement chain, so the whole filter re-executes on the CPU each frame. That compounds: it isn't one cost, it's the repaint feeding the filter.</div>
+        <button type="button" class="btn" id="p30-play">Play</button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 31. Image-generation placeholder                    -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">31.pototype</p>
+      <div class="stage">
+        <div class="p31-card" id="p31-card" aria-hidden="true">
+          <span class="p31-field" id="p31-field"></span>
+          <img class="p31-img" id="p31-img" src="assets/proto-images/Screenshot%202026-05-17%20at%2019.53.15.png" alt="" width="142" height="142" loading="lazy" decoding="async">
+        </div>
+        <button type="button" class="btn" id="p31-play">Play</button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 32. Get Pro button: subtle gradient wash            -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">32.pototype</p>
+      <div class="stage">
+        <button type="button" class="p-pill p32-btn"><span class="p32-label">Get Pro</span></button>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 33. Matrix dot loaders                              -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">33.pototype</p>
+      <div class="stage">
+        <div class="p33-row" aria-hidden="true">
+          <div class="p33-loader" data-variant="scan"></div>
+          <div class="p33-loader" data-variant="twinkle"></div>
+          <div class="p33-loader" data-variant="orbit" data-rounded="true"></div>
+          <div class="p33-loader" data-variant="pulse" data-rounded="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 34. Banner stacking                                 -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">34.pototype</p>
+      <div class="stage p34-stage">
+        <div class="p34-stack" id="p34-stack" aria-hidden="true"></div>
+        <button type="button" class="btn" id="p34-add">Add banner</button>
+      </div>
+    </section>
   </main>
 
   <!-- ================================================== -->
@@ -4261,6 +4973,103 @@
         <div class="cp-row"><span class="cp-label">Track (ms)</span><input type="number" data-var="--p27-track-dur" data-unit="ms" min="0" max="2000" step="10" value="0"></div>
         <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p27-ease"></select></div>
         <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p27-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">28. Thinking states</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Hold (ms)</span><input type="number" data-var="--p28-hold" data-unit="ms" min="400" max="8000" step="100" value="2000"></div>
+        <div class="cp-row"><span class="cp-label">Swap (ms)</span><input type="number" data-var="--p28-swap-dur" data-unit="ms" min="0" max="1000" step="10" value="150"></div>
+        <div class="cp-row"><span class="cp-label">Swap gap (ms)</span><input type="number" data-var="--p28-swap-gap" data-unit="ms" min="0" max="800" step="10" value="50"></div>
+        <div class="cp-row"><span class="cp-label">Swap distance (px)</span><input type="number" data-var="--p28-swap-distance" data-unit="px" min="0" max="30" step="1" value="8"></div>
+        <div class="cp-row"><span class="cp-label">Swap blur (px)</span><input type="number" data-var="--p28-swap-blur" data-unit="px" min="0" max="10" step="0.5" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Shimmer (ms)</span><input type="number" data-var="--p28-shimmer-dur" data-unit="ms" min="400" max="6000" step="100" value="2000"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p28-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p28-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">29. Reasoning stream</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Hold (ms)</span><input type="number" data-var="--p29-hold" data-unit="ms" min="200" max="6000" step="100" value="1200"></div>
+        <div class="cp-row"><span class="cp-label">Step (ms)</span><input type="number" data-var="--p29-step-dur" data-unit="ms" min="100" max="2000" step="50" value="500"></div>
+        <div class="cp-row"><span class="cp-label">Lines per step</span><input type="number" data-var="--p29-lines" data-unit="" min="1" max="4" step="1" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Edge fade (px)</span><input type="number" data-var="--p29-fade" data-unit="px" min="0" max="60" step="2" value="28"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p29-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p29-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">30. Streaming text</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Word gap (ms)</span><input type="number" data-var="--p30-word-gap" data-unit="ms" min="10" max="400" step="10" value="60"></div>
+        <div class="cp-row"><span class="cp-label">Word fade (ms)</span><input type="number" data-var="--p30-word-dur" data-unit="ms" min="50" max="1500" step="50" value="350"></div>
+        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p30-blur" data-unit="px" min="0" max="8" step="0.5" value="1"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p30-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p30-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">31. Image placeholder</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Cycle (ms)</span><input type="number" data-var="--p31-cycle" data-unit="ms" min="600" max="8000" step="100" value="1400"></div>
+        <div class="cp-row"><span class="cp-label">Tempo spread</span><input type="number" data-var="--p31-spread" data-unit="" min="0" max="0.9" step="0.05" value="0.1"></div>
+        <div class="cp-row"><span class="cp-label">Phase spread (ms)</span><input type="number" data-var="--p31-phase" data-unit="ms" min="0" max="12000" step="500" value="6000"></div>
+        <div class="cp-row"><span class="cp-label">Dot (px)</span><input type="number" data-var="--p31-dot" data-unit="px" min="1" max="6" step="0.5" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Pitch (px)</span><input type="number" data-var="--p31-pitch" data-unit="px" min="4" max="24" step="1" value="5"></div>
+        <div class="cp-row"><span class="cp-label">Min scale</span><input type="number" data-var="--p31-scale-min" data-unit="" min="0" max="1" step="0.05" value="0"></div>
+        <div class="cp-row"><span class="cp-label">Peak opacity</span><input type="number" data-var="--p31-peak" data-unit="" min="0.1" max="1" step="0.05" value="1"></div>
+        <div class="cp-row"><span class="cp-label">Reveal (ms)</span><input type="number" data-var="--p31-reveal-dur" data-unit="ms" min="100" max="2000" step="50" value="650"></div>
+        <div class="cp-row"><span class="cp-label">Reveal blur (px)</span><input type="number" data-var="--p31-reveal-blur" data-unit="px" min="0" max="12" step="0.5" value="3"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p31-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p31-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">32. Get Pro button</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Strength</span><input type="number" data-var="--p32-strength" data-unit="" min="0" max="1" step="0.02" value="0.7"></div>
+        <div class="cp-row"><span class="cp-label">Clean core (%)</span><input type="number" data-var="--p32-core" data-unit="%" min="0" max="90" step="2" value="50"></div>
+        <div class="cp-row"><span class="cp-label">Core blur (%)</span><input type="number" data-var="--p32-core-blur" data-unit="%" min="2" max="300" step="10" value="150"></div>
+        <div class="cp-row"><span class="cp-label">Blob blur (px)</span><input type="number" data-var="--p32-blur" data-unit="px" min="0" max="20" step="1" value="6"></div>
+        <div class="cp-row"><span class="cp-label">Hue cycle (ms)</span><input type="number" data-var="--p32-hue-dur" data-unit="ms" min="1000" max="12000" step="250" value="4000"></div>
+        <div class="cp-row"><span class="cp-label">Drift cycle (ms)</span><input type="number" data-var="--p32-drift-dur" data-unit="ms" min="1000" max="12000" step="250" value="5000"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">33. Matrix loaders</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Cycle (ms)</span><input type="number" data-var="--p33-cycle" data-unit="ms" min="300" max="4000" step="50" value="1200"></div>
+        <div class="cp-row"><span class="cp-label">Base</span><input type="text" class="cp-ease-text" data-var="--p33-base" spellcheck="false" aria-label="Base colour"></div>
+        <div class="cp-row"><span class="cp-label">Active</span><input type="text" class="cp-ease-text" data-var="--p33-active" spellcheck="false" aria-label="Active colour"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">34. Banner stacking</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Open (ms)</span><input type="number" data-var="--p34-open-dur" data-unit="ms" min="0" max="1500" step="10" value="350"></div>
+        <div class="cp-row"><span class="cp-label">Close (ms)</span><input type="number" data-var="--p34-close-dur" data-unit="ms" min="0" max="1500" step="10" value="250"></div>
+        <div class="cp-row"><span class="cp-label">Rise (px)</span><input type="number" data-var="--p34-distance" data-unit="px" min="0" max="160" step="4" value="80"></div>
+        <div class="cp-row"><span class="cp-label">Spread gap (px)</span><input type="number" data-var="--p34-spread-gap" data-unit="px" min="0" max="40" step="1" value="8"></div>
+        <div class="cp-row"><span class="cp-label">Peek (px)</span><input type="number" data-var="--p34-peek" data-unit="px" min="0" max="40" step="1" value="12"></div>
+        <div class="cp-row"><span class="cp-label">Depth scale</span><input type="number" data-var="--p34-depth-scale" data-unit="" min="0" max="0.2" step="0.01" value="0.06"></div>
+        <div class="cp-row"><span class="cp-label">Depth fade</span><input type="number" data-var="--p34-depth-fade" data-unit="" min="0" max="0.6" step="0.05" value="0.4"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p34-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p34-ease" spellcheck="false" aria-label="Ease value"></div>
       </section>
 
     </div>
@@ -5217,6 +6026,395 @@
           const on = sw.getAttribute("data-on") === "true";
           sw.setAttribute("data-on", on ? "false" : "true");
           sw.setAttribute("aria-checked", on ? "false" : "true");
+        });
+      })();
+
+      // --- Prototype 28: AI thinking states -------------------
+      // Hold each state for --p28-hold while the shimmer runs, then
+      // swap the line with the P6 motion (exit up + blur, enter from
+      // below). textContent and data-text move together so the
+      // shimmer's ::before copy always matches.
+      (function initP28() {
+        const box = document.getElementById("p28-swap");
+        if (!box) return;
+        let live = box.querySelector(".p28-text");
+        if (!live) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const STATES = [
+          "Setting up a workplace",
+          "Running a command",
+          "Browsing files",
+        ];
+        const toggle = document.getElementById("p28-toggle");
+        let i = 0;
+        let timer = 0;
+        function readMs(name, fb) {
+          const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+          return isNaN(v) ? fb : v;
+        }
+        function cycle() {
+          timer = setTimeout(function () {
+            const swap = readMs("--p28-swap-dur", 300);
+            const gap = readMs("--p28-swap-gap", 0);
+            const leaving = live;
+            i = (i + 1) % STATES.length;
+
+            // Float the outgoing line over the box and start its exit.
+            leaving.classList.add("is-leaving-layer", "is-exit");
+
+            const next = document.createElement("span");
+            next.className = "p28-text is-enter-start";
+            next.textContent = STATES[i];
+            next.setAttribute("data-text", STATES[i]);
+            box.appendChild(next);
+            live = next;
+
+            function release() {
+              // eslint-disable-next-line no-unused-expressions
+              next.offsetWidth;
+              next.classList.remove("is-enter-start");
+            }
+            if (gap > 0) setTimeout(release, gap);
+            else release();
+
+            timer = setTimeout(function () {
+              if (leaving.parentNode) leaving.parentNode.removeChild(leaving);
+              cycle();
+            }, swap + gap);
+          }, readMs("--p28-hold", 2000));
+        }
+        if (toggle) {
+          toggle.addEventListener("click", function () {
+            // Pausing mid-swap would strand the outgoing line, so the
+            // pause only takes hold between states.
+            const paused = box.classList.toggle("is-paused");
+            toggle.textContent = paused ? "Play" : "Pause";
+            clearTimeout(timer);
+            if (!paused) cycle();
+          });
+        }
+        cycle();
+      })();
+
+      // --- Prototype 29: agent reasoning stream ---------------
+      // The transcript renders twice back-to-back; the offset steps
+      // up --p29-lines lines per hold and wraps by one copy's height
+      // the moment a step lands past it — the clone makes the wrap
+      // invisible.
+      (function initP29() {
+        const scroll = document.getElementById("p29-scroll");
+        const text = document.getElementById("p29-text");
+        const play = document.getElementById("p29-play");
+        if (!scroll || !text || !play) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          play.disabled = true;
+          return;
+        }
+        // Second copy carries the wrap; it must not keep the id.
+        const clone = text.cloneNode(true);
+        clone.removeAttribute("id");
+        scroll.appendChild(clone);
+        let offset = 0;
+        let timer = 0;
+        let playing = false;
+        function readVar(name, fb) {
+          const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+          return isNaN(v) ? fb : v;
+        }
+        function step() {
+          timer = setTimeout(function () {
+            const lineH = parseFloat(getComputedStyle(text).lineHeight) || 18.2;
+            const stepPx = lineH * readVar("--p29-lines", 2);
+            const dur = readVar("--p29-step-dur", 500);
+            const ease = getComputedStyle(document.documentElement)
+              .getPropertyValue("--p29-ease").trim() || "ease-out";
+            offset += stepPx;
+            scroll.style.transition = "transform " + dur + "ms " + ease;
+            scroll.style.transform = "translateY(" + (-offset) + "px)";
+            timer = setTimeout(function () {
+              // Wrap by one copy the moment a step lands past it; the
+              // clone underneath makes the jump invisible.
+              const copyH = text.offsetHeight;
+              if (offset >= copyH) {
+                offset -= copyH;
+                scroll.style.transition = "none";
+                scroll.style.transform = "translateY(" + (-offset) + "px)";
+                // eslint-disable-next-line no-unused-expressions
+                scroll.offsetWidth;
+              }
+              step();
+            }, dur + 30);
+          }, readVar("--p29-hold", 1200));
+        }
+        play.addEventListener("click", function () {
+          playing = !playing;
+          play.textContent = playing ? "Pause" : "Play";
+          clearTimeout(timer);
+          // Pausing holds the transcript wherever it stopped, so
+          // playing again continues rather than rewinds.
+          if (playing) step();
+        });
+      })();
+
+      // --- Prototype 30: streaming text -----------------------
+      // The paragraph rests fully readable; Play wipes it back to
+      // nothing and resolves the words in order through a small
+      // cross-blur.
+      (function initP30() {
+        const block = document.getElementById("p30-block");
+        const play = document.getElementById("p30-play");
+        if (!block || !play) return;
+        const words = block.textContent.trim().split(/\s+/);
+        block.textContent = "";
+        const spans = words.map(function (w, idx) {
+          const s = document.createElement("span");
+          s.className = "p30-w is-in";
+          s.textContent = w;
+          block.appendChild(s);
+          if (idx < words.length - 1) block.appendChild(document.createTextNode(" "));
+          return s;
+        });
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          play.disabled = true;
+          return;
+        }
+        function readMs(name, fb) {
+          const v = parseFloat(getComputedStyle(block).getPropertyValue(name)) ||
+            parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+          return isNaN(v) ? fb : v;
+        }
+        let timer = 0;
+        function stream(n) {
+          if (n >= spans.length) {
+            play.disabled = false;
+            return;
+          }
+          spans[n].classList.add("is-in");
+          timer = setTimeout(function () { stream(n + 1); }, readMs("--p30-word-gap", 60));
+        }
+        play.addEventListener("click", function () {
+          clearTimeout(timer);
+          play.disabled = true;
+          // Snap back to nothing without animating the wipe itself.
+          spans.forEach(function (s) {
+            s.style.transition = "none";
+            s.classList.remove("is-in");
+          });
+          // eslint-disable-next-line no-unused-expressions
+          block.offsetWidth;
+          spans.forEach(function (s) { s.style.transition = ""; });
+          stream(0);
+        });
+      })();
+
+      // --- Prototype 31: image placeholder dot field ----------
+      // Builds the dot lattice; every dot gets a random tempo
+      // multiplier (--k) and a negative phase (--delay) so the
+      // whole field is already mid-twinkle on first paint and no
+      // two dots ever breathe in sync.
+      (function initP31() {
+        const field = document.getElementById("p31-field");
+        if (!field) return;
+        function build() {
+          field.textContent = "";
+          const cs = getComputedStyle(field);
+          const pitch = parseFloat(cs.getPropertyValue("--p31-pitch")) || 8;
+          const spread = Math.min(0.9, Math.max(0, parseFloat(cs.getPropertyValue("--p31-spread"))) || 0);
+          const phase = Math.max(0, parseFloat(cs.getPropertyValue("--p31-phase")) || 0);
+          const cycle = parseFloat(cs.getPropertyValue("--p31-cycle")) || 1400;
+          const size = field.clientWidth || 142;
+          const n = Math.max(1, Math.floor(size / pitch));
+          const off = (size - (n - 1) * pitch) / 2;
+          for (let row = 0; row < n; row++) {
+            for (let col = 0; col < n; col++) {
+              const dot = document.createElement("i");
+              dot.style.left = (off + col * pitch) + "px";
+              dot.style.top = (off + row * pitch) + "px";
+              dot.style.marginLeft = "calc(var(--p31-dot) / -2)";
+              dot.style.marginTop = "calc(var(--p31-dot) / -2)";
+              const k = 1 - spread + Math.random() * spread * 2;
+              const offset = Math.random() * phase;
+              dot.style.setProperty("--k", k.toFixed(3));
+              dot.style.setProperty("--delay", Math.round(-offset) + "ms");
+              // Where that phase lands inside the dot's own cycle,
+              // shaped like the keyframe's 0 → 1 → 0 sweep.
+              const frac = (offset % (cycle * k)) / (cycle * k);
+              const v = 0.5 - 0.5 * Math.cos(frac * Math.PI * 2);
+              dot.style.setProperty("--v", v.toFixed(3));
+              field.appendChild(dot);
+            }
+          }
+        }
+        build();
+        // Positions, tempo and phase are baked per dot, so those three
+        // knobs need a rebuild — the rest are live CSS variables.
+        // Rebuild after the panel's own listener has written the
+        // variable — this one is registered first, so reading the
+        // computed value inline would pick up the previous setting.
+        ["--p31-pitch", "--p31-spread", "--p31-phase"].forEach(function (name) {
+          const input = document.querySelector('input[data-var="' + name + '"]');
+          if (input) {
+            input.addEventListener("input", function () {
+              setTimeout(build, 0);
+            });
+          }
+        });
+      })();
+
+      // --- Prototype 31: generate, then reveal ----------------
+      // One button walks the card through three states: idle (a
+      // frozen frame of the dot field) → generating (the field
+      // breathes) → revealed (dots and image cross-fade through each
+      // other, since the card owns both halves).
+      (function initP31Play() {
+        const card = document.getElementById("p31-card");
+        const btn = document.getElementById("p31-play");
+        if (!card || !btn) return;
+        const STATES = [
+          { cls: "", label: "Play" },
+          { cls: "is-loading", label: "Reveal" },
+          { cls: "is-revealed", label: "Reset" }
+        ];
+        let i = 0;
+        btn.addEventListener("click", function () {
+          i = (i + 1) % STATES.length;
+          card.classList.remove("is-loading", "is-revealed");
+          if (STATES[i].cls) card.classList.add(STATES[i].cls);
+          btn.textContent = STATES[i].label;
+        });
+      })();
+
+      // --- Prototype 33: matrix dot loaders -------------------
+      // Builds the 4×4 lattices and hands each dot a --d delay.
+      // Rounded variants hide the four corners. Inner dots of the
+      // orbit variant hold steady so the ring reads as the mover.
+      (function initP33() {
+        const CORNERS = [0, 3, 12, 15];
+        // Clockwise perimeter (corner-less ring), then centre cells.
+        const RING = [1, 2, 7, 11, 14, 13, 8, 4];
+        const INNER = [5, 6, 9, 10];
+        const TWINKLE = [7, 2, 11, 5, 14, 9, 0, 12, 3, 15, 6, 10, 13, 1, 8, 4];
+        function cycleMs() {
+          const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--p33-cycle"));
+          return isNaN(v) ? 1200 : v;
+        }
+        document.querySelectorAll(".p33-loader").forEach(function (loader) {
+          const variant = loader.getAttribute("data-variant");
+          const rounded = loader.getAttribute("data-rounded") === "true";
+          const cycle = cycleMs();
+          for (let idx = 0; idx < 16; idx++) {
+            const dot = document.createElement("i");
+            const col = idx % 4;
+            if (rounded && CORNERS.indexOf(idx) !== -1) {
+              dot.className = "is-gap";
+            } else if (variant === "scan") {
+              dot.style.setProperty("--d", String(Math.round(col * (cycle / 10))));
+            } else if (variant === "twinkle") {
+              dot.style.setProperty("--d", String(Math.round(TWINKLE[idx] * (cycle / 16))));
+            } else if (variant === "orbit") {
+              const k = RING.indexOf(idx);
+              if (k !== -1) {
+                dot.style.setProperty("--d", String(Math.round(k * (cycle / 8))));
+              } else {
+                // Centre holds steady under the orbiting ring.
+                dot.style.animation = "none";
+              }
+            } else if (variant === "pulse") {
+              const ring = INNER.indexOf(idx) !== -1 ? 0 : 1;
+              dot.style.setProperty("--d", String(Math.round(ring * (cycle * 0.16))));
+            }
+            loader.appendChild(dot);
+          }
+        });
+      })();
+
+      // --- Prototype 34: banner stacking ----------------------
+      // Sonner-style: a new banner rises in at depth 0; everything
+      // already stacked steps one depth back (smaller, higher,
+      // dimmer — pure data-depth swap, CSS transitions the rest).
+      // A fourth banner pushes the oldest out entirely.
+      (function initP34() {
+        const stack = document.getElementById("p34-stack");
+        const add = document.getElementById("p34-add");
+        if (!stack || !add) return;
+        let banners = []; // newest first
+        function makeBanner() {
+          const el = document.createElement("div");
+          el.className = "p34-banner";
+          el.innerHTML = '<span class="p34-avatar"></span><span class="p34-bar"></span>';
+          return el;
+        }
+        function readMs(name, fb) {
+          const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+          return isNaN(v) ? fb : v;
+        }
+        // Spread state is decided from the pointer's position alone:
+        // over the collapsed stack it opens, and it holds until the
+        // pointer leaves the taller column the spread occupies. Both
+        // halves are geometry rather than :hover / pointerenter —
+        // the gaps between spread banners belong to no element, and
+        // boundary events would also fire when a banner animates in
+        // under a still pointer, spreading the stack on its own.
+        const stage = stack.parentElement;
+        function spreadHeight() {
+          const gap = parseFloat(getComputedStyle(document.documentElement)
+            .getPropertyValue("--p34-spread-gap")) || 8;
+          return (stack.offsetHeight + gap) * 2;
+        }
+        function within(e, above) {
+          const r = stack.getBoundingClientRect();
+          return e.clientX >= r.left && e.clientX <= r.right &&
+            e.clientY <= r.bottom && e.clientY >= r.top - above;
+        }
+        stage.addEventListener("pointermove", function (e) {
+          if (stack.classList.contains("is-spread")) {
+            if (!within(e, spreadHeight())) stack.classList.remove("is-spread");
+          } else if (within(e, 0)) {
+            stack.classList.add("is-spread");
+          }
+        });
+        stage.addEventListener("pointerleave", function () {
+          stack.classList.remove("is-spread");
+        });
+
+        // The stack rests full, so the card shows what it is without
+        // being clicked. Seeding through the same array the click path
+        // uses keeps depth and order from drifting apart.
+        for (let d = 2; d >= 0; d--) {
+          const seed = makeBanner();
+          seed.setAttribute("data-depth", String(d));
+          stack.appendChild(seed);
+          banners[d] = seed;
+        }
+
+        add.addEventListener("click", function () {
+          const el = makeBanner();
+          el.classList.add("is-enter");
+          el.setAttribute("data-depth", "0");
+          banners.unshift(el);
+          stack.appendChild(el);
+          banners.forEach(function (b, i) {
+            if (i === 0) return;
+            if (i > 2) {
+              if (!b.classList.contains("is-leaving")) {
+                b.classList.add("is-leaving");
+                setTimeout(function () {
+                  if (b.parentNode) b.parentNode.removeChild(b);
+                }, readMs("--p34-close-dur", 250) + 60);
+              }
+            } else {
+              b.setAttribute("data-depth", String(i));
+            }
+          });
+          banners = banners.slice(0, 3).concat(
+            banners.slice(3).filter(function (b) { return !b.classList.contains("is-leaving"); })
+          );
+          // Flush the pre-open rest state, then release it in the same
+          // task. A rAF hop would be skipped whenever the frame clock is
+          // throttled, and the banner would land with no motion at all.
+          // eslint-disable-next-line no-unused-expressions
+          el.offsetWidth;
+          el.classList.remove("is-enter");
         });
       })();
 

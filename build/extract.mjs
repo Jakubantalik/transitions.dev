@@ -352,6 +352,16 @@ The natural way to turn the "v" into a "^" is to morph the chevron's SVG \`d\` b
     when: "Numbers that change with fanfare — points, prices, follower counts, dashboards KPIs. Each digit is a clipped vertical reel of 0-9 cells; the strip translates up through several full spins before landing on the target digit, with a per-column stagger and a vertical-only SVG blur while moving.\n\nReach for this over **number pop-in** when the change should feel like an event (a jackpot roll) rather than a quiet update. The reels are built in JS — one `.t-reel-col` per digit — so bring the small builder snippet from the recipe." },
   { key: "p27", file: "27-toggle", summary: "Travel the switch thumb with a double-bounce overshoot",
     when: "On/off switches — settings rows, theme toggles, feature flags. The thumb travels across the track with a two-step overshoot (past the end, back, settle) while the track color cross-fades on its own clock.\n\nToggle `data-on` on the switch. Add `.is-init` on first interaction so the \"off\" keyframes don't animate on page load — without it every switch on the page plays its return bounce once at mount." },
+  { key: "p28", file: "28-thinking-states", summary: "Shimmer a status line while it holds, then swap it to the next state",
+    when: "An AI status line that narrates what the agent is doing — \"Setting up a workplace\", \"Running a command\", \"Browsing files\". The line shimmers while a state holds (the same masked highlight as **shimmer text**), then swaps to the next state with the **text states swap** motion: the old line exits up through a small blur while the new one rises in from below.\n\nUse this over a bare shimmer when the label changes while the work runs — the swap keeps the narration alive without a hard cut. Outgoing and incoming lines animate at the same time, so a swap costs one `--think-swap`, not two." },
+  { key: "p29", file: "29-reasoning-stream", summary: "Step an agent-reasoning transcript up two lines at a time on a loop",
+    when: "An agent \"thinking out loud\" — a small card plays back a stream of reasoning by stepping the transcript up two lines at a time, holding between steps. Soft mask fades at the top and bottom edges sell \"more above, more below\", and the transcript is cloned once so the loop wraps without a visible jump.\n\nUse for reasoning previews, live log tickers, changelog streams — any tall text that should scroll by inside a fixed viewport on its own clock." },
+  { key: "p30", file: "30-streaming-text", summary: "Resolve streamed words one by one through a soft cross-blur",
+    when: "Model output arriving word by word — chat responses, AI completions, any streamed paragraph. JS wraps each word in a span; words rest visible, and a replay wipes them all, then resolves them in order through opacity plus a small blur, one every `--stream-gap`.\n\nReach for this over a typewriter effect when the text should feel like it condenses into place rather than being typed — the cross-blur reads as resolution, not keystrokes." },
+  { key: "p33", file: "31-matrix-loader", summary: "Pulse a 4×4 dot matrix in scan / twinkle / orbit / pulse patterns",
+    when: "Tiny inline loaders built from a 4×4 matrix of 2px dots. All four variants share one colour-pulse keyframe; a per-dot delay table gives each its motion character — a column scan, a randomized-looking twinkle, a perimeter orbit, a centre-out pulse. Rounded variants drop the four corner dots.\n\nUse where a spinner would be too loud: alongside a status line, inside a compact button, in a table cell. The loader whispers." },
+  { key: "p34", file: "32-banner-stacking", summary: "Stack banners like toasts — new ones rise in, older ones push back",
+    when: "Sonner-style banner / toast stacking. Each new banner rises in with the **toast** motion (rise + cross-blur + slight scale) while older banners push back — smaller, higher, dimmer — instead of leaving; the fourth arrival sends the oldest out. Hovering the stack fans it into a readable list.\n\nUse over a single **toast** when notifications can overlap: the stack keeps the newest legible while acknowledging the queue behind it." },
 ];
 
 // ── Default-value rewrites ───────────────────────────────────────
@@ -759,6 +769,219 @@ head.addEventListener("click", () => {
   acc.setAttribute("data-open", String(!open));
   head.setAttribute("aria-expanded", String(!open));
 });`,
+  p28: `// Cycle the states: hold, then swap. The outgoing line is lifted out
+// of flow (.is-leaving-layer) so both lines animate at once, and
+// textContent + data-text move together so the shimmer's ::before
+// copy always matches the visible line.
+const box = document.querySelector(".t-think");
+let live = box.querySelector(".t-think-text");
+const STATES = ["Setting up a workplace", "Running a command", "Browsing files"];
+let i = 0;
+
+const ms = (name, fb) => {
+  const v = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue(name)
+  );
+  return Number.isFinite(v) ? v : fb;
+};
+
+(function cycle() {
+  setTimeout(() => {
+    const swap = ms("--think-swap", 150);
+    const gap = ms("--think-gap", 50);
+    const leaving = live;
+    i = (i + 1) % STATES.length;
+
+    // Float the outgoing line over the box and start its exit.
+    leaving.classList.add("is-leaving-layer", "is-exit");
+
+    const next = document.createElement("span");
+    next.className = "t-think-text is-enter-start";
+    next.textContent = STATES[i];
+    next.setAttribute("data-text", STATES[i]);
+    box.appendChild(next);
+    live = next;
+
+    const release = () => {
+      void next.offsetWidth; // flush the enter-start rest state
+      next.classList.remove("is-enter-start");
+    };
+    if (gap > 0) setTimeout(release, gap);
+    else release();
+
+    setTimeout(() => {
+      leaving.remove();
+      cycle();
+    }, swap + gap);
+  }, ms("--think-hold", 2000));
+})();`,
+  p29: `// Clone the transcript once so the wrap is seamless, then step the
+// scroll up --reason-lines lines every --reason-hold. The offset
+// wraps by one copy's height the moment a step lands past it — the
+// clone underneath makes the jump invisible.
+const scroll = document.querySelector(".t-reason-scroll");
+const text = scroll.querySelector(".t-reason-text");
+scroll.appendChild(text.cloneNode(true));
+
+const num = (name, fb) => {
+  const v = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue(name)
+  );
+  return Number.isFinite(v) ? v : fb;
+};
+
+let offset = 0;
+(function step() {
+  setTimeout(() => {
+    const lineH = parseFloat(getComputedStyle(text).lineHeight) || 18;
+    const stepPx = lineH * num("--reason-lines", 2);
+    const dur = num("--reason-step", 500);
+    const ease = getComputedStyle(document.documentElement)
+      .getPropertyValue("--reason-ease").trim() || "ease-out";
+    offset += stepPx;
+    scroll.style.transition = "transform " + dur + "ms " + ease;
+    scroll.style.transform = "translateY(" + (-offset) + "px)";
+    setTimeout(() => {
+      const copyH = text.offsetHeight;
+      if (offset >= copyH) {
+        offset -= copyH;
+        scroll.style.transition = "none";
+        scroll.style.transform = "translateY(" + (-offset) + "px)";
+        void scroll.offsetWidth; // flush before the next tween
+      }
+      step();
+    }, dur + 30);
+  }, num("--reason-hold", 1200));
+})();`,
+  p30: `// Wrap each word in a span once; stream() wipes them (no transition)
+// and resolves them in order, one every --stream-gap.
+const block = document.querySelector(".t-stream");
+const words = block.textContent.trim().split(/\\s+/);
+block.textContent = "";
+const spans = words.map((w, i) => {
+  const s = document.createElement("span");
+  s.className = "t-stream-w is-in";
+  s.textContent = w;
+  block.appendChild(s);
+  if (i < words.length - 1) block.appendChild(document.createTextNode(" "));
+  return s;
+});
+
+const gap = parseFloat(
+  getComputedStyle(document.documentElement).getPropertyValue("--stream-gap")
+) || 60;
+
+function stream() {
+  // Snap back to nothing without animating the wipe itself.
+  spans.forEach((s) => {
+    s.style.transition = "none";
+    s.classList.remove("is-in");
+  });
+  void block.offsetWidth; // flush the wipe
+  spans.forEach((s) => { s.style.transition = ""; });
+  (function next(n) {
+    if (n >= spans.length) return;
+    spans[n].classList.add("is-in");
+    setTimeout(() => next(n + 1), gap);
+  })(0);
+}`,
+  p33: `// Build 16 dots per loader and hand each a --d delay (ms) into the
+// shared pulse cycle — the variant is just a delay table.
+const CORNERS = [0, 3, 12, 15];
+// Clockwise perimeter (corner-less ring), then centre cells.
+const RING = [1, 2, 7, 11, 14, 13, 8, 4];
+const INNER = [5, 6, 9, 10];
+const TWINKLE = [7, 2, 11, 5, 14, 9, 0, 12, 3, 15, 6, 10, 13, 1, 8, 4];
+
+const cycle = parseFloat(
+  getComputedStyle(document.documentElement).getPropertyValue("--matrix-cycle")
+) || 1200;
+
+document.querySelectorAll(".t-matrix").forEach((loader) => {
+  const variant = loader.getAttribute("data-variant");
+  const rounded = loader.getAttribute("data-rounded") === "true";
+  for (let idx = 0; idx < 16; idx++) {
+    const dot = document.createElement("i");
+    const col = idx % 4;
+    if (rounded && CORNERS.includes(idx)) {
+      dot.className = "is-gap";
+    } else if (variant === "scan") {
+      dot.style.setProperty("--d", String(Math.round(col * (cycle / 10))));
+    } else if (variant === "twinkle") {
+      dot.style.setProperty("--d", String(Math.round(TWINKLE[idx] * (cycle / 16))));
+    } else if (variant === "orbit") {
+      const k = RING.indexOf(idx);
+      if (k !== -1) {
+        dot.style.setProperty("--d", String(Math.round(k * (cycle / 8))));
+      } else {
+        dot.style.animation = "none"; // centre holds steady under the ring
+      }
+    } else if (variant === "pulse") {
+      const ring = INNER.includes(idx) ? 0 : 1;
+      dot.style.setProperty("--d", String(Math.round(ring * (cycle * 0.16))));
+    }
+    loader.appendChild(dot);
+  }
+});`,
+  p34: `// Stack management: a new banner arrives at depth 0, everything
+// already stacked steps one depth back (pure data-depth swap — CSS
+// transitions the rest), and a fourth banner pushes the oldest out.
+const stack = document.querySelector(".t-stack");
+let banners = []; // newest first
+
+const ms = (name, fb) => {
+  const v = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue(name)
+  );
+  return Number.isFinite(v) ? v : fb;
+};
+
+function addBanner(contentHTML) {
+  const el = document.createElement("div");
+  el.className = "t-stack-banner is-enter";
+  el.setAttribute("data-depth", "0");
+  el.innerHTML = contentHTML;
+  banners.unshift(el);
+  stack.appendChild(el);
+  banners.forEach((b, i) => {
+    if (i === 0) return;
+    if (i > 2) {
+      if (!b.classList.contains("is-leaving")) {
+        b.classList.add("is-leaving");
+        setTimeout(() => b.remove(), ms("--stack-close", 250) + 60);
+      }
+    } else {
+      b.setAttribute("data-depth", String(i));
+    }
+  });
+  banners = banners.slice(0, 3)
+    .concat(banners.slice(3).filter((b) => !b.classList.contains("is-leaving")));
+  // Flush the pre-open rest state, then release it in the same task.
+  // A rAF hop would be skipped whenever the frame clock is throttled,
+  // and the banner would land with no motion at all.
+  void el.offsetWidth;
+  el.classList.remove("is-enter");
+}
+
+// Hover spread is geometry, not :hover — the gaps between spread
+// banners belong to no element, and boundary events would also fire
+// when a banner animates in under a still pointer.
+const stage = stack.parentElement;
+const spreadHeight = () =>
+  (stack.offsetHeight + ms("--stack-spread-gap", 8)) * 2;
+const within = (e, above) => {
+  const r = stack.getBoundingClientRect();
+  return e.clientX >= r.left && e.clientX <= r.right &&
+    e.clientY <= r.bottom && e.clientY >= r.top - above;
+};
+stage.addEventListener("pointermove", (e) => {
+  if (stack.classList.contains("is-spread")) {
+    if (!within(e, spreadHeight())) stack.classList.remove("is-spread");
+  } else if (within(e, 0)) {
+    stack.classList.add("is-spread");
+  }
+});
+stage.addEventListener("pointerleave", () => stack.classList.remove("is-spread"));`,
 });
 
 // ── Render templates ──────────────────────────────────────────────

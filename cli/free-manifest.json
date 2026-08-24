@@ -133,5 +133,30 @@
     "slug": "toggle",
     "name": "Toggle",
     "tier": "free"
+  },
+  {
+    "slug": "thinking-states",
+    "name": "Thinking states",
+    "tier": "free"
+  },
+  {
+    "slug": "reasoning-stream",
+    "name": "Reasoning stream",
+    "tier": "free"
+  },
+  {
+    "slug": "streaming-text",
+    "name": "Streaming text",
+    "tier": "free"
+  },
+  {
+    "slug": "matrix-loader",
+    "name": "Matrix dot loader",
+    "tier": "free"
+  },
+  {
+    "slug": "banner-stacking",
+    "name": "Banner stacking",
+    "tier": "free"
   }
 ]

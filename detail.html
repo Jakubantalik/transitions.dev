@@ -574,6 +574,74 @@
       --p27-ov2:             0px;
       --p27-track-dur:       0ms;
       --p27-ease:            cubic-bezier(0.34, 1.35, 0.64, 1);
+
+      /* P28 — AI thinking states. One line of "what the agent is
+         doing" text: shimmer sweeps while a state holds, then the
+         line swaps to the next state with the text-swap motion and
+         keeps shimmering. --p28-hold is how long each state stays.
+         Outgoing and incoming lines run at the same time, so a swap
+         costs one --p28-swap-dur, not two; --p28-swap-gap holds the
+         incoming line back if the crossover should breathe. */
+      --p28-hold:            2000ms;
+      --p28-swap-dur:        150ms;
+      --p28-swap-gap:        50ms;
+      --p28-swap-distance:   8px;
+      --p28-swap-blur:       2px;
+      --p28-shimmer-dur:     2000ms;
+      --p28-base:            #7c7c7c;
+      --p28-highlight:       #0d0d0d;
+      --p28-band:            400%;
+      --p28-ease:            ease-in-out;
+
+      /* P29 — Agent reasoning stream. A small card is a viewport
+         onto a tall reasoning transcript that steps up --p29-lines
+         lines at a time on a loop, easing each step and holding
+         between steps; soft fades at the card's top and bottom
+         edges sell the "more above / more below". The content is
+         duplicated once so the wrap is seamless. */
+      --p29-hold:            1200ms;
+      --p29-step-dur:        500ms;
+      --p29-lines:           2;
+      --p29-fade:            28px;
+      --p29-ease:            var(--ease-smooth-out);
+
+      /* P30 — Streaming text. Words materialise one after another
+         the way model output streams: each word fades in through a
+         small cross-blur, --p30-word-gap apart. */
+      --p30-word-gap:        60ms;
+      --p30-word-dur:        350ms;
+      --p30-blur:            1px;
+      --p30-ease:            var(--ease-smooth-out);
+
+      /* P33 — Matrix dot loaders. 4×4 grids of 2px dots (rounded
+         variants drop the corners), four motion characters: column
+         scan, random twinkle, perimeter orbit, centre pulse. Colour
+         pulses base → active per dot on a shared cycle with per-dot
+         delays. */
+      --p33-cycle:           1200ms;
+      --p33-base:            #d9d9d9;
+      --p33-active:          #85858f;
+      --p33-ease:            var(--ease-in-out);
+
+      /* P34 — Banner stacking (sonner-style). New banners rise in
+         with the toast motion (P22); existing ones push back —
+         smaller, higher, dimmer — instead of moving away. Max 3
+         visible; the oldest fades out when a fourth arrives. Depth
+         steps: −--p34-peek px, ×(1 − depth·scale), opacity
+         −depth·fade. */
+      --p34-open-dur:        350ms;
+      --p34-close-dur:       250ms;
+      --p34-distance:        80px;
+      --p34-blur:            var(--blur-small);
+      --p34-scale-in:        0.97;
+      --p34-peek:            12px;
+      /* Hovering the stack fans the banners into a list: each one
+         climbs its own height plus --p34-spread-gap and drops the
+         depth scale and fade. */
+      --p34-spread-gap:      8px;
+      --p34-depth-scale:     0.06;
+      --p34-depth-fade:      0.4;
+      --p34-ease:            cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     html[data-theme="dark"] {
@@ -662,6 +730,15 @@
          light mode; flip it to a low-alpha white so it reads on the
          dark material surface. */
       --p20-hover-wash:      rgba(255, 255, 255, 0.06);
+
+      /* P28 — same recipe as P15: mid-grey base, near-white sweep. */
+      --p28-base:            #9a9a9a;
+      --p28-highlight:       #f5f5f5;
+
+      /* P33 — dot pulse re-pitched for a dark surface: dim base,
+         bright active. */
+      --p33-base:            #3a3a3e;
+      --p33-active:          #b8b8c2;
     }
 
     * { box-sizing: border-box; }
@@ -4478,6 +4555,345 @@
     }
 
     /* ============================================================ */
+    /* Prototype 28 — AI thinking states: shimmer + text swap        */
+    /* ============================================================ */
+    /* One line, two borrowed mechanisms: P15's glyph-clipped shimmer
+       runs continuously while a state holds, and P6's exit-up /
+       enter-from-below cross-blur swaps the line between states.
+       The shimmer lives on ::before (content: attr(data-text)), so
+       swapping textContent + data-text swaps both layers at once. */
+    /* The live line stays in flow so the box keeps its width; the
+       one being replaced is lifted out of flow and centred over it,
+       which lets both halves animate at once. */
+    .p28-swap {
+      position: relative;
+      display: block;
+      width: 224px;
+      text-align: left;
+      line-height: 18px;
+    }
+    .p28-text.is-leaving-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .p28-text {
+      position: relative;
+      display: inline-block;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 18px;
+      color: var(--p28-base);
+      white-space: nowrap;
+      transform: translateY(0);
+      filter: blur(0);
+      opacity: 1;
+      transition:
+        transform var(--p28-swap-dur) var(--p28-ease),
+        filter var(--p28-swap-dur) var(--p28-ease),
+        opacity var(--p28-swap-dur) var(--p28-ease);
+      will-change: transform, filter, opacity;
+    }
+    .p28-text::before {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(
+        90deg,
+        transparent          0%,
+        transparent         40%,
+        var(--p28-highlight) 50%,
+        transparent         60%,
+        transparent        100%
+      );
+      background-size: var(--p28-band) 100%;
+      background-repeat: no-repeat;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: p28-shimmer var(--p28-shimmer-dur) var(--ease-linear) infinite;
+    }
+    @keyframes p28-shimmer {
+      0%   { background-position: 100% 0; }
+      100% { background-position: 0% 0; }
+    }
+    .p28-swap.is-paused .p28-text::before {
+      animation-play-state: paused;
+    }
+    .p28-text.is-exit {
+      transform: translateY(calc(var(--p28-swap-distance) * -1));
+      filter: blur(var(--p28-swap-blur));
+      opacity: 0;
+    }
+    .p28-text.is-enter-start {
+      transition: none;
+      transform: translateY(var(--p28-swap-distance));
+      filter: blur(var(--p28-swap-blur));
+      opacity: 0;
+    }
+
+    /* ============================================================ */
+    /* Prototype 29 — Agent reasoning stream                         */
+    /* ============================================================ */
+    /* 256×144 card, radius 16, 1px ring. The card clips a tall
+       transcript; JS steps the inner block up two lines at a time.
+       Fades are a mask on the viewport (not gradients painted over
+       the text), so the card background can be anything. The
+       transcript renders twice back-to-back and the offset wraps by
+       one copy's height mid-hold — the loop never shows a jump. */
+    .p29-card {
+      width: 256px;
+      height: 144px;
+      background: var(--surface-bg);
+      border-radius: 16px;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      position: relative;
+    }
+    html[data-theme="dark"] .p29-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08); }
+    .p29-viewport {
+      position: absolute;
+      inset: 0 16px;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(
+        transparent 0,
+        black var(--p29-fade),
+        black calc(100% - var(--p29-fade)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        transparent 0,
+        black var(--p29-fade),
+        black calc(100% - var(--p29-fade)),
+        transparent 100%
+      );
+    }
+    .p29-scroll {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 14px;
+      transform: translateY(0);
+      will-change: transform;
+    }
+    .p29-text {
+      font-family: var(--font-sans);
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #2d2d2d;
+    }
+    html[data-theme="dark"] .p29-text { color: #c6c6c6; }
+    .p29-text p { margin: 0 0 18.2px; }
+    .p29-text p:last-child { margin-bottom: 18.2px; }
+
+    /* ============================================================ */
+    /* Prototype 30 — Streaming text: word-by-word cross-blur        */
+    /* ============================================================ */
+    /* 224px column of 13px body text. JS wraps each word in a span;
+       spans rest visible and a replay wipes then resolves them in
+       sequence. The blur is per-word and small, so the stream reads
+       as text condensing out of thin air rather than a fade-in. */
+    .p30-block {
+      width: 224px;
+      font-family: var(--font-sans);
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #2d2d2d;
+    }
+    html[data-theme="dark"] .p30-block { color: #c6c6c6; }
+    .p30-w {
+      opacity: 0;
+      filter: blur(var(--p30-blur));
+      transition:
+        opacity var(--p30-word-dur) var(--p30-ease),
+        filter var(--p30-word-dur) var(--p30-ease);
+    }
+    .p30-w.is-in {
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    /* ============================================================ */
+    /* Prototype 33 — Matrix dot loaders                             */
+    /* ============================================================ */
+    /* 16×16 loaders, 4×4 lattice of 2px dots on a 4px pitch; the
+       rounded pair drops the four corners. Four motion characters
+       share one colour pulse keyframe; JS builds the dots and hands
+       each a --d delay (ms). */
+    .p33-row {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .p33-loader {
+      display: grid;
+      grid-template-columns: repeat(4, var(--p33-dot-size, 2px));
+      grid-auto-rows: var(--p33-dot-size, 2px);
+      gap: 2px;
+      width: 14px;
+      height: 14px;
+    }
+    .p33-loader i {
+      display: block;
+      background: var(--p33-base);
+      animation: p33-pulse var(--p33-cycle) var(--p33-ease) infinite;
+      animation-delay: calc(var(--d, 0) * 1ms);
+    }
+    /* Hole positions (rounded variants) render nothing. */
+    .p33-loader i.is-gap {
+      visibility: hidden;
+      animation: none;
+    }
+    @keyframes p33-pulse {
+      0%, 45%, 100% { background-color: var(--p33-base); }
+      15%           { background-color: var(--p33-active); }
+    }
+
+    /* ============================================================ */
+    /* Prototype 34 — Banner stacking (sonner-style)                 */
+    /* ============================================================ */
+    /* New banners arrive with the toast motion (P22: rise + cross-
+       blur + slight scale). Instead of leaving, older banners push
+       back: each depth step is --p34-peek higher, a bit smaller
+       (transform-origin bottom, so they retreat upward) and dimmer.
+       Depth ≥ 3 fades away and is removed. All movement is the same
+       transition on transform/opacity/filter — arriving, pushing
+       back and leaving share one motion voice. */
+    /* Bottom-anchor the stack inside the stage so a spread column
+       (three banners + gaps) still clears the top edge, and keep it
+       above the Animate button. */
+    .p34-stage-inner {
+      align-items: flex-end;
+      padding-bottom: 78px;
+    }
+    .p34-stack {
+      position: relative;
+      width: 261px;
+      height: 46px;
+    }
+    .p34-banner {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 261px;
+      height: 46px;
+      padding: 0 16px;
+      background: var(--surface-bg);
+      border-radius: 52px;
+      box-shadow: var(--material-shadow);
+      /* Centre origin so an arriving banner scales exactly like the
+         toast recipe; the push-back states below switch to the bottom
+         edge, which they can do freely because the swap happens while
+         the banner sits at identity. */
+      transform-origin: 50% 50%;
+      /* Explicit blur(0) rather than an unset filter — blur → none is
+         not reliably interpolated, and the cross-blur would snap. */
+      filter: blur(0);
+      will-change: transform, opacity, filter;
+      transition:
+        transform var(--p34-open-dur) var(--p34-ease),
+        opacity var(--p34-open-dur) var(--p34-ease),
+        filter var(--p34-open-dur) var(--p34-ease);
+    }
+    .p34-banner[data-depth="0"] {
+      z-index: 3;
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    .p34-banner[data-depth="1"] {
+      z-index: 2;
+      transform-origin: 50% 100%;
+      transform: translateY(calc(var(--p34-peek) * -1))
+                 scale(calc(1 - var(--p34-depth-scale)));
+      opacity: calc(1 - var(--p34-depth-fade));
+    }
+    .p34-banner[data-depth="2"] {
+      z-index: 1;
+      transform-origin: 50% 100%;
+      transform: translateY(calc(var(--p34-peek) * -2))
+                 scale(calc(1 - var(--p34-depth-scale) * 2));
+      opacity: calc(1 - var(--p34-depth-fade) * 1.6);
+    }
+    /* Spread: the stack reads as a list. Newest stays put and the
+       older ones climb by one banner height each. Driven by a class,
+       not :hover — the gaps between spread banners belong to no
+       element, so hover alone would drop the moment the pointer
+       crossed one. */
+    .p34-stack.is-spread .p34-banner[data-depth="1"],
+    .p34-stack.is-spread .p34-banner[data-depth="2"] {
+      opacity: 1;
+    }
+    .p34-stack.is-spread .p34-banner[data-depth="1"] {
+      transform: translateY(calc((46px + var(--p34-spread-gap)) * -1)) scale(1);
+    }
+    .p34-stack.is-spread .p34-banner[data-depth="2"] {
+      transform: translateY(calc((46px + var(--p34-spread-gap)) * -2)) scale(1);
+    }
+    .p34-banner.is-enter {
+      transition: none;
+      transform: translateY(var(--p34-distance)) scale(var(--p34-scale-in));
+      opacity: 0;
+      filter: blur(var(--p34-blur));
+    }
+    .p34-banner.is-leaving {
+      z-index: 0;
+      transform-origin: 50% 100%;
+      transform: translateY(calc(var(--p34-peek) * -3))
+                 scale(calc(1 - var(--p34-depth-scale) * 3));
+      opacity: 0;
+      filter: blur(var(--p34-blur));
+      transition:
+        transform var(--p34-close-dur) var(--p34-ease),
+        opacity var(--p34-close-dur) var(--p34-ease),
+        filter var(--p34-close-dur) var(--p34-ease);
+    }
+    .p34-avatar {
+      flex: 0 0 auto;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--skeleton);
+    }
+    .p34-bar {
+      width: 178px;
+      height: 14px;
+      border-radius: 4px;
+      background: var(--skeleton);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .p28-text {
+        color: var(--p28-base) !important;
+        transform: none !important;
+        filter: none !important;
+      }
+      .p28-text::before {
+        display: none !important;
+      }
+      .p29-scroll,
+      .p30-w,
+      .p34-banner {
+        transform: none !important;
+        filter: none !important;
+        transition: none !important;
+      }
+      .p30-w {
+        opacity: 1 !important;
+      }
+      .p33-loader i {
+        animation: none !important;
+      }
+    }
+
+    /* ============================================================ */
     /* Responsive — mirrors border-beam demo breakpoints            */
     /* ============================================================ */
     @media (max-width: 1100px) {
@@ -5897,7 +6313,7 @@
 /* Pro preview (generated) — obfuscated demo build. The documented recipes
    with tokens, React + TypeScript variants live in Transitions Pro:
    https://transitions.dev/pro.html */
-:root{--pv1o:120;--pv15:1300;--pv22:4px;--pv23:16;--pv1b:0.6;--pv20:600ms;--pv1z:300ms;--pv21:1500ms;--pv10:410ms;--pvd:1.84;--pvn:cubic-bezier(0.31,1.84,0.64,1);--pvm:360ms;--pv9:1.5;--pvg:cubic-bezier(0.34,1.5,0.64,1);--pvo:610ms;--pvh:cubic-bezier(0.22,1,0.36,1);--pv1q:1.04;--pv1d:1.42;--pv11:1;--pv5s:3000ms;--pv5u:ease-out;--pv5v:26%;--pv5l:1;--pv5y:20px;--pv5n:0.7;--pv5o:1;--pv13:450ms;--pvv:350ms;--pvw:cubic-bezier(0.22,1,0.36,1);--pvl:cubic-bezier(0.34,1.25,0.64,1);--pvb:0.3;--pv1j:0deg;--pv1k:0deg;--pv29:70px;--pv6:0ms;--pv2:0ms;--pv3:cubic-bezier(0.22,1,0.36,1);--pv1:cubic-bezier(0.34,1.35,0.64,1);--pvf:900px;--pv1i:220px;--pv1h:160px;--pv27:50;--pv12:350ms;--pvu:cubic-bezier(0.22,1,0.36,1);--pv18:4000ms;--pvx:5000ms;--pv2d:120px;--pv2k:550ms;--pv19:150;--pv2g:30;--pv2b:12px;--pv2f:0px;--pv2e:3deg;--pv1a:800ms;--pvz:cubic-bezier(0.22,1,0.36,1);--pv14:2000ms;--pvy:ease-in;--pvc:ease-in;--pv8:ease-out;--pv1x:30;--pv1n:0;--pro-surface-shadow:0 0 0 1px rgba(0,0,0,0.06),0 2px 6px rgba(0,0,0,0.05),0 4px 42px rgba(0,0,0,0.06);}#pv1p .btn-animate{z-index:1;}.pv1c{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;}.pv1r{position:relative;width:120px;height:120px;flex-shrink:0;}.pv24{appearance:none;border:0;padding:0;position:absolute;top:0;left:0;width:78px;height:78px;border-radius:12px;background:var(--card-bg,#fff);box-shadow:var(--pro-surface-shadow);overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;translate:var(--cx) var(--cy);rotate:var(--rot);scale:1;opacity:var(--card-op,1);transition:translate var(--pvm) var(--pvg),rotate var(--pvm) var(--pvg),scale var(--pvo) var(--pvh),opacity var(--pvm) var(--pvg);will-change:translate,rotate,scale,opacity;}.pv24 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}@media (hover:hover){.pv1r:hover .pv24{translate:calc(var(--cx) + var(--dx) * var(--pv1d)) calc(var(--cy) + var(--dy));rotate:calc(var(--rot) + var(--drot) * var(--pv11));opacity:1;transition:translate var(--pv10) var(--pvn),rotate var(--pv10) var(--pvn),scale var(--pvo) var(--pvh),opacity var(--pv10) var(--pvn);}.pv24:hover{scale:var(--pv1q);z-index:30;}}.pv1r.is-open .pv24{translate:calc(var(--cx) + var(--dx) * var(--pv1d)) calc(var(--cy) + var(--dy));rotate:calc(var(--rot) + var(--drot) * var(--pv11));opacity:1;transition:translate var(--pv10) var(--pvn),rotate var(--pv10) var(--pvn),scale var(--pvo) var(--pvh),opacity var(--pv10) var(--pvn);}.pv63{--pv5z:calc(var(--pv5v) * 0.848);position:relative;width:142px;height:142px;border-radius:12px;background:#eeeeee;overflow:hidden;isolation:isolate;flex-shrink:0;}html[data-theme="dark"] .pv63{background:#222226;}.pv63[data-playing="false"] .pv61,.pv63[data-playing="false"] .pv5p{animation-play-state:paused;}.pv62{position:absolute;inset:-20px;pointer-events:none;}.pv5q{position:absolute;inset:0;background:radial-gradient(ellipse 90px 70px at 20% 15%,rgba(40,140,255,0.14),transparent),radial-gradient(ellipse 80px 60px at 65% 25%,rgba(255,50,100,0.13),transparent),radial-gradient(ellipse 70px 80px at 30% 55%,rgba(50,200,80,0.12),transparent),radial-gradient(ellipse 90px 70px at 75% 65%,rgba(180,40,240,0.13),transparent),radial-gradient(ellipse 70px 60px at 45% 85%,rgba(255,120,40,0.12),transparent),radial-gradient(ellipse 60px 60px at 10% 85%,rgba(30,185,170,0.11),transparent),linear-gradient(rgba(90,90,100,0.05),rgba(90,90,100,0.05));opacity:var(--pv5l);pointer-events:none;}.pv61{position:absolute;top:0;left:0;width:330%;height:330%;background-size:100% 100%;background-repeat:no-repeat;transform:translate3d(-69.697%,-69.697%,0);animation:pv5m var(--pv5s) var(--pv5u) infinite;will-change:transform;pointer-events:none;}.pv65{position:absolute;inset:-20px;z-index:1;pointer-events:none;}.pv5r{position:absolute;inset:0;opacity:var(--pv5n);pointer-events:none;}.pv5p{position:absolute;top:0;left:0;width:330%;height:330%;background-image:linear-gradient(135deg,rgba(var(--pv60,238,238,238),1) 0%,rgba(var(--pv60,238,238,238),1) calc(50% - var(--pv5z) * 1.4),rgba(var(--pv60,238,238,238),0.94) calc(50% - var(--pv5z) * 1),rgba(var(--pv60,238,238,238),0.82) calc(50% - var(--pv5z) * 0.6),rgba(var(--pv60,238,238,238),0.55) calc(50% - var(--pv5z) * 0.25),rgba(var(--pv60,238,238,238),0) 50%,rgba(var(--pv60,238,238,238),0.5) calc(50% + var(--pv5z) * 0.18),rgba(var(--pv60,238,238,238),1) calc(50% + var(--pv5z) * 0.35),rgba(var(--pv60,238,238,238),1) 100%);transform:translate3d(-69.697%,-69.697%,0);animation:pv5m var(--pv5s) var(--pv5u) infinite;will-change:transform;pointer-events:none;}@keyframes pv5m{0%{transform:translate3d(-69.697%,-69.697%,0);}100%{transform:translate3d(0,0,0);}}.pv5x,.pv5w,.pv5t{position:absolute;inset:20px;border-radius:12px;pointer-events:none;}.pv5x{padding:1px;opacity:var(--pv5o);background:radial-gradient(ellipse 42px 24px at 33% -7.4%,rgba(255,50,100,0.62),transparent),radial-gradient(ellipse 36px 21px at 12% -5%,rgba(40,140,255,0.48),transparent),radial-gradient(ellipse 24px 42px at 2.1% 68.3%,rgba(50,200,80,0.55),transparent),radial-gradient(ellipse 12px 21px at 2.1% 68.3%,rgba(30,185,170,0.44),transparent),radial-gradient(ellipse 108px 19px at 74.4% 100%,rgba(100,70,255,0.58),transparent),radial-gradient(ellipse 51px 16px at 55% 100%,rgba(40,140,255,0.51),transparent),radial-gradient(ellipse 44px 19px at 93.9% 0%,rgba(255,120,40,0.65),transparent),radial-gradient(ellipse 16px 25px at 100% 27.1%,rgba(240,50,180,0.5),transparent),radial-gradient(ellipse 31px 29px at 100% 27.1%,rgba(180,40,240,0.56),transparent),linear-gradient(rgba(90,90,100,0.22),rgba(90,90,100,0.22));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;}.pv5w{background:radial-gradient(ellipse 39px 21px at 33% -7.4%,rgba(255,50,100,0.34),transparent),radial-gradient(ellipse 33px 18px at 12% -5%,rgba(40,140,255,0.28),transparent),radial-gradient(ellipse 21px 39px at 2.1% 68.3%,rgba(50,200,80,0.3),transparent),radial-gradient(ellipse 9px 18px at 2.1% 68.3%,rgba(30,185,170,0.25),transparent),radial-gradient(ellipse 104px 17px at 74.4% 100%,rgba(100,70,255,0.32),transparent),radial-gradient(ellipse 48px 13px at 55% 100%,rgba(40,140,255,0.28),transparent),radial-gradient(ellipse 41px 17px at 93.9% 0%,rgba(255,120,40,0.35),transparent),radial-gradient(ellipse 13px 23px at 100% 27.1%,rgba(240,50,180,0.28),transparent),radial-gradient(ellipse 28px 26px at 100% 27.1%,rgba(180,40,240,0.3),transparent),radial-gradient(ellipse 36px 36px at 0% 0%,rgba(90,90,100,0.14),transparent 70%),radial-gradient(ellipse 36px 36px at 100% 0%,rgba(90,90,100,0.14),transparent 70%),radial-gradient(ellipse 36px 36px at 0% 100%,rgba(90,90,100,0.14),transparent 70%),radial-gradient(ellipse 36px 36px at 100% 100%,rgba(90,90,100,0.14),transparent 70%);box-shadow:inset 0 0 14px 1px rgba(90,90,100,0.12);filter:blur(2px);-webkit-mask-image:linear-gradient(white,transparent 44px,transparent calc(100% - 44px),white),linear-gradient(to right,white,transparent 44px,transparent calc(100% - 44px),white);-webkit-mask-composite:source-over;mask-image:linear-gradient(white,transparent 44px,transparent calc(100% - 44px),white),linear-gradient(to right,white,transparent 44px,transparent calc(100% - 44px),white);mask-composite:add;}.pv5t{background:radial-gradient(ellipse 55px 31px at 33% -7.4%,rgba(255,50,100,0.4),transparent),radial-gradient(ellipse 47px 27px at 12% -5%,rgba(40,140,255,0.34),transparent),radial-gradient(ellipse 31px 55px at 2.1% 68.3%,rgba(50,200,80,0.38),transparent),radial-gradient(ellipse 140px 25px at 74.4% 100%,rgba(100,70,255,0.4),transparent),radial-gradient(ellipse 66px 20px at 55% 100%,rgba(40,140,255,0.35),transparent),radial-gradient(ellipse 58px 25px at 93.9% 0%,rgba(255,120,40,0.44),transparent),radial-gradient(ellipse 40px 38px at 100% 27.1%,rgba(180,40,240,0.38),transparent);box-shadow:inset 0 0 calc(var(--pv5y) * 3) calc(var(--pv5y) / 2) rgba(90,90,100,0.1);filter:blur(var(--pv5y));-webkit-mask-image:linear-gradient(white,transparent 26px,transparent calc(100% - 26px),white),linear-gradient(to right,white,transparent 26px,transparent calc(100% - 26px),white);-webkit-mask-composite:source-over;mask-image:linear-gradient(white,transparent 26px,transparent calc(100% - 26px),white),linear-gradient(to right,white,transparent 26px,transparent calc(100% - 26px),white);mask-composite:add;}.pv1u{perspective:var(--pvf);}.pv28{appearance:none;border:0;padding:0;position:relative;width:var(--pv1i);height:var(--pv1h);border-radius:32px;overflow:visible;cursor:pointer;background:var(--stage-bg,#eeeeef);box-shadow:var(--pro-surface-shadow);-webkit-tap-highlight-color:transparent;transform-origin:center;scale:var(--pvb);transform:rotateX(0deg) rotateY(0deg) translateZ(0);will-change:scale,transform;transition:scale var(--pvv) var(--pvl),border-radius var(--pvv) var(--pvl);}.pv1g{position:absolute;display:none;pointer-events:none;}.pv28.is-bending{background:transparent;}.pv28.is-bending .pv2i{visibility:hidden;}.pv28.is-bending .pv1g{display:block;}.pv28.is-open{border-radius:16px;scale:1;transition:scale var(--pv13) var(--pvw),border-radius var(--pv13) var(--pvw);animation:pv2a var(--pv13) var(--pvw) both;}.pv28.is-closing{animation:pv1s var(--pvv) var(--pvl) both;}@keyframes pv2a{0%{transform:rotateX(0deg) rotateY(0deg) translateZ(calc(var(--pv29) * -1));}45%{transform:rotateX(var(--pv1j)) rotateY(var(--pv1k)) translateZ(calc(var(--pv29) * -0.4));}100%{transform:rotateX(0deg) rotateY(0deg) translateZ(0);}}@keyframes pv1s{0%{transform:rotateX(0deg) rotateY(0deg) translateZ(0);}45%{transform:rotateX(calc(var(--pv1j) * -0.45)) rotateY(calc(var(--pv1k) * -0.45)) translateZ(calc(var(--pv29) * -0.4));}100%{transform:rotateX(0deg) rotateY(0deg) translateZ(0);}}.pv28 .pv2i{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;border-radius:inherit;}.pv17{margin:0;font-family:"Saans",var(--font-sans);font-size:44px;font-weight:500;line-height:1;color:var(--text);letter-spacing:-0.01em;}.pv7{background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.88'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.34726 -1.3118e-7 8.6482e-7 0.89585 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.5'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-1.3 0.25 -1.2633 -2.7471 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.4'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.05 -0.8 0.46018 3.6184 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='0.71709'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.51067 -3.3275e-16 -4.3352e-14 -1.1396 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.45 -0.75 1.9052 -0.7091 33.5 21)'><stop stop-color='rgba(255,173,85,1)' offset='0'/><stop stop-color='rgba(255,173,85,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.25 -0.35 -0.4013 3.5959 33.5 21)'><stop stop-color='rgba(0,204,68,1)' offset='0'/><stop stop-color='rgba(0,196,102,0.75)' offset='0.25'/><stop stop-color='rgba(0,187,136,0.5)' offset='0.5'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87391 0.73043 -4.1482 -1.9503 33.5 21)'><stop stop-color='rgba(0,170,204,1)' offset='0'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),linear-gradient(rgb(108,108,108) 0%,rgb(216,216,216) 100%);background-size:180% 180%,180% 180%,180% 180%,180% 180%,180% 180%,180% 180%,180% 180%,100% 100%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;color:transparent;animation:pv2j var(--pv18) linear infinite,pv1v var(--pvx) ease-in-out infinite;}@keyframes pv2j{from{filter:hue-rotate(0deg) saturate(1.3);}to{filter:hue-rotate(-360deg) saturate(1.3);}}@keyframes pv1v{0%,100%{background-position:100% 0%,0% 50%,100% 50%,0% 100%,0% 0%,50% 0%,50% 100%,0 0;}25%{background-position:100% 100%,50% 0%,50% 100%,0% 0%,100% 0%,100% 50%,0% 50%,0 0;}50%{background-position:0% 100%,100% 50%,0% 50%,100% 0%,100% 100%,50% 100%,50% 0%,0 0;}75%{background-position:0% 0%,50% 100%,50% 0%,100% 100%,0% 100%,0% 50%,100% 50%,0 0;}}.pv2c{position:relative;width:var(--pv2d);height:var(--pv2d);border-radius:16px;overflow:hidden;background:var(--stage-bg,#eeeeef);box-shadow:var(--pro-surface-shadow);will-change:transform,opacity;}.pv1l{position:absolute;z-index:3;pointer-events:none;will-change:transform,opacity;}.pv2c img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}.pv2c.is-respawning{animation:pv1a 250ms cubic-bezier(0.22,1,0.36,1);}@keyframes pv1a{from{opacity:0;transform:scale(0.96);}to{opacity:1;transform:scale(1);}}.pv1m{position:absolute;top:8px;right:8px;z-index:2;width:24px;height:24px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,0.92);color:#17181c;display:grid;place-items:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.25);-webkit-tap-highlight-color:transparent;transition:background-color 120ms ease;}.pv1m:hover{background:#ffffff;}.pv1m:focus-visible{outline:2px solid #17181c;outline-offset:2px;}.pv1m svg{display:block;}@media (prefers-reduced-motion:reduce){.pv24,.pv28{transition:none;}.pv62,.pv65,.pv7{animation:none;}.pv28.is-open,.pv28.is-closing{animation:none;}}:root{--pv3x:350ms;--pv3i:cubic-bezier(0.34,1.56,0.64,1);--pv3g:250ms;--pv34:cubic-bezier(0.22,1,0.36,1);--pv4a:40ms;--pv4l:1;--pv3v:6;--pv2o:18;--pv3w:250ms;--pv2x:45deg;--pv3h:ease-in-out;--pv49:5px;--pv2w:700ms;--pv2n:cubic-bezier(0.22,1,0.36,1);--pv31:2px;--pv2y:0 1px 2px 0 rgba(0,0,0,0.15),0 2px 6px 0 rgba(0,0,0,0.10),0 4px 20px 0 rgba(0,0,0,0.15);--pv2m:0 1px 2px 0 color(display-p3 0 0 0 / 0.15),0 2px 6px 0 color(display-p3 0 0 0 / 0.10),0 4px 20px 0 color(display-p3 0 0 0 / 0.15);--pv2l:0 1px 2px 0 rgba(0,0,0,0),0 2px 6px 0 rgba(0,0,0,0),0 4px 20px 0 rgba(0,0,0,0);--pv35:1.05;--pv40:200ms;--pv42:10;--pv3z:450ms;--pv3k:cubic-bezier(0.34,1.35,0.64,1);--pv36:500ms;--pv30:cubic-bezier(0.34,1.56,0.64,1);--pv41:1500ms;--pv3m:30;--pv39:1;--pv3b:50;--pv2s:20;--pv2u:0.42;--pv2v:150ms;--pv3a:0ms;--pv3n:0.28;--pv2t:10px;--pv2q:0.046;--pv2r:0.046;--pv38:30;--pv37:5;--pv2p:0.97;--pv3y:250ms;--pv3j:cubic-bezier(0.22,1,0.36,1);--pv4n:450ms;--pv4f:cubic-bezier(0.22,1,0.36,1);--pv4c:400ms;--pv3l:ease-in-out;--pv55:1800ms;--pv4d:400ms;--pv2z:250ms;--pv48:900ms;--pv4i:350ms;--pv47:cubic-bezier(0.34,1.96,0.94,1);--pv45:350ms;--pv3t:cubic-bezier(0.34,1.35,0.64,1);--pv44:600ms;--pv3d:80ms;--pv3s:cubic-bezier(0.22,1,0.36,1);--pv5c:2000ms;--pv3e:250ms;--pv32:cubic-bezier(0.22,1,0.36,1);--pv5i:3px;--pv4q:250ms;--pv4j:cubic-bezier(0.34,1.35,0.64,1);--pv43:300ms;--pv3r:cubic-bezier(0.14,2.56,0.94,1);--pv3u:1.09;--pv59:0.5px;--pv4p:2.5px;--pv4h:2;--pv4v:#35ba00;}.pv4k{position:relative;width:200px;height:140px;}.pv5f{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;will-change:filter,transform;}.pv4y{fill:var(--card-bg);transform:translate(0,0);transform-box:fill-box;transition:transform var(--pv3g) var(--pv34);will-change:transform;}.pv4k[data-open="true"] .pv4y{transform:translate(calc(var(--fx,0px) * var(--pv4l)),calc(var(--fy,0px) * var(--pv4l)));transition:transform var(--pv3x) var(--pv3i);transition-delay:calc(var(--i,0) * var(--pv4a));}.pv50,.pv51{position:absolute;left:80px;top:80px;width:40px;height:40px;border:0;padding:0;border-radius:50%;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent;transform:translate(0,0);transition:transform var(--pv3g) var(--pv34),background-color 120ms ease;will-change:transform;}.pv50{pointer-events:none;}.pv4k[data-open="true"] .pv50{pointer-events:auto;transform:translate(calc(var(--fx,0px) * var(--pv4l)),calc(var(--fy,0px) * var(--pv4l)));transition:transform var(--pv3x) var(--pv3i),background-color 120ms ease;transition-delay:calc(var(--i,0) * var(--pv4a)),0ms;}.pv4k[data-open="true"] .pv50:hover{background:rgba(0,0,0,0.04);}.pv51:focus-visible,.pv50:focus-visible{outline:2px solid #17181c;outline-offset:2px;}.pv50 svg{display:block;opacity:0;filter:blur(2px);transition:opacity 120ms ease,filter 120ms ease;}.pv4k[data-open="true"] .pv50 svg{opacity:1;filter:blur(0);transition:opacity 180ms ease,filter 180ms ease;transition-delay:calc(var(--i,0) * var(--pv4a) + 120ms),calc(var(--i,0) * var(--pv4a) + 120ms);}@keyframes pv33{0%{transform:translateY(0);}30%{transform:translateY(var(--pv49));}100%{transform:translateY(0);}}.pv4k.is-anticipating .pv5f,.pv4k.is-anticipating .pv51{animation-name:pv33;animation-duration:var(--pv2w);animation-timing-function:var(--pv2n);animation-fill-mode:both;}.pv53{position:relative;display:inline-grid;place-items:center;transform:rotate(0deg);transition:transform var(--pv3w) var(--pv3h);}.pv4k[data-open="true"] .pv53{transform:rotate(var(--pv2x));}.pv4z{grid-area:1 / 1;display:inline-flex;}.pv4z svg{display:block;}@media (prefers-reduced-motion:reduce){.pv4y,.pv50,.pv50 svg,.pv53,.pv4z{transition:none !important;}.pv4k.is-anticipating .pv5f,.pv4k.is-anticipating .pv51{animation:none !important;}}.pv57{position:relative;width:213px;height:192px;}.pv54{position:absolute;left:141px;top:0;width:72px;height:72px;border-radius:12px;overflow:hidden;box-shadow:var(--pv2y);box-shadow:var(--pv2m);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;z-index:5;translate:var(--dx,0px) var(--dy,0px);rotate:var(--tilt,0deg);scale:var(--lift,1);transition:scale var(--pv40) var(--ease-smooth-out),rotate 150ms ease-out;will-change:translate,rotate,scale;}.pv54 img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}.pv54.is-dragging{cursor:grabbing;z-index:30;}.pv54.is-returning{transition:translate var(--pv36) var(--pv30),rotate var(--pv36) var(--pv30),scale var(--pv36) var(--pv30);}.pv54.is-fading{opacity:0;filter:blur(2px);transition:opacity var(--pv3z) var(--pv3k),filter var(--pv3z) var(--pv3k);pointer-events:none;}@keyframes pv4e{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}.pv54.is-respawning{animation-name:pv4e;animation-duration:var(--pv2z);animation-timing-function:var(--ease-smooth-out);}.pv58{position:absolute;left:0;top:88px;width:104px;height:104px;border-radius:12px;border:var(--pv31) dashed rgba(0,0,0,0.1);background:rgba(234,234,234,0.2);transition:border-color 150ms ease,background-color 150ms ease,box-shadow var(--pv4c) var(--pv3l);}.pv58.is-over{border-color:rgba(0,0,0,0.28);background:rgba(234,234,234,0.55);}.pv3c{position:absolute;left:50%;top:38px;transform:translateX(-50%);width:76px;font-size:11px;line-height:15px;text-align:center;color:#767676;transition:opacity 150ms ease;pointer-events:none;}.pv58.is-over .pv3c{opacity:0.5;}.pv58.is-filled{border-color:transparent;box-shadow:var(--pv2y);box-shadow:var(--pv2m);}.pv58.is-filled .pv3c{opacity:0;}.pv4b{position:absolute;inset:calc(var(--pv31) * -1);width:calc(100% + var(--pv31) * 2);height:calc(100% + var(--pv31) * 2);object-fit:cover;border-radius:12px;display:block;opacity:0;pointer-events:none;transition:opacity var(--pv4c) var(--pv3l);}.pv58.is-filled .pv4b{opacity:1;}@keyframes pv3o{from{transform:scale(1);}to{transform:scale(var(--pv2p,0.95));}}@keyframes pv4g{from{transform:scale(var(--pv2p,0.95));}to{transform:scale(1);}}.pv58.is-landing{animation-name:pv3o,pv4g;animation-duration:var(--pv3y),var(--pv4n);animation-timing-function:var(--pv3j),var(--pv4f);animation-delay:0ms,var(--pv3y);animation-fill-mode:forwards,forwards;will-change:transform;}.pv58.is-emptying .pv4b{opacity:0;filter:blur(4px);transition:opacity var(--pv4d) var(--ease-smooth-out),filter var(--pv4d) var(--ease-smooth-out);}.pv58.is-emptying{border-color:rgba(0,0,0,0.1);box-shadow:var(--pv2l);transition:box-shadow var(--pv4d) var(--ease-smooth-out),border-color var(--pv4d) var(--ease-smooth-out);}.pv4r{position:absolute;inset:-50px;width:calc(100% + 100px);height:calc(100% + 100px);overflow:visible;pointer-events:none;}.pv56{fill:none;stroke:rgba(122,122,122,var(--pv2u));opacity:0;transform:translate(0,0) scale(0.96);transform-box:fill-box;transform-origin:center;}@keyframes pv56{0%{opacity:0;transform:translate(0,0) scale(0.96);}16%{opacity:0.9;}100%{opacity:0;transform:translate(0,var(--pv2t,9px)) scale(var(--wscale,1.5));}}.pv58.is-bursting .pv56{animation-name:pv56;animation-duration:var(--wdur,var(--pv41));animation-timing-function:ease-out;animation-delay:var(--wdelay,0ms);animation-fill-mode:forwards;}@media (prefers-reduced-motion:reduce){.pv54{transition:none !important;}.pv54.is-respawning{animation:none !important;}.pv58.is-bursting .pv56,.pv58.is-landing{animation:none !important;}.pv4b{transition:none !important;}.pv54.is-fading,.pv4b{transition:none !important;}}.pv5j{display:flex;align-items:center;gap:16px;}.pv3p{display:inline-flex;filter:blur(0);transition:filter var(--pv3e) var(--pv32);will-change:filter;}.pv3p.is-crossing{filter:blur(var(--pv59));transition:filter calc(var(--pv45) * 0.45) var(--pv3t);}.pv4t{position:relative;width:22px;height:22px;flex:0 0 22px;scale:1;transition:scale var(--pv3e) var(--pv32);will-change:scale,transform;}.pv4t[data-state="done"]{scale:var(--pv3u);transition:scale var(--pv4i) var(--pv47);animation-name:pv4o,pv46;animation-duration:var(--pv4q),var(--pv43);animation-timing-function:var(--pv4j),var(--pv3r);animation-delay:0ms,var(--pv4q);animation-fill-mode:forwards,forwards;}@keyframes pv4o{from{transform:translateY(0);}to{transform:translateY(calc(var(--pv5i,3px) * -1));}}@keyframes pv46{from{transform:translateY(calc(var(--pv5i,3px) * -1));}to{transform:translateY(0);}}.pv5d{position:absolute;inset:0;border-radius:50%;border:var(--pv4p) solid rgba(0,0,0,0.1);transition:opacity var(--pv3e) ease,filter var(--pv3e) ease;}.pv4t[data-state="done"] .pv5d{opacity:0;transition:opacity calc(var(--pv45) * 0.7) ease;}.pv5b{position:absolute;inset:-1px;border-radius:50%;background:var(--pv4v);box-shadow:0 0 0 0.504px rgba(0,0,0,0.05) inset,0 0.504px 0.504px 0 rgba(0,0,0,0.10),0 0.504px 2.016px 0 rgba(0,0,0,0.08),0 -0.504px 0.504px 0 rgba(0,0,0,0.09) inset;box-shadow:0 0 0 0.504px color(display-p3 0 0 0 / 0.05) inset,0 0.504px 0.504px 0 color(display-p3 0 0 0 / 0.10),0 0.504px 2.016px 0 color(display-p3 0 0 0 / 0.08),0 -0.504px 0.504px 0 color(display-p3 0 0 0 / 0.09) inset;opacity:0;transition:opacity var(--pv3e) var(--pv32);will-change:opacity;}.pv4t[data-state="done"] .pv5b{opacity:1;transition:opacity var(--pv45) var(--pv3t);}.pv5g{position:absolute;inset:0;border-radius:50%;border:var(--pv4p) solid transparent;border-top-color:#7a7a7a;animation-name:pv5e;animation-duration:var(--pv48);animation-timing-function:linear;animation-iteration-count:infinite;transition:opacity var(--pv3e) var(--pv32);will-change:transform;}@keyframes pv5e{to{transform:rotate(360deg);}}.pv4t[data-state="done"] .pv5g{opacity:0;animation-play-state:paused;transition:opacity calc(var(--pv45) * 0.5) ease;}.pv5a{position:absolute;inset:0;display:grid;place-items:center;}.pv5a svg{display:block;width:100%;height:100%;}.pv4u{fill:none;stroke:#ffffff;stroke-width:var(--pv4h);stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:var(--pv3q,20);stroke-dashoffset:var(--pv3q,20);transition:stroke-dashoffset var(--pv3e) var(--pv32);}.pv4t[data-state="done"] .pv4u{stroke-dashoffset:0;transition:stroke-dashoffset var(--pv44) var(--pv3s) calc(var(--pv45) + var(--pv3d) - 200ms);}.pv4w{display:flex;flex-direction:column;gap:3px;}.pv4x{font-size:13px;font-weight:500;line-height:13px;color:var(--text);}.pv5k{font-size:13px;font-weight:400;line-height:13px;color:var(--text);opacity:0.5;}@media (prefers-reduced-motion:reduce){.pv5g{animation:none !important;}.pv3p,.pv3p.is-crossing{filter:none !important;transition:none !important;}.pv5d,.pv5g,.pv5b{transition:none !important;}.pv4t,.pv4u{transition:none !important;animation:none !important;}.pv4t[data-state="done"] .pv4u{stroke-dashoffset:0;}}html[data-theme="dark"] .pv4k[data-open="true"] .pv50:hover{background:rgba(255,255,255,0.06);}html[data-theme="dark"] .pv51:focus-visible,html[data-theme="dark"] .pv50:focus-visible{outline-color:#ffffff;}html[data-theme="dark"] #pv5f feFlood[result="ring-c"]{flood-color:rgb(196,196,196);flood-opacity:0.14;}html[data-theme="dark"] #pv5f feFlood[result="s2-c"]{flood-opacity:0.35;}html[data-theme="dark"] #pv5f feFlood[result="s3-c"]{flood-opacity:0.30;}html[data-theme="dark"] .pv58{border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.04);}html[data-theme="dark"] .pv58.is-over{border-color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.09);}html[data-theme="dark"] .pv3c{color:#767676;}html[data-theme="dark"] .pv5d{border-color:rgba(255,255,255,0.16);}.pv4k{top:-30px;}
+:root{--pv1o:120;--pv15:1300;--pv22:4px;--pv23:16;--pv1b:0.6;--pv20:600ms;--pv1z:300ms;--pv21:1500ms;--pv10:410ms;--pvd:1.84;--pvn:cubic-bezier(0.31,1.84,0.64,1);--pvm:360ms;--pv9:1.5;--pvg:cubic-bezier(0.34,1.5,0.64,1);--pvo:610ms;--pvh:cubic-bezier(0.22,1,0.36,1);--pv1q:1.04;--pv1d:1.42;--pv11:1;--pv5s:3000ms;--pv5u:ease-out;--pv5v:26%;--pv5l:1;--pv5y:20px;--pv5n:0.7;--pv5o:1;--pv13:450ms;--pvv:350ms;--pvw:cubic-bezier(0.22,1,0.36,1);--pvl:cubic-bezier(0.34,1.25,0.64,1);--pvb:0.3;--pv1j:0deg;--pv1k:0deg;--pv29:70px;--pv6:0ms;--pv2:0ms;--pv3:cubic-bezier(0.22,1,0.36,1);--pv1:cubic-bezier(0.34,1.35,0.64,1);--pvf:900px;--pv1i:220px;--pv1h:160px;--pv27:50;--pv12:350ms;--pvu:cubic-bezier(0.22,1,0.36,1);--pv18:4000ms;--pvx:5000ms;--pv2d:120px;--pv2k:550ms;--pv19:150;--pv2g:30;--pv2b:12px;--pv2f:0px;--pv2e:3deg;--pv1a:800ms;--pvz:cubic-bezier(0.22,1,0.36,1);--pv14:2000ms;--pvy:ease-in;--pvc:ease-in;--pv8:ease-out;--pv1x:30;--pv1n:0;--pro-surface-shadow:0 0 0 1px rgba(0,0,0,0.06),0 2px 6px rgba(0,0,0,0.05),0 4px 42px rgba(0,0,0,0.06);}#pv1p .btn-animate{z-index:1;}.pv1c{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;}.pv1r{position:relative;width:120px;height:120px;flex-shrink:0;}.pv24{appearance:none;border:0;padding:0;position:absolute;top:0;left:0;width:78px;height:78px;border-radius:12px;background:var(--card-bg,#fff);box-shadow:var(--pro-surface-shadow);overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;translate:var(--cx) var(--cy);rotate:var(--rot);scale:1;opacity:var(--card-op,1);transition:translate var(--pvm) var(--pvg),rotate var(--pvm) var(--pvg),scale var(--pvo) var(--pvh),opacity var(--pvm) var(--pvg);will-change:translate,rotate,scale,opacity;}.pv24 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}@media (hover:hover){.pv1r:hover .pv24{translate:calc(var(--cx) + var(--dx) * var(--pv1d)) calc(var(--cy) + var(--dy));rotate:calc(var(--rot) + var(--drot) * var(--pv11));opacity:1;transition:translate var(--pv10) var(--pvn),rotate var(--pv10) var(--pvn),scale var(--pvo) var(--pvh),opacity var(--pv10) var(--pvn);}.pv24:hover{scale:var(--pv1q);z-index:30;}}.pv1r.is-open .pv24{translate:calc(var(--cx) + var(--dx) * var(--pv1d)) calc(var(--cy) + var(--dy));rotate:calc(var(--rot) + var(--drot) * var(--pv11));opacity:1;transition:translate var(--pv10) var(--pvn),rotate var(--pv10) var(--pvn),scale var(--pvo) var(--pvh),opacity var(--pv10) var(--pvn);}.pv63{--pv5z:calc(var(--pv5v) * 0.848);position:relative;width:142px;height:142px;border-radius:12px;background:#eeeeee;overflow:hidden;isolation:isolate;flex-shrink:0;}html[data-theme="dark"] .pv63{background:#222226;}.pv63[data-playing="false"] .pv61,.pv63[data-playing="false"] .pv5p{animation-play-state:paused;}.pv62{position:absolute;inset:-20px;pointer-events:none;}.pv5q{position:absolute;inset:0;background:radial-gradient(ellipse 90px 70px at 20% 15%,rgba(40,140,255,0.14),transparent),radial-gradient(ellipse 80px 60px at 65% 25%,rgba(255,50,100,0.13),transparent),radial-gradient(ellipse 70px 80px at 30% 55%,rgba(50,200,80,0.12),transparent),radial-gradient(ellipse 90px 70px at 75% 65%,rgba(180,40,240,0.13),transparent),radial-gradient(ellipse 70px 60px at 45% 85%,rgba(255,120,40,0.12),transparent),radial-gradient(ellipse 60px 60px at 10% 85%,rgba(30,185,170,0.11),transparent),linear-gradient(rgba(90,90,100,0.05),rgba(90,90,100,0.05));opacity:var(--pv5l);pointer-events:none;}.pv61{position:absolute;top:0;left:0;width:330%;height:330%;background-size:100% 100%;background-repeat:no-repeat;transform:translate3d(-69.697%,-69.697%,0);animation:pv5m var(--pv5s) var(--pv5u) infinite;will-change:transform;pointer-events:none;}.pv65{position:absolute;inset:-20px;z-index:1;pointer-events:none;}.pv5r{position:absolute;inset:0;opacity:var(--pv5n);pointer-events:none;}.pv5p{position:absolute;top:0;left:0;width:330%;height:330%;background-image:linear-gradient(135deg,rgba(var(--pv60,238,238,238),1) 0%,rgba(var(--pv60,238,238,238),1) calc(50% - var(--pv5z) * 1.4),rgba(var(--pv60,238,238,238),0.94) calc(50% - var(--pv5z) * 1),rgba(var(--pv60,238,238,238),0.82) calc(50% - var(--pv5z) * 0.6),rgba(var(--pv60,238,238,238),0.55) calc(50% - var(--pv5z) * 0.25),rgba(var(--pv60,238,238,238),0) 50%,rgba(var(--pv60,238,238,238),0.5) calc(50% + var(--pv5z) * 0.18),rgba(var(--pv60,238,238,238),1) calc(50% + var(--pv5z) * 0.35),rgba(var(--pv60,238,238,238),1) 100%);transform:translate3d(-69.697%,-69.697%,0);animation:pv5m var(--pv5s) var(--pv5u) infinite;will-change:transform;pointer-events:none;}@keyframes pv5m{0%{transform:translate3d(-69.697%,-69.697%,0);}100%{transform:translate3d(0,0,0);}}.pv5x,.pv5w,.pv5t{position:absolute;inset:20px;border-radius:12px;pointer-events:none;}.pv5x{padding:1px;opacity:var(--pv5o);background:radial-gradient(ellipse 42px 24px at 33% -7.4%,rgba(255,50,100,0.62),transparent),radial-gradient(ellipse 36px 21px at 12% -5%,rgba(40,140,255,0.48),transparent),radial-gradient(ellipse 24px 42px at 2.1% 68.3%,rgba(50,200,80,0.55),transparent),radial-gradient(ellipse 12px 21px at 2.1% 68.3%,rgba(30,185,170,0.44),transparent),radial-gradient(ellipse 108px 19px at 74.4% 100%,rgba(100,70,255,0.58),transparent),radial-gradient(ellipse 51px 16px at 55% 100%,rgba(40,140,255,0.51),transparent),radial-gradient(ellipse 44px 19px at 93.9% 0%,rgba(255,120,40,0.65),transparent),radial-gradient(ellipse 16px 25px at 100% 27.1%,rgba(240,50,180,0.5),transparent),radial-gradient(ellipse 31px 29px at 100% 27.1%,rgba(180,40,240,0.56),transparent),linear-gradient(rgba(90,90,100,0.22),rgba(90,90,100,0.22));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;}.pv5w{background:radial-gradient(ellipse 39px 21px at 33% -7.4%,rgba(255,50,100,0.34),transparent),radial-gradient(ellipse 33px 18px at 12% -5%,rgba(40,140,255,0.28),transparent),radial-gradient(ellipse 21px 39px at 2.1% 68.3%,rgba(50,200,80,0.3),transparent),radial-gradient(ellipse 9px 18px at 2.1% 68.3%,rgba(30,185,170,0.25),transparent),radial-gradient(ellipse 104px 17px at 74.4% 100%,rgba(100,70,255,0.32),transparent),radial-gradient(ellipse 48px 13px at 55% 100%,rgba(40,140,255,0.28),transparent),radial-gradient(ellipse 41px 17px at 93.9% 0%,rgba(255,120,40,0.35),transparent),radial-gradient(ellipse 13px 23px at 100% 27.1%,rgba(240,50,180,0.28),transparent),radial-gradient(ellipse 28px 26px at 100% 27.1%,rgba(180,40,240,0.3),transparent),radial-gradient(ellipse 36px 36px at 0% 0%,rgba(90,90,100,0.14),transparent 70%),radial-gradient(ellipse 36px 36px at 100% 0%,rgba(90,90,100,0.14),transparent 70%),radial-gradient(ellipse 36px 36px at 0% 100%,rgba(90,90,100,0.14),transparent 70%),radial-gradient(ellipse 36px 36px at 100% 100%,rgba(90,90,100,0.14),transparent 70%);box-shadow:inset 0 0 14px 1px rgba(90,90,100,0.12);filter:blur(2px);-webkit-mask-image:linear-gradient(white,transparent 44px,transparent calc(100% - 44px),white),linear-gradient(to right,white,transparent 44px,transparent calc(100% - 44px),white);-webkit-mask-composite:source-over;mask-image:linear-gradient(white,transparent 44px,transparent calc(100% - 44px),white),linear-gradient(to right,white,transparent 44px,transparent calc(100% - 44px),white);mask-composite:add;}.pv5t{background:radial-gradient(ellipse 55px 31px at 33% -7.4%,rgba(255,50,100,0.4),transparent),radial-gradient(ellipse 47px 27px at 12% -5%,rgba(40,140,255,0.34),transparent),radial-gradient(ellipse 31px 55px at 2.1% 68.3%,rgba(50,200,80,0.38),transparent),radial-gradient(ellipse 140px 25px at 74.4% 100%,rgba(100,70,255,0.4),transparent),radial-gradient(ellipse 66px 20px at 55% 100%,rgba(40,140,255,0.35),transparent),radial-gradient(ellipse 58px 25px at 93.9% 0%,rgba(255,120,40,0.44),transparent),radial-gradient(ellipse 40px 38px at 100% 27.1%,rgba(180,40,240,0.38),transparent);box-shadow:inset 0 0 calc(var(--pv5y) * 3) calc(var(--pv5y) / 2) rgba(90,90,100,0.1);filter:blur(var(--pv5y));-webkit-mask-image:linear-gradient(white,transparent 26px,transparent calc(100% - 26px),white),linear-gradient(to right,white,transparent 26px,transparent calc(100% - 26px),white);-webkit-mask-composite:source-over;mask-image:linear-gradient(white,transparent 26px,transparent calc(100% - 26px),white),linear-gradient(to right,white,transparent 26px,transparent calc(100% - 26px),white);mask-composite:add;}.pv1u{perspective:var(--pvf);}.pv28{appearance:none;border:0;padding:0;position:relative;width:var(--pv1i);height:var(--pv1h);border-radius:32px;overflow:visible;cursor:pointer;background:var(--stage-bg,#eeeeef);box-shadow:var(--pro-surface-shadow);-webkit-tap-highlight-color:transparent;transform-origin:center;scale:var(--pvb);transform:rotateX(0deg) rotateY(0deg) translateZ(0);will-change:scale,transform;transition:scale var(--pvv) var(--pvl),border-radius var(--pvv) var(--pvl);}.pv1g{position:absolute;display:none;pointer-events:none;}.pv28.is-bending{background:transparent;}.pv28.is-bending .pv2i{visibility:hidden;}.pv28.is-bending .pv1g{display:block;}.pv28.is-open{border-radius:16px;scale:1;transition:scale var(--pv13) var(--pvw),border-radius var(--pv13) var(--pvw);animation:pv2a var(--pv13) var(--pvw) both;}.pv28.is-closing{animation:pv1s var(--pvv) var(--pvl) both;}@keyframes pv2a{0%{transform:rotateX(0deg) rotateY(0deg) translateZ(calc(var(--pv29) * -1));}45%{transform:rotateX(var(--pv1j)) rotateY(var(--pv1k)) translateZ(calc(var(--pv29) * -0.4));}100%{transform:rotateX(0deg) rotateY(0deg) translateZ(0);}}@keyframes pv1s{0%{transform:rotateX(0deg) rotateY(0deg) translateZ(0);}45%{transform:rotateX(calc(var(--pv1j) * -0.45)) rotateY(calc(var(--pv1k) * -0.45)) translateZ(calc(var(--pv29) * -0.4));}100%{transform:rotateX(0deg) rotateY(0deg) translateZ(0);}}.pv28 .pv2i{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;border-radius:inherit;}.pv17{margin:0;font-family:"Saans",var(--font-sans);font-size:44px;font-weight:500;line-height:1;color:var(--text);letter-spacing:-0.01em;}.pv7{background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.88'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.34726 -1.3118e-7 8.6482e-7 0.89585 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.5'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-1.3 0.25 -1.2633 -2.7471 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.4'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.05 -0.8 0.46018 3.6184 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='0.71709'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.51067 -3.3275e-16 -4.3352e-14 -1.1396 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.45 -0.75 1.9052 -0.7091 33.5 21)'><stop stop-color='rgba(255,173,85,1)' offset='0'/><stop stop-color='rgba(255,173,85,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.25 -0.35 -0.4013 3.5959 33.5 21)'><stop stop-color='rgba(0,204,68,1)' offset='0'/><stop stop-color='rgba(0,196,102,0.75)' offset='0.25'/><stop stop-color='rgba(0,187,136,0.5)' offset='0.5'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87391 0.73043 -4.1482 -1.9503 33.5 21)'><stop stop-color='rgba(0,170,204,1)' offset='0'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),linear-gradient(rgb(108,108,108) 0%,rgb(216,216,216) 100%);background-size:180% 180%,180% 180%,180% 180%,180% 180%,180% 180%,180% 180%,180% 180%,100% 100%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;color:transparent;animation:pv2j var(--pv18) linear infinite,pv1v var(--pvx) ease-in-out infinite;}@keyframes pv2j{from{filter:hue-rotate(0deg) saturate(1.3);}to{filter:hue-rotate(-360deg) saturate(1.3);}}@keyframes pv1v{0%,100%{background-position:100% 0%,0% 50%,100% 50%,0% 100%,0% 0%,50% 0%,50% 100%,0 0;}25%{background-position:100% 100%,50% 0%,50% 100%,0% 0%,100% 0%,100% 50%,0% 50%,0 0;}50%{background-position:0% 100%,100% 50%,0% 50%,100% 0%,100% 100%,50% 100%,50% 0%,0 0;}75%{background-position:0% 0%,50% 100%,50% 0%,100% 100%,0% 100%,0% 50%,100% 50%,0 0;}}.pv2c{position:relative;width:var(--pv2d);height:var(--pv2d);border-radius:16px;overflow:hidden;background:var(--stage-bg,#eeeeef);box-shadow:var(--pro-surface-shadow);will-change:transform,opacity;}.pv1l{position:absolute;z-index:3;pointer-events:none;will-change:transform,opacity;}.pv2c img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}.pv2c.is-respawning{animation:pv1a 250ms cubic-bezier(0.22,1,0.36,1);}@keyframes pv1a{from{opacity:0;transform:scale(0.96);}to{opacity:1;transform:scale(1);}}.pv1m{position:absolute;top:8px;right:8px;z-index:2;width:24px;height:24px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,0.92);color:#17181c;display:grid;place-items:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.25);-webkit-tap-highlight-color:transparent;transition:background-color 120ms ease;}.pv1m:hover{background:#ffffff;}.pv1m:focus-visible{outline:2px solid #17181c;outline-offset:2px;}.pv1m svg{display:block;}@media (prefers-reduced-motion:reduce){.pv24,.pv28{transition:none;}.pv62,.pv65,.pv7{animation:none;}.pv28.is-open,.pv28.is-closing{animation:none;}}:root{--pv3x:350ms;--pv3i:cubic-bezier(0.34,1.56,0.64,1);--pv3g:250ms;--pv34:cubic-bezier(0.22,1,0.36,1);--pv4a:40ms;--pv4l:1;--pv3v:6;--pv2o:18;--pv3w:250ms;--pv2x:45deg;--pv3h:ease-in-out;--pv49:5px;--pv2w:700ms;--pv2n:cubic-bezier(0.22,1,0.36,1);--pv31:2px;--pv2y:0 1px 2px 0 rgba(0,0,0,0.15),0 2px 6px 0 rgba(0,0,0,0.10),0 4px 20px 0 rgba(0,0,0,0.15);--pv2m:0 1px 2px 0 color(display-p3 0 0 0 / 0.15),0 2px 6px 0 color(display-p3 0 0 0 / 0.10),0 4px 20px 0 color(display-p3 0 0 0 / 0.15);--pv2l:0 1px 2px 0 rgba(0,0,0,0),0 2px 6px 0 rgba(0,0,0,0),0 4px 20px 0 rgba(0,0,0,0);--pv35:1.05;--pv40:200ms;--pv42:10;--pv3z:450ms;--pv3k:cubic-bezier(0.34,1.35,0.64,1);--pv36:500ms;--pv30:cubic-bezier(0.34,1.56,0.64,1);--pv41:1500ms;--pv3m:30;--pv39:1;--pv3b:50;--pv2s:20;--pv2u:0.42;--pv2v:150ms;--pv3a:0ms;--pv3n:0.28;--pv2t:10px;--pv2q:0.046;--pv2r:0.046;--pv38:30;--pv37:5;--pv2p:0.97;--pv3y:250ms;--pv3j:cubic-bezier(0.22,1,0.36,1);--pv4n:450ms;--pv4f:cubic-bezier(0.22,1,0.36,1);--pv4c:400ms;--pv3l:ease-in-out;--pv55:1800ms;--pv4d:400ms;--pv2z:250ms;--pv48:900ms;--pv4i:350ms;--pv47:cubic-bezier(0.34,1.96,0.94,1);--pv45:350ms;--pv3t:cubic-bezier(0.34,1.35,0.64,1);--pv44:600ms;--pv3d:80ms;--pv3s:cubic-bezier(0.22,1,0.36,1);--pv5c:2000ms;--pv3e:250ms;--pv32:cubic-bezier(0.22,1,0.36,1);--pv5i:3px;--pv4q:250ms;--pv4j:cubic-bezier(0.34,1.35,0.64,1);--pv43:300ms;--pv3r:cubic-bezier(0.14,2.56,0.94,1);--pv3u:1.09;--pv59:0.5px;--pv4p:2.5px;--pv4h:2;--pv4v:#35ba00;}.pv4k{position:relative;width:200px;height:140px;}.pv5f{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;will-change:filter,transform;}.pv4y{fill:var(--card-bg);transform:translate(0,0);transform-box:fill-box;transition:transform var(--pv3g) var(--pv34);will-change:transform;}.pv4k[data-open="true"] .pv4y{transform:translate(calc(var(--fx,0px) * var(--pv4l)),calc(var(--fy,0px) * var(--pv4l)));transition:transform var(--pv3x) var(--pv3i);transition-delay:calc(var(--i,0) * var(--pv4a));}.pv50,.pv51{position:absolute;left:80px;top:80px;width:40px;height:40px;border:0;padding:0;border-radius:50%;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent;transform:translate(0,0);transition:transform var(--pv3g) var(--pv34),background-color 120ms ease;will-change:transform;}.pv50{pointer-events:none;}.pv4k[data-open="true"] .pv50{pointer-events:auto;transform:translate(calc(var(--fx,0px) * var(--pv4l)),calc(var(--fy,0px) * var(--pv4l)));transition:transform var(--pv3x) var(--pv3i),background-color 120ms ease;transition-delay:calc(var(--i,0) * var(--pv4a)),0ms;}.pv4k[data-open="true"] .pv50:hover{background:rgba(0,0,0,0.04);}.pv51:focus-visible,.pv50:focus-visible{outline:2px solid #17181c;outline-offset:2px;}.pv50 svg{display:block;opacity:0;filter:blur(2px);transition:opacity 120ms ease,filter 120ms ease;}.pv4k[data-open="true"] .pv50 svg{opacity:1;filter:blur(0);transition:opacity 180ms ease,filter 180ms ease;transition-delay:calc(var(--i,0) * var(--pv4a) + 120ms),calc(var(--i,0) * var(--pv4a) + 120ms);}@keyframes pv33{0%{transform:translateY(0);}30%{transform:translateY(var(--pv49));}100%{transform:translateY(0);}}.pv4k.is-anticipating .pv5f,.pv4k.is-anticipating .pv51{animation-name:pv33;animation-duration:var(--pv2w);animation-timing-function:var(--pv2n);animation-fill-mode:both;}.pv53{position:relative;display:inline-grid;place-items:center;transform:rotate(0deg);transition:transform var(--pv3w) var(--pv3h);}.pv4k[data-open="true"] .pv53{transform:rotate(var(--pv2x));}.pv4z{grid-area:1 / 1;display:inline-flex;}.pv4z svg{display:block;}@media (prefers-reduced-motion:reduce){.pv4y,.pv50,.pv50 svg,.pv53,.pv4z{transition:none !important;}.pv4k.is-anticipating .pv5f,.pv4k.is-anticipating .pv51{animation:none !important;}}.pv57{position:relative;width:213px;height:192px;}.pv54{position:absolute;left:141px;top:0;width:72px;height:72px;border-radius:12px;overflow:hidden;box-shadow:var(--pv2y);box-shadow:var(--pv2m);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;z-index:5;translate:var(--dx,0px) var(--dy,0px);rotate:var(--tilt,0deg);scale:var(--lift,1);transition:scale var(--pv40) var(--ease-smooth-out),rotate 150ms ease-out;will-change:translate,rotate,scale;}.pv54 img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}.pv54.is-dragging{cursor:grabbing;z-index:30;}.pv54.is-returning{transition:translate var(--pv36) var(--pv30),rotate var(--pv36) var(--pv30),scale var(--pv36) var(--pv30);}.pv54.is-fading{opacity:0;filter:blur(2px);transition:opacity var(--pv3z) var(--pv3k),filter var(--pv3z) var(--pv3k);pointer-events:none;}@keyframes pv4e{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}.pv54.is-respawning{animation-name:pv4e;animation-duration:var(--pv2z);animation-timing-function:var(--ease-smooth-out);}.pv58{position:absolute;left:0;top:88px;width:104px;height:104px;border-radius:12px;border:var(--pv31) dashed rgba(0,0,0,0.1);background:rgba(234,234,234,0.2);transition:border-color 150ms ease,background-color 150ms ease,box-shadow var(--pv4c) var(--pv3l);}.pv58.is-over{border-color:rgba(0,0,0,0.28);background:rgba(234,234,234,0.55);}.pv3c{position:absolute;left:50%;top:38px;transform:translateX(-50%);width:76px;font-size:11px;line-height:15px;text-align:center;color:#767676;transition:opacity 150ms ease;pointer-events:none;}.pv58.is-over .pv3c{opacity:0.5;}.pv58.is-filled{border-color:transparent;box-shadow:var(--pv2y);box-shadow:var(--pv2m);}.pv58.is-filled .pv3c{opacity:0;}.pv4b{position:absolute;inset:calc(var(--pv31) * -1);width:calc(100% + var(--pv31) * 2);height:calc(100% + var(--pv31) * 2);object-fit:cover;border-radius:12px;display:block;opacity:0;pointer-events:none;transition:opacity var(--pv4c) var(--pv3l);}.pv58.is-filled .pv4b{opacity:1;}@keyframes pv3o{from{transform:scale(1);}to{transform:scale(var(--pv2p,0.95));}}@keyframes pv4g{from{transform:scale(var(--pv2p,0.95));}to{transform:scale(1);}}.pv58.is-landing{animation-name:pv3o,pv4g;animation-duration:var(--pv3y),var(--pv4n);animation-timing-function:var(--pv3j),var(--pv4f);animation-delay:0ms,var(--pv3y);animation-fill-mode:forwards,forwards;will-change:transform;}.pv58.is-emptying .pv4b{opacity:0;filter:blur(4px);transition:opacity var(--pv4d) var(--ease-smooth-out),filter var(--pv4d) var(--ease-smooth-out);}.pv58.is-emptying{border-color:rgba(0,0,0,0.1);box-shadow:var(--pv2l);transition:box-shadow var(--pv4d) var(--ease-smooth-out),border-color var(--pv4d) var(--ease-smooth-out);}.pv4r{position:absolute;inset:-50px;width:calc(100% + 100px);height:calc(100% + 100px);overflow:visible;pointer-events:none;}.pv56{fill:none;stroke:rgba(122,122,122,var(--pv2u));opacity:0;transform:translate(0,0) scale(0.96);transform-box:fill-box;transform-origin:center;}@keyframes pv56{0%{opacity:0;transform:translate(0,0) scale(0.96);}16%{opacity:0.9;}100%{opacity:0;transform:translate(0,var(--pv2t,9px)) scale(var(--wscale,1.5));}}.pv58.is-bursting .pv56{animation-name:pv56;animation-duration:var(--wdur,var(--pv41));animation-timing-function:ease-out;animation-delay:var(--wdelay,0ms);animation-fill-mode:forwards;}@media (prefers-reduced-motion:reduce){.pv54{transition:none !important;}.pv54.is-respawning{animation:none !important;}.pv58.is-bursting .pv56,.pv58.is-landing{animation:none !important;}.pv4b{transition:none !important;}.pv54.is-fading,.pv4b{transition:none !important;}}.pv5j{display:flex;align-items:center;gap:16px;}.pv3p{display:inline-flex;filter:blur(0);transition:filter var(--pv3e) var(--pv32);will-change:filter;}.pv3p.is-crossing{filter:blur(var(--pv59));transition:filter calc(var(--pv45) * 0.45) var(--pv3t);}.pv4t{position:relative;width:22px;height:22px;flex:0 0 22px;scale:1;transition:scale var(--pv3e) var(--pv32);will-change:scale,transform;}.pv4t[data-state="done"]{scale:var(--pv3u);transition:scale var(--pv4i) var(--pv47);animation-name:pv4o,pv46;animation-duration:var(--pv4q),var(--pv43);animation-timing-function:var(--pv4j),var(--pv3r);animation-delay:0ms,var(--pv4q);animation-fill-mode:forwards,forwards;}@keyframes pv4o{from{transform:translateY(0);}to{transform:translateY(calc(var(--pv5i,3px) * -1));}}@keyframes pv46{from{transform:translateY(calc(var(--pv5i,3px) * -1));}to{transform:translateY(0);}}.pv5d{position:absolute;inset:0;border-radius:50%;border:var(--pv4p) solid rgba(0,0,0,0.1);transition:opacity var(--pv3e) ease,filter var(--pv3e) ease;}.pv4t[data-state="done"] .pv5d{opacity:0;transition:opacity calc(var(--pv45) * 0.7) ease;}.pv5b{position:absolute;inset:-1px;border-radius:50%;background:var(--pv4v);box-shadow:0 0 0 0.504px rgba(0,0,0,0.05) inset,0 0.504px 0.504px 0 rgba(0,0,0,0.10),0 0.504px 2.016px 0 rgba(0,0,0,0.08),0 -0.504px 0.504px 0 rgba(0,0,0,0.09) inset;box-shadow:0 0 0 0.504px color(display-p3 0 0 0 / 0.05) inset,0 0.504px 0.504px 0 color(display-p3 0 0 0 / 0.10),0 0.504px 2.016px 0 color(display-p3 0 0 0 / 0.08),0 -0.504px 0.504px 0 color(display-p3 0 0 0 / 0.09) inset;opacity:0;transition:opacity var(--pv3e) var(--pv32);will-change:opacity;}.pv4t[data-state="done"] .pv5b{opacity:1;transition:opacity var(--pv45) var(--pv3t);}.pv5g{position:absolute;inset:0;border-radius:50%;border:var(--pv4p) solid transparent;border-top-color:#7a7a7a;animation-name:pv5e;animation-duration:var(--pv48);animation-timing-function:linear;animation-iteration-count:infinite;transition:opacity var(--pv3e) var(--pv32);will-change:transform;}@keyframes pv5e{to{transform:rotate(360deg);}}.pv4t[data-state="done"] .pv5g{opacity:0;animation-play-state:paused;transition:opacity calc(var(--pv45) * 0.5) ease;}.pv5a{position:absolute;inset:0;display:grid;place-items:center;}.pv5a svg{display:block;width:100%;height:100%;}.pv4u{fill:none;stroke:#ffffff;stroke-width:var(--pv4h);stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:var(--pv3q,20);stroke-dashoffset:var(--pv3q,20);transition:stroke-dashoffset var(--pv3e) var(--pv32);}.pv4t[data-state="done"] .pv4u{stroke-dashoffset:0;transition:stroke-dashoffset var(--pv44) var(--pv3s) calc(var(--pv45) + var(--pv3d) - 200ms);}.pv4w{display:flex;flex-direction:column;gap:3px;}.pv4x{font-size:13px;font-weight:500;line-height:13px;color:var(--text);}.pv5k{font-size:13px;font-weight:400;line-height:13px;color:var(--text);opacity:0.5;}@media (prefers-reduced-motion:reduce){.pv5g{animation:none !important;}.pv3p,.pv3p.is-crossing{filter:none !important;transition:none !important;}.pv5d,.pv5g,.pv5b{transition:none !important;}.pv4t,.pv4u{transition:none !important;animation:none !important;}.pv4t[data-state="done"] .pv4u{stroke-dashoffset:0;}}html[data-theme="dark"] .pv4k[data-open="true"] .pv50:hover{background:rgba(255,255,255,0.06);}html[data-theme="dark"] .pv51:focus-visible,html[data-theme="dark"] .pv50:focus-visible{outline-color:#ffffff;}html[data-theme="dark"] #pv5f feFlood[result="ring-c"]{flood-color:rgb(196,196,196);flood-opacity:0.14;}html[data-theme="dark"] #pv5f feFlood[result="s2-c"]{flood-opacity:0.35;}html[data-theme="dark"] #pv5f feFlood[result="s3-c"]{flood-opacity:0.30;}html[data-theme="dark"] .pv58{border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.04);}html[data-theme="dark"] .pv58.is-over{border-color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.09);}html[data-theme="dark"] .pv3c{color:#767676;}html[data-theme="dark"] .pv5d{border-color:rgba(255,255,255,0.16);}.pv4k{top:-30px;}:root{--pv6h:1400ms;--pv6g:0.1;--pv6j:6000ms;--pv6s:1.5px;--pv6k:5px;--pv6a:0;--pv6p:1;--pv69:rgba(0,0,0,0.28);--pv68:650ms;--pv66:3px;--pv6o:ease-in-out;--pv67:cubic-bezier(0.22,1,0.36,1);--pv6d:0.7;--pv6r:50%;--pv6b:150%;--pv6q:6px;--pv6f:4000ms;--pv6c:5000ms;}.pv6n{position:relative;width:142px;height:142px;border-radius:12px;background:rgba(0,0,0,0.04);overflow:hidden;isolation:isolate;flex-shrink:0;}html[data-theme="dark"] .pv6n{background:rgba(255,255,255,0.04);}html[data-theme="dark"] .pv6n{--pv69:rgba(255,255,255,0.3);}.pv6i{position:absolute;inset:0;pointer-events:none;transition:opacity var(--pv68) var(--pv67),filter var(--pv68) var(--pv67);}.pv6i i{position:absolute;width:var(--pv6s);height:var(--pv6s);border-radius:50%;background:var(--pv69);opacity:calc(var(--pv6p) * var(--v,1));transform:scale(calc(var(--pv6a) + (1 - var(--pv6a)) * var(--v,1)));}.pv6n.is-loading .pv6i i{animation:pv6e calc(var(--pv6h) * var(--k,1)) var(--pv6o) var(--delay,0ms) infinite;}@keyframes pv6e{0%,100%{opacity:0;transform:scale(var(--pv6a));}50%{opacity:var(--pv6p);transform:scale(1);}}.pv6t{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;opacity:0;filter:blur(var(--pv66));transition:opacity var(--pv68) var(--pv67),filter var(--pv68) var(--pv67);}.pv6n.is-revealed .pv6i{opacity:0;filter:blur(var(--pv66));}.pv6n.is-revealed .pv6t{opacity:1;filter:blur(0);}.pv6u{appearance:none;border:0;cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border-radius:50px;background:var(--surface-bg);box-shadow:0 0 0 1px rgba(0,0,0,0.06) inset,0 -1px 0 0 rgba(0,0,0,0.10) inset,0 0 0 1px rgba(0,0,0,0.06) inset,0 1px 3px 0 rgba(0,0,0,0.04);font-family:var(--font-sans);font-weight:500;font-size:13px;line-height:1.4;color:var(--text);white-space:nowrap;user-select:none;overflow:hidden;-webkit-tap-highlight-color:transparent;}html[data-theme="dark"] .pv6u{box-shadow:var(--material-shadow);}.pv6u::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.88'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.34726 -1.3118e-7 8.6482e-7 0.89585 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.5'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-1.3 0.25 -1.2633 -2.7471 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.4'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.05 -0.8 0.46018 3.6184 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='0.71709'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.51067 -3.3275e-16 -4.3352e-14 -1.1396 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.45 -0.75 1.9052 -0.7091 33.5 21)'><stop stop-color='rgba(255,173,85,1)' offset='0'/><stop stop-color='rgba(255,173,85,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.25 -0.35 -0.4013 3.5959 33.5 21)'><stop stop-color='rgba(0,204,68,1)' offset='0'/><stop stop-color='rgba(0,196,102,0.75)' offset='0.25'/><stop stop-color='rgba(0,187,136,0.5)' offset='0.5'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87391 0.73043 -4.1482 -1.9503 33.5 21)'><stop stop-color='rgba(0,170,204,1)' offset='0'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>");background-size:180% 180%,180% 180%,180% 180%,180% 180%,180% 180%,180% 180%,180% 180%;background-repeat:no-repeat;-webkit-mask-image:radial-gradient(ellipse 46% 46% at 50% 50%,transparent var(--pv6r),black calc(var(--pv6r) + var(--pv6b)));mask-image:radial-gradient(ellipse 46% 46% at 50% 50%,transparent var(--pv6r),black calc(var(--pv6r) + var(--pv6b)));opacity:var(--pv6d);animation:pv6v var(--pv6f) linear infinite,pv6l var(--pv6c) ease-in-out infinite;}.pv6m{position:relative;z-index:1;}@keyframes pv6v{from{filter:hue-rotate(0deg) saturate(1.3) blur(var(--pv6q));}to{filter:hue-rotate(-360deg) saturate(1.3) blur(var(--pv6q));}}@keyframes pv6l{0%,100%{background-position:100% 0%,0% 50%,100% 50%,0% 100%,0% 0%,50% 0%,50% 100%;}25%{background-position:100% 100%,50% 0%,50% 100%,0% 0%,100% 0%,100% 50%,0% 50%;}50%{background-position:0% 100%,100% 50%,0% 50%,100% 0%,100% 100%,50% 100%,50% 0%;}75%{background-position:0% 0%,50% 100%,50% 0%,100% 100%,0% 100%,0% 50%,100% 50%;}}@media (prefers-reduced-motion:reduce){.pv6n.is-loading .pv6i i{animation:none !important;}.pv6i,.pv6t{transition:none !important;filter:none !important;}.pv6u::before{animation:none !important;}}
 </style>
 </head>
 <body class="is-detail">
@@ -7447,6 +7863,185 @@
           </svg>
         </button>
       </article>
+
+      <!-- 34. Thinking states: shimmer + text swap -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner">
+            <span class="p28-swap" data-proto-think role="status"><span class="p28-text" data-text="Setting up a workplace">Setting up a workplace</span></span>
+          </div>
+          <button type="button" class="btn-animate" data-proto="28">Play</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Thinking states</div>
+          <div class="card-subtitle">Status line shimmers, then swaps to the next</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Thinking states CSS" data-copy-key="p28">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 35. Agent reasoning stream -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner">
+            <div class="p29-card" aria-hidden="true">
+              <div class="p29-viewport">
+                <div class="p29-scroll" data-proto-reason>
+                  <div class="p29-text">
+                    <p>Two things could explain the lag: the blur is re-running every frame, or the mask is forcing a repaint. Worth separating them before picking a fix.</p>
+                    <p>Animating mask-position never composites — it repaints the element. And the element being repainted sits inside a displacement chain, so the whole filter re-executes on the CPU each frame. That compounds: it isn't one cost, it's the repaint feeding the filter.</p>
+                    <p>So the fix isn't tuning the blur radius. The animated property has to leave the paint path entirely. If the field is painted statically and covered by a same-coloured curtain, translating the curtain is visually identical to masking — and transform composites.</p>
+                    <p>One trade-off: the waves travel with the band instead of rippling through noise fixed in space. In motion, near-indistinguishable.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-animate" data-proto="29">Play</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Reasoning stream</div>
+          <div class="card-subtitle">Agent reasoning scrolls by two lines</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Reasoning stream CSS" data-copy-key="p29">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 36. Streaming text: word-by-word cross-blur -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner">
+            <div class="p30-block" data-proto-stream aria-hidden="true">Animating mask-position never composites — it repaints the element. And the element being repainted sits inside a displacement chain, so the whole filter re-executes on the CPU each frame. That compounds: it isn't one cost, it's the repaint feeding the filter.</div>
+          </div>
+          <button type="button" class="btn-animate" data-proto="30">Animate</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Streaming text</div>
+          <div class="card-subtitle">Words resolve through a soft cross-blur</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Streaming text CSS" data-copy-key="p30">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 37. Matrix dot loaders -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner stage-inner--no-btn">
+            <div class="p33-row" aria-hidden="true">
+              <div class="p33-loader" data-variant="scan"></div>
+              <div class="p33-loader" data-variant="twinkle"></div>
+              <div class="p33-loader" data-variant="orbit" data-rounded="true"></div>
+              <div class="p33-loader" data-variant="pulse" data-rounded="true"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Matrix dot loader</div>
+          <div class="card-subtitle">16-dot matrix pulses in four patterns</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Matrix dot loader CSS" data-copy-key="p33">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 38. Banner stacking -->
+      <article class="card" data-proto-card>
+        <div class="card-stage">
+          <div class="stage-inner p34-stage-inner">
+            <div class="p34-stack" data-proto-stack aria-hidden="true"></div>
+          </div>
+          <button type="button" class="btn-animate" data-proto="34">Add banner</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Banner stacking</div>
+          <div class="card-subtitle">Banners stack like toasts, three deep</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Banner stacking CSS" data-copy-key="p34">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 39. Image generation placeholder (Pro) -->
+      <article class="card" data-proto-card data-pro="true" data-pro-id="image-gen-placeholder">
+        <div class="card-stage">
+          <div class="stage-inner">
+            <div class="pv6n" data-proto-imgen aria-hidden="true">
+              <span class="pv6i"></span>
+              <img class="pv6t" alt="" src="assets/proto-images/Untitled4.jpg" width="142" height="142" loading="lazy" decoding="async" />
+            </div>
+          </div>
+          <button type="button" class="btn-animate" data-proto-imgen-btn>Play</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Image generation placeholder</div>
+          <div class="card-subtitle">Dot noise wakes, then resolves into the image</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Image generation placeholder CSS" data-pro-copy="image-gen-placeholder">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- 40. Get Pro button (Pro) -->
+      <article class="card" data-proto-card data-pro="true" data-pro-id="get-pro-button">
+        <div class="card-stage">
+          <div class="stage-inner stage-inner--no-btn">
+            <button type="button" class="pv6u"><span class="pv6m">Get Pro</span></button>
+          </div>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Get Pro button</div>
+          <div class="card-subtitle">Pro gradient glows in from the pill&rsquo;s rim</div>
+        </div>
+        <button type="button" class="card-copy" aria-label="Copy Get Pro button CSS" data-pro-copy="get-pro-button">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      </article>
+
 
       
 
@@ -9199,6 +9794,283 @@ export function Surface({ open, children }) {
         });
       })();
 
+      /* ── Prototype 28: AI thinking states ──────────────────────
+         One status line cycles on its own: the shimmer runs while a
+         state holds, then the line swaps with the text-swap motion
+         (exit up + blur, enter from below). textContent and
+         data-text move together so the shimmer's ::before copy
+         always matches the visible line. */
+      (function initP28Think() {
+        var box = document.querySelector("[data-proto-think]");
+        if (!box) return;
+        var live = box.querySelector(".p28-text");
+        if (!live) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        var STATES = [
+          "Setting up a workplace",
+          "Running a command",
+          "Browsing files",
+        ];
+        var i = 0;
+        var timer = 0;
+        // The card rests on its first state: a grid of cards all
+        // cycling at once is noise, so motion starts on demand.
+        box.classList.add("is-paused");
+        box._p28Toggle = function () {
+          var paused = box.classList.toggle("is-paused");
+          window.clearTimeout(timer);
+          if (!paused) cycle();
+          return paused;
+        };
+        function cycle() {
+          timer = window.setTimeout(function () {
+            var swap = readMs("--p28-swap-dur", 150);
+            var gap = readMs("--p28-swap-gap", 50);
+            var leaving = live;
+            i = (i + 1) % STATES.length;
+
+            // Float the outgoing line over the box and start its exit.
+            leaving.classList.add("is-leaving-layer", "is-exit");
+
+            var next = document.createElement("span");
+            next.className = "p28-text is-enter-start";
+            next.textContent = STATES[i];
+            next.setAttribute("data-text", STATES[i]);
+            box.appendChild(next);
+            live = next;
+
+            function release() {
+              // eslint-disable-next-line no-unused-expressions
+              next.offsetWidth;
+              next.classList.remove("is-enter-start");
+            }
+            if (gap > 0) window.setTimeout(release, gap);
+            else release();
+
+            timer = window.setTimeout(function () {
+              if (leaving.parentNode) leaving.parentNode.removeChild(leaving);
+              cycle();
+            }, swap + gap);
+          }, readMs("--p28-hold", 2000));
+        }
+      })();
+
+      /* ── Prototype 29: agent reasoning stream ──────────────────
+         The transcript renders twice back-to-back; the offset steps
+         up --p29-lines lines per hold and wraps by one copy's height
+         the moment a step lands past it — the clone makes the wrap
+         invisible. Runs continuously on the card. */
+      (function initP29Stream() {
+        var scroll = document.querySelector("[data-proto-reason]");
+        if (!scroll) return;
+        var text = scroll.querySelector(".p29-text");
+        if (!text) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        // Second copy carries the wrap.
+        scroll.appendChild(text.cloneNode(true));
+        var offset = 0;
+        var timer = 0;
+        var paused = true;
+        scroll._p29Toggle = function () {
+          paused = !paused;
+          window.clearTimeout(timer);
+          // Pausing holds the transcript where it stopped, so playing
+          // again continues rather than rewinds.
+          if (!paused) step();
+          return paused;
+        };
+        function step() {
+          timer = window.setTimeout(function () {
+            var lineH = parseFloat(getComputedStyle(text).lineHeight) || 18.2;
+            var stepPx = lineH * readMs("--p29-lines", 2);
+            var dur = readMs("--p29-step-dur", 500);
+            var ease = getComputedStyle(document.documentElement)
+              .getPropertyValue("--p29-ease").trim() || "ease-out";
+            offset += stepPx;
+            scroll.style.transition = "transform " + dur + "ms " + ease;
+            scroll.style.transform = "translateY(" + (-offset) + "px)";
+            timer = window.setTimeout(function () {
+              // Wrap by one copy the moment a step lands past it; the
+              // clone underneath makes the jump invisible.
+              var copyH = text.offsetHeight;
+              if (offset >= copyH) {
+                offset -= copyH;
+                scroll.style.transition = "none";
+                scroll.style.transform = "translateY(" + (-offset) + "px)";
+                // eslint-disable-next-line no-unused-expressions
+                scroll.offsetWidth;
+              }
+              step();
+            }, dur + 30);
+          }, readMs("--p29-hold", 1200));
+        }
+      })();
+
+      /* ── Prototype 30: streaming text ──────────────────────────
+         The paragraph rests fully readable; Animate wipes it back to
+         nothing and resolves the words in order through a small
+         cross-blur. The word spans are built once at load. */
+      function p30Replay(block) {
+        var spans = block._p30Spans;
+        if (!spans) return;
+        if (block._p30Timer) window.clearTimeout(block._p30Timer);
+        // Snap back to nothing without animating the wipe itself.
+        spans.forEach(function (s) {
+          s.style.transition = "none";
+          s.classList.remove("is-in");
+        });
+        // eslint-disable-next-line no-unused-expressions
+        block.offsetWidth;
+        spans.forEach(function (s) { s.style.transition = ""; });
+        (function stream(n) {
+          if (n >= spans.length) return;
+          spans[n].classList.add("is-in");
+          block._p30Timer = window.setTimeout(function () {
+            stream(n + 1);
+          }, readMs("--p30-word-gap", 60));
+        })(0);
+      }
+      (function initP30Stream() {
+        var blocks = document.querySelectorAll("[data-proto-stream]");
+        blocks.forEach(function (block) {
+          var words = block.textContent.trim().split(/\s+/);
+          block.textContent = "";
+          block._p30Spans = words.map(function (w, idx) {
+            var s = document.createElement("span");
+            s.className = "p30-w is-in";
+            s.textContent = w;
+            block.appendChild(s);
+            if (idx < words.length - 1) block.appendChild(document.createTextNode(" "));
+            return s;
+          });
+        });
+      })();
+
+      /* ── Prototype 33: matrix dot loaders ──────────────────────
+         Delay tables per variant, all riding the same pulse cycle.
+         Twinkle's order is baked (not random) so every dot fires
+         exactly once per cycle; the centre cells of the orbit
+         variant hold steady so the ring reads as the mover. */
+      (function initP33Loaders() {
+        var CORNERS = [0, 3, 12, 15];
+        // Clockwise perimeter (corner-less ring), then centre cells.
+        var RING = [1, 2, 7, 11, 14, 13, 8, 4];
+        var INNER = [5, 6, 9, 10];
+        var TWINKLE = [7, 2, 11, 5, 14, 9, 0, 12, 3, 15, 6, 10, 13, 1, 8, 4];
+        document.querySelectorAll(".p33-loader").forEach(function (loader) {
+          var variant = loader.getAttribute("data-variant");
+          var rounded = loader.getAttribute("data-rounded") === "true";
+          var cycle = readMs("--p33-cycle", 1200);
+          for (var idx = 0; idx < 16; idx++) {
+            var dot = document.createElement("i");
+            var col = idx % 4;
+            if (rounded && CORNERS.indexOf(idx) !== -1) {
+              dot.className = "is-gap";
+            } else if (variant === "scan") {
+              dot.style.setProperty("--d", String(Math.round(col * (cycle / 10))));
+            } else if (variant === "twinkle") {
+              dot.style.setProperty("--d", String(Math.round(TWINKLE[idx] * (cycle / 16))));
+            } else if (variant === "orbit") {
+              var k = RING.indexOf(idx);
+              if (k !== -1) {
+                dot.style.setProperty("--d", String(Math.round(k * (cycle / 8))));
+              } else {
+                // Centre holds steady under the orbiting ring.
+                dot.style.animation = "none";
+              }
+            } else if (variant === "pulse") {
+              var ring = INNER.indexOf(idx) !== -1 ? 0 : 1;
+              dot.style.setProperty("--d", String(Math.round(ring * (cycle * 0.16))));
+            }
+            loader.appendChild(dot);
+          }
+        });
+      })();
+
+      /* ── Prototype 34: banner stacking ─────────────────────────
+         Sonner-style: a new banner rises in at depth 0; everything
+         already stacked steps one depth back (smaller, higher,
+         dimmer — pure data-depth swap, CSS transitions the rest).
+         A fourth banner pushes the oldest out entirely. */
+      function p34Add(stack) {
+        var banners = stack._p34Banners || (stack._p34Banners = []);
+        var el = document.createElement("div");
+        el.className = "p34-banner is-enter";
+        el.setAttribute("data-depth", "0");
+        el.innerHTML = '<span class="p34-avatar"></span><span class="p34-bar"></span>';
+        banners.unshift(el);
+        stack.appendChild(el);
+        banners.forEach(function (b, i) {
+          if (i === 0) return;
+          if (i > 2) {
+            if (!b.classList.contains("is-leaving")) {
+              b.classList.add("is-leaving");
+              window.setTimeout(function () {
+                if (b.parentNode) b.parentNode.removeChild(b);
+              }, readMs("--p34-close-dur", 250) + 60);
+            }
+          } else {
+            b.setAttribute("data-depth", String(i));
+          }
+        });
+        stack._p34Banners = banners.slice(0, 3).concat(
+          banners.slice(3).filter(function (b) { return !b.classList.contains("is-leaving"); })
+        );
+        // Flush the pre-open rest state, then release it in the same
+        // task. A rAF hop would be skipped whenever the frame clock is
+        // throttled, and the banner would land with no motion at all.
+        // eslint-disable-next-line no-unused-expressions
+        el.offsetWidth;
+        el.classList.remove("is-enter");
+      }
+      (function initP34Stacks() {
+        var stacks = document.querySelectorAll("[data-proto-stack]");
+        stacks.forEach(function (stack) {
+          // Seed a resting stack of three so the card reads at a
+          // glance — no .is-enter, they are simply there on load. The
+          // newest-first array matches three manual adds exactly, so
+          // the next Add pushes these back and drops the oldest.
+          var seeded = [];
+          for (var d = 2; d >= 0; d--) {
+            var b = document.createElement("div");
+            b.className = "p34-banner";
+            b.setAttribute("data-depth", String(d));
+            b.innerHTML = '<span class="p34-avatar"></span><span class="p34-bar"></span>';
+            stack.appendChild(b);
+            seeded.unshift(b);
+          }
+          stack._p34Banners = seeded;
+          /* Spread state is decided from the pointer's position alone:
+             over the collapsed stack it opens, and it holds until the
+             pointer leaves the taller column the spread occupies. Both
+             halves are geometry rather than :hover / pointerenter —
+             the gaps between spread banners belong to no element, and
+             boundary events would also fire when a banner animates in
+             under a still pointer, spreading the stack on its own. */
+          var stage = stack.parentElement;
+          function spreadHeight() {
+            var gap = parseFloat(getComputedStyle(document.documentElement)
+              .getPropertyValue("--p34-spread-gap")) || 8;
+            return (stack.offsetHeight + gap) * 2;
+          }
+          function within(e, above) {
+            var r = stack.getBoundingClientRect();
+            return e.clientX >= r.left && e.clientX <= r.right &&
+              e.clientY <= r.bottom && e.clientY >= r.top - above;
+          }
+          stage.addEventListener("pointermove", function (e) {
+            if (stack.classList.contains("is-spread")) {
+              if (!within(e, spreadHeight())) stack.classList.remove("is-spread");
+            } else if (within(e, 0)) {
+              stack.classList.add("is-spread");
+            }
+          });
+          stage.addEventListener("pointerleave", function () {
+            stack.classList.remove("is-spread");
+          });
+        });
+      })();
+
       // Measure each checkbox check-path length into --p25-len so the
       // dasharray/dashoffset pair never pre-reveals or over-draws.
       (function initP25Checks() {
@@ -10912,6 +11784,329 @@ export function Surface({ open, children }) {
             "}"
         },
 
+        p28: {
+          name: "Thinking states",
+          usage:
+            "    <span class=\"t-think\" role=\"status\">\n" +
+            "      <span class=\"t-think-text\" data-text=\"Thinking…\">Thinking…</span>\n" +
+            "    </span>\n" +
+            "\n" +
+            "  The shimmer runs on ::before (content: attr(data-text),\n" +
+            "  background-clip: text) while a state holds. JS swaps the line\n" +
+            "  every --think-hold: float the outgoing copy out of flow\n" +
+            "  (.is-leaving-layer) and exit it (.is-exit) while the incoming\n" +
+            "  copy enters from below (.is-enter-start → reflow → release),\n" +
+            "  held back by --think-gap. Keep textContent and data-text in\n" +
+            "  sync so the shimmer copy always matches the visible line.",
+          vars: [
+            ["--think-hold",      "--p28-hold"],
+            ["--think-swap",      "--p28-swap-dur"],
+            ["--think-gap",       "--p28-swap-gap"],
+            ["--think-distance",  "--p28-swap-distance"],
+            ["--think-blur",      "--p28-swap-blur"],
+            ["--think-shimmer",   "--p28-shimmer-dur"],
+            ["--think-base",      "--p28-base"],
+            ["--think-highlight", "--p28-highlight"],
+            ["--think-ease",      "--p28-ease"]
+          ],
+          css:
+            ".t-think { position: relative; display: block; }\n" +
+            ".t-think-text {\n" +
+            "  position: relative;\n" +
+            "  display: inline-block;\n" +
+            "  color: var(--think-base);\n" +
+            "  white-space: nowrap;\n" +
+            "  transform: translateY(0);\n" +
+            "  filter: blur(0);\n" +
+            "  opacity: 1;\n" +
+            "  transition:\n" +
+            "    transform var(--think-swap) var(--think-ease),\n" +
+            "    filter var(--think-swap) var(--think-ease),\n" +
+            "    opacity var(--think-swap) var(--think-ease);\n" +
+            "  will-change: transform, filter, opacity;\n" +
+            "}\n" +
+            "/* Shimmer sweeps the glyphs only (background-clip: text). */\n" +
+            ".t-think-text::before {\n" +
+            "  content: attr(data-text);\n" +
+            "  position: absolute;\n" +
+            "  inset: 0;\n" +
+            "  pointer-events: none;\n" +
+            "  background-image: linear-gradient(90deg,\n" +
+            "    transparent 0%, transparent 40%,\n" +
+            "    var(--think-highlight) 50%,\n" +
+            "    transparent 60%, transparent 100%);\n" +
+            "  background-size: 400% 100%;\n" +
+            "  background-repeat: no-repeat;\n" +
+            "  -webkit-background-clip: text;\n" +
+            "  background-clip: text;\n" +
+            "  color: transparent;\n" +
+            "  -webkit-text-fill-color: transparent;\n" +
+            "  animation: t-think-shimmer var(--think-shimmer) linear infinite;\n" +
+            "}\n" +
+            "@keyframes t-think-shimmer {\n" +
+            "  0%   { background-position: 100% 0; }\n" +
+            "  100% { background-position: 0% 0; }\n" +
+            "}\n" +
+            "/* The outgoing line floats over the box so both halves animate. */\n" +
+            ".t-think-text.is-leaving-layer { position: absolute; top: 0; left: 0; }\n" +
+            ".t-think-text.is-exit {\n" +
+            "  transform: translateY(calc(var(--think-distance) * -1));\n" +
+            "  filter: blur(var(--think-blur));\n" +
+            "  opacity: 0;\n" +
+            "}\n" +
+            ".t-think-text.is-enter-start {\n" +
+            "  transition: none;\n" +
+            "  transform: translateY(var(--think-distance));\n" +
+            "  filter: blur(var(--think-blur));\n" +
+            "  opacity: 0;\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-think-text { transition: none !important; transform: none !important; filter: none !important; }\n" +
+            "  .t-think-text::before { display: none !important; }\n" +
+            "}"
+        },
+
+        p29: {
+          name: "Reasoning stream",
+          usage:
+            "    <div class=\"t-reason\">\n" +
+            "      <div class=\"t-reason-viewport\">\n" +
+            "        <div class=\"t-reason-scroll\">\n" +
+            "          <div class=\"t-reason-text\">\n" +
+            "            <p>…transcript…</p>\n" +
+            "          </div>\n" +
+            "        </div>\n" +
+            "      </div>\n" +
+            "    </div>\n" +
+            "\n" +
+            "  The card clips a tall transcript; JS steps the scroll up\n" +
+            "  --reason-lines lines every --reason-hold and clones\n" +
+            "  .t-reason-text once so the offset can wrap by one copy's\n" +
+            "  height mid-hold — the loop never shows a jump. The edge fades\n" +
+            "  are a mask on the viewport (not gradients painted over the\n" +
+            "  text), so the card background can be anything.",
+          vars: [
+            ["--reason-hold",  "--p29-hold"],
+            ["--reason-step",  "--p29-step-dur"],
+            ["--reason-lines", "--p29-lines"],
+            ["--reason-fade",  "--p29-fade"],
+            ["--reason-ease",  "--p29-ease"]
+          ],
+          css:
+            ".t-reason { position: relative; overflow: hidden; }\n" +
+            ".t-reason-viewport {\n" +
+            "  position: absolute;\n" +
+            "  inset: 0;\n" +
+            "  overflow: hidden;\n" +
+            "  /* Edge fades are a mask, not painted gradients, so the card\n" +
+            "     background can be anything. */\n" +
+            "  -webkit-mask-image: linear-gradient(\n" +
+            "    transparent 0,\n" +
+            "    black var(--reason-fade),\n" +
+            "    black calc(100% - var(--reason-fade)),\n" +
+            "    transparent 100%);\n" +
+            "  mask-image: linear-gradient(\n" +
+            "    transparent 0,\n" +
+            "    black var(--reason-fade),\n" +
+            "    black calc(100% - var(--reason-fade)),\n" +
+            "    transparent 100%);\n" +
+            "}\n" +
+            ".t-reason-scroll {\n" +
+            "  position: absolute;\n" +
+            "  left: 0;\n" +
+            "  right: 0;\n" +
+            "  transform: translateY(0);\n" +
+            "  will-change: transform;\n" +
+            "}\n" +
+            "/* JS drives the tween:\n" +
+            "     scroll.style.transition = 'transform var(--reason-step) var(--reason-ease)';\n" +
+            "     scroll.style.transform  = 'translateY(-' + offset + 'px)';\n" +
+            "   and wraps the offset by one copy's height with transition: none. */\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-reason-scroll { transition: none !important; transform: none !important; }\n" +
+            "}"
+        },
+
+        p30: {
+          name: "Streaming text",
+          usage:
+            "    <div class=\"t-stream\">Your streamed paragraph…</div>\n" +
+            "\n" +
+            "  JS wraps each word in a .t-stream-w span; spans rest visible.\n" +
+            "  To replay the stream: wipe every span with transition: none,\n" +
+            "  force one reflow, restore the transition, then add .is-in word\n" +
+            "  by word every --stream-gap — each word resolves through\n" +
+            "  opacity + a small blur over --stream-fade.",
+          vars: [
+            ["--stream-gap",  "--p30-word-gap"],
+            ["--stream-fade", "--p30-word-dur"],
+            ["--stream-blur", "--p30-blur"],
+            ["--stream-ease", "--p30-ease"]
+          ],
+          css:
+            ".t-stream-w {\n" +
+            "  opacity: 0;\n" +
+            "  filter: blur(var(--stream-blur));\n" +
+            "  transition:\n" +
+            "    opacity var(--stream-fade) var(--stream-ease),\n" +
+            "    filter var(--stream-fade) var(--stream-ease);\n" +
+            "}\n" +
+            ".t-stream-w.is-in {\n" +
+            "  opacity: 1;\n" +
+            "  filter: blur(0);\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-stream-w { transition: none !important; filter: none !important; opacity: 1 !important; }\n" +
+            "}"
+        },
+
+        p33: {
+          name: "Matrix dot loader",
+          usage:
+            "    <div class=\"t-matrix\" data-variant=\"scan\"></div>\n" +
+            "\n" +
+            "  JS builds sixteen <i> dots per loader and hands each a --d\n" +
+            "  delay (ms) into the shared colour-pulse cycle — the variant is\n" +
+            "  just a delay table. scan: col * cycle/10. twinkle: the order\n" +
+            "  [7,2,11,5,14,9,0,12,3,15,6,10,13,1,8,4] * cycle/16. orbit: the\n" +
+            "  ring [1,2,7,11,14,13,8,4] * cycle/8, centre holds steady.\n" +
+            "  pulse: inner [5,6,9,10] first, the rest cycle*0.16 behind.\n" +
+            "  Rounded variants mark the corners [0,3,12,15] .is-gap so they\n" +
+            "  render nothing.",
+          vars: [
+            ["--matrix-cycle",  "--p33-cycle"],
+            ["--matrix-base",   "--p33-base"],
+            ["--matrix-active", "--p33-active"],
+            ["--matrix-ease",   "--p33-ease"]
+          ],
+          css:
+            ".t-matrix {\n" +
+            "  display: grid;\n" +
+            "  grid-template-columns: repeat(4, 2px);\n" +
+            "  grid-auto-rows: 2px;\n" +
+            "  gap: 2px;\n" +
+            "}\n" +
+            ".t-matrix i {\n" +
+            "  display: block;\n" +
+            "  background: var(--matrix-base);\n" +
+            "  animation: t-matrix-pulse var(--matrix-cycle) var(--matrix-ease) infinite;\n" +
+            "  animation-delay: calc(var(--d, 0) * 1ms);\n" +
+            "}\n" +
+            "/* Hole positions (rounded variants) render nothing. */\n" +
+            ".t-matrix i.is-gap { visibility: hidden; animation: none; }\n" +
+            "@keyframes t-matrix-pulse {\n" +
+            "  0%, 45%, 100% { background-color: var(--matrix-base); }\n" +
+            "  15%           { background-color: var(--matrix-active); }\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-matrix i { animation: none !important; }\n" +
+            "}"
+        },
+
+        p34: {
+          name: "Banner stacking",
+          usage:
+            "    <div class=\"t-stack\">\n" +
+            "      <div class=\"t-stack-banner\" data-depth=\"0\">…</div>\n" +
+            "    </div>\n" +
+            "\n" +
+            "  Sonner-style. Append a new banner with .is-enter + data-depth\n" +
+            "  0, step every older banner's data-depth one back, force one\n" +
+            "  reflow, then remove .is-enter in the same task (a rAF hop is\n" +
+            "  skipped when the frame clock is throttled). A fourth banner\n" +
+            "  gets .is-leaving; remove it after --stack-close. Hover spread\n" +
+            "  is geometry in JS: pointer inside the collapsed stack box adds\n" +
+            "  .is-spread, and it holds until the pointer leaves the taller\n" +
+            "  spread column ((stack height + gap) * 2 above).",
+          vars: [
+            ["--stack-open",        "--p34-open-dur"],
+            ["--stack-close",       "--p34-close-dur"],
+            ["--stack-rise",        "--p34-distance"],
+            ["--stack-blur",        "--p34-blur"],
+            ["--stack-scale",       "--p34-scale-in"],
+            ["--stack-peek",        "--p34-peek"],
+            ["--stack-spread-gap",  "--p34-spread-gap"],
+            ["--stack-depth-scale", "--p34-depth-scale"],
+            ["--stack-depth-fade",  "--p34-depth-fade"],
+            ["--stack-ease",        "--p34-ease"]
+          ],
+          css:
+            ".t-stack { position: relative; }\n" +
+            ".t-stack-banner {\n" +
+            "  position: absolute;\n" +
+            "  left: 0;\n" +
+            "  bottom: 0;\n" +
+            "  /* Centre origin so an arriving banner scales like a toast; the\n" +
+            "     push-back depths switch to the bottom edge, which they can do\n" +
+            "     freely because the swap happens at identity. */\n" +
+            "  transform-origin: 50% 50%;\n" +
+            "  /* Explicit blur(0) rather than an unset filter — blur → none is\n" +
+            "     not reliably interpolated, and the cross-blur would snap. */\n" +
+            "  filter: blur(0);\n" +
+            "  will-change: transform, opacity, filter;\n" +
+            "  transition:\n" +
+            "    transform var(--stack-open) var(--stack-ease),\n" +
+            "    opacity var(--stack-open) var(--stack-ease),\n" +
+            "    filter var(--stack-open) var(--stack-ease);\n" +
+            "}\n" +
+            ".t-stack-banner[data-depth=\"0\"] {\n" +
+            "  z-index: 3;\n" +
+            "  transform: translateY(0) scale(1);\n" +
+            "  opacity: 1;\n" +
+            "}\n" +
+            ".t-stack-banner[data-depth=\"1\"] {\n" +
+            "  z-index: 2;\n" +
+            "  transform-origin: 50% 100%;\n" +
+            "  transform: translateY(calc(var(--stack-peek) * -1))\n" +
+            "             scale(calc(1 - var(--stack-depth-scale)));\n" +
+            "  opacity: calc(1 - var(--stack-depth-fade));\n" +
+            "}\n" +
+            ".t-stack-banner[data-depth=\"2\"] {\n" +
+            "  z-index: 1;\n" +
+            "  transform-origin: 50% 100%;\n" +
+            "  transform: translateY(calc(var(--stack-peek) * -2))\n" +
+            "             scale(calc(1 - var(--stack-depth-scale) * 2));\n" +
+            "  opacity: calc(1 - var(--stack-depth-fade) * 1.6);\n" +
+            "}\n" +
+            "/* Spread: newest stays put, older ones climb one banner height\n" +
+            "   each (100% = the banner's own height). Driven by a class, not\n" +
+            "   :hover — the gaps between spread banners belong to no element. */\n" +
+            ".t-stack.is-spread .t-stack-banner[data-depth=\"1\"],\n" +
+            ".t-stack.is-spread .t-stack-banner[data-depth=\"2\"] { opacity: 1; }\n" +
+            ".t-stack.is-spread .t-stack-banner[data-depth=\"1\"] {\n" +
+            "  transform: translateY(calc((100% + var(--stack-spread-gap)) * -1)) scale(1);\n" +
+            "}\n" +
+            ".t-stack.is-spread .t-stack-banner[data-depth=\"2\"] {\n" +
+            "  transform: translateY(calc((100% + var(--stack-spread-gap)) * -2)) scale(1);\n" +
+            "}\n" +
+            ".t-stack-banner.is-enter {\n" +
+            "  transition: none;\n" +
+            "  transform: translateY(var(--stack-rise)) scale(var(--stack-scale));\n" +
+            "  opacity: 0;\n" +
+            "  filter: blur(var(--stack-blur));\n" +
+            "}\n" +
+            ".t-stack-banner.is-leaving {\n" +
+            "  z-index: 0;\n" +
+            "  transform-origin: 50% 100%;\n" +
+            "  transform: translateY(calc(var(--stack-peek) * -3))\n" +
+            "             scale(calc(1 - var(--stack-depth-scale) * 3));\n" +
+            "  opacity: 0;\n" +
+            "  filter: blur(var(--stack-blur));\n" +
+            "  transition:\n" +
+            "    transform var(--stack-close) var(--stack-ease),\n" +
+            "    opacity var(--stack-close) var(--stack-ease),\n" +
+            "    filter var(--stack-close) var(--stack-ease);\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-stack-banner { transition: none !important; transform: none !important; filter: none !important; }\n" +
+            "}"
+        },
+
         /* ── Motion tokens ─────────────────────────────────────────
            These entries describe a *token*, not a single component, so
            they carry no `vars` map (nothing to resolve from :root) and
@@ -12198,6 +13393,26 @@ export function Surface({ open, children }) {
               if (reel) p26Spin(reel);
               break;
             }
+            case "28": {
+              var think = card.querySelector("[data-proto-think]");
+              if (think && think._p28Toggle) animateBtn.textContent = think._p28Toggle() ? "Play" : "Pause";
+              break;
+            }
+            case "29": {
+              var reason = card.querySelector("[data-proto-reason]");
+              if (reason && reason._p29Toggle) animateBtn.textContent = reason._p29Toggle() ? "Play" : "Pause";
+              break;
+            }
+            case "30": {
+              var stream = card.querySelector("[data-proto-stream]");
+              if (stream) p30Replay(stream);
+              break;
+            }
+            case "34": {
+              var stack = card.querySelector("[data-proto-stack]");
+              if (stack) p34Add(stack);
+              break;
+            }
           }
           return;
         }
@@ -13288,21 +14503,43 @@ export function Surface({ open, children }) {
       var searchBtn = document.getElementById("nav-search-btn");
       var searchKbd = document.getElementById("nav-search-kbd");
       if (searchKbd) searchKbd.textContent = isMac ? "⌘K" : "Ctrl K";
-      var TRANSITION_NAMES = [
-        "Card resize", "Number pop-in", "Notification badge", "Text states swap",
-        "Menu dropdown", "Modal open/close", "Panel reveal", "Page side-by-side",
-        "Icon swap", "Success check", "Avatar group hover", "Error state shake",
-        "Input clear with dissolve", "Skeleton loader and reveal", "Texts reveal", "Tabs sliding",
-        "Shimmer text", "Tooltip open/close", "3D tilt", "Dropdown menu morph", "Accordion"
-      ];
+      /* Transitions are derived from the prototype cards in the DOM rather
+         than a hardcoded list, so the palette can never drift out of sync
+         when transitions are added or renamed. Slugs match the ones
+         detail.html routes on (same slugify rules). */
+      var TRANSITION_ITEMS = (function () {
+        var seen = {};
+        return Array.prototype.slice.call(
+          document.querySelectorAll(".card[data-proto-card]")
+        ).filter(function (card) {
+          return card.getAttribute("data-wip") !== "true";
+        }).map(function (card) {
+          var t = card.querySelector(".card-title");
+          var name = t ? t.textContent.trim() : "";
+          return {
+            name: name,
+            slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
+            pro: card.getAttribute("data-pro") === "true"
+          };
+        }).filter(function (it) {
+          if (!it.name || seen[it.slug]) return false;
+          seen[it.slug] = true;
+          return true;
+        });
+      })();
       var CMD_ITEMS = [
         { group: "Pages", label: "Transitions", hint: "Home", href: "/", ic: "grid" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
-      ].concat(TRANSITION_NAMES.map(function (n) {
-        var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-        return { group: "Transitions", label: n, hint: "Transition", href: "detail.html?t=" + slug, ic: "motion" };
+      ].concat(TRANSITION_ITEMS.map(function (it) {
+        return {
+          group: "Transitions",
+          label: it.name,
+          hint: it.pro ? "Pro transition" : "Transition",
+          href: "detail.html?t=" + it.slug,
+          ic: "motion"
+        };
       })).concat([
         { group: "Actions", label: "Get Pro access", href: "mailto:jakubja@gmail.com?subject=Transitions%20Pro%20access", ic: "pro" },
         { group: "Actions", label: "View on GitHub", href: "https://github.com/Jakubantalik/transitions.dev", ext: true, ic: "github" },
@@ -14532,6 +15769,47 @@ crossBlur();
 revertTimer = window.setTimeout(reset, readNum("--pv5c", 2000));
 });
 })();
+})();
+(function initPro10(){
+var cards = document.querySelectorAll("[data-proto-imgen]");
+if (!cards.length) return;
+Array.prototype.forEach.call(cards, function (card) {
+var field = card.querySelector(".pv6i");
+var btn = card.parentNode.parentNode.querySelector("[data-proto-imgen-btn]");
+if (!field || !btn) return;
+var cs = getComputedStyle(field);
+var pitch = parseFloat(cs.getPropertyValue("--pv6k")) || 5;
+var spread = Math.min(0.9, Math.max(0, parseFloat(cs.getPropertyValue("--pv6g"))) || 0);
+var phase = Math.max(0, parseFloat(cs.getPropertyValue("--pv6j")) || 0);
+var cycle = parseFloat(cs.getPropertyValue("--pv6h")) || 1400;
+var size = field.clientWidth || 142;
+var n = Math.max(1, Math.floor(size / pitch));
+var off = (size - (n - 1) * pitch) / 2;
+for (var row = 0; row < n; row++) {
+for (var col = 0; col < n; col++) {
+var dot = document.createElement("i");
+dot.style.left = (off + col * pitch) + "px";
+dot.style.top = (off + row * pitch) + "px";
+dot.style.marginLeft = "calc(var(--pv6s) / -2)";
+dot.style.marginTop = "calc(var(--pv6s) / -2)";
+var k = 1 - spread + Math.random() * spread * 2;
+var offset = Math.random() * phase;
+dot.style.setProperty("--k", k.toFixed(3));
+dot.style.setProperty("--delay", Math.round(-offset) + "ms");
+var frac = (offset % (cycle * k)) / (cycle * k);
+dot.style.setProperty("--v", (0.5 - 0.5 * Math.cos(frac * Math.PI * 2)).toFixed(3));
+field.appendChild(dot);
+}
+}
+var STATES = [{ cls: "", label: "Play" }, { cls: "is-loading", label: "Reveal" }, { cls: "is-revealed", label: "Reset" }];
+var i = 0;
+btn.addEventListener("click", function () {
+i = (i + 1) % STATES.length;
+card.classList.remove("is-loading", "is-revealed");
+if (STATES[i].cls) card.classList.add(STATES[i].cls);
+btn.textContent = STATES[i].label;
+});
+});
 })();
 </script>
   <!-- Pro platform client: unlocks Pro code for entitled viewers (fires pro:me). -->

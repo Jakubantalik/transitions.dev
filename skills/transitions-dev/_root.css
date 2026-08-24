@@ -242,4 +242,41 @@
   --toggle-ov2: 0px;
   --toggle-track: 0ms;
   --toggle-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
+  /* Thinking states */
+  --think-hold: 2000ms;
+  --think-swap: 150ms;
+  --think-gap: 50ms;
+  --think-distance: 8px;
+  --think-blur: 2px;
+  --think-shimmer: 2000ms;
+  --think-base: #7c7c7c;
+  --think-highlight: #0d0d0d;
+  --think-ease: ease-in-out;
+  /* Reasoning stream */
+  --reason-hold: 1200ms;
+  --reason-step: 500ms;
+  --reason-lines: 2;
+  --reason-fade: 28px;
+  --reason-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Streaming text */
+  --stream-gap: 60ms;
+  --stream-fade: 350ms;
+  --stream-blur: 1px;
+  --stream-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Matrix dot loader */
+  --matrix-cycle: 1200ms;
+  --matrix-base: #d9d9d9;
+  --matrix-active: #85858f;
+  --matrix-ease: ease-in-out;
+  /* Banner stacking */
+  --stack-open: 350ms;
+  --stack-close: 250ms;
+  --stack-rise: 80px;
+  --stack-blur: 2px;
+  --stack-scale: 0.97;
+  --stack-peek: 12px;
+  --stack-spread-gap: 8px;
+  --stack-depth-scale: 0.06;
+  --stack-depth-fade: 0.4;
+  --stack-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
