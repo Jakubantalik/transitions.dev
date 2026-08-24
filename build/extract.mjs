@@ -769,10 +769,11 @@ head.addEventListener("click", () => {
   acc.setAttribute("data-open", String(!open));
   head.setAttribute("aria-expanded", String(!open));
 });`,
-  p28: `// Cycle the states: hold, then swap. The outgoing line is lifted out
-// of flow (.is-leaving-layer) so both lines animate at once, and
-// textContent + data-text move together so the shimmer's ::before
-// copy always matches the visible line.
+  p28: `// Cycle the states: hold, then swap. Both lines are absolutely
+// positioned, so the outgoing and incoming copies animate at the same
+// time over a box the hidden sizer holds steady, and textContent +
+// data-text move together so the shimmer's ::before copy always
+// matches the visible line.
 const box = document.querySelector(".t-think");
 let live = box.querySelector(".t-think-text");
 const STATES = ["Setting up a workplace", "Running a command", "Browsing files"];
@@ -792,8 +793,7 @@ const ms = (name, fb) => {
     const leaving = live;
     i = (i + 1) % STATES.length;
 
-    // Float the outgoing line over the box and start its exit.
-    leaving.classList.add("is-leaving-layer", "is-exit");
+    leaving.classList.add("is-exit");
 
     const next = document.createElement("span");
     next.className = "t-think-text is-enter-start";

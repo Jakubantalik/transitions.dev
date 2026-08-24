@@ -9836,7 +9836,7 @@ export function Surface({ open, children }) {
             i = (i + 1) % STATES.length;
 
             // Float the outgoing line over the box and start its exit.
-            leaving.classList.add("is-leaving-layer", "is-exit");
+            leaving.classList.add("is-exit");
 
             var next = document.createElement("span");
             next.className = "p28-text is-enter-start";
@@ -11794,16 +11794,24 @@ export function Surface({ open, children }) {
           name: "Thinking states",
           usage:
             "    <span class=\"t-think\" role=\"status\">\n" +
+            "      <span class=\"t-think-sizer\" aria-hidden=\"true\">Longest state here</span>\n" +
             "      <span class=\"t-think-text\" data-text=\"Thinking…\">Thinking…</span>\n" +
             "    </span>\n" +
             "\n" +
             "  The shimmer runs on ::before (content: attr(data-text),\n" +
             "  background-clip: text) while a state holds. JS swaps the line\n" +
-            "  every --think-hold: float the outgoing copy out of flow\n" +
-            "  (.is-leaving-layer) and exit it (.is-exit) while the incoming\n" +
-            "  copy enters from below (.is-enter-start → reflow → release),\n" +
-            "  held back by --think-gap. Keep textContent and data-text in\n" +
-            "  sync so the shimmer copy always matches the visible line.",
+            "  every --think-hold: exit the outgoing copy (.is-exit) while\n" +
+            "  the incoming copy enters from below (.is-enter-start →\n" +
+            "  reflow → release), held back by --think-gap. Keep textContent\n" +
+            "  and data-text in sync so the shimmer copy always matches the\n" +
+            "  visible line.\n" +
+            "\n" +
+            "  The hidden sizer holds your longest state and is what gives\n" +
+            "  the box its width: lines are absolutely positioned, so they\n" +
+            "  all start at the same left edge and the box never resizes\n" +
+            "  mid-swap. Centre .t-think in its container and the block\n" +
+            "  reads centred while the text stays left-aligned. Drop the\n" +
+            "  sizer if the line should hug whatever state is showing.",
           vars: [
             ["--think-hold",      "--p28-hold"],
             ["--think-swap",      "--p28-swap-dur"],
@@ -11816,9 +11824,12 @@ export function Surface({ open, children }) {
             ["--think-ease",      "--p28-ease"]
           ],
           css:
-            ".t-think { position: relative; display: block; }\n" +
+            ".t-think { position: relative; display: inline-block; text-align: left; }\n" +
+            ".t-think-sizer { display: block; visibility: hidden; white-space: nowrap; }\n" +
             ".t-think-text {\n" +
-            "  position: relative;\n" +
+            "  position: absolute;\n" +
+            "  top: 0;\n" +
+            "  left: 0;\n" +
             "  display: inline-block;\n" +
             "  color: var(--think-base);\n" +
             "  white-space: nowrap;\n" +
@@ -11854,7 +11865,7 @@ export function Surface({ open, children }) {
             "  100% { background-position: 0% 0; }\n" +
             "}\n" +
             "/* The outgoing line floats over the box so both halves animate. */\n" +
-            ".t-think-text.is-leaving-layer { position: absolute; top: 0; left: 0; }\n" +
+
             ".t-think-text.is-exit {\n" +
             "  transform: translateY(calc(var(--think-distance) * -1));\n" +
             "  filter: blur(var(--think-blur));\n" +

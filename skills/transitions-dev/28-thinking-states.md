@@ -10,17 +10,25 @@ Use this over a bare shimmer when the label changes while the work runs — the 
 
 ```html
 <span class="t-think" role="status">
+  <span class="t-think-sizer" aria-hidden="true">Longest state here</span>
   <span class="t-think-text" data-text="Thinking…">Thinking…</span>
 </span>
 ```
 
 The shimmer runs on ::before (content: attr(data-text),
 background-clip: text) while a state holds. JS swaps the line
-every --think-hold: float the outgoing copy out of flow
-(.is-leaving-layer) and exit it (.is-exit) while the incoming
-copy enters from below (.is-enter-start → reflow → release),
-held back by --think-gap. Keep textContent and data-text in
-sync so the shimmer copy always matches the visible line.
+every --think-hold: exit the outgoing copy (.is-exit) while
+the incoming copy enters from below (.is-enter-start →
+reflow → release), held back by --think-gap. Keep textContent
+and data-text in sync so the shimmer copy always matches the
+visible line.
+
+The hidden sizer holds your longest state and is what gives
+the box its width: lines are absolutely positioned, so they
+all start at the same left edge and the box never resizes
+mid-swap. Centre .t-think in its container and the block
+reads centred while the text stays left-aligned. Drop the
+sizer if the line should hug whatever state is showing.
 
 ## Tunable variables
 
@@ -55,9 +63,12 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
 ## CSS
 
 ```css
-.t-think { position: relative; display: block; }
+.t-think { position: relative; display: inline-block; text-align: left; }
+.t-think-sizer { display: block; visibility: hidden; white-space: nowrap; }
 .t-think-text {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   display: inline-block;
   color: var(--think-base);
   white-space: nowrap;
@@ -93,7 +104,6 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
   100% { background-position: 0% 0; }
 }
 /* The outgoing line floats over the box so both halves animate. */
-.t-think-text.is-leaving-layer { position: absolute; top: 0; left: 0; }
 .t-think-text.is-exit {
   transform: translateY(calc(var(--think-distance) * -1));
   filter: blur(var(--think-blur));
@@ -117,10 +127,11 @@ The `@media (prefers-reduced-motion: reduce)` guard at the bottom of the snippet
 ## JavaScript orchestration
 
 ```js
-// Cycle the states: hold, then swap. The outgoing line is lifted out
-// of flow (.is-leaving-layer) so both lines animate at once, and
-// textContent + data-text move together so the shimmer's ::before
-// copy always matches the visible line.
+// Cycle the states: hold, then swap. Both lines are absolutely
+// positioned, so the outgoing and incoming copies animate at the same
+// time over a box the hidden sizer holds steady, and textContent +
+// data-text move together so the shimmer's ::before copy always
+// matches the visible line.
 const box = document.querySelector(".t-think");
 let live = box.querySelector(".t-think-text");
 const STATES = ["Setting up a workplace", "Running a command", "Browsing files"];
@@ -140,8 +151,7 @@ const ms = (name, fb) => {
     const leaving = live;
     i = (i + 1) % STATES.length;
 
-    // Float the outgoing line over the box and start its exit.
-    leaving.classList.add("is-leaving-layer", "is-exit");
+    leaving.classList.add("is-exit");
 
     const next = document.createElement("span");
     next.className = "t-think-text is-enter-start";
