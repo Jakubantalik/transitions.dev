@@ -281,6 +281,9 @@
     apiJSON("/checkout", "POST", payload)
       .then(function (data) {
         if (data && data.url) location.href = data.url;
+        // A blocked market carries its own explanation — showing "unavailable"
+        // would read as an outage rather than a deliberate limit.
+        else if (data && data.message) notify(data.message);
         else notify("Checkout is unavailable right now" + (data && data.error ? " (" + data.error + ")" : "") + ".");
       })
       .catch(function () { notify("Couldn't start checkout. Please try again."); })
