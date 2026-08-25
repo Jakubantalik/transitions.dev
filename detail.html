@@ -4568,19 +4568,24 @@
     .p28-swap {
       position: relative;
       display: inline-block;
-      text-align: left;
+      text-align: center;
       line-height: 18px;
     }
     .p28-sizer {
       display: block;
       visibility: hidden;
       white-space: nowrap;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 18px;
     }
     .p28-text {
       position: absolute;
       top: 0;
       left: 0;
-      display: inline-block;
+      right: 0;
+      display: block;
       font-family: var(--font-sans);
       font-weight: 500;
       font-size: 13px;
@@ -11807,11 +11812,11 @@ export function Surface({ open, children }) {
             "  visible line.\n" +
             "\n" +
             "  The hidden sizer holds your longest state and is what gives\n" +
-            "  the box its width: lines are absolutely positioned, so they\n" +
-            "  all start at the same left edge and the box never resizes\n" +
-            "  mid-swap. Centre .t-think in its container and the block\n" +
-            "  reads centred while the text stays left-aligned. Drop the\n" +
-            "  sizer if the line should hug whatever state is showing.",
+            "  the box its width: lines are absolutely positioned across\n" +
+            "  that width, so every state centres in a box that never\n" +
+            "  resizes mid-swap. Drop the sizer if the line should hug\n" +
+            "  whatever state is showing, and set text-align: left on\n" +
+            "  .t-think if the states should share a left edge instead.",
           vars: [
             ["--think-hold",      "--p28-hold"],
             ["--think-swap",      "--p28-swap-dur"],
@@ -11824,13 +11829,16 @@ export function Surface({ open, children }) {
             ["--think-ease",      "--p28-ease"]
           ],
           css:
-            ".t-think { position: relative; display: inline-block; text-align: left; }\n" +
+            "/* Set your type on .t-think: the sizer only reports the right\n" +
+            "   width if it is set in the same font as the line. */\n" +
+            ".t-think { position: relative; display: inline-block; text-align: center; }\n" +
             ".t-think-sizer { display: block; visibility: hidden; white-space: nowrap; }\n" +
             ".t-think-text {\n" +
             "  position: absolute;\n" +
             "  top: 0;\n" +
             "  left: 0;\n" +
-            "  display: inline-block;\n" +
+            "  right: 0;\n" +
+            "  display: block;\n" +
             "  color: var(--think-base);\n" +
             "  white-space: nowrap;\n" +
             "  transform: translateY(0);\n" +

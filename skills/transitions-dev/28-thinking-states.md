@@ -24,11 +24,11 @@ and data-text in sync so the shimmer copy always matches the
 visible line.
 
 The hidden sizer holds your longest state and is what gives
-the box its width: lines are absolutely positioned, so they
-all start at the same left edge and the box never resizes
-mid-swap. Centre .t-think in its container and the block
-reads centred while the text stays left-aligned. Drop the
-sizer if the line should hug whatever state is showing.
+the box its width: lines are absolutely positioned across
+that width, so every state centres in a box that never
+resizes mid-swap. Drop the sizer if the line should hug
+whatever state is showing, and set text-align: left on
+.t-think if the states should share a left edge instead.
 
 ## Tunable variables
 
@@ -63,13 +63,16 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
 ## CSS
 
 ```css
-.t-think { position: relative; display: inline-block; text-align: left; }
+/* Set your type on .t-think: the sizer only reports the right
+   width if it is set in the same font as the line. */
+.t-think { position: relative; display: inline-block; text-align: center; }
 .t-think-sizer { display: block; visibility: hidden; white-space: nowrap; }
 .t-think-text {
   position: absolute;
   top: 0;
   left: 0;
-  display: inline-block;
+  right: 0;
+  display: block;
   color: var(--think-base);
   white-space: nowrap;
   transform: translateY(0);

@@ -3291,13 +3291,16 @@
       position: relative;
       display: block;
       width: 224px;
-      text-align: left;
+      text-align: center;
       line-height: 18px;
     }
+    /* Both lines span the box so each state centres in a width that
+       never changes, instead of nudging sideways per state. */
     .p28-text.is-leaving-layer {
       position: absolute;
       top: 0;
       left: 0;
+      right: 0;
     }
     .p28-swap.is-paused .p28-text::before {
       animation-play-state: paused;
