@@ -87,12 +87,34 @@
   // Ask the API for the visitor's country + any parity discount, then paint the
   // banner. The discount itself is auto-applied server-side at checkout by the
   // same geo, so this is purely informational.
-  function refreshGeo() {
+  // A visitor's country does not change between page views, so asking on every
+  // navigation multiplied Worker requests by the number of pages browsed for an
+  // answer that was always the same. Cached for a day; the discount is applied
+  // server-side at checkout regardless, so a stale banner cannot mis-sell.
+  var GEO_CACHE_KEY = "tdev:geo";
+  var GEO_CACHE_TTL = 24 * 60 * 60 * 1000;
+
+  function applyGeo(ppp) {
+    state.ppp = ppp || null;
+    renderPPP();
+    document.dispatchEvent(new CustomEvent("pro:geo", { detail: state.ppp }));
+    return state.ppp;
+  }
+
+  function refreshGeo(force) {
+    if (!force) {
+      try {
+        var raw = localStorage.getItem(GEO_CACHE_KEY);
+        var c = raw ? JSON.parse(raw) : null;
+        if (c && typeof c.t === "number" && Date.now() - c.t < GEO_CACHE_TTL) {
+          return Promise.resolve(applyGeo(c.ppp));
+        }
+      } catch (e) {}
+    }
     return apiJSON("/geo").then(function (g) {
-      state.ppp = g && g.ppp ? g.ppp : null;
-      renderPPP();
-      document.dispatchEvent(new CustomEvent("pro:geo", { detail: state.ppp }));
-      return state.ppp;
+      var ppp = g && g.ppp ? g.ppp : null;
+      try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ ppp: ppp, t: Date.now() })); } catch (e) {}
+      return applyGeo(ppp);
     }).catch(function () { return null; });
   }
 
@@ -114,8 +136,10 @@
   // a network failure or 5xx must NOT flip a signed-in user to signed out
   // (Chrome tab freezing / bfcache restores made that happen intermittently).
   // Transient failures retry with backoff before giving up quietly.
+  var lastMeAt = 0;
   function refreshMe(attempt) {
     attempt = attempt || 0;
+    lastMeAt = Date.now();
     return api("/me")
       .then(function (r) {
         if (!r.ok) throw new Error("me_" + r.status);
@@ -147,16 +171,30 @@
       });
   }
 
+  // Every tab focus used to re-run /me, so a single open tab could issue
+  // hundreds of requests a day. Entitlement rarely changes mid-session and the
+  // server re-checks on every content fetch anyway, so a short floor between
+  // background re-verifies costs nothing. Explicit calls (sign-in, checkout
+  // return, manual refresh) bypass it.
+  var ME_MIN_AGE_MS = 60 * 1000;
+  function refreshMeIfStale() {
+    // Time-based only. Gating on `resolved` meant an API outage removed the
+    // floor entirely — every tab focus would retry (three times each, with
+    // backoff) exactly when the API was least able to take it.
+    if (Date.now() - lastMeAt < ME_MIN_AGE_MS) return Promise.resolve(state);
+    return refreshMe();
+  }
+
   // Re-verify after bfcache restores and tab un-freezes — Chrome resumes the
   // page without re-running scripts, and a pre-freeze failure would otherwise
   // stick until a manual reload.
   window.addEventListener("pageshow", function (e) {
-    if (e.persisted) refreshMe();
+    if (e.persisted) refreshMeIfStale();
   });
   // Always re-verify on return to the tab — entitlement may have changed in
   // another tab (purchase, sign-in, sign-out) and stale state must never stick.
   document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible") refreshMe();
+    if (document.visibilityState === "visible") refreshMeIfStale();
   });
 
   // Sign out (this device, or ?all=1 for every device), then refresh state.
