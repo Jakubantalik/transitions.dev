@@ -50,6 +50,8 @@
   }
   function writeAuthCache() {
     try {
+      var prev = readAuthCache();
+      if (prev && !!prev.a === !!state.authenticated && !!prev.p === !!state.pro) return;
       localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({
         a: !!state.authenticated,
         p: !!state.pro,
@@ -199,19 +201,23 @@
   // signed in from the emailed link (a different tab) until they refreshed.
   window.addEventListener("storage", function (e) {
     if (e.key !== AUTH_CACHE_KEY) return;
+    var moved = true;
     if (e.newValue) {
       try {
         var c = JSON.parse(e.newValue);
+        moved = !!c.a !== !!state.authenticated || !!c.p !== !!state.pro;
         state.authenticated = !!c.a;
         state.pro = !!c.p;
         paintAuth();
         document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
       } catch (err) {}
     }
-    // Confirm against the server either way (also covers a sign-out that
-    // cleared the cache). Deliberately bypasses the 60s floor: a storage
-    // change IS evidence the auth state moved.
-    refreshMe();
+    // Confirm against the server only when the shared cache actually
+    // disagreed with this tab (also covers a sign-out that cleared it).
+    // Re-verifying on every write turned two open tabs into a request
+    // loop: each /me answer rewrote the cache, which woke the other tab,
+    // which ran /me again.
+    if (moved) refreshMe();
   });
 
   // Re-verify after bfcache restores and tab un-freezes — Chrome resumes the
