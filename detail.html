@@ -6069,6 +6069,9 @@
     }
     /* Button is now a sibling that follows the code card. */
     .detail-code.is-locked ~ .detail-code-copy { display: none; }
+    /* display:flex would defeat the hidden attribute the unlock code sets —
+       same per-component companion rule every other [hidden] surface has. */
+    .detail-paywall[hidden] { display: none; }
     .detail-paywall {
       position: absolute;
       inset: 0;
