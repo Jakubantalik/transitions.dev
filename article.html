@@ -1,0 +1,1124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Article - Duration, scale &amp; movement examples</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preload" href="assets/fonts/Saans-Medium.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
+  <style>
+    /* Saans — the same face the transitions.dev hero title uses. */
+    @font-face {
+      font-family: "Saans";
+      src: url("assets/fonts/Saans-Medium.woff2") format("woff2"),
+           url("assets/fonts/Saans-Medium.woff") format("woff");
+      font-weight: 500;
+      font-style: normal;
+      /* optional (not swap): brief block period, then no late swap. */
+      font-display: optional;
+    }
+
+    /* ──────────────────────────────────────────────────────────────
+       Article demo page — Figma Portfolio 1383:35989. White canvas,
+       three sections: Duration / Scale / Movement examples. All
+       motion comes from transitions.dev skill recipes; components
+       ported from collection.html / example-dropdown.html.
+       ────────────────────────────────────────────────────────────── */
+    :root {
+      --bg-page: #ffffff;
+      --bg-modal: #ffffff;
+      --bg-trigger: #f4f4f4;
+      --bg-ghost-hover: rgba(61, 61, 61, 0.04);
+      --bg-backdrop: rgba(0, 0, 0, 0.12);
+      --bg-stage: #f9f9f9;
+      --skeleton: #eeeeef;
+
+      --text-strong: #0f0f0f;
+      --text-body: #4d4d4d;
+      --text-muted: #737373;
+      --text-on-dropdown: #17181c;
+
+      --shadow-modal:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+      /* Figma modal card shadow (special/dropdown/border stack) */
+      --shadow-dialog:
+        0 -1px 0 -0.5px rgba(255, 255, 255, 0.16),
+        0 0 0 1px rgba(0, 0, 0, 0.08),
+        0 4px 12px -8px rgba(0, 0, 0, 0.12),
+        0 4px 24px -8px rgba(0, 0, 0, 0.12);
+      --stroke-btn:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.1),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1);
+
+      --radius-menu: 18px;
+      --radius-row: 12px;
+      --radius-trigger: 48px;
+
+      /* ── transitions.dev — tunables (skill _root.css) ─────────── */
+      /* Menu dropdown (05) */
+      --dropdown-open-dur: 250ms;
+      --dropdown-close-dur: 150ms;
+      --dropdown-pre-scale: 0.97;
+      --dropdown-closing-scale: 0.99;
+      --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Modal (06) */
+      --modal-open-dur: 250ms;
+      --modal-close-dur: 150ms;
+      --modal-scale: 0.96;
+      --modal-scale-close: 0.96;
+      --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Panel reveal (07) */
+      --panel-open-dur: 400ms;
+      --panel-close-dur: 350ms;
+      --panel-translate-y: 100px;
+      --panel-blur: 2px;
+      --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Page side-by-side (08) */
+      --page-slide-dur: 250ms;
+      --page-fade-dur: 250ms;
+      --page-slide-distance: 8px;
+      --page-blur: 3px;
+      --page-stagger: 0ms;
+      --page-exit-enabled: 1;
+      --page-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --page-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Tabs sliding (16) */
+      --tabs-dur: 250ms;
+      --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --tabs-text-muted: rgba(15, 15, 15, 0.8);
+      --tabs-text-active: #0f0f0f;
+      --tabs-bar-bg: #eeeeee;
+      --tabs-pill-bg: #ffffff;
+      /* Tooltip (17) */
+      --tt-in-dur: 150ms;
+      --tt-out-dur: 50ms;
+      --tt-scale: 0.98;
+      --tt-delay: 80ms;
+      --tt-in-ease: ease-out;
+      --tt-out-ease: ease-out;
+      --tt-bg: #ffffff;
+      --tt-fg: #2f2f2f;
+    }
+
+    /* ── Base ─────────────────────────────────────────────────────── */
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      -webkit-text-size-adjust: 100%;
+      font-feature-settings: "cv11", "ss01";
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg-page);
+      color: var(--text-strong);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 22px;
+    }
+    button {
+      font-family: inherit;
+      -webkit-font-smoothing: inherit;
+      -moz-osx-font-smoothing: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Article layout ───────────────────────────────────────────── */
+    .article {
+      max-width: 1005px;
+      margin: 0 auto;
+      padding: 96px 24px 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Hero title styling from the transitions.dev homepage (.title). */
+    .section-title {
+      margin: 0 0 72px;
+      font-family: "Saans", "Inter", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 36px;
+      font-weight: 500;
+      line-height: 42px;
+      letter-spacing: -0.005em;
+      color: var(--text-strong);
+      text-align: center;
+    }
+    @media (max-width: 640px) {
+      .section-title { font-size: 26px; line-height: 32px; }
+    }
+    .section-title:not(:first-child) { margin-top: 160px; }
+    .demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .demo + .demo { margin-top: 64px; }
+    .demo-row { margin-top: 64px; }
+    .demo-row > .demo { margin-top: 0; }
+    .demo-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 120px;
+      flex-wrap: wrap;
+    }
+    .demo-caption {
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--text-muted);
+    }
+
+    /* ── Trigger pill (Figma "Tooltip" chip — #eee, 36px, r48) ───── */
+    .trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 36px;
+      padding: 3px 14px;
+      border: 0;
+      border-radius: var(--radius-trigger);
+      background: var(--bg-trigger);
+      color: var(--text-strong);
+      font-size: 13px;
+      line-height: 1.4;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 130ms ease, transform 130ms ease;
+    }
+    .trigger:hover { background: #ececec; }
+    .trigger:active { transform: scale(0.97); }
+    .trigger .chev { display: inline-flex; width: 16px; height: 16px; opacity: 0.7; line-height: 0; }
+    .trigger .chev svg { display: block; }
+    .trigger--menu { padding-right: 10px; }  /* Figma 1383:36118 */
+
+    /* ── Dropdown (05-menu-dropdown) — from example-dropdown.html ── */
+    .dd-anchor {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .dd-shell {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      z-index: 50;
+    }
+    .dropdown {
+      display: flex;
+      flex-direction: column;
+      width: 200px;
+      padding: 6px;
+      background: var(--bg-modal);
+      border-radius: var(--radius-menu);
+      box-shadow: var(--shadow-modal);
+    }
+    .dd-row {
+      display: flex; align-items: center; gap: 6px;
+      height: 36px; padding: 0 12px; border: 0;
+      background: transparent; border-radius: var(--radius-row);
+      color: var(--text-on-dropdown); cursor: pointer; text-align: left; width: 100%;
+      font-family: inherit; font-size: 14px; line-height: 22px;
+      transition: background-color 120ms ease;
+    }
+    .dd-row:hover { background: var(--bg-ghost-hover); }
+    .dd-row .icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; flex: 0 0 16px; line-height: 0; opacity: 0.85;
+    }
+    .dd-row .icon svg { display: block; }
+    .dd-row--copy { gap: 8px; }
+
+    /* Menu dropdown (05) — verbatim; translateZ(0) pre-promotes the
+       layer so the shadow rides in with the scale (Safari quirk). */
+    .t-dropdown {
+      transform-origin: top left;
+      transform: scale(var(--dropdown-pre-scale)) translateZ(0);
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--dropdown-open-dur) var(--dropdown-ease),
+        opacity   var(--dropdown-open-dur) var(--dropdown-ease);
+      will-change: transform, opacity;
+    }
+    .t-dropdown.is-open { transform: scale(1) translateZ(0); opacity: 1; pointer-events: auto; }
+    .t-dropdown.is-closing {
+      transform: scale(var(--dropdown-closing-scale)) translateZ(0);
+      opacity: 0; pointer-events: none;
+      transition:
+        transform var(--dropdown-close-dur) var(--dropdown-ease),
+        opacity   var(--dropdown-close-dur) var(--dropdown-ease);
+    }
+    /* Reserve room below the anchors so an open menu doesn't overlap
+       the next demo (the Figma collage shows them open in flow). */
+    .demo--dropdown { min-height: 210px; }
+
+    /* ── Tabs sliding (16) — from collection.html ─────────────────── */
+    .t-tabs {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      border-radius: var(--radius-trigger);
+      background: var(--tabs-bar-bg);
+    }
+    .t-tab {
+      position: relative;
+      height: 30px;
+      padding: 4px 12px;
+      border: 0;
+      background: transparent;
+      color: var(--tabs-text-muted);
+      font-size: 13px; font-weight: 500;
+      border-radius: var(--radius-trigger);
+      cursor: pointer;
+      z-index: 1;
+      transition: color var(--tabs-dur) var(--tabs-ease);
+    }
+    .t-tab:not([aria-selected="true"]):hover,
+    .t-tab[aria-selected="true"] { color: var(--tabs-text-active); }
+    .t-tabs-pill {
+      position: absolute;
+      top: 3px; left: 0;
+      height: 30px; width: 0;
+      background: var(--tabs-pill-bg);
+      border-radius: var(--radius-trigger);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transform: translateX(0);
+      transition:
+        transform var(--tabs-dur) var(--tabs-ease),
+        width     var(--tabs-dur) var(--tabs-ease);
+      will-change: transform, width;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Modal (06-modal) + Figma dialog card 1383:36039 ──────────── */
+    .modal-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      pointer-events: none;
+    }
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-backdrop);
+      opacity: 0;
+      transition: opacity var(--modal-open-dur) var(--modal-ease);
+    }
+    .modal-layer.is-open { pointer-events: auto; }
+    .modal-layer.is-open .modal-backdrop { opacity: 1; }
+    .modal-layer.is-closing .modal-backdrop {
+      opacity: 0;
+      transition-duration: var(--modal-close-dur);
+    }
+    .t-modal {
+      position: relative;
+      width: 420px;
+      max-width: 100%;
+      padding: 20px;
+      border-radius: 20px;
+      background: var(--bg-modal);
+      box-shadow: var(--shadow-dialog);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      /* recipe 06 — verbatim */
+      transform-origin: center;
+      transform: scale(var(--modal-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--modal-open-dur) var(--modal-ease),
+        opacity   var(--modal-open-dur) var(--modal-ease);
+      will-change: transform, opacity;
+    }
+    .t-modal.is-open {
+      transform: scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .t-modal.is-closing {
+      transform: scale(var(--modal-scale-close));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--modal-close-dur) var(--modal-ease),
+        opacity   var(--modal-close-dur) var(--modal-ease);
+    }
+    /* WRONG example — same recipe, scale forced to 0.90. The start
+       scale is too deep, so the dialog reads as popping instead of
+       settling. Driven through the recipe vars so the hooks stay live. */
+    .modal-layer--wrong {
+      --modal-scale: 0.90;
+      --modal-scale-close: 0.90;
+    }
+    .modal-head { display: flex; flex-direction: column; gap: 8px; }
+    .modal-title-row { display: flex; align-items: flex-start; gap: 6px; }
+    .modal-title {
+      flex: 1;
+      margin: 0;
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 500;
+      color: #000000;
+    }
+    .modal-close {
+      display: grid;
+      place-items: center;
+      width: 32px; height: 32px;
+      margin: -4px -6px 0 0;
+      padding: 0;
+      border: 0;
+      border-radius: 100px;
+      background: transparent;
+      color: var(--text-strong);
+      cursor: pointer;
+      transition: background-color 120ms ease;
+    }
+    .modal-close:hover { background: var(--bg-ghost-hover); }
+    .modal-close svg { display: block; }
+    .modal-copy { margin: 0; font-size: 14px; line-height: 20px; color: var(--text-body); }
+    .modal-copy strong { font-weight: 500; color: #000000; }
+    .modal-buttons { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+    .btn-cancel {
+      height: 36px;
+      padding: 8px 14px;
+      border: 0;
+      border-radius: 50px;
+      background: var(--bg-modal);
+      color: #000000;
+      font-size: 14px; line-height: 20px; font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), var(--stroke-btn);
+      transition: background-color 130ms ease, transform 130ms ease;
+    }
+    .btn-cancel:hover { background: #fafafa; }
+    .btn-cancel:active { transform: scale(0.97); }
+    .btn-danger {
+      height: 36px;
+      padding: 0 15px;
+      border: 0;
+      border-radius: 100px;
+      background: #e42e37;
+      color: #ffffff;
+      font-size: 14px; line-height: 20px; font-weight: 500;
+      cursor: pointer;
+      transition: background-color 130ms ease, transform 130ms ease;
+    }
+    .btn-danger:hover { background: #d3242d; }
+    .btn-danger:active { transform: scale(0.97); }
+
+    /* ── Tooltip (17-tooltip) — verbatim, pure CSS ────────────────── */
+    .t-tt-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .t-tt {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translate(-50%, 0) scale(var(--tt-scale));
+      transform-origin: 50% 100%;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: var(--tt-bg);
+      color: var(--tt-fg);
+      font-size: 13px;
+      line-height: 18px;
+      white-space: nowrap;
+      box-shadow: var(--shadow-modal);
+      opacity: 0;
+      pointer-events: none;
+      /* Default rule controls the LEAVE state — no delay here. */
+      transition:
+        opacity   var(--tt-out-dur) var(--tt-out-ease),
+        transform var(--tt-out-dur) var(--tt-out-ease);
+    }
+    /* Appear delay lives ONLY on the hover rule so leaving snaps the
+       delay to 0 and the disappear plays immediately. */
+    .t-tt-wrap:hover .t-tt,
+    .t-tt-trigger:focus-visible + .t-tt {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+      transition-duration: var(--tt-in-dur);
+      transition-timing-function: var(--tt-in-ease);
+      transition-delay: var(--tt-delay);
+    }
+
+    /* ── Page side-by-side (08) — the exact transitions.dev homepage
+       prototype (index.html P8): token list → amount screen. The
+       --p8-* names it reads are aliased to the skill's --page-* vars,
+       the same mapping the homepage itself uses. ─────────────────── */
+    .p8-modal {
+      --p8-slide-dur: var(--page-slide-dur);
+      --p8-fade-dur: var(--page-fade-dur);
+      --p8-distance: var(--page-slide-distance);
+      --p8-blur: var(--page-blur);
+      --p8-stagger: var(--page-stagger);
+      --p8-exit-enabled: var(--page-exit-enabled);
+      --p8-slide-ease: var(--page-slide-ease);
+      --p8-fade-ease: var(--page-fade-ease);
+      position: relative;
+      width: 260px;
+      /* 260 (not the homepage's 267): the token list ends 8px above
+         the bottom edge, matching its 8px side inset. */
+      height: 260px;
+      background: var(--bg-modal);
+      border-radius: 12px;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px rgba(0, 0, 0, 0.05),
+        0 4px 42px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+    /* Page transition: both pages animate position + blur.
+       `--p8-exit-enabled` (0/1) lets you disable the outgoing slide. */
+    .p8-modal .page-1 { --p8-from-x: calc(var(--p8-distance) * -1); }
+    .p8-modal .page-2 { --p8-from-x: var(--p8-distance); }
+    .p8-modal .page {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(calc(var(--p8-from-x, 0px) * var(--p8-exit-enabled)));
+      filter: blur(calc(var(--p8-blur) * var(--p8-exit-enabled)));
+      transition:
+        opacity var(--p8-fade-dur) var(--p8-fade-ease),
+        transform var(--p8-slide-dur) var(--p8-slide-ease),
+        filter var(--p8-slide-dur) var(--p8-slide-ease);
+      will-change: opacity, transform, filter;
+    }
+    .p8-modal[data-page="1"] .page-1,
+    .p8-modal[data-page="2"] .page-2 {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+      filter: blur(0);
+      transition-delay: var(--p8-stagger);
+    }
+    .p8-modal .page-title {
+      position: absolute;
+      left: 50%;
+      top: 25px;
+      transform: translateX(-50%);
+      width: 95px;
+      height: 14px;
+      background: var(--skeleton);
+      border-radius: 4px;
+    }
+    .p8-modal .chip-btn {
+      appearance: none;
+      border: 0;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 60px;
+      background: rgba(244, 244, 244, 0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-strong);
+      transition: background-color 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .p8-modal .chip-btn:hover { background: rgba(244, 244, 244, 0.9); }
+    .p8-modal .chip-btn svg { display: block; }
+    .p8-modal .back-btn {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      z-index: 2;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--p8-fade-dur) var(--p8-fade-ease);
+    }
+    .p8-modal[data-page="2"] .back-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .p8-modal .back-btn svg { transform: translateX(-1px); }
+    .p8-modal .tokens {
+      position: absolute;
+      left: 8px;
+      top: 60.5px;
+      width: 244px;
+      display: flex;
+      flex-direction: column;
+    }
+    .p8-modal .token-row {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px 8px 12px;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .p8-modal .token-row:hover { background: rgba(2, 2, 2, 0.02); }
+    .p8-modal .token-row:focus-visible {
+      outline: 2px solid var(--text-strong);
+      outline-offset: 2px;
+    }
+    .p8-modal .token-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    /* Token chip: pure-CSS avatar — 32×32 circle, translucent
+       brand-tinted fill, letter placed via padding. */
+    .p8-modal .token-icon {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      padding: 4.5px 0 0 12px;
+      border-radius: 50%;
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 22px;
+      white-space: nowrap;
+      color: var(--token-label);
+      background-color: rgba(var(--token-fill-rgb), 0.102);
+    }
+    /* Neutral greys only — the brand tints are dropped so the demo
+       reads as motion, not branding. */
+    .p8-modal .token-icon.eth  { --token-label: #4a4a4a; --token-fill-rgb: 0, 0, 0; }
+    .p8-modal .token-icon.avax { --token-label: #4a4a4a; --token-fill-rgb: 0, 0, 0; }
+    .p8-modal .token-icon.bnb  { --token-label: #4a4a4a; --token-fill-rgb: 0, 0, 0; }
+    .p8-modal .token-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-bottom: 4px;
+      font-size: 14px;
+      line-height: 22px;
+      white-space: nowrap;
+    }
+    .p8-modal .token-text .name { color: var(--text-strong); }
+    .p8-modal .token-text .sym  { color: #6c6c6c; }
+    .p8-modal .amount-screen {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: 78px;
+      width: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-sizing: border-box;
+    }
+    .p8-modal .amount-value {
+      font-weight: 500;
+      font-size: 48px;
+      line-height: 48px;
+      color: var(--text-strong);
+      text-align: center;
+      width: 100%;
+    }
+    .p8-modal .pills {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .p8-modal .pill {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 27px;
+      background: #f7f7f8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 16px;
+      color: #5e6773;
+      white-space: nowrap;
+    }
+    .p8-modal .amount-available {
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 18px;
+      color: var(--text-strong);
+      text-align: center;
+      width: 100%;
+    }
+
+    /* ── Panel reveal (07) inside a stage (Figma 1383:36127) ──────── */
+    .panel-stage {
+      position: relative;
+      width: 100%;
+      max-width: 1005px;
+      height: 530px;
+      border-radius: 20px;
+      background: var(--bg-stage);
+      overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .panel-stage .trigger { margin-top: 48px; position: relative; z-index: 2; }
+    .t-panel-slide {
+      /* translateY(70%) resolves against the panel's own height, so
+         the travel is exactly 70% of it at any size. */
+      --panel-translate-y: 70%;
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      margin-left: -406px;
+      width: 813px;
+      max-width: calc(100% - 48px);
+      height: 268px;
+      border-radius: 20px 20px 0 0;
+      background: var(--bg-modal);
+      box-shadow: var(--shadow-modal);
+      padding: 24px;
+      /* recipe 07 — verbatim */
+      transform: translateY(var(--panel-translate-y));
+      opacity: 0;
+      filter: blur(var(--panel-blur));
+      pointer-events: none;
+      transition:
+        transform var(--panel-close-dur) var(--panel-ease),
+        opacity   var(--panel-close-dur) var(--panel-ease),
+        filter    var(--panel-close-dur) var(--panel-ease);
+      will-change: transform, opacity, filter;
+    }
+    .t-panel-slide[data-open="true"] {
+      transform: translateY(0);
+      opacity: 1;
+      filter: blur(0);
+      pointer-events: auto;
+      transition:
+        transform var(--panel-open-dur) var(--panel-ease),
+        opacity   var(--panel-open-dur) var(--panel-ease),
+        filter    var(--panel-open-dur) var(--panel-ease);
+    }
+    @media (max-width: 900px) {
+      .t-panel-slide { left: 24px; right: 24px; margin-left: 0; width: auto; }
+    }
+    .panel-lines { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .panel-line { height: 14px; border-radius: 4px; background: var(--skeleton); }
+    .panel-line--title { width: 140px; }
+    .panel-line--long  { width: 100%; }
+    .panel-line--short { width: 62%; }
+    .panel-grid { display: flex; gap: 12px; }
+    .panel-tile { flex: 1; height: 120px; border-radius: 12px; background: var(--bg-stage); }
+
+    /* prefers-reduced-motion — required by every recipe. */
+    @media (prefers-reduced-motion: reduce) {
+      .t-dropdown, .t-modal, .modal-backdrop, .t-panel-slide, .t-tt,
+      .t-tabs-pill, .t-tab, .p8-modal .page, .p8-modal .back-btn {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="article">
+
+    <!-- ══ 1 · Duration examples ══════════════════════════════════ -->
+    <h2 class="section-title">Duration examples</h2>
+
+    <!-- Dropdown — menu dropdown (05): 250ms open, 150ms close -->
+    <div class="demo demo--dropdown">
+      <div class="dd-anchor">
+        <button class="trigger trigger--menu" id="ddTrigger1" type="button" aria-haspopup="menu" aria-expanded="false">
+          Dropdown menu
+          <span class="chev" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
+              <path transform="translate(4.25 6.25)" fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/>
+            </svg>
+          </span>
+        </button>
+        <div class="dd-shell">
+          <div class="t-dropdown dropdown" id="ddMenu1" role="menu" aria-label="Share options"></div>
+        </div>
+      </div>
+      <span class="demo-caption">Menu dropdown (05) — 250ms open / 150ms close</span>
+    </div>
+
+    <!-- Tabs — tabs sliding (16) -->
+    <div class="demo">
+      <div class="t-tabs" role="tablist" aria-label="Mode">
+        <span class="t-tabs-pill" aria-hidden="true"></span>
+        <button type="button" class="t-tab" role="tab" aria-selected="true">Plan</button>
+        <button type="button" class="t-tab" role="tab" aria-selected="false">Debug</button>
+        <button type="button" class="t-tab" role="tab" aria-selected="false">Ask</button>
+      </div>
+      <span class="demo-caption">Tabs sliding (16) — pill travels in 250ms</span>
+    </div>
+
+    <!-- Modal — modal (06): correct 0.96 scale -->
+    <div class="demo">
+      <button class="trigger" id="modalTrigger1" type="button" aria-haspopup="dialog">Modal</button>
+      <span class="demo-caption">Modal (06) — 250ms open / 150ms close</span>
+    </div>
+
+    <!-- ══ 2 · Scale examples ═════════════════════════════════════ -->
+    <h2 class="section-title">Scale examples</h2>
+
+    <div class="demo-row">
+      <!-- Dropdown — 0.97 pre-scale / 0.99 closing (recipe values) -->
+      <div class="demo demo--dropdown">
+        <div class="dd-anchor">
+          <button class="trigger trigger--menu" id="ddTrigger2" type="button" aria-haspopup="menu" aria-expanded="false">
+            Dropdown menu
+            <span class="chev" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
+                <path transform="translate(4.25 6.25)" fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/>
+              </svg>
+            </span>
+          </button>
+          <div class="dd-shell">
+            <div class="t-dropdown dropdown" id="ddMenu2" role="menu" aria-label="Share options"></div>
+          </div>
+        </div>
+        <span class="demo-caption">Dropdown grows from 0.97, closes to 0.99</span>
+      </div>
+
+      <!-- Tooltip — tooltip (17): 0.98 scale from below -->
+      <div class="demo">
+        <span class="t-tt-wrap">
+          <button class="trigger t-tt-trigger" type="button" aria-describedby="tt-1">Tooltip</button>
+          <span class="t-tt" id="tt-1" role="tooltip">Tooltip text</span>
+        </span>
+        <span class="demo-caption">Tooltip (17) — scales from 0.98, hover me</span>
+      </div>
+    </div>
+
+    <!-- Modal — WRONG: 0.95 start scale pops instead of settling -->
+    <div class="demo">
+      <button class="trigger" id="modalTrigger2" type="button" aria-haspopup="dialog">Modal</button>
+      <span class="demo-caption">Wrong on purpose — 0.90 start scale is too deep; the dialog pops</span>
+    </div>
+
+    <!-- ══ 3 · Movement examples ══════════════════════════════════ -->
+    <h2 class="section-title">Movement examples</h2>
+
+    <!-- Page side-by-side (08) — list ↔ detail -->
+    <div class="demo">
+      <div class="p8-modal" data-proto-p8 data-page="1">
+        <div class="page-title"></div>
+        <div class="page page-1">
+          <div class="tokens">
+            <button class="token-row" type="button" data-token="ETH">
+              <div class="token-left">
+                <div class="token-icon eth">E</div>
+                <div class="token-text">
+                  <span class="name">Ethereum</span>
+                  <span class="sym">ETH</span>
+                </div>
+              </div>
+            </button>
+            <button class="token-row" type="button" data-token="AVAX">
+              <div class="token-left">
+                <div class="token-icon avax">A</div>
+                <div class="token-text">
+                  <span class="name">Avalanche</span>
+                  <span class="sym">AVAX</span>
+                </div>
+              </div>
+            </button>
+            <button class="token-row" type="button" data-token="BNB">
+              <div class="token-left">
+                <div class="token-icon bnb">B</div>
+                <div class="token-text">
+                  <span class="name">BNB</span>
+                  <span class="sym">BNB</span>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+        <button class="chip-btn back-btn" type="button" aria-label="Back" data-p8-back>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="page page-2">
+          <div class="amount-screen">
+            <div class="amount-value">$10</div>
+            <div class="pills">
+              <div class="pill">25%</div>
+              <div class="pill">50%</div>
+              <div class="pill">Max</div>
+            </div>
+            <div class="amount-available">$66.11 available</div>
+          </div>
+        </div>
+      </div>
+      <span class="demo-caption">Page side-by-side (08) — tap a row, then Back</span>
+    </div>
+
+    <!-- Panel reveal (07) inside a stage -->
+    <div class="demo" style="width: 100%; align-self: stretch;">
+      <div class="panel-stage">
+        <button class="trigger" id="panelTrigger" type="button" aria-expanded="false">Open panel</button>
+        <div class="t-panel-slide" id="panelSheet" data-open="false" role="region" aria-label="Panel">
+          <div class="panel-lines" aria-hidden="true">
+            <div class="panel-line panel-line--title"></div>
+            <div class="panel-line panel-line--long"></div>
+            <div class="panel-line panel-line--short"></div>
+          </div>
+          <div class="panel-grid" aria-hidden="true">
+            <div class="panel-tile"></div>
+            <div class="panel-tile"></div>
+            <div class="panel-tile"></div>
+          </div>
+        </div>
+      </div>
+      <span class="demo-caption">Panel reveal (07) — 400ms open / 350ms close</span>
+    </div>
+  </main>
+
+  <!-- Modal layers (06) — correct and wrong instances share markup -->
+  <div class="modal-layer" id="modalLayer1" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="t-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle1">
+      <div class="modal-head">
+        <div class="modal-title-row">
+          <h3 class="modal-title" id="modalTitle1">Delete project</h3>
+          <button class="modal-close" type="button" aria-label="Close" data-modal-close>
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
+              <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <p class="modal-copy">This will delete <strong>Jakub</strong> project. You can restore deleted projects later from Settings.</p>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-cancel" type="button" data-modal-close>Cancel</button>
+        <button class="btn-danger" type="button" data-modal-close>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-layer modal-layer--wrong" id="modalLayer2" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="t-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle2">
+      <div class="modal-head">
+        <div class="modal-title-row">
+          <h3 class="modal-title" id="modalTitle2">Delete project</h3>
+          <button class="modal-close" type="button" aria-label="Close" data-modal-close>
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
+              <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <p class="modal-copy">This will delete <strong>Jakub</strong> project. You can restore deleted projects later from Settings.</p>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-cancel" type="button" data-modal-close>Cancel</button>
+        <button class="btn-danger" type="button" data-modal-close>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+      var docStyle = getComputedStyle(document.documentElement);
+      function cssNum(name, fb) {
+        var v = parseFloat(docStyle.getPropertyValue(name));
+        return Number.isFinite(v) ? v : fb;
+      }
+
+      /* ── Dropdown rows (icons from example-dropdown.html) ───────── */
+      function iconX() {
+        return '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">'
+          + '<path fill="currentColor" d="M9.55 2.6h1.86l-4.06 4.64L12.13 13.4H8.4L5.48 9.58 2.14 13.4H.28l4.34-4.96L.05 2.6h3.82l2.64 3.49L9.55 2.6Zm-.65 9.68h1.03L3.94 3.66H2.83l6.07 8.62Z"/></svg>';
+      }
+      function iconChat() {
+        return '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">'
+          + '<path d="M8 14.2c3.48 0 6.3-2.6 6.3-5.8S11.48 2.6 8 2.6 1.7 5.2 1.7 8.4c0 1 .28 1.94.77 2.77L1.7 14.3l3.3-.72c.9.4 1.92.62 3 .62Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>'
+          + '<path d="M5.4 7.6h5.2M5.4 9.9h3.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+      }
+      function iconCopy() {
+        return '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">'
+          + '<path d="M3.33333 10C2.71208 10 2.40145 10 2.15642 9.89851C1.82972 9.76318 1.57015 9.50361 1.43483 9.17691C1.33333 8.93188 1.33333 8.62125 1.33333 8V3.46667C1.33333 2.71993 1.33333 2.34656 1.47866 2.06135C1.60649 1.81046 1.81046 1.60649 2.06135 1.47866C2.34656 1.33333 2.71993 1.33333 3.46667 1.33333H8C8.62125 1.33333 8.93188 1.33333 9.17691 1.43483C9.50361 1.57015 9.76318 1.82972 9.89851 2.15642C10 2.40145 10 2.71208 10 3.33333M8.13333 14.6667H12.5333C13.2801 14.6667 13.6534 14.6667 13.9387 14.5213C14.1895 14.3935 14.3935 14.1895 14.5213 13.9387C14.6667 13.6534 14.6667 13.2801 14.6667 12.5333V8.13333C14.6667 7.3866 14.6667 7.01323 14.5213 6.72801C14.3935 6.47713 14.1895 6.27316 13.9387 6.14532C13.6534 6 13.2801 6 12.5333 6H8.13333C7.3866 6 7.01323 6 6.72801 6.14532C6.47713 6.27316 6.27316 6.47713 6.14532 6.72801C6 7.01323 6 7.3866 6 8.13333V12.5333C6 13.2801 6 13.6534 6.14532 13.9387C6.27316 14.1895 6.47713 14.3935 6.72801 14.5213C7.01323 14.6667 7.3866 14.6667 8.13333 14.6667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      }
+      function menuRows() {
+        return '<button class="dd-row" type="button" role="menuitem"><span class="icon">' + iconX() + '</span>Share on X</button>'
+          + '<button class="dd-row" type="button" role="menuitem"><span class="icon">' + iconChat() + '</span>Share via Chat</button>'
+          + '<button class="dd-row dd-row--copy" type="button" role="menuitem"><span class="icon">' + iconCopy() + '</span>Copy link</button>';
+      }
+      document.getElementById("ddMenu1").innerHTML = menuRows();
+      document.getElementById("ddMenu2").innerHTML = menuRows();
+
+      /* ── Menu dropdown (05) orchestration, per instance ─────────── */
+      var dropdownCloseMs = cssNum("--dropdown-close-dur", 150);
+      function initDropdown(triggerId, menuId) {
+        var trigger = document.getElementById(triggerId);
+        var menu = document.getElementById(menuId);
+        var open = false;
+        var timer = null;
+        function openDD() {
+          if (open) return;
+          open = true;
+          clearTimeout(timer);
+          menu.classList.remove("is-closing");
+          void menu.offsetWidth;
+          menu.classList.add("is-open");
+          trigger.setAttribute("aria-expanded", "true");
+        }
+        function closeDD() {
+          if (!open) return;
+          open = false;
+          menu.classList.remove("is-open");
+          menu.classList.add("is-closing");
+          trigger.setAttribute("aria-expanded", "false");
+          clearTimeout(timer);
+          timer = setTimeout(function () { menu.classList.remove("is-closing"); }, dropdownCloseMs);
+        }
+        trigger.addEventListener("click", function (e) {
+          e.stopPropagation();
+          open ? closeDD() : openDD();
+        });
+        document.addEventListener("click", function (e) {
+          if (!open) return;
+          if (e.target.closest("#" + menuId) || e.target.closest("#" + triggerId)) return;
+          closeDD();
+        });
+        return { close: closeDD };
+      }
+      var dd1 = initDropdown("ddTrigger1", "ddMenu1");
+      var dd2 = initDropdown("ddTrigger2", "ddMenu2");
+
+      /* ── Tabs sliding (16) — from collection.html ───────────────── */
+      (function () {
+        var bar = document.querySelector(".t-tabs");
+        var pill = bar.querySelector(".t-tabs-pill");
+        var tabs = Array.prototype.slice.call(bar.querySelectorAll(".t-tab"));
+        function moveTo(tab, animate) {
+          if (!animate) {
+            var prev = pill.style.transition;
+            pill.style.transition = "none";
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+            void pill.offsetWidth;
+            pill.style.transition = prev;
+          } else {
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+          }
+        }
+        function active() {
+          return tabs.find(function (t) { return t.getAttribute("aria-selected") === "true"; }) || tabs[0];
+        }
+        tabs.forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            tabs.forEach(function (t) { t.setAttribute("aria-selected", t === tab ? "true" : "false"); });
+            moveTo(tab, true);
+          });
+        });
+        requestAnimationFrame(function () { moveTo(active(), false); });
+        window.addEventListener("resize", function () { moveTo(active(), false); });
+      })();
+
+      /* ── Modal (06) orchestration, per instance ─────────────────── */
+      var modalCloseMs = cssNum("--modal-close-dur", 150);
+      function initModal(triggerId, layerId) {
+        var trigger = document.getElementById(triggerId);
+        var layer = document.getElementById(layerId);
+        var modal = layer.querySelector(".t-modal");
+        var open = false;
+        var timer = null;
+        function openModal() {
+          if (open) return;
+          open = true;
+          clearTimeout(timer);
+          modal.classList.remove("is-closing");
+          layer.classList.remove("is-closing");
+          void modal.offsetWidth;
+          modal.classList.add("is-open");
+          layer.classList.add("is-open");
+          layer.setAttribute("aria-hidden", "false");
+        }
+        function closeModal() {
+          if (!open) return;
+          open = false;
+          modal.classList.remove("is-open");
+          layer.classList.remove("is-open");
+          modal.classList.add("is-closing");
+          layer.classList.add("is-closing");
+          layer.setAttribute("aria-hidden", "true");
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            modal.classList.remove("is-closing");
+            layer.classList.remove("is-closing");
+          }, modalCloseMs);
+        }
+        trigger.addEventListener("click", openModal);
+        layer.querySelectorAll("[data-modal-close]").forEach(function (el) {
+          el.addEventListener("click", closeModal);
+        });
+        return { close: closeModal, isOpen: function () { return open; } };
+      }
+      var modal1 = initModal("modalTrigger1", "modalLayer1");
+      var modal2 = initModal("modalTrigger2", "modalLayer2");
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        modal1.close();
+        modal2.close();
+        dd1.close();
+        dd2.close();
+      });
+
+      /* ── Page side-by-side (08) — homepage P8 delegation ────────── */
+      document.addEventListener("click", function (e) {
+        var p8Modal = e.target.closest("[data-proto-p8]");
+        if (!p8Modal) return;
+        if (e.target.closest("[data-token]")) {
+          p8Modal.setAttribute("data-page", "2");
+          return;
+        }
+        if (e.target.closest("[data-p8-back]")) {
+          p8Modal.setAttribute("data-page", "1");
+        }
+      });
+
+      /* ── Panel reveal (07) — pure CSS state, JS toggles it ──────── */
+      (function () {
+        var trigger = document.getElementById("panelTrigger");
+        var sheet = document.getElementById("panelSheet");
+        trigger.addEventListener("click", function () {
+          var open = sheet.getAttribute("data-open") === "true";
+          sheet.setAttribute("data-open", String(!open));
+          trigger.setAttribute("aria-expanded", String(!open));
+          trigger.textContent = open ? "Open panel" : "Close panel";
+        });
+      })();
+    })();
+  </script>
+</body>
+</html>
