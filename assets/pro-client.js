@@ -181,9 +181,38 @@
     // Time-based only. Gating on `resolved` meant an API outage removed the
     // floor entirely — every tab focus would retry (three times each, with
     // backoff) exactly when the API was least able to take it.
-    if (Date.now() - lastMeAt < ME_MIN_AGE_MS) return Promise.resolve(state);
+    //
+    // The floor must never suppress a real state change though: signing in
+    // happens in another tab (the emailed link), and the user returns here
+    // expecting the page unlocked. The other tab's /me rewrote the shared
+    // cache, so a cache/state disagreement is exactly that signal — re-verify
+    // immediately regardless of the floor.
+    var cached = readAuthCache();
+    var drift = cached && (!!cached.a !== state.authenticated || !!cached.p !== state.pro);
+    if (!drift && Date.now() - lastMeAt < ME_MIN_AGE_MS) return Promise.resolve(state);
     return refreshMe();
   }
+
+  // Cross-tab sign-in/out: every /me success rewrites the shared cache, and
+  // the storage event delivers that to all OTHER tabs the moment it happens.
+  // Without this, a page left on the paywall stayed locked after the user
+  // signed in from the emailed link (a different tab) until they refreshed.
+  window.addEventListener("storage", function (e) {
+    if (e.key !== AUTH_CACHE_KEY) return;
+    if (e.newValue) {
+      try {
+        var c = JSON.parse(e.newValue);
+        state.authenticated = !!c.a;
+        state.pro = !!c.p;
+        paintAuth();
+        document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
+      } catch (err) {}
+    }
+    // Confirm against the server either way (also covers a sign-out that
+    // cleared the cache). Deliberately bypasses the 60s floor: a storage
+    // change IS evidence the auth state moved.
+    refreshMe();
+  });
 
   // Re-verify after bfcache restores and tab un-freezes — Chrome resumes the
   // page without re-running scripts, and a pre-freeze failure would otherwise
