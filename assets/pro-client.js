@@ -144,6 +144,11 @@
     lastMeAt = Date.now();
     return api("/me")
       .then(function (r) {
+        // 429 means the throttle answered, not that anything is broken.
+        // Retrying is the one response guaranteed to make it worse, and the
+        // state must stay exactly as it was: a throttled Pro user keeps the
+        // entitlement the last good answer gave them.
+        if (r.status === 429) throw { rateLimited: true };
         if (!r.ok) throw new Error("me_" + r.status);
         return r.json();
       })
@@ -160,7 +165,11 @@
         document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
         return state;
       })
-      .catch(function () {
+      .catch(function (err) {
+        if (err && err.rateLimited) {
+          document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
+          return state;
+        }
         if (attempt < 2) {
           return new Promise(function (res) {
             setTimeout(function () { res(refreshMe(attempt + 1)); }, attempt === 0 ? 600 : 2000);
