@@ -12816,9 +12816,15 @@ export function Surface({ open, children }) {
             pw.querySelector("[data-paywall-signin]").addEventListener("click", function () {
               var TP = window.TransitionsPro;
               if (!TP) return;
-              // Signed in but unentitled: "Switch account" — sign out first so
-              // the user can retry with the email they purchased with.
-              if (TP.state && TP.state.authenticated) {
+              // "Switch account" (sign out, then sign in afresh) is ONLY for a
+              // CONFIRMED signed-in account with no Pro. Gating on
+              // state.authenticated alone made this button destroy valid
+              // sessions: during boot the cached state is authenticated, the
+              // overlay is briefly visible, and an entitled user clicking
+              // "Sign in" was silently logged out — then hit the same trap on
+              // the next page, reading as "sign-in is broken".
+              var s = TP.state;
+              if (s && s.resolved && s.authenticated && !s.pro) {
                 TP.logout().then(function () { TP.openSignIn(); });
               } else {
                 TP.openSignIn();
@@ -15838,7 +15844,7 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: unlocks Pro code for entitled viewers (fires pro:me). -->
-  <script src="assets/pro-client.js?v=27" defer></script>
+  <script src="assets/pro-client.js?v=28" defer></script>
 </body>
 </html>
 

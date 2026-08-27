@@ -199,9 +199,24 @@
 
   // Sign out (this device, or ?all=1 for every device), then refresh state.
   function logout(allDevices) {
+    // Reflect the sign-out locally FIRST. The old flow relied on a follow-up
+    // /me to repaint; when that request failed, the page kept an entitled nav
+    // ("Account") over a locked paywall — a half-signed-out UI that read as a
+    // broken account. Clearing the cookie can't fail meaningfully, so the
+    // signed-out state is authoritative locally regardless of network fate.
     clearAuthCache();
+    state.authenticated = false;
+    state.pro = false;
+    state.email = null;
+    state.lifetime = false;
+    state.billing = false;
+    state.subscription = null;
+    state.resolved = true;
+    paintAuth();
+    document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
     return api("/auth/logout" + (allDevices ? "?all=1" : ""), { method: "POST" })
-      .then(function () { return refreshMe(); });
+      .then(function () { return refreshMe(); })
+      .catch(function () { return state; });
   }
 
   function paintAuth() {
