@@ -616,7 +616,8 @@
     }
     /* Glyph sizes come straight from the Figma insets. */
     .p8-modal .token-icon.eth  img { width: 10px;    height: 16px; }
-    .p8-modal .token-icon.avax img { width: 13.73px; height: 12.07px; }
+    /* AVAX glyph reads 1px low against the circle — nudge it up. */
+    .p8-modal .token-icon.avax img { width: 13.73px; height: 12.07px; position: relative; top: -1px; }
     .p8-modal .token-icon.bnb  img { width: 14px;    height: 14px; }
     .p8-modal .token-text {
       display: flex;
