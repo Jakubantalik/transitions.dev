@@ -2692,32 +2692,46 @@
       align-items: center;
       gap: 12px;
     }
-    /* Token chip: pure-CSS avatar matching Figma 232:3349.
-       32×32 circle · translucent brand-tinted fill (α ≈ 10.2%) · letter
-       positioned via padding (Inter 13/22, left 12 / top 4.5). Colors come
-       from two variables:
-         --token-fill-rgb : the translucent circle fill (brand tint)
-         --token-label    : the letter color (slightly darker brand color) */
+    /* Token chip — Figma 1400:36868 "Medium token with chain":
+       32px circle on #f8f8f8 with a drop shadow and a three-layer
+       inset ring; the glyph is the exported asset at 50% opacity. */
     .p8-modal .token-icon {
       position: relative;
       width: 32px;
       height: 32px;
       box-sizing: border-box;
       flex-shrink: 0;
-      padding: 4.5px 0 0 12px;
-      border-radius: 50%;
-      font-family: var(--font-sans);
-      font-weight: 400;
-      font-size: 13px;
-      line-height: 22px;
-      letter-spacing: 0;
-      white-space: nowrap;
-      color: var(--token-label);
-      background-color: rgba(var(--token-fill-rgb), 0.102);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 50px;
+      background: #f8f8f8;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.1),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1);
     }
-    .p8-modal .token-icon.eth  { --token-label: #4e6cc2; --token-fill-rgb: 108, 137, 235; }
-    .p8-modal .token-icon.avax { --token-label: #c24e4e; --token-fill-rgb: 245, 118, 118; }
-    .p8-modal .token-icon.bnb  { --token-label: #c2964e; --token-fill-rgb: 235, 167,  59; }
+    html[data-theme="dark"] .p8-modal .token-icon {
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.2);
+    }
+    .p8-modal .token-icon img {
+      display: block;
+      opacity: 0.5;   /* Figma: glyph sits at 50% */
+    }
+    /* The glyphs are dark artwork — flip them for the dark canvas. */
+    html[data-theme="dark"] .p8-modal .token-icon img {
+      filter: invert(1);
+      opacity: 0.6;
+    }
+    /* Glyph sizes come straight from the Figma insets. */
+    .p8-modal .token-icon.eth  img { width: 10px;    height: 16px; }
+    .p8-modal .token-icon.avax img { width: 13.73px; height: 12.07px; position: relative; top: -1px; }
+    .p8-modal .token-icon.bnb  img { width: 14px;    height: 14px; }
     .p8-modal .token-text {
       display: flex;
       flex-direction: column;
@@ -2728,8 +2742,11 @@
       line-height: 22px;
       white-space: nowrap;
     }
-    .p8-modal .token-text .name { color: var(--text); }
-    .p8-modal .token-text .sym  { color: var(--muted); }
+    /* Figma tightens the pair by pulling the name down 4px. */
+    .p8-modal .token-text .name { color: #17171c; margin-bottom: -4px; }
+    .p8-modal .token-text .sym  { color: #5e6773; }
+    html[data-theme="dark"] .p8-modal .token-text .name { color: var(--text); }
+    html[data-theme="dark"] .p8-modal .token-text .sym  { color: var(--muted); }
     .p8-modal .amount-screen {
       position: absolute;
       left: 8px;
@@ -6967,7 +6984,7 @@
                   <div class="tokens">
                     <button class="token-row" type="button" data-token="ETH">
                       <div class="token-left">
-                        <div class="token-icon eth">E</div>
+                        <div class="token-icon eth"><img src="assets/tokens/eth.png" alt="" aria-hidden="true"></div>
                         <div class="token-text">
                           <span class="name">Ethereum</span>
                           <span class="sym">ETH</span>
@@ -6976,7 +6993,7 @@
                     </button>
                     <button class="token-row" type="button" data-token="AVAX">
                       <div class="token-left">
-                        <div class="token-icon avax">A</div>
+                        <div class="token-icon avax"><img src="assets/tokens/avax.svg?v=3" alt="" aria-hidden="true"></div>
                         <div class="token-text">
                           <span class="name">Avalanche</span>
                           <span class="sym">AVAX</span>
@@ -6985,7 +7002,7 @@
                     </button>
                     <button class="token-row" type="button" data-token="BNB">
                       <div class="token-left">
-                        <div class="token-icon bnb">B</div>
+                        <div class="token-icon bnb"><img src="assets/tokens/bnb.svg?v=3" alt="" aria-hidden="true"></div>
                         <div class="token-text">
                           <span class="name">BNB</span>
                           <span class="sym">BNB</span>
