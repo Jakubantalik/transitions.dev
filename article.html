@@ -589,28 +589,35 @@
       align-items: center;
       gap: 12px;
     }
-    /* Token chip: pure-CSS avatar — 32×32 circle, translucent
-       brand-tinted fill, letter placed via padding. */
+    /* Token chip — Figma 1400:36868 "Medium token with chain":
+       32px circle on #f8f8f8 with a drop shadow and a three-layer
+       inset ring; the glyph is the exported asset at 50% opacity. */
     .p8-modal .token-icon {
       position: relative;
       width: 32px;
       height: 32px;
       box-sizing: border-box;
       flex-shrink: 0;
-      padding: 5px 0 0 12px;   /* +0.5px — optically centres the glyph */
-      border-radius: 50%;
-      font-weight: 400;
-      font-size: 13px;
-      line-height: 22px;
-      white-space: nowrap;
-      color: var(--token-label);
-      background-color: rgba(var(--token-fill-rgb), 0.051);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 50px;
+      background: #f8f8f8;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.1),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1);
     }
-    /* Neutral greys only — the brand tints are dropped so the demo
-       reads as motion, not branding. */
-    .p8-modal .token-icon.eth  { --token-label: #4a4a4a; --token-fill-rgb: 0, 0, 0; }
-    .p8-modal .token-icon.avax { --token-label: #4a4a4a; --token-fill-rgb: 0, 0, 0; }
-    .p8-modal .token-icon.bnb  { --token-label: #4a4a4a; --token-fill-rgb: 0, 0, 0; }
+    .p8-modal .token-icon img {
+      display: block;
+      opacity: 0.5;   /* Figma: glyph sits at 50% */
+    }
+    /* Glyph sizes come straight from the Figma insets. */
+    .p8-modal .token-icon.eth  img { width: 10px;    height: 16px; }
+    .p8-modal .token-icon.avax img { width: 13.73px; height: 12.07px; }
+    .p8-modal .token-icon.bnb  img { width: 14px;    height: 14px; }
     .p8-modal .token-text {
       display: flex;
       flex-direction: column;
@@ -620,8 +627,9 @@
       line-height: 22px;
       white-space: nowrap;
     }
-    .p8-modal .token-text .name { color: var(--text-strong); }
-    .p8-modal .token-text .sym  { color: #6c6c6c; }
+    /* Figma tightens the pair by pulling the name down 4px. */
+    .p8-modal .token-text .name { color: #17171c; margin-bottom: -4px; }
+    .p8-modal .token-text .sym  { color: #5e6773; }
     .p8-modal .amount-screen {
       position: absolute;
       left: 8px;
@@ -832,7 +840,7 @@
           <div class="tokens">
             <button class="token-row" type="button" data-token="ETH">
               <div class="token-left">
-                <div class="token-icon eth">E</div>
+                <div class="token-icon eth"><img src="assets/tokens/eth.png" alt="" aria-hidden="true"></div>
                 <div class="token-text">
                   <span class="name">Ethereum</span>
                   <span class="sym">ETH</span>
@@ -841,7 +849,7 @@
             </button>
             <button class="token-row" type="button" data-token="AVAX">
               <div class="token-left">
-                <div class="token-icon avax">A</div>
+                <div class="token-icon avax"><img src="assets/tokens/avax.svg" alt="" aria-hidden="true"></div>
                 <div class="token-text">
                   <span class="name">Avalanche</span>
                   <span class="sym">AVAX</span>
@@ -850,7 +858,7 @@
             </button>
             <button class="token-row" type="button" data-token="BNB">
               <div class="token-left">
-                <div class="token-icon bnb">B</div>
+                <div class="token-icon bnb"><img src="assets/tokens/bnb.svg" alt="" aria-hidden="true"></div>
                 <div class="token-text">
                   <span class="name">BNB</span>
                   <span class="sym">BNB</span>
