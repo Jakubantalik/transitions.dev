@@ -2040,7 +2040,7 @@
       min-width: 0;
       min-height: 106px;
       box-sizing: border-box;
-      padding: 18px 20px;
+      padding: 32px;
       border-radius: 24px;
       background: #f6f6f6;
       box-shadow:
@@ -2111,23 +2111,31 @@
          caps at max-width: 432px, so without this the leftover slack
          lands AFTER the button instead of before it. */
       margin-left: auto;
+      /* Same pill as the hero's primary CTA (.skill-btn--primary), so the
+         sponsor buttons and "Browse" read as one component. */
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      gap: 8px;
       height: 40px;
-      padding: 6px 16px;
-      border-radius: 24px;
-      background: #101010;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 26px;
+      background: #17181c;
       color: #ffffff;
-      font-family: inherit;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+      font-family: var(--font-sans);
       font-size: 13px;
       font-weight: 500;
       line-height: 13px;
       text-decoration: none;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
       /* Ease Out Smooth ─ cubic-bezier(0.22, 1, 0.36, 1), 200ms.
          The arrow inside the icon shares the curve but runs at 250ms
          so it lingers slightly longer than the button surface. */
-      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+                  color 200ms cubic-bezier(0.22, 1, 0.36, 1);
     }
     .course-cta-button:hover { background: #2a2a2a; }
     .course-cta-button:active { background: #000000; }
@@ -7407,7 +7415,7 @@
         <div class="sponsor-card sponsor-card--cta">
           <div class="sponsor-card-text">
             <p class="sponsor-card-headline">
-              If you want to learn more about crafting UI animations, I highly recommend <a href="https://animations.dev/" target="_blank">Emil Kowalski&rsquo;s course</a>.
+              For UI animation craft, I highly recommend <a href="https://animations.dev/" target="_blank">Emil Kowalski&rsquo;s course</a>.
             </p>
             <p class="sponsor-card-byline">Jakub Antalik, creator of Transitions.dev</p>
           </div>
