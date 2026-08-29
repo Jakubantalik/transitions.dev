@@ -119,6 +119,28 @@
     })();
   </script>
   <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
     /* ============================================================ */
     /* Design tokens — light (default) and dark                      */
     /* ============================================================ */
@@ -2034,7 +2056,7 @@
         inset 0 0 0 1px rgba(255, 255, 255, 0.05),
         inset 0 -1px 0 0 rgba(255, 255, 255, 0.04);
     }
-    .sponsor-card--course { justify-content: space-between; }
+    .sponsor-card--cta { justify-content: space-between; }
     .sponsor-card-text {
       display: flex;
       flex-direction: column;
@@ -2061,18 +2083,23 @@
       line-height: 20px;
       color: var(--text-muted);
     }
-    .sponsor-card--empty {
-      justify-content: center;
-      text-decoration: none;
-      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .sponsor-card--empty:hover { background: #f0f0f0; }
-    html[data-theme="dark"] .sponsor-card--empty:hover { background: #1f1f1f; }
-    .sponsor-card-empty-label {
+    /* Emphasised name inside a sponsor line ("Invisible Details") — the
+       design uses the medium weight, not bold. */
+    .sponsor-card-headline strong { font-weight: 500; }
+    /* Centred line under the cards (Figma 1407:37000): muted question,
+       the call to action in text colour. */
+    .sponsors-note {
+      margin: 16px 0 0;
       font-size: 13px;
-      line-height: 16px;
+      line-height: 20px;
+      text-align: center;
       color: var(--text-muted);
     }
+    .sponsors-note a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    .sponsors-note a:hover { text-decoration: underline; text-underline-offset: 2px; }
 
     /* Pill button mirrors Figma 351:374 (Button/Small/Primary).
        In light mode the pill is near-black with white text, mirrored
@@ -5048,8 +5075,8 @@
       .cards-toolbar { max-width: 664px; }
       /* Two columns puts each sponsor card at ~320px — too narrow for the
          course copy beside the pill, so stack the text over the button. */
-      .sponsor-card--course { flex-direction: column; align-items: flex-start; gap: 16px; }
-      .sponsor-card--course .course-cta-button { margin-left: 0; }
+      .sponsor-card--cta { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .sponsor-card--cta .course-cta-button { margin-left: 0; }
       .sponsor-card-text { max-width: none; }
     }
 
@@ -5082,15 +5109,14 @@
          card to the 106px min-height regardless of content, spilling
          the course pill over the card below — size to content instead. */
       .sponsor-card { flex: none; }
-      .sponsor-card--course {
+      .sponsor-card--cta {
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
       }
-      .sponsor-card--course .course-cta-button {
+      .sponsor-card--cta .course-cta-button {
         margin-left: 0;
       }
-      .sponsor-card--empty { min-height: 72px; }
     }
 
     @media (max-width: 639px) {
@@ -7378,7 +7404,7 @@
     <section class="sponsors" aria-label="Sponsors">
       <h2 class="sponsors-title">Sponsors</h2>
       <div class="sponsors-row">
-        <div class="sponsor-card sponsor-card--course">
+        <div class="sponsor-card sponsor-card--cta">
           <div class="sponsor-card-text">
             <p class="sponsor-card-headline">
               If you want to learn more about crafting UI animations, I highly recommend <a href="https://animations.dev/" target="_blank">Emil Kowalski&rsquo;s course</a>.
@@ -7405,10 +7431,31 @@
             </span>
           </a>
         </div>
-        <a class="sponsor-card sponsor-card--empty" href="mailto:jakubja@gmail.com">
-          <span class="sponsor-card-empty-label">Become a sponsor</span>
-        </a>
+        <div class="sponsor-card sponsor-card--cta">
+          <div class="sponsor-card-text">
+            <p class="sponsor-card-headline">
+              You can tell when an interface feels right. <strong>Invisible Details</strong> is about the small decisions behind that.
+            </p>
+          </div>
+          <a
+            class="course-cta-button"
+            href="https://invisibledetails.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Learn more</span>
+            <span class="course-cta-icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7.5 2.5H4.5C3.39543 2.5 2.5 3.39543 2.5 4.5V11.5C2.5 12.6046 3.39543 13.5 4.5 13.5H11.5C12.6046 13.5 13.5 12.6046 13.5 11.5V8.5"/>
+                <g class="course-cta-arrow">
+                  <path d="M8.5 7.5L13.5 2.5M10 2.5H13.5V6"/>
+                </g>
+              </svg>
+            </span>
+          </a>
+        </div>
       </div>
+      <p class="sponsors-note">Interested in sponsorship or partnership? <a href="mailto:jakubja@gmail.com?subject=Transitions.dev%20sponsorship">Get in touch.</a></p>
     </section>
 
     <footer class="footer">
