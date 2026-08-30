@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Toast open/close — CSS transition | Transitions.dev</title>
+  <meta name="description" content="Toast open/close: Rises in with fade, blur and scale. Copy-paste CSS and React, with reduced-motion support built in." />
+  <link rel="canonical" href="https://transitions.dev/transitions/toast-open-close/" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:title" content="Toast open/close — Transitions.dev" />
+  <meta property="og:description" content="Toast open/close: Rises in with fade, blur and scale. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta property="og:url" content="https://transitions.dev/transitions/toast-open-close/" />
+  <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Toast open/close — Transitions.dev" />
+  <meta name="twitter:description" content="Toast open/close: Rises in with fade, blur and scale. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Toast open/close \u2014 CSS transition", "description": "Toast open/close: Rises in with fade, blur and scale. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/toast-open-close/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Toast open/close CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
+
+  <!-- Theme boot: same key the rest of the site uses, applied before
+       paint so the page never flashes the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --chip-bg: #f4f4f4;
+      --code-bg: #f7f7f7;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --card-bg: #181818;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --chip-bg: rgba(255, 255, 255, 0.06);
+      --code-bg: #181818;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 96px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 56px; }
+    .brand { font-size: 15px; font-weight: 500; color: var(--text); text-decoration: none; }
+    .brand span { color: var(--text-muted); }
+    .topbar nav { display: flex; gap: 16px; }
+    .topbar nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .topbar nav a:hover { color: var(--text); }
+    .crumb { font-size: 13px; color: var(--text-muted); margin: 0 0 12px; }
+    .crumb a { color: var(--text-muted); text-decoration: none; }
+    .crumb a:hover { text-decoration: underline; }
+    h1 { font-size: 32px; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .lede { font-size: 16px; line-height: 24px; color: var(--text-muted); margin: 0 0 24px; }
+    .pro-pill {
+      display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 8px;
+      border-radius: 50px; background: rgba(0, 115, 255, 0.06); color: #0073ff;
+      font-size: 11px; font-weight: 500; vertical-align: middle;
+    }
+    html[data-theme="dark"] .pro-pill { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 48px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 40px; padding: 0 16px; border-radius: 26px;
+      font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn--primary { background: #17181c; color: #fff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2); }
+    .btn--primary:hover { background: #2a2a2a; }
+    html[data-theme="dark"] .btn--primary { background: #fff; color: #0d0d0d; }
+    .btn--secondary { background: var(--chip-bg); color: var(--text); }
+    h2 { font-size: 15px; font-weight: 500; margin: 40px 0 12px; }
+    p { font-size: 14px; line-height: 22px; color: var(--text-muted); }
+    pre {
+      margin: 0; padding: 20px; border-radius: 16px; overflow-x: auto;
+      background: var(--code-bg); border: 1px solid var(--card-border);
+    }
+    code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; color: var(--text); }
+    .related { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--card-border); }
+    .related ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .related a {
+      display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+      border-radius: 48px; background: var(--chip-bg); color: var(--text);
+      font-size: 13px; text-decoration: none;
+    }
+    footer { margin-top: 56px; font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="/">Transitions<span>.dev</span></a>
+      <nav>
+        <a href="/transitions/">All transitions</a>
+        <a href="/skill.html">Skill</a>
+        <a href="/pro.html">Pro</a>
+      </nav>
+    </header>
+    <p class="crumb"><a href="/">Home</a> / <a href="/transitions/">Transitions</a></p>
+    <h1>Toast open/close</h1>
+    <p class="lede">Rises in with fade, blur and scale</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="/detail.html?t=toast-open-close">Open the live demo</a>
+      <a class="btn btn--secondary" href="/skill.html">Install with the Skill</a>
+    </div>
+    <h2>CSS</h2>
+    <p>Namespaced classes and motion tokens you can retune. The reduced-motion guard ships with the snippet.</p>
+    <pre><code>/* Transitions.dev — Toast open / close */
+
+/*
+  Usage:
+    &lt;div class=&quot;t-toast&quot; data-open=&quot;false&quot;&gt; … &lt;/div&gt;
+
+  Toggle `.is-open` on the toast. It rises from below with a
+  fade + cross-blur + slight scale; opening uses the slower
+  open clock, the resting (closed) transition uses the faster
+  close clock, so a single class gives the open/close asymmetry.
+*/
+
+:root {
+  --toast-open: 350ms;
+  --toast-close: 250ms;
+  --toast-distance: 16px;
+  --toast-blur: 2px;
+  --toast-scale: 0.97;
+  --toast-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.t-toast {
+  opacity: 0;
+  transform: translateY(var(--toast-distance)) scale(var(--toast-scale));
+  filter: blur(var(--toast-blur));
+  will-change: transform, opacity, filter;
+  transition:
+    opacity var(--toast-close) var(--toast-ease),
+    transform var(--toast-close) var(--toast-ease),
+    filter var(--toast-close) var(--toast-ease);
+}
+.t-toast.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+  transition:
+    opacity var(--toast-open) var(--toast-ease),
+    transform var(--toast-open) var(--toast-ease),
+    filter var(--toast-open) var(--toast-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-toast { transition: none !important; }
+}</code></pre>
+    <h2>React</h2>
+    <p>Self-contained component; the styles inject themselves on first import.</p>
+    <pre><code>// Transitions.dev — Toast open / close (React, self-contained)
+// Drop into any React project — no extra CSS file needed.
+
+import { useState } from &quot;react&quot;;
+
+// ── Styles ──────────────────────────────────────────────
+// Auto-injected on first import. Idempotent (guarded by
+// the element id) and SSR-safe (no-ops without document).
+const __TRANSITION_STYLES = `
+:root {
+  --toast-open: 350ms;
+  --toast-close: 250ms;
+  --toast-distance: 16px;
+  --toast-blur: 2px;
+  --toast-scale: 0.97;
+  --toast-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.t-toast {
+  opacity: 0;
+  transform: translateY(var(--toast-distance)) scale(var(--toast-scale));
+  filter: blur(var(--toast-blur));
+  will-change: transform, opacity, filter;
+  transition:
+    opacity var(--toast-close) var(--toast-ease),
+    transform var(--toast-close) var(--toast-ease),
+    filter var(--toast-close) var(--toast-ease);
+}
+.t-toast.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+  transition:
+    opacity var(--toast-open) var(--toast-ease),
+    transform var(--toast-open) var(--toast-ease),
+    filter var(--toast-open) var(--toast-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-toast { transition: none !important; }
+}
+`;
+if (typeof document !== &quot;undefined&quot; &amp;&amp; !document.getElementById(&quot;transitions-p22&quot;)) {
+  const __style = document.createElement(&quot;style&quot;);
+  __style.id = &quot;transitions-p22&quot;;
+  __style.textContent = __TRANSITION_STYLES;
+  document.head.appendChild(__style);
+}
+
+// Pair with the CSS from the CSS tab. Toggle `.is-open` on the toast —
+// opening uses the slower clock, the resting (closed) transition uses the
+// faster one, so a single class gives the open/close asymmetry.
+export function Toast({ children }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    &lt;&gt;
+      &lt;button type=&quot;button&quot; onClick={() =&gt; setOpen((v) =&gt; !v)}&gt;Animate&lt;/button&gt;
+      &lt;div
+        className={&quot;t-toast&quot; + (open ? &quot; is-open&quot; : &quot;&quot;)}
+        role=&quot;status&quot;
+        aria-hidden={!open}
+      &gt;
+        {children}
+      &lt;/div&gt;
+    &lt;/&gt;
+  );
+}
+</code></pre>
+    <div class="related">
+      <h2>More transitions</h2>
+      <ul>
+        <li><a href="/transitions/like-button/">Like button</a></li>
+        <li><a href="/transitions/learn-more-hover/">Learn more hover</a></li>
+        <li><a href="/transitions/checkbox-check/">Checkbox check</a></li>
+        <li><a href="/transitions/spinner-to-check-morph/">Spinner to check morph</a></li>
+        <li><a href="/transitions/spinning-counter/">Spinning counter</a></li>
+        <li><a href="/transitions/toggle/">Toggle</a></li>
+      </ul>
+    </div>
+    <footer><a href="/transitions/accordion/">&larr; Accordion</a> &middot; <a href="/transitions/like-button/">Like button &rarr;</a></footer>
+  </div>
+</body>
+</html>

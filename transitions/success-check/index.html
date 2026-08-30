@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Success check — CSS transition | Transitions.dev</title>
+  <meta name="description" content="Success check: Succes check with blur and rotate. Copy-paste CSS and React, with reduced-motion support built in." />
+  <link rel="canonical" href="https://transitions.dev/transitions/success-check/" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:title" content="Success check — Transitions.dev" />
+  <meta property="og:description" content="Success check: Succes check with blur and rotate. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta property="og:url" content="https://transitions.dev/transitions/success-check/" />
+  <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Success check — Transitions.dev" />
+  <meta name="twitter:description" content="Success check: Succes check with blur and rotate. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Success check \u2014 CSS transition", "description": "Success check: Succes check with blur and rotate. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/success-check/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Success check CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
+
+  <!-- Theme boot: same key the rest of the site uses, applied before
+       paint so the page never flashes the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --chip-bg: #f4f4f4;
+      --code-bg: #f7f7f7;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --card-bg: #181818;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --chip-bg: rgba(255, 255, 255, 0.06);
+      --code-bg: #181818;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 96px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 56px; }
+    .brand { font-size: 15px; font-weight: 500; color: var(--text); text-decoration: none; }
+    .brand span { color: var(--text-muted); }
+    .topbar nav { display: flex; gap: 16px; }
+    .topbar nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .topbar nav a:hover { color: var(--text); }
+    .crumb { font-size: 13px; color: var(--text-muted); margin: 0 0 12px; }
+    .crumb a { color: var(--text-muted); text-decoration: none; }
+    .crumb a:hover { text-decoration: underline; }
+    h1 { font-size: 32px; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .lede { font-size: 16px; line-height: 24px; color: var(--text-muted); margin: 0 0 24px; }
+    .pro-pill {
+      display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 8px;
+      border-radius: 50px; background: rgba(0, 115, 255, 0.06); color: #0073ff;
+      font-size: 11px; font-weight: 500; vertical-align: middle;
+    }
+    html[data-theme="dark"] .pro-pill { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 48px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 40px; padding: 0 16px; border-radius: 26px;
+      font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn--primary { background: #17181c; color: #fff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2); }
+    .btn--primary:hover { background: #2a2a2a; }
+    html[data-theme="dark"] .btn--primary { background: #fff; color: #0d0d0d; }
+    .btn--secondary { background: var(--chip-bg); color: var(--text); }
+    h2 { font-size: 15px; font-weight: 500; margin: 40px 0 12px; }
+    p { font-size: 14px; line-height: 22px; color: var(--text-muted); }
+    pre {
+      margin: 0; padding: 20px; border-radius: 16px; overflow-x: auto;
+      background: var(--code-bg); border: 1px solid var(--card-border);
+    }
+    code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; color: var(--text); }
+    .related { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--card-border); }
+    .related ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .related a {
+      display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+      border-radius: 48px; background: var(--chip-bg); color: var(--text);
+      font-size: 13px; text-decoration: none;
+    }
+    footer { margin-top: 56px; font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="/">Transitions<span>.dev</span></a>
+      <nav>
+        <a href="/transitions/">All transitions</a>
+        <a href="/skill.html">Skill</a>
+        <a href="/pro.html">Pro</a>
+      </nav>
+    </header>
+    <p class="crumb"><a href="/">Home</a> / <a href="/transitions/">Transitions</a></p>
+    <h1>Success check</h1>
+    <p class="lede">Succes check with blur and rotate</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="/detail.html?t=success-check">Open the live demo</a>
+      <a class="btn btn--secondary" href="/skill.html">Install with the Skill</a>
+    </div>
+    <h2>CSS</h2>
+    <p>Namespaced classes and motion tokens you can retune. The reduced-motion guard ships with the snippet.</p>
+    <pre><code>/* Transitions.dev — Success check */
+
+/*
+  Usage:
+    &lt;!-- Wrap your icon (SVG, image, anything) in .t-success-check.
+         The wrapper drives fade + rotate + blur + Y-bob; if your
+         icon is an SVG &lt;path&gt;, it gets the stroke-draw animation.
+         Bring your own icon size / colors. --&gt;
+    &lt;span class=&quot;t-success-check&quot; data-state=&quot;out&quot; aria-hidden=&quot;true&quot;&gt;
+      &lt;svg viewBox=&quot;0 0 48 48&quot; fill=&quot;none&quot;&gt;
+        &lt;!-- your icon path(s) here --&gt;
+      &lt;/svg&gt;
+    &lt;/span&gt;
+
+  Trigger:
+    - Cold load is data-state=&quot;out&quot; (opacity 0; no animation).
+    - Show: set data-state=&quot;in&quot; (fade + rotate + blur + Y-bob
+      + path draw run in parallel).
+
+  Snippet covers the appear transition only — bring your own
+  hide behavior (e.g. unmount, opacity:0, or a custom exit).
+*/
+
+:root {
+  --check-opacity-dur: 500ms;
+  --check-rotate-dur: 500ms;
+  --check-rotate-from: 80deg;
+  --check-bob-dur: 500ms;
+  --check-y-amount: 40px;
+  --check-blur-dur: 500ms;
+  --check-blur-from: 10px;
+  --check-path-dur: 500ms;
+  --check-path-delay: 80ms;
+  --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-rotate: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Wrapper drives the appear animation; it doesn&#x27;t own any
+   sizing or color so you can drop in any icon. */
+.t-success-check {
+  display: inline-block;
+  transform-origin: center;
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+/* overflow: visible keeps the stroke from clipping while it
+   draws; display: block kills the inline whitespace under SVGs. */
+.t-success-check svg { display: block; overflow: visible; }
+/* Stroke-draw setup. Replace 20 with the result of
+   path.getTotalLength() for your path; round caps mean any
+   sub-pixel overshoot is invisible. */
+.t-success-check svg path {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+}
+
+.t-success-check[data-state=&quot;in&quot;] {
+  animation:
+    t-check-fade   var(--check-opacity-dur) var(--check-ease-opacity) forwards,
+    t-check-rotate var(--check-rotate-dur)  var(--check-ease-rotate)  forwards,
+    t-check-blur   var(--check-blur-dur)    var(--check-ease-out)     forwards,
+    t-check-bob    var(--check-bob-dur)     var(--check-ease-bob)     forwards;
+}
+.t-success-check[data-state=&quot;in&quot;] svg path {
+  animation: t-check-draw var(--check-path-dur) var(--check-ease-path) var(--check-path-delay, 0ms) forwards;
+}
+
+@keyframes t-check-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes t-check-rotate {
+  from { transform: rotate(var(--check-rotate-from)); }
+  to   { transform: rotate(0deg); }
+}
+@keyframes t-check-blur {
+  from { filter: blur(var(--check-blur-from)); }
+  to   { filter: blur(0); }
+}
+@keyframes t-check-bob {
+  from { translate: 0 var(--check-y-amount); }
+  to   { translate: 0 0; }
+}
+@keyframes t-check-draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .t-success-check { animation: none !important; opacity: 1; }
+  .t-success-check svg path { animation: none !important; stroke-dashoffset: 0 !important; }
+}</code></pre>
+    <h2>React</h2>
+    <p>Self-contained component; the styles inject themselves on first import.</p>
+    <pre><code>// Transitions.dev — Success check (React, self-contained)
+// Drop into any React project — no extra CSS file needed.
+
+import { useRef, useState } from &quot;react&quot;;
+
+// ── Styles ──────────────────────────────────────────────
+// Auto-injected on first import. Idempotent (guarded by
+// the element id) and SSR-safe (no-ops without document).
+const __TRANSITION_STYLES = `
+:root {
+  --check-opacity-dur: 500ms;
+  --check-rotate-dur: 500ms;
+  --check-rotate-from: 80deg;
+  --check-bob-dur: 500ms;
+  --check-y-amount: 40px;
+  --check-blur-dur: 500ms;
+  --check-blur-from: 10px;
+  --check-path-dur: 500ms;
+  --check-path-delay: 80ms;
+  --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-rotate: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Wrapper drives the appear animation; it doesn&#x27;t own any
+   sizing or color so you can drop in any icon. */
+.t-success-check {
+  display: inline-block;
+  transform-origin: center;
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+/* overflow: visible keeps the stroke from clipping while it
+   draws; display: block kills the inline whitespace under SVGs. */
+.t-success-check svg { display: block; overflow: visible; }
+/* Stroke-draw setup. Replace 20 with the result of
+   path.getTotalLength() for your path; round caps mean any
+   sub-pixel overshoot is invisible. */
+.t-success-check svg path {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+}
+
+.t-success-check[data-state=&quot;in&quot;] {
+  animation:
+    t-check-fade   var(--check-opacity-dur) var(--check-ease-opacity) forwards,
+    t-check-rotate var(--check-rotate-dur)  var(--check-ease-rotate)  forwards,
+    t-check-blur   var(--check-blur-dur)    var(--check-ease-out)     forwards,
+    t-check-bob    var(--check-bob-dur)     var(--check-ease-bob)     forwards;
+}
+.t-success-check[data-state=&quot;in&quot;] svg path {
+  animation: t-check-draw var(--check-path-dur) var(--check-ease-path) var(--check-path-delay, 0ms) forwards;
+}
+
+@keyframes t-check-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes t-check-rotate {
+  from { transform: rotate(var(--check-rotate-from)); }
+  to   { transform: rotate(0deg); }
+}
+@keyframes t-check-blur {
+  from { filter: blur(var(--check-blur-from)); }
+  to   { filter: blur(0); }
+}
+@keyframes t-check-bob {
+  from { translate: 0 var(--check-y-amount); }
+  to   { translate: 0 0; }
+}
+@keyframes t-check-draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .t-success-check { animation: none !important; opacity: 1; }
+  .t-success-check svg path { animation: none !important; stroke-dashoffset: 0 !important; }
+}
+`;
+if (typeof document !== &quot;undefined&quot; &amp;&amp; !document.getElementById(&quot;transitions-p10&quot;)) {
+  const __style = document.createElement(&quot;style&quot;);
+  __style.id = &quot;transitions-p10&quot;;
+  __style.textContent = __TRANSITION_STYLES;
+  document.head.appendChild(__style);
+}
+
+// Pair with the CSS from the CSS tab.
+// The .t-success-check wrapper is the API surface — drop any icon
+// (SVG, image, glyph) inside it. data-state drives the appear
+// transition: &quot;out&quot; is the resting hidden state (opacity 0, no
+// animation), &quot;in&quot; runs fade + rotate + blur + Y-bob + path draw
+// in parallel. To replay &quot;in&quot; cleanly on rapid re-triggers we clear
+// the state and re-apply it after a forced layout commit so the
+// keyframes restart from offset 0.
+//
+// This snippet covers the appear transition only — bring your own
+// hide behavior (unmount, opacity:0, or a custom exit).
+export function SuccessCheck({ children }) {
+  const [state, setState] = useState(&quot;out&quot;);
+  const ref = useRef(null);
+
+  const show = () =&gt; {
+    setState(&quot;out&quot;);
+    requestAnimationFrame(() =&gt; {
+      if (ref.current) void ref.current.offsetWidth;
+      setState(&quot;in&quot;);
+    });
+  };
+
+  return (
+    &lt;&gt;
+      &lt;button type=&quot;button&quot; onClick={show}&gt;Animate&lt;/button&gt;
+      &lt;span
+        ref={ref}
+        className=&quot;t-success-check&quot;
+        data-state={state}
+        aria-hidden=&quot;true&quot;
+      &gt;
+        {children /* drop your SVG / icon here */}
+      &lt;/span&gt;
+    &lt;/&gt;
+  );
+}
+</code></pre>
+    <div class="related">
+      <h2>More transitions</h2>
+      <ul>
+        <li><a href="/transitions/avatar-group-hover/">Avatar group hover</a></li>
+        <li><a href="/transitions/error-state-shake/">Error state shake</a></li>
+        <li><a href="/transitions/organic-shimmer/">Organic shimmer</a></li>
+        <li><a href="/transitions/input-clear-with-dissolve/">Input clear with dissolve</a></li>
+        <li><a href="/transitions/skeleton-loader-and-reveal/">Skeleton loader and reveal</a></li>
+        <li><a href="/transitions/texts-reveal/">Texts reveal</a></li>
+      </ul>
+    </div>
+    <footer><a href="/transitions/icon-swap/">&larr; Icon swap</a> &middot; <a href="/transitions/avatar-group-hover/">Avatar group hover &rarr;</a></footer>
+  </div>
+</body>
+</html>

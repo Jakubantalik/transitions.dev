@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spinner to check morph — CSS transition | Transitions.dev</title>
+  <meta name="description" content="Spinner to check morph: Spinner pops into a drawn check. A Transitions Pro recipe with CSS, React and TypeScript variants." />
+  <link rel="canonical" href="https://transitions.dev/transitions/spinner-to-check-morph/" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:title" content="Spinner to check morph — Transitions.dev" />
+  <meta property="og:description" content="Spinner to check morph: Spinner pops into a drawn check. A Transitions Pro recipe with CSS, React and TypeScript variants." />
+  <meta property="og:url" content="https://transitions.dev/transitions/spinner-to-check-morph/" />
+  <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Spinner to check morph — Transitions.dev" />
+  <meta name="twitter:description" content="Spinner to check morph: Spinner pops into a drawn check. A Transitions Pro recipe with CSS, React and TypeScript variants." />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Spinner to check morph \u2014 CSS transition", "description": "Spinner to check morph: Spinner pops into a drawn check. A Transitions Pro recipe with CSS, React and TypeScript variants.", "url": "https://transitions.dev/transitions/spinner-to-check-morph/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}}</script>
+
+  <!-- Theme boot: same key the rest of the site uses, applied before
+       paint so the page never flashes the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --chip-bg: #f4f4f4;
+      --code-bg: #f7f7f7;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --card-bg: #181818;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --chip-bg: rgba(255, 255, 255, 0.06);
+      --code-bg: #181818;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 96px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 56px; }
+    .brand { font-size: 15px; font-weight: 500; color: var(--text); text-decoration: none; }
+    .brand span { color: var(--text-muted); }
+    .topbar nav { display: flex; gap: 16px; }
+    .topbar nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .topbar nav a:hover { color: var(--text); }
+    .crumb { font-size: 13px; color: var(--text-muted); margin: 0 0 12px; }
+    .crumb a { color: var(--text-muted); text-decoration: none; }
+    .crumb a:hover { text-decoration: underline; }
+    h1 { font-size: 32px; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .lede { font-size: 16px; line-height: 24px; color: var(--text-muted); margin: 0 0 24px; }
+    .pro-pill {
+      display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 8px;
+      border-radius: 50px; background: rgba(0, 115, 255, 0.06); color: #0073ff;
+      font-size: 11px; font-weight: 500; vertical-align: middle;
+    }
+    html[data-theme="dark"] .pro-pill { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 48px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 40px; padding: 0 16px; border-radius: 26px;
+      font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn--primary { background: #17181c; color: #fff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2); }
+    .btn--primary:hover { background: #2a2a2a; }
+    html[data-theme="dark"] .btn--primary { background: #fff; color: #0d0d0d; }
+    .btn--secondary { background: var(--chip-bg); color: var(--text); }
+    h2 { font-size: 15px; font-weight: 500; margin: 40px 0 12px; }
+    p { font-size: 14px; line-height: 22px; color: var(--text-muted); }
+    pre {
+      margin: 0; padding: 20px; border-radius: 16px; overflow-x: auto;
+      background: var(--code-bg); border: 1px solid var(--card-border);
+    }
+    code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; color: var(--text); }
+    .related { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--card-border); }
+    .related ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .related a {
+      display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+      border-radius: 48px; background: var(--chip-bg); color: var(--text);
+      font-size: 13px; text-decoration: none;
+    }
+    footer { margin-top: 56px; font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="/">Transitions<span>.dev</span></a>
+      <nav>
+        <a href="/transitions/">All transitions</a>
+        <a href="/skill.html">Skill</a>
+        <a href="/pro.html">Pro</a>
+      </nav>
+    </header>
+    <p class="crumb"><a href="/">Home</a> / <a href="/transitions/">Transitions</a></p>
+    <h1>Spinner to check morph<span class="pro-pill">Pro</span></h1>
+    <p class="lede">Spinner pops into a drawn check</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="/detail.html?t=spinner-to-check-morph">Open the live demo</a>
+      <a class="btn btn--secondary" href="/pro.html">Get Transitions Pro</a>
+    </div>
+    <h2>About this transition</h2>
+    <p>Spinner to check morph is part of Transitions Pro. Spinner pops into a drawn check. The full source ships as CSS, React and TypeScript variants, in the Pro skill and through the npm package. <a href="/pro.html">See what Pro includes</a>.</p>
+    <div class="related">
+      <h2>More transitions</h2>
+      <ul>
+        <li><a href="/transitions/spinning-counter/">Spinning counter</a></li>
+        <li><a href="/transitions/toggle/">Toggle</a></li>
+        <li><a href="/transitions/pro-gradient-text/">Pro gradient text</a></li>
+        <li><a href="/transitions/delete-with-smoky-dissolve/">Delete with smoky dissolve</a></li>
+        <li><a href="/transitions/thinking-states/">Thinking states</a></li>
+        <li><a href="/transitions/reasoning-stream/">Reasoning stream</a></li>
+      </ul>
+    </div>
+    <footer><a href="/transitions/checkbox-check/">&larr; Checkbox check</a> &middot; <a href="/transitions/spinning-counter/">Spinning counter &rarr;</a></footer>
+  </div>
+</body>
+</html>

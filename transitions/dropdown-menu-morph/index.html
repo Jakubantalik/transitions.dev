@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dropdown menu morph — CSS transition | Transitions.dev</title>
+  <meta name="description" content="Dropdown menu morph: Button morphs into a menu surface. Copy-paste CSS and React, with reduced-motion support built in." />
+  <link rel="canonical" href="https://transitions.dev/transitions/dropdown-menu-morph/" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:title" content="Dropdown menu morph — Transitions.dev" />
+  <meta property="og:description" content="Dropdown menu morph: Button morphs into a menu surface. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta property="og:url" content="https://transitions.dev/transitions/dropdown-menu-morph/" />
+  <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Dropdown menu morph — Transitions.dev" />
+  <meta name="twitter:description" content="Dropdown menu morph: Button morphs into a menu surface. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Dropdown menu morph \u2014 CSS transition", "description": "Dropdown menu morph: Button morphs into a menu surface. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/dropdown-menu-morph/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Dropdown menu morph CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
+
+  <!-- Theme boot: same key the rest of the site uses, applied before
+       paint so the page never flashes the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --chip-bg: #f4f4f4;
+      --code-bg: #f7f7f7;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --card-bg: #181818;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --chip-bg: rgba(255, 255, 255, 0.06);
+      --code-bg: #181818;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 96px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 56px; }
+    .brand { font-size: 15px; font-weight: 500; color: var(--text); text-decoration: none; }
+    .brand span { color: var(--text-muted); }
+    .topbar nav { display: flex; gap: 16px; }
+    .topbar nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .topbar nav a:hover { color: var(--text); }
+    .crumb { font-size: 13px; color: var(--text-muted); margin: 0 0 12px; }
+    .crumb a { color: var(--text-muted); text-decoration: none; }
+    .crumb a:hover { text-decoration: underline; }
+    h1 { font-size: 32px; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .lede { font-size: 16px; line-height: 24px; color: var(--text-muted); margin: 0 0 24px; }
+    .pro-pill {
+      display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 8px;
+      border-radius: 50px; background: rgba(0, 115, 255, 0.06); color: #0073ff;
+      font-size: 11px; font-weight: 500; vertical-align: middle;
+    }
+    html[data-theme="dark"] .pro-pill { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 48px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 40px; padding: 0 16px; border-radius: 26px;
+      font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn--primary { background: #17181c; color: #fff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2); }
+    .btn--primary:hover { background: #2a2a2a; }
+    html[data-theme="dark"] .btn--primary { background: #fff; color: #0d0d0d; }
+    .btn--secondary { background: var(--chip-bg); color: var(--text); }
+    h2 { font-size: 15px; font-weight: 500; margin: 40px 0 12px; }
+    p { font-size: 14px; line-height: 22px; color: var(--text-muted); }
+    pre {
+      margin: 0; padding: 20px; border-radius: 16px; overflow-x: auto;
+      background: var(--code-bg); border: 1px solid var(--card-border);
+    }
+    code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; color: var(--text); }
+    .related { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--card-border); }
+    .related ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .related a {
+      display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+      border-radius: 48px; background: var(--chip-bg); color: var(--text);
+      font-size: 13px; text-decoration: none;
+    }
+    footer { margin-top: 56px; font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="/">Transitions<span>.dev</span></a>
+      <nav>
+        <a href="/transitions/">All transitions</a>
+        <a href="/skill.html">Skill</a>
+        <a href="/pro.html">Pro</a>
+      </nav>
+    </header>
+    <p class="crumb"><a href="/">Home</a> / <a href="/transitions/">Transitions</a></p>
+    <h1>Dropdown menu morph</h1>
+    <p class="lede">Button morphs into a menu surface</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="/detail.html?t=dropdown-menu-morph">Open the live demo</a>
+      <a class="btn btn--secondary" href="/skill.html">Install with the Skill</a>
+    </div>
+    <h2>CSS</h2>
+    <p>Namespaced classes and motion tokens you can retune. The reduced-motion guard ships with the snippet.</p>
+    <pre><code>/* Transitions.dev — Plus to menu morph */
+
+/*
+  Usage:
+    &lt;div class=&quot;t-morph&quot; data-open=&quot;false&quot;&gt;
+      &lt;div class=&quot;t-morph-menu&quot;&gt; … menu items … &lt;/div&gt;
+      &lt;button class=&quot;t-morph-plus&quot; aria-expanded=&quot;false&quot;&gt;+&lt;/button&gt;
+    &lt;/div&gt;
+
+  Toggle `data-open` on the container (and `aria-expanded`
+  on the button). CSS animates the surface size + corner
+  radius and cross-fades the plus ↔ menu. Wrap the morph in
+  a relatively-positioned anchor sized to the OPEN footprint
+  if you want it to grow out of a fixed corner.
+*/
+
+:root {
+  --morph-open-dur: 350ms;
+  --morph-close-dur: 250ms;
+  --morph-ease: cubic-bezier(0.34, 1.25, 0.64, 1);
+  --morph-close-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --morph-r-closed: 40px;
+  --morph-r-open: 20px;
+  --morph-fade-dur: 200ms;
+  --morph-slide: 40px;
+  --morph-rotate: 45deg;
+  --morph-scale: 0.97;
+  --morph-blur: 2px;
+}
+
+/* Closed: a small circular button. Open: a rounded panel.
+   Width/height/border-radius animate; the open state uses a
+   bouncier ease than the close. */
+.t-morph {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--morph-r-closed);
+  overflow: hidden;
+  transition:
+    width var(--morph-close-dur) var(--morph-close-ease),
+    height var(--morph-close-dur) var(--morph-close-ease),
+    border-radius var(--morph-close-dur) var(--morph-close-ease);
+}
+.t-morph[data-open=&quot;true&quot;] {
+  width: 183px;
+  height: 172px;
+  border-radius: var(--morph-r-open);
+  transition:
+    width var(--morph-open-dur) var(--morph-ease),
+    height var(--morph-open-dur) var(--morph-ease),
+    border-radius var(--morph-open-dur) var(--morph-ease);
+}
+/* Plus fades + slides out and the icon rotates into an ×. */
+.t-morph-plus {
+  position: absolute;
+  inset: auto 0 0 auto;
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border: 0; background: transparent; cursor: pointer;
+  transition:
+    opacity var(--morph-fade-dur) var(--morph-close-ease),
+    transform var(--morph-open-dur) var(--morph-close-ease),
+    filter var(--morph-fade-dur) var(--morph-close-ease);
+}
+.t-morph-plus svg {
+  transition: transform var(--morph-open-dur) var(--morph-close-ease);
+}
+.t-morph[data-open=&quot;true&quot;] .t-morph-plus {
+  opacity: 0;
+  transform: translateX(calc(-1 * var(--morph-slide)));
+  filter: blur(var(--morph-blur));
+  pointer-events: none;
+}
+.t-morph[data-open=&quot;true&quot;] .t-morph-plus svg {
+  transform: scale(var(--morph-scale)) rotate(var(--morph-rotate));
+}
+/* Menu starts slid in + scaled + blurred; reveals on open. */
+.t-morph-menu {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateX(var(--morph-slide)) scale(var(--morph-scale));
+  filter: blur(var(--morph-blur));
+  pointer-events: none;
+  transition:
+    opacity var(--morph-fade-dur) var(--morph-close-ease),
+    transform var(--morph-open-dur) var(--morph-close-ease),
+    filter var(--morph-fade-dur) var(--morph-close-ease);
+}
+.t-morph[data-open=&quot;true&quot;] .t-morph-menu {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  filter: blur(0);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-morph, .t-morph-plus, .t-morph-menu { transition: none !important; }
+}</code></pre>
+    <h2>React</h2>
+    <p>Self-contained component; the styles inject themselves on first import.</p>
+    <pre><code>// Transitions.dev — Plus to menu morph (React, self-contained)
+// Drop into any React project — no extra CSS file needed.
+
+import { useEffect, useRef, useState } from &quot;react&quot;;
+
+// ── Styles ──────────────────────────────────────────────
+// Auto-injected on first import. Idempotent (guarded by
+// the element id) and SSR-safe (no-ops without document).
+const __TRANSITION_STYLES = `
+:root {
+  --morph-open-dur: 350ms;
+  --morph-close-dur: 250ms;
+  --morph-ease: cubic-bezier(0.34, 1.25, 0.64, 1);
+  --morph-close-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --morph-r-closed: 40px;
+  --morph-r-open: 20px;
+  --morph-fade-dur: 200ms;
+  --morph-slide: 40px;
+  --morph-rotate: 45deg;
+  --morph-scale: 0.97;
+  --morph-blur: 2px;
+}
+
+/* Closed: a small circular button. Open: a rounded panel.
+   Width/height/border-radius animate; the open state uses a
+   bouncier ease than the close. */
+.t-morph {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--morph-r-closed);
+  overflow: hidden;
+  transition:
+    width var(--morph-close-dur) var(--morph-close-ease),
+    height var(--morph-close-dur) var(--morph-close-ease),
+    border-radius var(--morph-close-dur) var(--morph-close-ease);
+}
+.t-morph[data-open=&quot;true&quot;] {
+  width: 183px;
+  height: 172px;
+  border-radius: var(--morph-r-open);
+  transition:
+    width var(--morph-open-dur) var(--morph-ease),
+    height var(--morph-open-dur) var(--morph-ease),
+    border-radius var(--morph-open-dur) var(--morph-ease);
+}
+/* Plus fades + slides out and the icon rotates into an ×. */
+.t-morph-plus {
+  position: absolute;
+  inset: auto 0 0 auto;
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border: 0; background: transparent; cursor: pointer;
+  transition:
+    opacity var(--morph-fade-dur) var(--morph-close-ease),
+    transform var(--morph-open-dur) var(--morph-close-ease),
+    filter var(--morph-fade-dur) var(--morph-close-ease);
+}
+.t-morph-plus svg {
+  transition: transform var(--morph-open-dur) var(--morph-close-ease);
+}
+.t-morph[data-open=&quot;true&quot;] .t-morph-plus {
+  opacity: 0;
+  transform: translateX(calc(-1 * var(--morph-slide)));
+  filter: blur(var(--morph-blur));
+  pointer-events: none;
+}
+.t-morph[data-open=&quot;true&quot;] .t-morph-plus svg {
+  transform: scale(var(--morph-scale)) rotate(var(--morph-rotate));
+}
+/* Menu starts slid in + scaled + blurred; reveals on open. */
+.t-morph-menu {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateX(var(--morph-slide)) scale(var(--morph-scale));
+  filter: blur(var(--morph-blur));
+  pointer-events: none;
+  transition:
+    opacity var(--morph-fade-dur) var(--morph-close-ease),
+    transform var(--morph-open-dur) var(--morph-close-ease),
+    filter var(--morph-fade-dur) var(--morph-close-ease);
+}
+.t-morph[data-open=&quot;true&quot;] .t-morph-menu {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  filter: blur(0);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-morph, .t-morph-plus, .t-morph-menu { transition: none !important; }
+}
+`;
+if (typeof document !== &quot;undefined&quot; &amp;&amp; !document.getElementById(&quot;transitions-p20&quot;)) {
+  const __style = document.createElement(&quot;style&quot;);
+  __style.id = &quot;transitions-p20&quot;;
+  __style.textContent = __TRANSITION_STYLES;
+  document.head.appendChild(__style);
+}
+
+// Pair with the CSS from the CSS tab.
+// `data-open` drives the whole morph; CSS handles the size + radius
+// animation and the plus ↔ menu cross-fade. Outside click / Escape
+// close the menu.
+export function PlusMenu({ children }) {
+  const ref = useRef(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() =&gt; {
+    if (!open) return;
+    const onDown = (e) =&gt; {
+      if (ref.current &amp;&amp; !ref.current.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) =&gt; { if (e.key === &quot;Escape&quot;) setOpen(false); };
+    document.addEventListener(&quot;click&quot;, onDown);
+    document.addEventListener(&quot;keydown&quot;, onKey);
+    return () =&gt; {
+      document.removeEventListener(&quot;click&quot;, onDown);
+      document.removeEventListener(&quot;keydown&quot;, onKey);
+    };
+  }, [open]);
+
+  return (
+    &lt;div ref={ref} className=&quot;t-morph&quot; data-open={open ? &quot;true&quot; : &quot;false&quot;}&gt;
+      &lt;div className=&quot;t-morph-menu&quot; role=&quot;menu&quot;&gt;{children}&lt;/div&gt;
+      &lt;button
+        type=&quot;button&quot;
+        className=&quot;t-morph-plus&quot;
+        aria-expanded={open ? &quot;true&quot; : &quot;false&quot;}
+        aria-label=&quot;Open menu&quot;
+        onClick={(e) =&gt; { e.stopPropagation(); setOpen((v) =&gt; !v); }}
+      &gt;
+        &lt;svg width=&quot;20&quot; height=&quot;20&quot; viewBox=&quot;0 0 20 20&quot; fill=&quot;none&quot;&gt;
+          &lt;path d=&quot;M10 4V16M4 10H16&quot; stroke=&quot;currentColor&quot; strokeWidth=&quot;1.75&quot; strokeLinecap=&quot;round&quot; /&gt;
+        &lt;/svg&gt;
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+    <div class="related">
+      <h2>More transitions</h2>
+      <ul>
+        <li><a href="/transitions/accordion/">Accordion</a></li>
+        <li><a href="/transitions/toast-open-close/">Toast open/close</a></li>
+        <li><a href="/transitions/like-button/">Like button</a></li>
+        <li><a href="/transitions/learn-more-hover/">Learn more hover</a></li>
+        <li><a href="/transitions/checkbox-check/">Checkbox check</a></li>
+        <li><a href="/transitions/spinner-to-check-morph/">Spinner to check morph</a></li>
+      </ul>
+    </div>
+    <footer><a href="/transitions/3d-tilt/">&larr; 3D tilt</a> &middot; <a href="/transitions/accordion/">Accordion &rarr;</a></footer>
+  </div>
+</body>
+</html>

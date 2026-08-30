@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spinning counter — CSS transition | Transitions.dev</title>
+  <meta name="description" content="Spinning counter: Digits spin like a reel to the value. Copy-paste CSS and React, with reduced-motion support built in." />
+  <link rel="canonical" href="https://transitions.dev/transitions/spinning-counter/" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:title" content="Spinning counter — Transitions.dev" />
+  <meta property="og:description" content="Spinning counter: Digits spin like a reel to the value. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta property="og:url" content="https://transitions.dev/transitions/spinning-counter/" />
+  <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Spinning counter — Transitions.dev" />
+  <meta name="twitter:description" content="Spinning counter: Digits spin like a reel to the value. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Spinning counter \u2014 CSS transition", "description": "Spinning counter: Digits spin like a reel to the value. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/spinning-counter/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Spinning counter CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
+
+  <!-- Theme boot: same key the rest of the site uses, applied before
+       paint so the page never flashes the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --chip-bg: #f4f4f4;
+      --code-bg: #f7f7f7;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --card-bg: #181818;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --chip-bg: rgba(255, 255, 255, 0.06);
+      --code-bg: #181818;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 96px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 56px; }
+    .brand { font-size: 15px; font-weight: 500; color: var(--text); text-decoration: none; }
+    .brand span { color: var(--text-muted); }
+    .topbar nav { display: flex; gap: 16px; }
+    .topbar nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .topbar nav a:hover { color: var(--text); }
+    .crumb { font-size: 13px; color: var(--text-muted); margin: 0 0 12px; }
+    .crumb a { color: var(--text-muted); text-decoration: none; }
+    .crumb a:hover { text-decoration: underline; }
+    h1 { font-size: 32px; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .lede { font-size: 16px; line-height: 24px; color: var(--text-muted); margin: 0 0 24px; }
+    .pro-pill {
+      display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 8px;
+      border-radius: 50px; background: rgba(0, 115, 255, 0.06); color: #0073ff;
+      font-size: 11px; font-weight: 500; vertical-align: middle;
+    }
+    html[data-theme="dark"] .pro-pill { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 48px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 40px; padding: 0 16px; border-radius: 26px;
+      font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn--primary { background: #17181c; color: #fff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2); }
+    .btn--primary:hover { background: #2a2a2a; }
+    html[data-theme="dark"] .btn--primary { background: #fff; color: #0d0d0d; }
+    .btn--secondary { background: var(--chip-bg); color: var(--text); }
+    h2 { font-size: 15px; font-weight: 500; margin: 40px 0 12px; }
+    p { font-size: 14px; line-height: 22px; color: var(--text-muted); }
+    pre {
+      margin: 0; padding: 20px; border-radius: 16px; overflow-x: auto;
+      background: var(--code-bg); border: 1px solid var(--card-border);
+    }
+    code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; color: var(--text); }
+    .related { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--card-border); }
+    .related ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .related a {
+      display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+      border-radius: 48px; background: var(--chip-bg); color: var(--text);
+      font-size: 13px; text-decoration: none;
+    }
+    footer { margin-top: 56px; font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="/">Transitions<span>.dev</span></a>
+      <nav>
+        <a href="/transitions/">All transitions</a>
+        <a href="/skill.html">Skill</a>
+        <a href="/pro.html">Pro</a>
+      </nav>
+    </header>
+    <p class="crumb"><a href="/">Home</a> / <a href="/transitions/">Transitions</a></p>
+    <h1>Spinning counter</h1>
+    <p class="lede">Digits spin like a reel to the value</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="/detail.html?t=spinning-counter">Open the live demo</a>
+      <a class="btn btn--secondary" href="/skill.html">Install with the Skill</a>
+    </div>
+    <h2>CSS</h2>
+    <p>Namespaced classes and motion tokens you can retune. The reduced-motion guard ships with the snippet.</p>
+    <pre><code>/* Transitions.dev — Spinning counter */
+
+/*
+  Usage:
+    &lt;div class=&quot;t-reel&quot;&gt;&lt;/div&gt;  &lt;!-- reels built in JS --&gt;
+
+  Build one .t-reel-col per digit, each clipping a strip
+  (.t-reel-strip) of 0-9 cells; translate the strip up by
+  (spins*10 + digit) cells to spin then land. A directional
+  (vertical-only) SVG feGaussianBlur stdDeviation=&quot;0 Y&quot; gives
+  the motion streak (CSS blur() would smear sideways); decay it
+  to 0 per column as each reel settles.
+*/
+
+:root {
+  --reel-dur: 1400ms;
+  --reel-cell: 30px;
+  --reel-spin-blur: 3px;
+  --reel-stagger: 90ms;
+  --reel-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.t-reel { display: inline-flex; align-items: center; height: var(--reel-cell); font-variant-numeric: tabular-nums; }
+.t-reel-col {
+  position: relative; height: var(--reel-cell); overflow: hidden;
+  /* Soft-fade the window edges instead of hard-cropping. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+.t-reel-strip { display: flex; flex-direction: column; will-change: transform, filter; }
+.t-reel-digit { height: var(--reel-cell); display: flex; align-items: center; justify-content: center; }
+/* JS drives the tween: strip.style.transition =
+     &#x27;transform var(--reel-dur) var(--reel-ease) &#x27; + (col*var(--reel-stagger)) + &#x27;ms&#x27;;
+   and decays each column&#x27;s feGaussianBlur stdDeviation from
+   var(--reel-spin-blur) to 0 over its own window. */
+
+@media (prefers-reduced-motion: reduce) {
+  .t-reel-strip { transition: none !important; filter: none !important; }
+}</code></pre>
+    <h2>React</h2>
+    <p>Self-contained component; the styles inject themselves on first import.</p>
+    <pre><code>// Transitions.dev — Spinning counter (React, self-contained)
+// Drop into any React project — no extra CSS file needed.
+
+import { useEffect, useRef } from &quot;react&quot;;
+
+// ── Styles ──────────────────────────────────────────────
+// Auto-injected on first import. Idempotent (guarded by
+// the element id) and SSR-safe (no-ops without document).
+const __TRANSITION_STYLES = `
+:root {
+  --reel-dur: 1400ms;
+  --reel-cell: 30px;
+  --reel-spin-blur: 3px;
+  --reel-stagger: 90ms;
+  --reel-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.t-reel { display: inline-flex; align-items: center; height: var(--reel-cell); font-variant-numeric: tabular-nums; }
+.t-reel-col {
+  position: relative; height: var(--reel-cell); overflow: hidden;
+  /* Soft-fade the window edges instead of hard-cropping. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+.t-reel-strip { display: flex; flex-direction: column; will-change: transform, filter; }
+.t-reel-digit { height: var(--reel-cell); display: flex; align-items: center; justify-content: center; }
+/* JS drives the tween: strip.style.transition =
+     &#x27;transform var(--reel-dur) var(--reel-ease) &#x27; + (col*var(--reel-stagger)) + &#x27;ms&#x27;;
+   and decays each column&#x27;s feGaussianBlur stdDeviation from
+   var(--reel-spin-blur) to 0 over its own window. */
+
+@media (prefers-reduced-motion: reduce) {
+  .t-reel-strip { transition: none !important; filter: none !important; }
+}
+`;
+if (typeof document !== &quot;undefined&quot; &amp;&amp; !document.getElementById(&quot;transitions-p26&quot;)) {
+  const __style = document.createElement(&quot;style&quot;);
+  __style.id = &quot;transitions-p26&quot;;
+  __style.textContent = __TRANSITION_STYLES;
+  document.head.appendChild(__style);
+}
+
+// Pair with the CSS from the CSS tab. Each digit is a clipped reel of
+// 0-9 cells; the strip translates up (spins*10 + digit) cells to spin then
+// land, with a per-column delay for a left-to-right cascade. (The vertical
+// SVG motion-blur driver is omitted here for brevity — see the demo.)
+const SPINS = 3, CELL = 30, DUR = 1400, STAGGER = 90;
+const EASE = &quot;cubic-bezier(0.16, 1, 0.3, 1)&quot;;
+
+export function Counter({ target = 100 }) {
+  const ref = useRef(null);
+
+  function build(str) {
+    ref.current.innerHTML = &quot;&quot;;
+    const strips = [];
+    [...str].forEach((ch) =&gt; {
+      if (ch &lt; &quot;0&quot; || ch &gt; &quot;9&quot;) {
+        const sep = document.createElement(&quot;span&quot;);
+        sep.className = &quot;t-reel-sep&quot;;
+        sep.textContent = ch;
+        ref.current.appendChild(sep);
+        return;
+      }
+      const col = document.createElement(&quot;span&quot;);
+      col.className = &quot;t-reel-col&quot;;
+      const strip = document.createElement(&quot;span&quot;);
+      strip.className = &quot;t-reel-strip&quot;;
+      for (let k = 0; k &lt; (SPINS + 1) * 10 + 1; k++) {
+        const cell = document.createElement(&quot;span&quot;);
+        cell.className = &quot;t-reel-digit&quot;;
+        cell.textContent = String(k % 10);
+        strip.appendChild(cell);
+      }
+      col.appendChild(strip);
+      ref.current.appendChild(col);
+      strips.push({ strip, digit: +ch });
+    });
+    return strips;
+  }
+
+  useEffect(() =&gt; {
+    // Rest at 0.
+    build(&quot;0&quot;).forEach(({ strip, digit }) =&gt; {
+      strip.style.transform = `translateY(-${digit * CELL}px)`;
+    });
+  }, []);
+
+  function spin() {
+    const strips = build(Math.round(target).toLocaleString(&quot;en-US&quot;));
+    strips.forEach(({ strip }) =&gt; {
+      strip.style.transition = &quot;none&quot;;
+      strip.style.transform = &quot;translateY(0)&quot;;
+    });
+    void ref.current.offsetWidth;
+    strips.forEach(({ strip, digit }, i) =&gt; {
+      strip.style.transition = `transform ${DUR}ms ${EASE} ${i * STAGGER}ms`;
+      strip.style.transform = `translateY(-${(SPINS * 10 + digit) * CELL}px)`;
+    });
+  }
+
+  return (
+    &lt;&gt;
+      &lt;div ref={ref} className=&quot;t-reel&quot; aria-label={String(target)} /&gt;
+      &lt;button type=&quot;button&quot; onClick={spin}&gt;Animate&lt;/button&gt;
+    &lt;/&gt;
+  );
+}
+</code></pre>
+    <div class="related">
+      <h2>More transitions</h2>
+      <ul>
+        <li><a href="/transitions/toggle/">Toggle</a></li>
+        <li><a href="/transitions/pro-gradient-text/">Pro gradient text</a></li>
+        <li><a href="/transitions/delete-with-smoky-dissolve/">Delete with smoky dissolve</a></li>
+        <li><a href="/transitions/thinking-states/">Thinking states</a></li>
+        <li><a href="/transitions/reasoning-stream/">Reasoning stream</a></li>
+        <li><a href="/transitions/streaming-text/">Streaming text</a></li>
+      </ul>
+    </div>
+    <footer><a href="/transitions/spinner-to-check-morph/">&larr; Spinner to check morph</a> &middot; <a href="/transitions/toggle/">Toggle &rarr;</a></footer>
+  </div>
+</body>
+</html>

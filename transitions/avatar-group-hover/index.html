@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Avatar group hover — CSS transition | Transitions.dev</title>
+  <meta name="description" content="Avatar group hover: Distance-falloff lift with bouncy return. Copy-paste CSS and React, with reduced-motion support built in." />
+  <link rel="canonical" href="https://transitions.dev/transitions/avatar-group-hover/" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:title" content="Avatar group hover — Transitions.dev" />
+  <meta property="og:description" content="Avatar group hover: Distance-falloff lift with bouncy return. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta property="og:url" content="https://transitions.dev/transitions/avatar-group-hover/" />
+  <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Avatar group hover — Transitions.dev" />
+  <meta name="twitter:description" content="Avatar group hover: Distance-falloff lift with bouncy return. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Avatar group hover \u2014 CSS transition", "description": "Avatar group hover: Distance-falloff lift with bouncy return. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/avatar-group-hover/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Avatar group hover CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
+
+  <!-- Theme boot: same key the rest of the site uses, applied before
+       paint so the page never flashes the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --chip-bg: #f4f4f4;
+      --code-bg: #f7f7f7;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --card-bg: #181818;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --chip-bg: rgba(255, 255, 255, 0.06);
+      --code-bg: #181818;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 96px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 56px; }
+    .brand { font-size: 15px; font-weight: 500; color: var(--text); text-decoration: none; }
+    .brand span { color: var(--text-muted); }
+    .topbar nav { display: flex; gap: 16px; }
+    .topbar nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .topbar nav a:hover { color: var(--text); }
+    .crumb { font-size: 13px; color: var(--text-muted); margin: 0 0 12px; }
+    .crumb a { color: var(--text-muted); text-decoration: none; }
+    .crumb a:hover { text-decoration: underline; }
+    h1 { font-size: 32px; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .lede { font-size: 16px; line-height: 24px; color: var(--text-muted); margin: 0 0 24px; }
+    .pro-pill {
+      display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 8px;
+      border-radius: 50px; background: rgba(0, 115, 255, 0.06); color: #0073ff;
+      font-size: 11px; font-weight: 500; vertical-align: middle;
+    }
+    html[data-theme="dark"] .pro-pill { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 48px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 40px; padding: 0 16px; border-radius: 26px;
+      font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn--primary { background: #17181c; color: #fff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2); }
+    .btn--primary:hover { background: #2a2a2a; }
+    html[data-theme="dark"] .btn--primary { background: #fff; color: #0d0d0d; }
+    .btn--secondary { background: var(--chip-bg); color: var(--text); }
+    h2 { font-size: 15px; font-weight: 500; margin: 40px 0 12px; }
+    p { font-size: 14px; line-height: 22px; color: var(--text-muted); }
+    pre {
+      margin: 0; padding: 20px; border-radius: 16px; overflow-x: auto;
+      background: var(--code-bg); border: 1px solid var(--card-border);
+    }
+    code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; color: var(--text); }
+    .related { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--card-border); }
+    .related ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .related a {
+      display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+      border-radius: 48px; background: var(--chip-bg); color: var(--text);
+      font-size: 13px; text-decoration: none;
+    }
+    footer { margin-top: 56px; font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="/">Transitions<span>.dev</span></a>
+      <nav>
+        <a href="/transitions/">All transitions</a>
+        <a href="/skill.html">Skill</a>
+        <a href="/pro.html">Pro</a>
+      </nav>
+    </header>
+    <p class="crumb"><a href="/">Home</a> / <a href="/transitions/">Transitions</a></p>
+    <h1>Avatar group hover</h1>
+    <p class="lede">Distance-falloff lift with bouncy return</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="/detail.html?t=avatar-group-hover">Open the live demo</a>
+      <a class="btn btn--secondary" href="/skill.html">Install with the Skill</a>
+    </div>
+    <h2>CSS</h2>
+    <p>Namespaced classes and motion tokens you can retune. The reduced-motion guard ships with the snippet.</p>
+    <pre><code>/* Transitions.dev — Avatar group hover */
+
+/*
+  Usage:
+    &lt;!-- Apply .t-avatar to each item in your group (avatar,
+         chip, badge, button — anything). Bring your own size,
+         shape, and stacking; this stylesheet only owns the
+         hover transform + transition. --&gt;
+    &lt;div class=&quot;t-avatar-group&quot;&gt;
+      &lt;div class=&quot;t-avatar&quot;&gt;&lt;!-- your item --&gt;&lt;/div&gt;
+      &lt;div class=&quot;t-avatar&quot;&gt;&lt;!-- your item --&gt;&lt;/div&gt;
+      &lt;!-- … --&gt;
+    &lt;/div&gt;
+
+  Wire-up (vanilla JS):
+    On `mouseenter` of any .t-avatar, walk every sibling and
+    set inline:
+      el.style.setProperty(&#x27;--shift&#x27;,
+        (lift * Math.pow(falloff, distance)).toFixed(3) + &#x27;px&#x27;);
+      el.style.setProperty(&#x27;--scale-active&#x27;,
+        i === activeIdx ? scale : 1);
+    Set transition-timing-function inline BEFORE the
+    variable writes — use --avatar-ease-in on hover-in and
+    --avatar-ease-out on the root&#x27;s `mouseleave` (resets
+    --shift to 0 and --scale-active to 1).
+*/
+
+:root {
+  --avatar-lift: -4px;
+  --avatar-dur: 320ms;
+  --avatar-scale: 1.05;
+  --avatar-falloff: 0.45;
+  --avatar-ease-in: cubic-bezier(0.22, 1, 0.36, 1);
+  --avatar-ease-out: cubic-bezier(0.34, 3.85, 0.64, 1);
+}
+
+/* Hover-spring transition only — bring your own avatar/chip
+   styling (size, shape, border, stacking, background). */
+.t-avatar {
+  transform-origin: center;
+  /* translateY before scale so scale doesn&#x27;t amplify the lift offset. */
+  transform:
+    translateY(var(--shift, 0px))
+    scale(var(--scale-active, 1));
+  transition: transform var(--avatar-dur) var(--avatar-ease-in);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-avatar { transition: none !important; transform: none !important; }
+}</code></pre>
+    <h2>React</h2>
+    <p>Self-contained component; the styles inject themselves on first import.</p>
+    <pre><code>// Transitions.dev — Avatar group hover (React, self-contained)
+// Drop into any React project — no extra CSS file needed.
+
+import { useRef } from &quot;react&quot;;
+
+// ── Styles ──────────────────────────────────────────────
+// Auto-injected on first import. Idempotent (guarded by
+// the element id) and SSR-safe (no-ops without document).
+const __TRANSITION_STYLES = `
+:root {
+  --avatar-lift: -4px;
+  --avatar-dur: 320ms;
+  --avatar-scale: 1.05;
+  --avatar-falloff: 0.45;
+  --avatar-ease-in: cubic-bezier(0.22, 1, 0.36, 1);
+  --avatar-ease-out: cubic-bezier(0.34, 3.85, 0.64, 1);
+}
+
+/* Hover-spring transition only — bring your own avatar/chip
+   styling (size, shape, border, stacking, background). */
+.t-avatar {
+  transform-origin: center;
+  /* translateY before scale so scale doesn&#x27;t amplify the lift offset. */
+  transform:
+    translateY(var(--shift, 0px))
+    scale(var(--scale-active, 1));
+  transition: transform var(--avatar-dur) var(--avatar-ease-in);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-avatar { transition: none !important; transform: none !important; }
+}
+`;
+if (typeof document !== &quot;undefined&quot; &amp;&amp; !document.getElementById(&quot;transitions-p11&quot;)) {
+  const __style = document.createElement(&quot;style&quot;);
+  __style.id = &quot;transitions-p11&quot;;
+  __style.textContent = __TRANSITION_STYLES;
+  document.head.appendChild(__style);
+}
+
+// Pair with the CSS from the CSS tab.
+// `items` is any list of React nodes (avatars, chips, badges, etc.) —
+// this hook only owns the hover-spring transition. Each item is wrapped
+// in a .t-avatar so it picks up the transform/transition rules from CSS.
+//
+// On mouseenter of any sibling, we write per-item:
+//   --shift         = lift * pow(falloff, distance from hovered)
+//   --scale-active  = scale on the hovered item, 1 elsewhere
+// Direction-aware easing: we set transition-timing-function inline
+// BEFORE the variable writes so the lift uses --avatar-ease-in
+// (clean) and the return uses --avatar-ease-out (bouncy spring).
+export function AvatarGroup({ items }) {
+  const rootRef = useRef(null);
+
+  const setShifts = (activeIdx, phase) =&gt; {
+    if (!rootRef.current) return;
+    const cs = getComputedStyle(document.documentElement);
+    const num = (name, fb) =&gt; {
+      const v = parseFloat(cs.getPropertyValue(name));
+      return Number.isFinite(v) ? v : fb;
+    };
+    const ease = (name, fb) =&gt;
+      cs.getPropertyValue(name).trim() || fb;
+
+    const lift    = num(&quot;--avatar-lift&quot;, -4);
+    const falloff = num(&quot;--avatar-falloff&quot;, 0.45);
+    const scale   = num(&quot;--avatar-scale&quot;, 1.05);
+    const tf      = phase === &quot;out&quot;
+      ? ease(&quot;--avatar-ease-out&quot;, &quot;cubic-bezier(0.34, 3.85, 0.64, 1)&quot;)
+      : ease(&quot;--avatar-ease-in&quot;,  &quot;cubic-bezier(0.22, 1, 0.36, 1)&quot;);
+
+    const els = rootRef.current.querySelectorAll(&quot;.t-avatar&quot;);
+    els.forEach((el, i) =&gt; {
+      el.style.transitionTimingFunction = tf;
+      if (activeIdx == null) {
+        el.style.setProperty(&quot;--shift&quot;, &quot;0px&quot;);
+        el.style.setProperty(&quot;--scale-active&quot;, &quot;1&quot;);
+        return;
+      }
+      const d = Math.abs(i - activeIdx);
+      el.style.setProperty(
+        &quot;--shift&quot;,
+        (lift * Math.pow(falloff, d)).toFixed(3) + &quot;px&quot;
+      );
+      el.style.setProperty(
+        &quot;--scale-active&quot;,
+        i === activeIdx ? String(scale) : &quot;1&quot;
+      );
+    });
+  };
+
+  return (
+    &lt;div
+      ref={rootRef}
+      onMouseLeave={() =&gt; setShifts(null, &quot;out&quot;)}
+    &gt;
+      {items.map((node, i) =&gt; (
+        &lt;div
+          key={i}
+          className=&quot;t-avatar&quot;
+          onMouseEnter={() =&gt; setShifts(i, &quot;in&quot;)}
+        &gt;
+          {node}
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+    <div class="related">
+      <h2>More transitions</h2>
+      <ul>
+        <li><a href="/transitions/error-state-shake/">Error state shake</a></li>
+        <li><a href="/transitions/organic-shimmer/">Organic shimmer</a></li>
+        <li><a href="/transitions/input-clear-with-dissolve/">Input clear with dissolve</a></li>
+        <li><a href="/transitions/skeleton-loader-and-reveal/">Skeleton loader and reveal</a></li>
+        <li><a href="/transitions/texts-reveal/">Texts reveal</a></li>
+        <li><a href="/transitions/tabs-sliding/">Tabs sliding</a></li>
+      </ul>
+    </div>
+    <footer><a href="/transitions/success-check/">&larr; Success check</a> &middot; <a href="/transitions/error-state-shake/">Error state shake &rarr;</a></footer>
+  </div>
+</body>
+</html>

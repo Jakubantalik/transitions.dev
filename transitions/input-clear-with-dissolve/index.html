@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Input clear with dissolve — CSS transition | Transitions.dev</title>
+  <meta name="description" content="Input clear with dissolve: Clear with per-word dissolve. Copy-paste CSS and React, with reduced-motion support built in." />
+  <link rel="canonical" href="https://transitions.dev/transitions/input-clear-with-dissolve/" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:title" content="Input clear with dissolve — Transitions.dev" />
+  <meta property="og:description" content="Input clear with dissolve: Clear with per-word dissolve. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta property="og:url" content="https://transitions.dev/transitions/input-clear-with-dissolve/" />
+  <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Input clear with dissolve — Transitions.dev" />
+  <meta name="twitter:description" content="Input clear with dissolve: Clear with per-word dissolve. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Input clear with dissolve \u2014 CSS transition", "description": "Input clear with dissolve: Clear with per-word dissolve. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/input-clear-with-dissolve/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Input clear with dissolve CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
+
+  <!-- Theme boot: same key the rest of the site uses, applied before
+       paint so the page never flashes the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --chip-bg: #f4f4f4;
+      --code-bg: #f7f7f7;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --card-bg: #181818;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --chip-bg: rgba(255, 255, 255, 0.06);
+      --code-bg: #181818;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 96px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 56px; }
+    .brand { font-size: 15px; font-weight: 500; color: var(--text); text-decoration: none; }
+    .brand span { color: var(--text-muted); }
+    .topbar nav { display: flex; gap: 16px; }
+    .topbar nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .topbar nav a:hover { color: var(--text); }
+    .crumb { font-size: 13px; color: var(--text-muted); margin: 0 0 12px; }
+    .crumb a { color: var(--text-muted); text-decoration: none; }
+    .crumb a:hover { text-decoration: underline; }
+    h1 { font-size: 32px; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .lede { font-size: 16px; line-height: 24px; color: var(--text-muted); margin: 0 0 24px; }
+    .pro-pill {
+      display: inline-flex; align-items: center; height: 20px; padding: 0 8px; margin-left: 8px;
+      border-radius: 50px; background: rgba(0, 115, 255, 0.06); color: #0073ff;
+      font-size: 11px; font-weight: 500; vertical-align: middle;
+    }
+    html[data-theme="dark"] .pro-pill { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 48px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 40px; padding: 0 16px; border-radius: 26px;
+      font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap;
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn--primary { background: #17181c; color: #fff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2); }
+    .btn--primary:hover { background: #2a2a2a; }
+    html[data-theme="dark"] .btn--primary { background: #fff; color: #0d0d0d; }
+    .btn--secondary { background: var(--chip-bg); color: var(--text); }
+    h2 { font-size: 15px; font-weight: 500; margin: 40px 0 12px; }
+    p { font-size: 14px; line-height: 22px; color: var(--text-muted); }
+    pre {
+      margin: 0; padding: 20px; border-radius: 16px; overflow-x: auto;
+      background: var(--code-bg); border: 1px solid var(--card-border);
+    }
+    code { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; color: var(--text); }
+    .related { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--card-border); }
+    .related ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .related a {
+      display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+      border-radius: 48px; background: var(--chip-bg); color: var(--text);
+      font-size: 13px; text-decoration: none;
+    }
+    footer { margin-top: 56px; font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="/">Transitions<span>.dev</span></a>
+      <nav>
+        <a href="/transitions/">All transitions</a>
+        <a href="/skill.html">Skill</a>
+        <a href="/pro.html">Pro</a>
+      </nav>
+    </header>
+    <p class="crumb"><a href="/">Home</a> / <a href="/transitions/">Transitions</a></p>
+    <h1>Input clear with dissolve</h1>
+    <p class="lede">Clear with per-word dissolve</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="/detail.html?t=input-clear-with-dissolve">Open the live demo</a>
+      <a class="btn btn--secondary" href="/skill.html">Install with the Skill</a>
+    </div>
+    <h2>CSS</h2>
+    <p>Namespaced classes and motion tokens you can retune. The reduced-motion guard ships with the snippet.</p>
+    <pre><code>/* Transitions.dev — Input clear with dissolve */
+
+/*
+  Usage:
+    &lt;!-- Drop .t-clear on a wrapper that you&#x27;ve sized like an
+         input field (positioning, padding, border, radius are
+         yours). Inside it stack a real &lt;input&gt;, a mirror that
+         visualizes the value, a fake placeholder for the new
+         empty state, and a glow layer that gets the per-word
+         radial-gradient stack written into it from JS. --&gt;
+    &lt;div class=&quot;t-clear has-value&quot;&gt;
+      &lt;input type=&quot;text&quot; value=&quot;…&quot; /&gt;
+      &lt;div class=&quot;t-clear-mirror&quot; aria-hidden=&quot;true&quot;&gt;…&lt;/div&gt;
+      &lt;div class=&quot;t-clear-placeholder&quot; aria-hidden=&quot;true&quot;&gt;Search&lt;/div&gt;
+      &lt;div class=&quot;t-clear-glow&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
+      &lt;button class=&quot;t-clear-btn&quot; aria-label=&quot;Clear&quot;&gt;…&lt;/button&gt;
+    &lt;/div&gt;
+
+  Pair with a small JS routine (mirrors the gallery code) that
+  flips `.is-clearing`, animates the mirror&#x27;s translateY/opacity
+  per frame, mirrors the math on the placeholder, and writes a
+  stack of `radial-gradient(...)` layers onto .t-clear-glow&#x27;s
+  background so each word gets its own streak. Per-frame JS is
+  unavoidable: the streak&#x27;s rise/peak/fall envelope cannot be
+  expressed as a static @keyframe.
+*/
+
+:root {
+  --clear-dur: 1000ms;
+  --clear-out-dur: 400ms;
+  --clear-in-dur: 400ms;
+  --clear-out-fly: 12px;
+  --clear-in-fly: 12px;
+  --clear-out-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --clear-in-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --clear-blur: 2px;
+  --glow-delay: 50ms;
+  --glow-peak-at: 0.15;
+  --glow-opacity: 0.42;
+  --glow-spread: 1.5;
+}
+
+/* The wrap clips the glow to its rounded box. The hairline
+   border is `inset` so it sits inside that clip — when the
+   glow&#x27;s mix-blend-mode darkens its area, the border
+   underneath darkens with it. Bring your own width / height /
+   border-radius / surface color. */
+.t-clear {
+  position: relative;
+  overflow: hidden;
+}
+.t-clear-mirror,
+.t-clear-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  z-index: 2;
+}
+.t-clear-mirror { opacity: 0; }
+.t-clear.has-value .t-clear-mirror,
+.t-clear.is-clearing .t-clear-mirror { opacity: 1; }
+/* Hide the input&#x27;s own glyphs while the mirror owns them so
+   the cleared text doesn&#x27;t double-render with the fly-up. */
+.t-clear.has-value &gt; input,
+.t-clear.is-clearing &gt; input {
+  -webkit-text-fill-color: transparent;
+}
+.t-clear.has-value .t-clear-placeholder { opacity: 0; }
+/* The streak overlay: empty by default; JS writes a stack of
+   `radial-gradient(...)` layers into background during a clear,
+   then animates opacity. mix-blend-mode: multiply darkens the
+   underlying input + hairline; flip to `screen` in dark mode
+   so the same alpha values lighten instead of vanish. */
+.t-clear-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+  mix-blend-mode: multiply;
+}
+
+/* The transitions live in JS (per-frame transform/opacity/
+   filter writes), so this stylesheet only owns the resting
+   state + the variables that JS reads. Read them with
+   `parseFloat(getComputedStyle(root).getPropertyValue(...))`
+   so live tweaks apply on the next clear without a reload. */
+
+@media (prefers-reduced-motion: reduce) {
+  .t-clear-glow { opacity: 0 !important; }
+}</code></pre>
+    <h2>React</h2>
+    <p>Self-contained component; the styles inject themselves on first import.</p>
+    <pre><code>// Transitions.dev — Input clear with dissolve (React, self-contained)
+// Drop into any React project — no extra CSS file needed.
+
+import { useEffect, useRef } from &quot;react&quot;;
+
+// ── Styles ──────────────────────────────────────────────
+// Auto-injected on first import. Idempotent (guarded by
+// the element id) and SSR-safe (no-ops without document).
+const __TRANSITION_STYLES = `
+:root {
+  --clear-dur: 1000ms;
+  --clear-out-dur: 400ms;
+  --clear-in-dur: 400ms;
+  --clear-out-fly: 12px;
+  --clear-in-fly: 12px;
+  --clear-out-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --clear-in-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --clear-blur: 2px;
+  --glow-delay: 50ms;
+  --glow-peak-at: 0.15;
+  --glow-opacity: 0.42;
+  --glow-spread: 1.5;
+}
+
+/* The wrap clips the glow to its rounded box. The hairline
+   border is `inset` so it sits inside that clip — when the
+   glow&#x27;s mix-blend-mode darkens its area, the border
+   underneath darkens with it. Bring your own width / height /
+   border-radius / surface color. */
+.t-clear {
+  position: relative;
+  overflow: hidden;
+}
+.t-clear-mirror,
+.t-clear-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  z-index: 2;
+}
+.t-clear-mirror { opacity: 0; }
+.t-clear.has-value .t-clear-mirror,
+.t-clear.is-clearing .t-clear-mirror { opacity: 1; }
+/* Hide the input&#x27;s own glyphs while the mirror owns them so
+   the cleared text doesn&#x27;t double-render with the fly-up. */
+.t-clear.has-value &gt; input,
+.t-clear.is-clearing &gt; input {
+  -webkit-text-fill-color: transparent;
+}
+.t-clear.has-value .t-clear-placeholder { opacity: 0; }
+/* The streak overlay: empty by default; JS writes a stack of
+   `radial-gradient(...)` layers into background during a clear,
+   then animates opacity. mix-blend-mode: multiply darkens the
+   underlying input + hairline; flip to `screen` in dark mode
+   so the same alpha values lighten instead of vanish. */
+.t-clear-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+  mix-blend-mode: multiply;
+}
+
+/* The transitions live in JS (per-frame transform/opacity/
+   filter writes), so this stylesheet only owns the resting
+   state + the variables that JS reads. Read them with
+   `parseFloat(getComputedStyle(root).getPropertyValue(...))`
+   so live tweaks apply on the next clear without a reload. */
+
+@media (prefers-reduced-motion: reduce) {
+  .t-clear-glow { opacity: 0 !important; }
+}
+`;
+if (typeof document !== &quot;undefined&quot; &amp;&amp; !document.getElementById(&quot;transitions-p13&quot;)) {
+  const __style = document.createElement(&quot;style&quot;);
+  __style.id = &quot;transitions-p13&quot;;
+  __style.textContent = __TRANSITION_STYLES;
+  document.head.appendChild(__style);
+}
+
+// Pair with the CSS from the CSS tab.
+// Per-frame JS is unavoidable here: the per-word streak&#x27;s
+// rise → peak → fall envelope can&#x27;t be expressed as a static
+// @keyframe, so we tween transform/opacity/filter ourselves.
+//
+// Use it as:
+//   &lt;ClearInput defaultValue=&quot;How do transitions work?&quot;
+//               placeholder=&quot;Search anything&quot; /&gt;
+//
+// Bring your own search icon, container size, and theming.
+export function ClearInput({ defaultValue = &quot;&quot;, placeholder = &quot;&quot; }) {
+  const wrapRef    = useRef(null);
+  const inputRef   = useRef(null);
+  const mirrorRef  = useRef(null);
+  const fakePhRef  = useRef(null);
+  const glowRef    = useRef(null);
+  const isClearing = useRef(false);
+
+  useEffect(() =&gt; {
+    const wrap = wrapRef.current;
+    const input = inputRef.current;
+    if (!wrap || !input) return;
+    const sync = () =&gt; {
+      const has = input.value.length &gt; 0;
+      wrap.classList.toggle(&quot;has-value&quot;, has);
+      if (has &amp;&amp; mirrorRef.current) {
+        mirrorRef.current.textContent = input.value.replace(/ /g, &quot;\u00a0&quot;);
+      }
+    };
+    input.addEventListener(&quot;input&quot;, sync);
+    sync();
+    return () =&gt; input.removeEventListener(&quot;input&quot;, sync);
+  }, []);
+
+  const onClear = () =&gt; {
+    const wrap = wrapRef.current;
+    const input = inputRef.current;
+    const mirror = mirrorRef.current;
+    const fakePh = fakePhRef.current;
+    const glow = glowRef.current;
+    if (!wrap || !input || !mirror || !fakePh || !glow) return;
+    if (isClearing.current || !input.value) return;
+    isClearing.current = true;
+    const wasFocused = document.activeElement === input;
+    mirror.textContent = input.value.replace(/ /g, &quot;\u00a0&quot;);
+    const bg = buildLayers(wrap, mirror.textContent);
+    const peakAt   = readNum(&quot;--glow-peak-at&quot;, 0.15);
+    const opacity  = readNum(&quot;--glow-opacity&quot;, 0.42);
+    const total    = readNum(&quot;--clear-dur&quot;, 1000);
+    const outDur   = readNum(&quot;--clear-out-dur&quot;, 400);
+    const inDur    = readNum(&quot;--clear-in-dur&quot;, 400);
+    const outFly   = readNum(&quot;--clear-out-fly&quot;, 12);
+    const inFly    = readNum(&quot;--clear-in-fly&quot;, 12);
+    const blurPx   = readNum(&quot;--clear-blur&quot;, 2);
+    const glowDly  = readNum(&quot;--glow-delay&quot;, 50);
+    const eOut = makeEase(readEase(&quot;--clear-out-ease&quot;, &quot;cubic-bezier(0.22, 1, 0.36, 1)&quot;));
+    const eIn  = makeEase(readEase(&quot;--clear-in-ease&quot;,  &quot;cubic-bezier(0.22, 1, 0.36, 1)&quot;));
+
+    input.value = &quot;&quot;;
+    wrap.classList.remove(&quot;has-value&quot;);
+    wrap.classList.add(&quot;is-clearing&quot;);
+    fakePh.style.transform = `translateY(-${inFly}px)`;
+    fakePh.style.opacity = &quot;0.9&quot;;
+    fakePh.style.filter = `blur(${blurPx}px)`;
+    glow.style.background = bg;
+    glow.style.opacity = &quot;0&quot;;
+
+    const start = performance.now();
+    const tick = (now) =&gt; {
+      const elapsed = now - start;
+      const p  = Math.min(1, elapsed / total);
+      const e  = eOut(Math.min(1, elapsed / outDur));
+      mirror.style.transform = `translateY(${(e * outFly).toFixed(1)}px)`;
+      mirror.style.opacity = (1 - e).toFixed(3);
+      mirror.style.filter = `blur(${(e * blurPx).toFixed(1)}px)`;
+      const pe = eIn(Math.min(1, elapsed / inDur));
+      fakePh.style.transform = `translateY(${(-inFly + pe * inFly).toFixed(1)}px)`;
+      fakePh.style.opacity = (0.9 + pe * 0.1).toFixed(3);
+      fakePh.style.filter = `blur(${(blurPx - pe * blurPx).toFixed(1)}px)`;
+      let g = 0;
+      if (elapsed &gt; glowDly) {
+        const remaining = Math.max(1, total - glowDly);
+        const gp = Math.min(1, (elapsed - glowDly) / remaining);
+        g = gp &lt; peakAt ? gp / peakAt : 1 - (gp - peakAt) / (1 - peakAt);
+      }
+      glow.style.opacity = (g * opacity).toFixed(3);
+      if (p &lt; 1) requestAnimationFrame(tick);
+      else {
+        wrap.classList.remove(&quot;is-clearing&quot;);
+        for (const el of [mirror, fakePh]) el.style.cssText = &quot;&quot;;
+        mirror.textContent = &quot;&quot;;
+        glow.style.opacity = &quot;0&quot;;
+        glow.style.background = &quot;&quot;;
+        isClearing.current = false;
+        if (wasFocused) input.focus({ preventScroll: true });
+      }
+    };
+    requestAnimationFrame(tick);
+  };
+
+  return (
+    &lt;div ref={wrapRef} className=&quot;t-clear&quot;&gt;
+      &lt;input
+        ref={inputRef}
+        type=&quot;text&quot;
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+      /&gt;
+      &lt;div ref={mirrorRef} className=&quot;t-clear-mirror&quot; aria-hidden=&quot;true&quot; /&gt;
+      &lt;div ref={fakePhRef} className=&quot;t-clear-placeholder&quot; aria-hidden=&quot;true&quot;&gt;
+        {placeholder}
+      &lt;/div&gt;
+      &lt;div ref={glowRef} className=&quot;t-clear-glow&quot; aria-hidden=&quot;true&quot; /&gt;
+      &lt;button
+        type=&quot;button&quot;
+        className=&quot;t-clear-btn&quot;
+        aria-label=&quot;Clear&quot;
+        // Trap focus on the input across pointer + mouse so the button
+        // never steals it during the clear animation.
+        onPointerDown={(e) =&gt; { if (document.activeElement === inputRef.current) e.preventDefault(); }}
+        onMouseDown={(e) =&gt; { if (document.activeElement === inputRef.current) e.preventDefault(); }}
+        onClick={onClear}
+      &gt;×&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+function buildLayers(wrap, text) {
+  const inputW = wrap.clientWidth || 280;
+  const padLeft = 32;
+  const segments = text.split(/(\s+)/);
+  const spread = readNum(&quot;--glow-spread&quot;, 1.5);
+  const ctx = (buildLayers._ctx ||= (() =&gt; {
+    const c = document.createElement(&quot;canvas&quot;).getContext(&quot;2d&quot;);
+    c.font = &quot;400 13px Inter, sans-serif&quot;;
+    return c;
+  })());
+  // Light mode paints black gradients (multiply blend); dark mode
+  // paints white (screen blend). Pair this with the matching
+  // `mix-blend-mode` rule on .t-clear-glow in your theme CSS.
+  const isDark = document.documentElement.getAttribute(&quot;data-theme&quot;) === &quot;dark&quot;;
+  const rgb = isDark ? &quot;255,255,255&quot; : &quot;0,0,0&quot;;
+  const layers = [];
+  let x = 0;
+  for (const seg of segments) {
+    const w = ctx.measureText(seg).width;
+    if (seg.trim()) {
+      const cx = padLeft + x + w / 2;
+      const hw = Math.max(w * 0.45, 8) * spread;
+      const stops = [
+        { dx: 0,         rw: hw * 0.8,  rh: 7, a: 0.22 },
+        { dx: hw * 0.45, rw: hw * 0.55, rh: 8, a: 0.18 },
+        { dx: -hw * 0.4, rw: hw * 0.65, rh: 6, a: 0.16 },
+        { dx: hw * 0.15, rw: hw * 0.9,  rh: 5, a: 0.14 },
+      ];
+      for (const l of stops) {
+        const lx = ((cx + l.dx) / inputW * 100).toFixed(2);
+        layers.push(
+          `radial-gradient(ellipse ${Math.max(l.rw, 2).toFixed(1)}px ${l.rh}px at ${lx}% 100%, rgba(${rgb},${l.a.toFixed(3)}), transparent)`
+        );
+      }
+    }
+    x += w;
+  }
+  return layers.join(&quot;, &quot;);
+}
+function readNum(name, fb) {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+  return Number.isFinite(v) ? v : fb;
+}
+function readEase(name, fb) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fb;
+}
+function makeEase(ease) {
+  const m = ease.match(/cubic-bezier\s*\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/i);
+  if (!m) return (t) =&gt; t;
+  const [x1, y1, x2, y2] = [m[1], m[2], m[3], m[4]].map(parseFloat);
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const sX = (s) =&gt; ((ax * s + bx) * s + cx) * s;
+  const sY = (s) =&gt; ((ay * s + by) * s + cy) * s;
+  const dX = (s) =&gt; (3 * ax * s + 2 * bx) * s + cx;
+  return (t) =&gt; {
+    if (t &lt;= 0) return 0;
+    if (t &gt;= 1) return 1;
+    let s = t;
+    for (let i = 0; i &lt; 8; i++) {
+      const dx = sX(s) - t;
+      if (Math.abs(dx) &lt; 1e-6) break;
+      const d = dX(s);
+      if (d === 0) break;
+      s -= dx / d;
+    }
+    return sY(s);
+  };
+}
+</code></pre>
+    <div class="related">
+      <h2>More transitions</h2>
+      <ul>
+        <li><a href="/transitions/skeleton-loader-and-reveal/">Skeleton loader and reveal</a></li>
+        <li><a href="/transitions/texts-reveal/">Texts reveal</a></li>
+        <li><a href="/transitions/tabs-sliding/">Tabs sliding</a></li>
+        <li><a href="/transitions/drag-drop-with-physics/">Drag &amp; drop with physics</a></li>
+        <li><a href="/transitions/image-open-tilt/">Image open tilt</a></li>
+        <li><a href="/transitions/shimmer-text/">Shimmer text</a></li>
+      </ul>
+    </div>
+    <footer><a href="/transitions/organic-shimmer/">&larr; Organic shimmer</a> &middot; <a href="/transitions/skeleton-loader-and-reveal/">Skeleton loader and reveal &rarr;</a></footer>
+  </div>
+</body>
+</html>
