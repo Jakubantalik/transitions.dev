@@ -16,6 +16,28 @@
   -->
   <link rel="preload" href="assets/fonts/Saans-Medium.woff2" as="font" type="font/woff2" crossorigin />
   <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
     @font-face {
       font-family: "Saans";
       src: url("assets/fonts/Saans-Medium.woff2") format("woff2"),
@@ -196,6 +218,10 @@
     html[data-theme="dark"] .field-input:focus { border-color: #a5a5a5; }
     html[data-theme="dark"] .field-input.is-error { border-color: #e23014; }
     .field-error { margin: -2px 0 0; font-size: 13px; line-height: 1.4; color: #d62b11; }
+    .device-code-block { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .device-code-block[hidden] { display: none; }
+    .device-code-caption { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; opacity: .55; }
+    .device-code-hint { font-size: 13px; opacity: .6; }
 
     /* Error-state-shake (transitions-dev 12): the field shakes on invalid submit.
        Per-segment easing; %-stops are cumulative (80,60,80,60 = 280ms). */
@@ -332,8 +358,14 @@
       <p class="card-intro" id="a-desc">Enter your email you used at checkout.
         <span class="muted">We’ll send you a sign-in link.</span></p>
 
-      <!-- Device code display (device flow) -->
-      <span class="device-code" id="a-code" hidden></span>
+      <!-- Device code display (device flow). Labelled because the page shows a
+           SECOND code of the same XXXX-XXXX shape (the emailed sign-in code)
+           right below, and an unlabelled big one reads as the thing to type. -->
+      <div class="device-code-block" id="a-code-block" hidden>
+        <span class="device-code-caption">Code shown in your terminal</span>
+        <span class="device-code" id="a-code"></span>
+        <span class="device-code-hint">Check it matches, then sign in below.</span>
+      </div>
 
       <!-- Sign-in form (email → magic link) -->
       <form id="a-signin" novalidate>
@@ -427,6 +459,11 @@
       var approveBtn = el("a-approve"), portalBtn = el("a-portal");
 
       function setNote(msg, kind) {
+        // One status at a time. The typed-code error and this note are separate
+        // elements, so without this a failed attempt stayed on screen next to a
+        // later success — "that code didn't work" above "device approved".
+        var ce = document.getElementById("a-code-error");
+        if (ce) ce.hidden = true;
         note.textContent = msg; note.hidden = !msg;
         note.setAttribute("data-kind", kind || "");
       }
@@ -459,7 +496,7 @@
       if (q.get("device") === "approved") setNote("Device approved — you can return to your terminal.", "ok");
       if (q.get("device") === "denied") setNote("This account doesn't have an active Pro plan, so the device wasn't approved.", "err");
 
-      if (deviceCode) { codeEl.textContent = deviceCode; show(codeEl, true); }
+      if (deviceCode) { codeEl.textContent = deviceCode; show(el("a-code-block"), true); }
 
       signinForm.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -487,11 +524,36 @@
       // Typed-code sign-in: works even when the emailed link opened in a mail
       // app's in-app browser (the cookie lands there, not here). The code signs
       // THIS browser in, and carries the same device/invite side effects.
+      // Sign-in codes are single use. After a successful approval the form must
+      // stop accepting input: resubmitting spends nothing and returns an error
+      // that contradicts the success the user just saw.
+      var codeFormSpent = false;
+      function lockCodeForm() {
+        codeFormSpent = true;
+        var i = document.getElementById("a-signin-code");
+        var b = document.getElementById("a-code-btn");
+        if (i) { i.disabled = true; }
+        if (b) { b.disabled = true; b.textContent = "Signed in"; }
+      }
+
+      // Typing again clears the previous failure rather than leaving it under a
+      // field the user is actively correcting.
+      var codeInputEl = document.getElementById("a-signin-code");
+      if (codeInputEl) {
+        codeInputEl.addEventListener("input", function () {
+          var ce = document.getElementById("a-code-error");
+          if (ce) ce.hidden = true;
+        });
+      }
+
       document.getElementById("a-codeform").addEventListener("submit", function (e) {
         e.preventDefault();
         var cInput = document.getElementById("a-signin-code");
         var cErr = document.getElementById("a-code-error");
         var cBtn = document.getElementById("a-code-btn");
+        // Already approved: the code is spent, so any further submit can only
+        // fail and would contradict the success still on screen.
+        if (codeFormSpent) return;
         var code = cInput.value.trim();
         if (!code) { cErr.hidden = false; cInput.focus(); return; }
         cErr.hidden = true;
@@ -511,12 +573,23 @@
               setTimeout(function () { cInput.classList.remove("is-shaking"); }, 300);
               return;
             }
-            if (r.next === "device_approved") { setNote("Device approved — return to your terminal.", "ok"); return; }
+            if (r.next === "device_approved") {
+              setNote("Device approved — return to your terminal.", "ok");
+              lockCodeForm();
+              return;
+            }
             if (r.next === "device_denied") { setNote("Signed in, but this account has no active Pro plan, so the device wasn't approved.", "err"); return; }
             location.href = "account.html?signed_in=1" + (r.next === "joined" ? "&joined=1" : "");
           })
-          .catch(function () { cErr.hidden = false; })
-          .finally(function () { cBtn.disabled = false; cBtn.textContent = "Sign in with code"; });
+          .catch(function () {
+            cErr.textContent = "Couldn't reach the server — check your connection and try again.";
+            cErr.hidden = false;
+          })
+          .finally(function () {
+            if (!cBtn.disabled || cBtn.textContent !== "Signed in") {
+              cBtn.disabled = false; cBtn.textContent = "Sign in with code";
+            }
+          });
       });
 
       approveBtn.addEventListener("click", function () {
