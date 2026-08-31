@@ -1,8 +1,12 @@
 # Transitions Agent fix service.
 #   npx wrangler kv namespace create LICENSES
 #   npx wrangler kv namespace create USAGE
+#   npx wrangler kv namespace create RECIPES
 #   npx wrangler secret put ANTHROPIC_API_KEY
+#   node agent/worker/pack-recipes.mjs            (from the repo root; packs free + Pro)
+#   npx wrangler kv bulk put recipes-kv.json --namespace-id <RECIPES id>
 #   npx wrangler deploy
+# Re-run the pack + bulk put whenever recipes change.
 name = "transitions-agent-api"
 main = "worker.mjs"
 compatibility_date = "2026-08-01"
@@ -11,6 +15,7 @@ compatibility_date = "2026-08-01"
 kv_namespaces = [
   { binding = "LICENSES", id = "" },
   { binding = "USAGE", id = "" },
+  { binding = "RECIPES", id = "" },
 ]
 
 # Route under the existing API host, next to the transitions-pro endpoints.

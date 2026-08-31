@@ -6,6 +6,8 @@
 // Bindings (wrangler.toml):
 //   KV  LICENSES  key: license key,        value: {"plan":"team","quota":200,"active":true}
 //   KV  USAGE     key: "<license>:<YYYY-MM>", value: "<count>"
+//   KV  RECIPES   key: "recipe:<slug>",    value: {"slug","tier","variants":{css,react,...}}
+//                 populated by pack-recipes.mjs (free + Pro recipe sources)
 //   secret ANTHROPIC_API_KEY
 //
 // Deploy: npx wrangler deploy   (route it under api.transitions.dev)
@@ -45,21 +47,43 @@ async function handleFix(request, env) {
   if (!files.length) return json({ error: "no files" }, 400);
   if (mode !== "polish" && mode !== "revamp") return json({ error: "bad mode" }, 400);
 
-  const fixed = await proposeFixes(env, findings, files, mode);
+  // Revamp rewrites against the real library source, Pro recipes included:
+  // the license already paid for the fix, so tier does not gate the source here.
+  const recipes = mode === "revamp" ? await loadRecipes(env, findings) : [];
+
+  const fixed = await proposeFixes(env, findings, files, mode, recipes);
   await env.USAGE.put(usageKey, String(used + 1), { expirationTtl: 60 * 60 * 24 * 62 });
 
   return json({ ...fixed, usage: { used: used + 1, quota } });
 }
 
-async function proposeFixes(env, findings, files, mode) {
+const MAX_RECIPES = 4;
+
+async function loadRecipes(env, findings) {
+  const slugs = [...new Set(findings.map((f) => f.recipe).filter(Boolean))].slice(0, MAX_RECIPES);
+  const recipes = [];
+  for (const slug of slugs) {
+    const rec = await env.RECIPES.get("recipe:" + slug, { type: "json" });
+    if (rec) recipes.push(rec);
+  }
+  return recipes;
+}
+
+async function proposeFixes(env, findings, files, mode, recipes) {
   // polish: token-level adjustments only. revamp: full recipe rewrites allowed.
   const modeRules = mode === "revamp"
     ? [
-        "Mode: REVAMP. Where a finding names a transitions.dev recipe (modal-open-close,",
-        "tooltip, dropdown-menu-morph, learn-more-hover, ...), replace the existing motion",
-        "wholesale with that recipe's pattern: proper enter and exit states, keyframes,",
-        "easing curves. You may add CSS classes and keyframes and adjust class names in",
-        "markup, but never change component logic, state, or behavior.",
+        "Mode: REVAMP. Where a finding names a transitions.dev recipe, replace the",
+        "existing motion wholesale with that recipe's pattern: proper enter and exit",
+        "states, keyframes, easing curves. The user message includes a `recipes` array",
+        "with the authoritative library source for the matched recipes (Pro recipes",
+        "included), each with css and sometimes react/typescript variants. Base every",
+        "rewrite on that source, keeping its keyframes, easings, durations, and tunable",
+        "variables verbatim; adapt only selectors and class names to the project, and",
+        "pick the variant matching the file type. You may add CSS classes and keyframes",
+        "and adjust class names in markup, but never change component logic, state, or",
+        "behavior. If no recipe source is provided for a finding, improve it minimally",
+        "in the same style instead of inventing a new pattern.",
       ]
     : [
         "Mode: POLISH. Make only small, safe adjustments: move literal durations to a",
@@ -80,7 +104,7 @@ async function proposeFixes(env, findings, files, mode) {
     "Include only files you actually changed.",
   ].join(" ");
 
-  const user = JSON.stringify({ findings, files });
+  const user = JSON.stringify(recipes.length ? { findings, files, recipes } : { findings, files });
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
