@@ -44,7 +44,7 @@ export async function runFix(root, result, opts) {
   console.log(c.dim(`Requesting fixes for ${files.length} files${dropped > 0 ? ` (${dropped} deferred to a later run)` : ""}...`));
   let res;
   try {
-    res = await fetch(api + "/v1/doctor/fix", {
+    res = await fetch(api + "/v1/agent/fix", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: "Bearer " + license },
       body: JSON.stringify({ findings: result.findings, files, score: result.score }),
@@ -53,7 +53,7 @@ export async function runFix(root, result, opts) {
     console.error(c.red("✗ ") + "Could not reach the fix service: " + e.message);
     return 1;
   }
-  if (res.status === 401) { console.error(c.red("✗ ") + "License key not valid. Check TRANSITIONS_DOCTOR_LICENSE."); return 1; }
+  if (res.status === 401) { console.error(c.red("✗ ") + "License key not valid. Check TRANSITIONS_AGENT_LICENSE."); return 1; }
   if (res.status === 429) { console.error(c.red("✗ ") + "Monthly fix quota reached. Top up at transitions.dev/pro."); return 1; }
   if (!res.ok) { console.error(c.red("✗ ") + `Fix service error (${res.status}).`); return 1; }
   const data = await res.json();
@@ -79,7 +79,7 @@ export async function runFix(root, result, opts) {
 
 function showDiff(root, proposal) {
   // git diff --no-index gives a familiar colored diff without touching the repo.
-  const tmp = mkdtempSync(join(tmpdir(), "tdoc-"));
+  const tmp = mkdtempSync(join(tmpdir(), "tagent-"));
   const tmpFile = join(tmp, "proposed");
   writeFileSync(tmpFile, proposal.content);
   const out = spawnSync("git", ["diff", "--no-index", "--color=always", "--", proposal.path, tmpFile], {
@@ -93,10 +93,10 @@ function showDiff(root, proposal) {
 async function openPr(root, result, proposed, { yes }) {
   const go = yes || await confirm("Create a branch, commit, push, and open a pull request? [y/N] ");
   if (!go) { console.log(c.dim("Changes stay local. Commit them yourself when ready.")); return 0; }
-  const branch = "transitions-doctor/fixes-" + new Date().toISOString().slice(0, 10);
+  const branch = "transitions-agent/fixes-" + new Date().toISOString().slice(0, 10);
   const title = `Fix UI transitions (motion score ${result.score} before fixes)`;
   const body = [
-    "Automated motion fixes proposed by [Transitions Doctor](https://transitions.dev).",
+    "Automated motion fixes proposed by [Transitions Agent](https://transitions.dev).",
     "",
     ...proposed.map((p) => `- \`${p.path}\``),
     "",
@@ -105,7 +105,7 @@ async function openPr(root, result, proposed, { yes }) {
   try {
     execFileSync("git", ["checkout", "-b", branch], { cwd: root, stdio: "pipe" });
     execFileSync("git", ["add", ...proposed.map((p) => p.path)], { cwd: root, stdio: "pipe" });
-    execFileSync("git", ["commit", "-m", "fix(motion): apply transitions-doctor fixes"], { cwd: root, stdio: "pipe" });
+    execFileSync("git", ["commit", "-m", "fix(motion): apply transitions-agent fixes"], { cwd: root, stdio: "pipe" });
     execFileSync("git", ["push", "-u", "origin", branch], { cwd: root, stdio: "inherit" });
   } catch (e) {
     console.error(c.red("✗ ") + "Git step failed: " + (e.stderr?.toString() || e.message));
@@ -121,7 +121,7 @@ async function openPr(root, result, proposed, { yes }) {
 
 function writePromptFallback(root, result, files) {
   // No license: hand the work to the user's own coding agent instead.
-  const out = join(root, "transitions-doctor-fixes.md");
+  const out = join(root, "transitions-agent-fixes.md");
   const lines = [
     "# Fix these UI transition issues",
     "",
@@ -135,9 +135,9 @@ function writePromptFallback(root, result, files) {
     "Affected files: " + files.map((f) => f.path).join(", "),
   ];
   writeFileSync(out, lines.join("\n"));
-  console.log(c.yellow("No license key found") + c.dim(" (set TRANSITIONS_DOCTOR_LICENSE for hosted fixes)."));
-  console.log("Wrote " + c.bold("transitions-doctor-fixes.md") + ". Hand it to Claude Code or Cursor:");
-  console.log(c.dim("  claude \"apply transitions-doctor-fixes.md\""));
+  console.log(c.yellow("No license key found") + c.dim(" (set TRANSITIONS_AGENT_LICENSE for hosted fixes)."));
+  console.log("Wrote " + c.bold("transitions-agent-fixes.md") + ". Hand it to Claude Code or Cursor:");
+  console.log(c.dim("  claude \"apply transitions-agent-fixes.md\""));
 }
 
 function confirm(question) {

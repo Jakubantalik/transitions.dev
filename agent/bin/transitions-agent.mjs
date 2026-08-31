@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-// transitions-doctor: scan a codebase for missing or janky UI transitions.
+// transitions-agent: scan a codebase for missing or janky UI transitions.
 //
-//   npx transitions-doctor                 scan + motion score + findings
-//   npx transitions-doctor fix             propose AI fixes as diffs, confirm, apply
-//   npx transitions-doctor fix --pr        after applying, open a pull request
+//   npx transitions-agent                 scan + motion score + findings
+//   npx transitions-agent fix             propose AI fixes as diffs, confirm, apply
+//   npx transitions-agent fix --pr        after applying, open a pull request
 //
 // Flags:
 //   --json               machine-readable report on stdout
 //   --md                 GitHub-flavored markdown report on stdout
 //   --min-score <n>      exit 2 when the score is below n (CI gate)
 //   --dir <path>         project root to scan (default: cwd)
-//   --license <key>      fix service license (or TRANSITIONS_DOCTOR_LICENSE)
+//   --license <key>      fix service license (or TRANSITIONS_AGENT_LICENSE)
 //   --api <url>          fix service URL (default https://api.transitions.dev)
 //   --yes                skip confirmation prompts (CI)
 //
@@ -50,13 +50,13 @@ if (command === "scan") {
 if (command === "fix") {
   console.log(renderTerminal(result));
   const code = await runFix(root, result, {
-    api: (flags.api || process.env.TRANSITIONS_DOCTOR_API || "https://api.transitions.dev").replace(/\/$/, ""),
-    license: flags.license || process.env.TRANSITIONS_DOCTOR_LICENSE || "",
+    api: (flags.api || process.env.TRANSITIONS_AGENT_API || "https://api.transitions.dev").replace(/\/$/, ""),
+    license: flags.license || process.env.TRANSITIONS_AGENT_LICENSE || "",
     yes: !!flags.yes,
     pr: !!flags.pr,
   });
   process.exit(code);
 }
 
-console.error(`Unknown command "${command}". Use: transitions-doctor [scan|fix]`);
+console.error(`Unknown command "${command}". Use: transitions-agent [scan|fix]`);
 process.exit(1);

@@ -24,7 +24,7 @@ export function renderTerminal(result) {
   const lines = [];
   const scoreColor = result.score >= 90 ? c.green : result.score >= 75 ? c.cyan : result.score >= 50 ? c.yellow : c.red;
   lines.push("");
-  lines.push(c.bold("  transitions-doctor") + c.dim(`  scanned ${result.scannedFiles} files`));
+  lines.push(c.bold("  transitions-agent") + c.dim(`  scanned ${result.scannedFiles} files`));
   lines.push("");
   lines.push("  Motion score  " + scoreColor(c.bold(`${result.score} / 100`)) + c.dim(`  (${result.grade})`));
   lines.push("");
@@ -44,7 +44,7 @@ export function renderTerminal(result) {
     if (list.length > 5) lines.push(c.dim(`      ... and ${list.length - 5} more`));
     lines.push("");
   }
-  lines.push(c.dim("  Run ") + c.bold("npx transitions-doctor fix") + c.dim(" to get fixes proposed as diffs, then an optional PR."));
+  lines.push(c.dim("  Run ") + c.bold("npx transitions-agent fix") + c.dim(" to get fixes proposed as diffs, then an optional PR."));
   lines.push("");
   return lines.join("\n");
 }
@@ -52,8 +52,8 @@ export function renderTerminal(result) {
 export function renderMarkdown(result, opts = {}) {
   const { previousScore } = opts;
   const lines = [];
-  lines.push("<!-- transitions-doctor -->");
-  lines.push(`### 🩺 Transitions Doctor`);
+  lines.push("<!-- transitions-agent -->");
+  lines.push(`### ✨ Transitions Agent`);
   lines.push("");
   const delta = previousScore != null ? ` (was ${previousScore})` : "";
   lines.push(`**Motion score: ${result.score} / 100** (${result.grade})${delta}, scanned ${result.scannedFiles} files.`);
@@ -70,7 +70,7 @@ export function renderMarkdown(result, opts = {}) {
     lines.push(`| ${RULE_TITLES[rule] || rule} | ${list.length} | ${where}${list.length > 3 ? "<br>..." : ""} |`);
   }
   lines.push("");
-  lines.push("Run `npx transitions-doctor` locally for details, or `npx transitions-doctor fix` to get fixes as a pull request.");
+  lines.push("Run `npx transitions-agent` locally for details, or `npx transitions-agent fix` to get fixes as a pull request.");
   return lines.join("\n");
 }
 

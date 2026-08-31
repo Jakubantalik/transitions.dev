@@ -1,4 +1,4 @@
-// Transitions Doctor fix service (Cloudflare Worker).
+// Transitions Agent fix service (Cloudflare Worker).
 // Option C architecture: this service holds the Anthropic API key. Clients send
 // findings + file contents with a license key; the service validates the
 // license, meters monthly usage, asks Claude for fixed files, and returns them.
@@ -17,7 +17,7 @@ const MAX_BODY_BYTES = 600_000;
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (request.method === "POST" && url.pathname === "/v1/doctor/fix") {
+    if (request.method === "POST" && url.pathname === "/v1/agent/fix") {
       return handleFix(request, env);
     }
     return json({ error: "not found" }, 404);
@@ -52,7 +52,7 @@ async function handleFix(request, env) {
 
 async function proposeFixes(env, findings, files) {
   const system = [
-    "You are Transitions Doctor, an expert in production UI motion.",
+    "You are Transitions Agent, an expert in production UI motion.",
     "You receive source files and a list of motion findings. Return the corrected files.",
     "Rules: animate transform and opacity, never layout properties. Keep durations on",
     "a small token scale. Always respect prefers-reduced-motion. Change as little as",

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Turn a transitions-doctor JSON report into the PR comment markdown.
+// Turn a transitions-agent JSON report into the PR comment markdown.
 // Usage: node comment.mjs report.json [previous-score]
 import { readFileSync } from "node:fs";
 import { renderMarkdown } from "../lib/report.mjs";

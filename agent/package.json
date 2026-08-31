@@ -1,10 +1,10 @@
 {
-  "name": "transitions-doctor",
+  "name": "transitions-agent",
   "version": "0.1.0",
   "description": "Scan your codebase for missing, janky, or inconsistent UI transitions. Get a motion score, ready-to-apply fixes from transitions.dev recipes, and an optional pull request with the fixes.",
   "type": "module",
   "bin": {
-    "transitions-doctor": "bin/transitions-doctor.mjs"
+    "transitions-agent": "bin/transitions-agent.mjs"
   },
   "files": [
     "bin",
@@ -30,7 +30,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Jakubantalik/transitions.dev.git",
-    "directory": "doctor"
+    "directory": "agent"
   },
   "homepage": "https://transitions.dev"
 }

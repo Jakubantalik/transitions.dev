@@ -1,6 +1,6 @@
-# Transitions Doctor: motion score on every pull request.
-# Copy this file to .github/workflows/transitions-doctor.yml in your repository.
-name: Transitions Doctor
+# Transitions Agent: motion score on every pull request.
+# Copy this file to .github/workflows/transitions-agent.yml in your repository.
+name: Transitions Agent
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Jakubantalik/transitions.dev/doctor@main
+      - uses: Jakubantalik/transitions.dev/agent@main
         with:
           # Fail the check when the motion score drops below this (0 = report only).
           min-score: "0"

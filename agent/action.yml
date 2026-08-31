@@ -1,4 +1,4 @@
-name: "Transitions Doctor"
+name: "Transitions Agent"
 description: "Scan pull requests for missing or janky UI transitions. Posts a motion score comment and can gate merges on a minimum score."
 branding:
   icon: "activity"
@@ -30,9 +30,9 @@ runs:
       id: scan
       shell: bash
       run: |
-        node "${{ github.action_path }}/bin/transitions-doctor.mjs" --json --dir "${{ inputs.working-directory }}" > "$RUNNER_TEMP/tdoc.json"
-        node "${{ github.action_path }}/action/comment.mjs" "$RUNNER_TEMP/tdoc.json" > "$RUNNER_TEMP/tdoc-comment.md"
-        echo "score=$(node -p "JSON.parse(require('fs').readFileSync(process.env.RUNNER_TEMP + '/tdoc.json','utf8')).score")" >> "$GITHUB_OUTPUT"
+        node "${{ github.action_path }}/bin/transitions-agent.mjs" --json --dir "${{ inputs.working-directory }}" > "$RUNNER_TEMP/tagent.json"
+        node "${{ github.action_path }}/action/comment.mjs" "$RUNNER_TEMP/tagent.json" > "$RUNNER_TEMP/tagent-comment.md"
+        echo "score=$(node -p "JSON.parse(require('fs').readFileSync(process.env.RUNNER_TEMP + '/tagent.json','utf8')).score")" >> "$GITHUB_OUTPUT"
 
     - name: Comment on PR
       if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
@@ -41,8 +41,8 @@ runs:
         github-token: ${{ inputs.github-token }}
         script: |
           const fs = require("fs");
-          const body = fs.readFileSync(process.env.RUNNER_TEMP + "/tdoc-comment.md", "utf8");
-          const marker = "<!-- transitions-doctor -->";
+          const body = fs.readFileSync(process.env.RUNNER_TEMP + "/tagent-comment.md", "utf8");
+          const marker = "<!-- transitions-agent -->";
           const { owner, repo } = context.repo;
           const issue_number = context.payload.pull_request.number;
           const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
