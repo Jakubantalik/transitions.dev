@@ -5,6 +5,12 @@
 //   npx transitions-agent fix             propose AI fixes as diffs, confirm, apply
 //   npx transitions-agent fix --pr        after applying, open a pull request
 //
+// Fix modes (--mode):
+//   polish (default)   small safe adjustments only: motion tokens, reduced-motion
+//                      guard, named transition properties. Never restructures.
+//   revamp             full rewrite where a finding matches a transitions.dev
+//                      recipe (modals, tooltips, dropdowns, hovers).
+//
 // Flags:
 //   --json               machine-readable report on stdout
 //   --md                 GitHub-flavored markdown report on stdout
@@ -25,6 +31,7 @@ const flags = {};
 const positional = [];
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--dir") flags.dir = args[++i];
+  else if (args[i] === "--mode") flags.mode = args[++i];
   else if (args[i] === "--api") flags.api = args[++i];
   else if (args[i] === "--license") flags.license = args[++i];
   else if (args[i] === "--min-score") flags.minScore = parseInt(args[++i], 10);
@@ -48,8 +55,14 @@ if (command === "scan") {
 }
 
 if (command === "fix") {
+  const mode = flags.mode || "polish";
+  if (mode !== "polish" && mode !== "revamp") {
+    console.error(`Unknown mode "${mode}". Use --mode polish or --mode revamp.`);
+    process.exit(1);
+  }
   console.log(renderTerminal(result));
   const code = await runFix(root, result, {
+    mode,
     api: (flags.api || process.env.TRANSITIONS_AGENT_API || "https://api.transitions.dev").replace(/\/$/, ""),
     license: flags.license || process.env.TRANSITIONS_AGENT_LICENSE || "",
     yes: !!flags.yes,

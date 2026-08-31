@@ -12,7 +12,19 @@ npx transitions-agent fix --pr # after applying: branch, commit, push, open a PR
 
 The `fix` command sends the affected files to the hosted fix service (your license key, our AI). Without a license key it writes `transitions-agent-fixes.md`, a ready-made task for your own Claude Code or Cursor.
 
-Flags: `--json`, `--md`, `--dir <path>`, `--min-score <n>` (exit 2 below n, for CI), `--license <key>` (or `TRANSITIONS_AGENT_LICENSE`), `--yes` (skip prompts).
+### Fix modes
+
+| Mode | What it does | Risk |
+|---|---|---|
+| `--mode polish` (default) | Small safe adjustments only: durations onto motion tokens, `prefers-reduced-motion` guard, named properties instead of `transition: all`, missing transition lines on hover bases. Never restructures anything. | Minimal, few-line diffs |
+| `--mode revamp` | Full rewrite where a finding matches a transitions.dev recipe: modals, tooltips, dropdowns get the recipe's proper enter and exit motion, keyframes, and easing. Logic is never touched. | Larger diffs, review the PR |
+
+```bash
+npx transitions-agent fix                # polish: safe token-level cleanup
+npx transitions-agent fix --mode revamp  # recipe-level motion rewrite
+```
+
+Flags: `--json`, `--md`, `--dir <path>`, `--min-score <n>` (exit 2 below n, for CI), `--mode polish|revamp`, `--license <key>` (or `TRANSITIONS_AGENT_LICENSE`), `--yes` (skip prompts).
 
 ## GitHub Action
 

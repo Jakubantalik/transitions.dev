@@ -41,22 +41,40 @@ async function handleFix(request, env) {
   if (raw.length > MAX_BODY_BYTES) return json({ error: "payload too large" }, 413);
   let body;
   try { body = JSON.parse(raw); } catch { return json({ error: "bad json" }, 400); }
-  const { findings = [], files = [] } = body;
+  const { findings = [], files = [], mode = "polish" } = body;
   if (!files.length) return json({ error: "no files" }, 400);
+  if (mode !== "polish" && mode !== "revamp") return json({ error: "bad mode" }, 400);
 
-  const fixed = await proposeFixes(env, findings, files);
+  const fixed = await proposeFixes(env, findings, files, mode);
   await env.USAGE.put(usageKey, String(used + 1), { expirationTtl: 60 * 60 * 24 * 62 });
 
   return json({ ...fixed, usage: { used: used + 1, quota } });
 }
 
-async function proposeFixes(env, findings, files) {
+async function proposeFixes(env, findings, files, mode) {
+  // polish: token-level adjustments only. revamp: full recipe rewrites allowed.
+  const modeRules = mode === "revamp"
+    ? [
+        "Mode: REVAMP. Where a finding names a transitions.dev recipe (modal-open-close,",
+        "tooltip, dropdown-menu-morph, learn-more-hover, ...), replace the existing motion",
+        "wholesale with that recipe's pattern: proper enter and exit states, keyframes,",
+        "easing curves. You may add CSS classes and keyframes and adjust class names in",
+        "markup, but never change component logic, state, or behavior.",
+      ]
+    : [
+        "Mode: POLISH. Make only small, safe adjustments: move literal durations to a",
+        "motion token scale (define :root tokens once if missing), add one",
+        "prefers-reduced-motion guard, replace transition: all with named properties,",
+        "add missing transition declarations to hover bases. Never restructure markup,",
+        "components, keyframes, or selectors. Every diff must be a few lines.",
+      ];
   const system = [
     "You are Transitions Agent, an expert in production UI motion.",
     "You receive source files and a list of motion findings. Return the corrected files.",
     "Rules: animate transform and opacity, never layout properties. Keep durations on",
     "a small token scale. Always respect prefers-reduced-motion. Change as little as",
     "possible; never touch logic, only motion. Style guidance: https://transitions.dev.",
+    ...modeRules,
     'Respond with ONLY a JSON object: {"summary": "<short human summary>",',
     '"files": [{"path": "...", "content": "<full corrected file>"}]}.',
     "Include only files you actually changed.",

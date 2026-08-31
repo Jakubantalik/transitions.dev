@@ -18,11 +18,27 @@ const c = {
   yellow: (s) => `\x1b[33m${s}\x1b[0m`,
 };
 
+// polish: token-level adjustments only. revamp: adds structural recipe rewrites.
+const POLISH_RULES = new Set([
+  "hardcoded-duration", "transition-all", "no-reduced-motion",
+  "inconsistent-durations", "hover-without-transition",
+]);
+
+export function findingsForMode(findings, mode) {
+  if (mode === "revamp") return findings;
+  return findings.filter((f) => POLISH_RULES.has(f.rule));
+}
+
 export async function runFix(root, result, opts) {
-  const { api, license, yes, pr } = opts;
-  const fixable = result.findings.filter((f) => f.path !== "(project)");
-  if (!fixable.length && !result.findings.length) {
-    console.log(c.green("Nothing to fix."));
+  const { api, license, yes, pr, mode = "polish" } = opts;
+  const findings = findingsForMode(result.findings, mode);
+  const skipped = result.findings.length - findings.length;
+  if (skipped > 0) {
+    console.log(c.dim(`${skipped} structural findings need --mode revamp and are skipped in polish mode.`));
+  }
+  const fixable = findings.filter((f) => f.path !== "(project)");
+  if (!fixable.length && !findings.length) {
+    console.log(c.green("Nothing to fix" + (mode === "polish" ? " in polish mode." : ".")));
     return 0;
   }
 
@@ -37,17 +53,17 @@ export async function runFix(root, result, opts) {
   }
 
   if (!license) {
-    writePromptFallback(root, result, files);
+    writePromptFallback(root, findings, files, mode);
     return 0;
   }
 
-  console.log(c.dim(`Requesting fixes for ${files.length} files${dropped > 0 ? ` (${dropped} deferred to a later run)` : ""}...`));
+  console.log(c.dim(`Requesting ${mode} fixes for ${files.length} files${dropped > 0 ? ` (${dropped} deferred to a later run)` : ""}...`));
   let res;
   try {
     res = await fetch(api + "/v1/agent/fix", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: "Bearer " + license },
-      body: JSON.stringify({ findings: result.findings, files, score: result.score }),
+      body: JSON.stringify({ mode, findings, files, score: result.score }),
     });
   } catch (e) {
     console.error(c.red("✗ ") + "Could not reach the fix service: " + e.message);
@@ -74,7 +90,7 @@ export async function runFix(root, result, opts) {
     console.log(c.dim("Review with git diff. Re-run with --pr to open a pull request."));
     return 0;
   }
-  return openPr(root, result, proposed, { yes });
+  return openPr(root, result, proposed, { yes, mode });
 }
 
 function showDiff(root, proposal) {
@@ -90,13 +106,15 @@ function showDiff(root, proposal) {
   console.log(body || c.dim("(no change)"));
 }
 
-async function openPr(root, result, proposed, { yes }) {
+async function openPr(root, result, proposed, { yes, mode }) {
   const go = yes || await confirm("Create a branch, commit, push, and open a pull request? [y/N] ");
   if (!go) { console.log(c.dim("Changes stay local. Commit them yourself when ready.")); return 0; }
-  const branch = "transitions-agent/fixes-" + new Date().toISOString().slice(0, 10);
-  const title = `Fix UI transitions (motion score ${result.score} before fixes)`;
+  const branch = `transitions-agent/${mode}-` + new Date().toISOString().slice(0, 10);
+  const title = mode === "revamp"
+    ? `Revamp UI transitions with transitions.dev recipes (motion score ${result.score} before fixes)`
+    : `Polish UI transitions (motion score ${result.score} before fixes)`;
   const body = [
-    "Automated motion fixes proposed by [Transitions Agent](https://transitions.dev).",
+    `Automated ${mode} pass by [Transitions Agent](https://transitions.dev).`,
     "",
     ...proposed.map((p) => `- \`${p.path}\``),
     "",
@@ -105,7 +123,7 @@ async function openPr(root, result, proposed, { yes }) {
   try {
     execFileSync("git", ["checkout", "-b", branch], { cwd: root, stdio: "pipe" });
     execFileSync("git", ["add", ...proposed.map((p) => p.path)], { cwd: root, stdio: "pipe" });
-    execFileSync("git", ["commit", "-m", "fix(motion): apply transitions-agent fixes"], { cwd: root, stdio: "pipe" });
+    execFileSync("git", ["commit", "-m", `fix(motion): transitions-agent ${mode} pass`], { cwd: root, stdio: "pipe" });
     execFileSync("git", ["push", "-u", "origin", branch], { cwd: root, stdio: "inherit" });
   } catch (e) {
     console.error(c.red("✗ ") + "Git step failed: " + (e.stderr?.toString() || e.message));
@@ -119,18 +137,23 @@ async function openPr(root, result, proposed, { yes }) {
   return 0;
 }
 
-function writePromptFallback(root, result, files) {
+function writePromptFallback(root, findings, files, mode) {
   // No license: hand the work to the user's own coding agent instead.
   const out = join(root, "transitions-agent-fixes.md");
+  const modeBrief = mode === "revamp"
+    ? "Where a finding names a recipe, replace the existing motion wholesale with that transitions.dev recipe pattern. You may add keyframes and classes, but never change component logic."
+    : "Make only small, safe adjustments: move durations to motion tokens, add a prefers-reduced-motion guard, replace transition: all with named properties, add missing transition declarations. Do not restructure markup, components, or keyframes.";
   const lines = [
-    "# Fix these UI transition issues",
+    `# ${mode === "revamp" ? "Revamp" : "Polish"} the UI transitions in this repository`,
     "",
     "You are working in this repository. Apply fixes for the findings below using",
     "production-quality CSS transitions (respect prefers-reduced-motion, use motion",
     "tokens, animate transform and opacity rather than layout). Recipes: https://transitions.dev",
     "",
+    modeBrief,
+    "",
     "## Findings",
-    ...result.findings.map((f) => `- ${f.path}${f.line ? ":" + f.line : ""} [${f.rule}] ${f.message}${f.recipe ? ` (recipe: https://transitions.dev/transitions/${f.recipe})` : ""}`),
+    ...findings.map((f) => `- ${f.path}${f.line ? ":" + f.line : ""} [${f.rule}] ${f.message}${f.recipe ? ` (recipe: https://transitions.dev/transitions/${f.recipe})` : ""}`),
     "",
     "Affected files: " + files.map((f) => f.path).join(", "),
   ];

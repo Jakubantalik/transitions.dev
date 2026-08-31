@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { runRules } from "../lib/rules.mjs";
 import { scan } from "../lib/scan.mjs";
+import { findingsForMode } from "../lib/fix.mjs";
 import { readFileSync } from "node:fs";
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
@@ -33,6 +34,15 @@ test("scan of fixtures directory produces a bounded score", () => {
   assert.ok(result.score >= 0 && result.score <= 100);
   assert.ok(result.scannedFiles >= 3);
   assert.ok(result.findings.length > 0);
+});
+
+test("polish mode skips structural findings, revamp keeps them", () => {
+  const findings = runRules([load("bad.css", ".css"), load("BadModal.jsx", ".jsx")]);
+  const polish = findingsForMode(findings, "polish");
+  const revamp = findingsForMode(findings, "revamp");
+  assert.ok(!polish.some((f) => f.rule === "untransitioned-overlay"));
+  assert.ok(polish.some((f) => f.rule === "hardcoded-duration"));
+  assert.equal(revamp.length, findings.length);
 });
 
 test("reduced-motion guard anywhere in project silences the project rule", () => {
