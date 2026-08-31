@@ -1,0 +1,20 @@
+# Transitions Doctor: motion score on every pull request.
+# Copy this file to .github/workflows/transitions-doctor.yml in your repository.
+name: Transitions Doctor
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  motion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Jakubantalik/transitions.dev/doctor@main
+        with:
+          # Fail the check when the motion score drops below this (0 = report only).
+          min-score: "0"

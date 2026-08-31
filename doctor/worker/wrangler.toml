@@ -1,0 +1,17 @@
+# Transitions Doctor fix service.
+#   npx wrangler kv namespace create LICENSES
+#   npx wrangler kv namespace create USAGE
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler deploy
+name = "transitions-doctor-api"
+main = "worker.mjs"
+compatibility_date = "2026-08-01"
+
+# Fill in the namespace ids printed by "kv namespace create".
+kv_namespaces = [
+  { binding = "LICENSES", id = "" },
+  { binding = "USAGE", id = "" },
+]
+
+# Route under the existing API host, next to the transitions-pro endpoints.
+# routes = [{ pattern = "api.transitions.dev/v1/doctor/*", zone_name = "transitions.dev" }]

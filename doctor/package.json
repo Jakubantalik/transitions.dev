@@ -1,0 +1,36 @@
+{
+  "name": "transitions-doctor",
+  "version": "0.1.0",
+  "description": "Scan your codebase for missing, janky, or inconsistent UI transitions. Get a motion score, ready-to-apply fixes from transitions.dev recipes, and an optional pull request with the fixes.",
+  "type": "module",
+  "bin": {
+    "transitions-doctor": "bin/transitions-doctor.mjs"
+  },
+  "files": [
+    "bin",
+    "lib"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "css",
+    "transitions",
+    "animations",
+    "motion",
+    "lint",
+    "scanner",
+    "ui",
+    "accessibility"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jakubantalik/transitions.dev.git",
+    "directory": "doctor"
+  },
+  "homepage": "https://transitions.dev"
+}

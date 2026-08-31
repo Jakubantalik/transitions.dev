@@ -1,0 +1,19 @@
+:root {
+  --transition-fast: 150ms;
+  --transition-base: 250ms;
+}
+
+.card {
+  transition: transform var(--transition-base) ease, opacity var(--transition-fast) ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

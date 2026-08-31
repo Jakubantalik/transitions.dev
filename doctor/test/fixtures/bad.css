@@ -1,0 +1,21 @@
+.card {
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  background: #eee;
+}
+
+.badge {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.5; }
+}
+
+.panel {
+  transition: opacity 250ms ease, transform 180ms ease;
+}
