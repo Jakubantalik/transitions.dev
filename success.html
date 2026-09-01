@@ -3954,7 +3954,7 @@
       </p>
       <p class="success-signin" id="success-signin" role="status" hidden></p>
       <div class="skill-cta-row">
-        <a class="skill-btn skill-btn--primary" href="/">Browse full library</a>
+        <a class="skill-btn skill-btn--primary" id="success-cta" href="/">Sign in</a>
         <a class="skill-btn skill-btn--secondary" href="skill.html#installation">Installation</a>
       </div>
       <p class="success-foot">You can also <a href="account.html">download</a> everything including skills.</p>
@@ -4669,7 +4669,30 @@
       var TP = window.TransitionsPro;
       var note = document.getElementById("success-signin");
       var sid = new URLSearchParams(location.search).get("session_id");
-      if (!TP || !sid || !note) return;
+      if (!TP) return;
+
+      // Signing in is the next thing a buyer has to do, so the primary CTA asks
+      // for exactly that — until they are signed in, when it becomes the way
+      // into the library instead.
+      var cta = document.getElementById("success-cta");
+      function paintCta(state) {
+        if (!cta) return;
+        var inAccount = !!(state && state.authenticated);
+        cta.textContent = inAccount ? "Browse full library" : "Sign in";
+        cta.setAttribute("href", inAccount ? "/" : "#");
+      }
+      if (cta) {
+        cta.addEventListener("click", function (e) {
+          if (TP.state && TP.state.authenticated) return; // let the link through
+          e.preventDefault();
+          TP.openSignIn();
+        });
+      }
+      document.addEventListener("pro:me", function (e) { paintCta(e.detail); });
+      paintCta(TP.state);
+
+      // The rest only applies to a real post-checkout return.
+      if (!sid || !note) return;
       function esc(x){ var d=document.createElement("div"); d.textContent=x; return d.innerHTML; }
       TP.refresh().then(function (state) {
         if (state && state.authenticated) return; // already signed in
