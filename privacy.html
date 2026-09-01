@@ -49,6 +49,28 @@
   </script>
 
   <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
     :root {
       color-scheme: light;
       --bg: #fdfdfd;
@@ -353,10 +375,10 @@
       <section>
         <h2>How long we keep it</h2>
         <ul>
-          <li><strong>Account &amp; team data</strong> — for as long as your account exists.</li>
-          <li><strong>Sessions &amp; login tokens</strong> — short-lived; login links expire in minutes, sessions in weeks.</li>
-          <li><strong>Access &amp; audit logs</strong> — kept only as long as needed for security, then pruned.</li>
-          <li><strong>Billing records</strong> — retained as required by tax and accounting law, even after you cancel.</li>
+          <li><strong>Account &amp; team data</strong> — for as long as your account exists. Delete your account and it goes with it, immediately.</li>
+          <li><strong>Sessions &amp; login tokens</strong> — short-lived; login links expire in minutes, sessions in weeks. Both are deleted once used or expired.</li>
+          <li><strong>Access &amp; audit logs</strong> — 12 months, for abuse prevention and security investigation, then deleted automatically. If you delete your account, these stop being linked to you straight away.</li>
+          <li><strong>Billing records</strong> — 10 years, as Czech VAT and accounting law requires. These survive account deletion because we are legally obliged to keep them.</li>
         </ul>
       </section>
 
