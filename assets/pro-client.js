@@ -711,10 +711,11 @@
       "box-shadow:0 1px 2px rgba(0,0,0,.2);transition:scale 120ms cubic-bezier(0.22,1,0.36,1),opacity 120ms ease}" +
       ".tp-modal-btn:not([disabled]):active{scale:.96}" +
       ".tp-modal-btn[disabled]{opacity:.6;cursor:default}" +
-      // Site secondary fill (same tokens as the paywall's secondary action),
-      // keeping the primary's shadow so the pair sits on one surface. Doubled
-      // class so it outranks the themed base rule whatever the sheet order.
-      ".tp-modal-btn.tp-modal-btn--ghost{background:#e9e9e9;color:#17181c}" +
+      // Site secondary tokens, matching the paywall's secondary action: the
+      // 0 1px 2px shadow belongs to the PRIMARY variant only, so the secondary
+      // drops it rather than inheriting it from the base class. Doubled class
+      // so this outranks the themed base rule whatever the sheet order.
+      ".tp-modal-btn.tp-modal-btn--ghost{background:#e9e9e9;color:#17181c;box-shadow:none}" +
       ".tp-modal-btn.tp-modal-btn--ghost:hover{background:#e0e0e0}" +
       'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost{background:#2a2a2c;color:#f2f2f2}' +
       'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost:hover{background:#333336}' +
