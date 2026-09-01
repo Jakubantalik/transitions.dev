@@ -685,7 +685,7 @@
       ".tp-modal-x:hover{opacity:.9}" +
       ".tp-modal-x:active{scale:.9}" +
       ".tp-modal-intro{margin:0;font-size:16px;line-height:24.2px;font-weight:400;padding-right:20px}" +
-      ".tp-modal-intro-muted{color:#8a8a8a}" +
+      ".tp-modal-intro-muted{color:#8a8a8a;display:block}" +
       ".tp-modal-form{display:flex;flex-direction:column;gap:12px}" +
       // An author display rule outranks the UA [hidden] style, so every element
       // this modal toggles needs its own companion rule. Without it the code
@@ -719,9 +719,7 @@
       'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost{background:transparent;color:#e5e5e5;border-color:#3a3a3d}' +
       'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost:hover{background:rgba(255,255,255,.06)}' +
       'html[data-theme="dark"] .tp-modal-btn{background:#f2f2f2;color:#111}' +
-      ".tp-modal-intro{font-size:17px;line-height:1.3;font-weight:600;text-align:center;margin:0}" +
-      ".tp-modal-intro-muted{display:block;margin-top:6px;font-size:13px;font-weight:400;opacity:.6}" +
-      ".tp-modal-note{margin:0;font-size:13px;line-height:1.4;text-align:center}" +
+      ".tp-modal-note{margin:0;font-size:13px;line-height:1.4}" +
       '.tp-modal-note[data-kind="ok"]{color:#16a34a}' +
       '.tp-modal-note[data-kind="err"]{color:#d62b11}' +
       ".tp-modal-foot{margin:0;font-size:13px;line-height:16px;color:#17181c}" +
