@@ -586,8 +586,10 @@
               "err");
             return;
           }
+          // The step itself already says an email was sent and to which address;
+          // a second confirmation line only competes with it.
+          setModalNote(note, "", "");
           if (modalEl.__showStep) modalEl.__showStep("code", email);
-          setModalNote(note, "Check your email — enter the code, or click the link we sent.", "ok");
         })
         .catch(function () { setModalNote(note, "Couldn’t send the link. Please try again.", "err"); })
         .finally(function () { btn.disabled = false; btn.textContent = "Send code"; });
