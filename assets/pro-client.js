@@ -711,10 +711,13 @@
       "box-shadow:0 1px 2px rgba(0,0,0,.2);transition:scale 120ms cubic-bezier(0.22,1,0.36,1),opacity 120ms ease}" +
       ".tp-modal-btn:not([disabled]):active{scale:.96}" +
       ".tp-modal-btn[disabled]{opacity:.6;cursor:default}" +
-      ".tp-modal-btn--ghost{background:transparent;color:#17181c;box-shadow:none;border:1px solid #dcdcdc}" +
-      ".tp-modal-btn--ghost:hover{background:rgba(0,0,0,.04)}" +
-      'html[data-theme="dark"] .tp-modal-btn--ghost{background:transparent;color:#e5e5e5;border-color:#3a3a3d}' +
-      'html[data-theme="dark"] .tp-modal-btn--ghost:hover{background:rgba(255,255,255,.06)}' +
+      // Doubled class so the ghost variant outranks the themed base rule
+      // whatever order the sheet ends up in — otherwise the secondary button
+      // inherits the primary's solid fill and the two read as equal actions.
+      ".tp-modal-btn.tp-modal-btn--ghost{background:transparent;color:#17181c;box-shadow:none;border:1px solid #dcdcdc}" +
+      ".tp-modal-btn.tp-modal-btn--ghost:hover{background:rgba(0,0,0,.04)}" +
+      'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost{background:transparent;color:#e5e5e5;border-color:#3a3a3d}' +
+      'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost:hover{background:rgba(255,255,255,.06)}' +
       'html[data-theme="dark"] .tp-modal-btn{background:#f2f2f2;color:#111}' +
       ".tp-modal-intro{font-size:17px;line-height:1.3;font-weight:600;text-align:center;margin:0}" +
       ".tp-modal-intro-muted{display:block;margin-top:6px;font-size:13px;font-weight:400;opacity:.6}" +
