@@ -711,13 +711,13 @@
       "box-shadow:0 1px 2px rgba(0,0,0,.2);transition:scale 120ms cubic-bezier(0.22,1,0.36,1),opacity 120ms ease}" +
       ".tp-modal-btn:not([disabled]):active{scale:.96}" +
       ".tp-modal-btn[disabled]{opacity:.6;cursor:default}" +
-      // Doubled class so the ghost variant outranks the themed base rule
-      // whatever order the sheet ends up in — otherwise the secondary button
-      // inherits the primary's solid fill and the two read as equal actions.
-      ".tp-modal-btn.tp-modal-btn--ghost{background:transparent;color:#17181c;box-shadow:none;border:1px solid #dcdcdc}" +
-      ".tp-modal-btn.tp-modal-btn--ghost:hover{background:rgba(0,0,0,.04)}" +
-      'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost{background:transparent;color:#e5e5e5;border-color:#3a3a3d}' +
-      'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost:hover{background:rgba(255,255,255,.06)}' +
+      // Site secondary fill (same tokens as the paywall's secondary action),
+      // keeping the primary's shadow so the pair sits on one surface. Doubled
+      // class so it outranks the themed base rule whatever the sheet order.
+      ".tp-modal-btn.tp-modal-btn--ghost{background:#e9e9e9;color:#17181c}" +
+      ".tp-modal-btn.tp-modal-btn--ghost:hover{background:#e0e0e0}" +
+      'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost{background:#2a2a2c;color:#f2f2f2}' +
+      'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost:hover{background:#333336}' +
       'html[data-theme="dark"] .tp-modal-btn{background:#f2f2f2;color:#111}' +
       ".tp-modal-note{margin:0;font-size:13px;line-height:1.4}" +
       '.tp-modal-note[data-kind="ok"]{color:#16a34a}' +
