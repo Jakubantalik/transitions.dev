@@ -4698,8 +4698,8 @@
         if (state && state.authenticated) return; // already signed in
         TP.signInFromCheckout(sid).then(function (r) {
           if (r && r.ok) {
-            note.innerHTML = "We\u2019ve emailed a sign-in link to <strong>" +
-              (r.email ? esc(r.email) : "your inbox") + "</strong>. Click it to access your account.";
+            note.innerHTML = "We\u2019ve emailed a sign-in code to <strong>" +
+              (r.email ? esc(r.email) : "your inbox") + "</strong>. Enter it on the sign-in page to access your account.";
             note.hidden = false;
           }
         }).catch(function(){});

@@ -356,7 +356,7 @@
 
     <div class="signin-card">
       <p class="card-intro" id="a-desc">Enter your email you used at checkout.
-        <span class="muted">We’ll send you a sign-in link.</span></p>
+        <span class="muted">We’ll email you a code.</span></p>
 
       <!-- Device code display (device flow). Labelled because the page shows a
            SECOND code of the same XXXX-XXXX shape (the emailed sign-in code)
@@ -376,7 +376,7 @@
           <p class="field-error" id="a-email-error" role="alert" hidden>Please enter a valid email.</p>
         </div>
         <div style="height:24px"></div>
-        <button class="btn-primary" type="submit" id="a-signin-btn">Send login link</button>
+        <button class="btn-primary" type="submit" id="a-signin-btn">Send code</button>
       </form>
 
       <!-- Typed sign-in code (shown after a link is sent; rescues in-app-browser opens) -->
@@ -513,12 +513,12 @@
                       "If you bought Pro with a different address, use that one.", "err");
               return;
             }
-            setNote("Check your email — click the link, or type the code below.", "ok");
+            setNote("Check your email and enter the code below.", "ok");
             var cf = document.getElementById("a-codeform");
             if (cf) { cf.hidden = false; document.getElementById("a-signin-code").focus(); }
           })
           .catch(function () { setNote("Couldn't send the link. Please try again.", "err"); })
-          .finally(function () { signinBtn.disabled = false; signinBtn.textContent = "Send login link"; });
+          .finally(function () { signinBtn.disabled = false; signinBtn.textContent = "Send code"; });
       });
 
       // Typed-code sign-in: works even when the emailed link opened in a mail
@@ -670,7 +670,7 @@
             // Default intro copy already matches this state (Figma copy).
           } else if (deviceCode) {
             title.textContent = "Activate device";
-            setIntro("Sign in to approve this device.", "We'll email you a one-time link.");
+            setIntro("Sign in to approve this device.", "We'll email you a one-time code.");
           }
         }
       });

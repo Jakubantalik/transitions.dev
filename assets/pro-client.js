@@ -425,7 +425,7 @@
     return apiJSON("/device/approve", "POST", { user_code: (userCode || "").trim().toUpperCase() });
   }
 
-  // After checkout: resolve the buyer's email from the Stripe session and email a sign-in link.
+  // After checkout: resolve the buyer's email from the Stripe session and email a sign-in code.
   function signInFromCheckout(sessionId) {
     return apiJSON("/auth/from-checkout", "POST", { session_id: sessionId });
   }
