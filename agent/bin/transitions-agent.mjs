@@ -2,6 +2,7 @@
 // transitions-agent: scan a codebase for missing or janky UI transitions.
 //
 //   npx transitions-agent                 scan + motion score + findings
+//   npx transitions-agent signup you@x.co  free plan: license key by email
 //   npx transitions-agent fix             propose AI fixes as diffs, confirm, apply
 //   npx transitions-agent fix --pr        after applying, open a pull request
 //
@@ -41,6 +42,35 @@ for (let i = 0; i < args.length; i++) {
 
 const root = resolve(flags.dir || ".");
 const command = positional[0] || "scan";
+const api = (flags.api || process.env.TRANSITIONS_AGENT_API || "https://api.transitions.dev").replace(/\/$/, "");
+
+if (command === "signup") {
+  const email = (positional[1] || "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    console.error("Usage: transitions-agent signup you@company.com");
+    process.exit(1);
+  }
+  let res;
+  try {
+    res = await fetch(api + "/agent/signup", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+  } catch (e) {
+    console.error("Could not reach " + api + ": " + e.message);
+    process.exit(1);
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error("Signup failed: " + (err.error || res.status));
+    process.exit(1);
+  }
+  console.log(`Check ${email} for your free license key (10 hosted polish fixes/month).`);
+  console.log("Then: export TRANSITIONS_AGENT_LICENSE=<key from the email>");
+  process.exit(0);
+}
+
 const result = scan(root);
 
 if (command === "scan") {
@@ -63,7 +93,7 @@ if (command === "fix") {
   console.log(renderTerminal(result));
   const code = await runFix(root, result, {
     mode,
-    api: (flags.api || process.env.TRANSITIONS_AGENT_API || "https://api.transitions.dev").replace(/\/$/, ""),
+    api,
     license: flags.license || process.env.TRANSITIONS_AGENT_LICENSE || "",
     yes: !!flags.yes,
     pr: !!flags.pr,
@@ -71,5 +101,5 @@ if (command === "fix") {
   process.exit(code);
 }
 
-console.error(`Unknown command "${command}". Use: transitions-agent [scan|fix]`);
+console.error(`Unknown command "${command}". Use: transitions-agent [scan|fix|signup]`);
 process.exit(1);
