@@ -12,6 +12,11 @@ main = "worker.mjs"
 compatibility_date = "2026-08-01"
 
 # Fill in the namespace ids printed by "kv namespace create".
+# Budget fuse: total free-tier fixes per month across all free users.
+# At ~$0.02-0.05 per haiku polish fix, 2000 caps free-tier spend near $50-100.
+[vars]
+FREE_GLOBAL_MONTHLY = "2000"
+
 kv_namespaces = [
   { binding = "LICENSES", id = "" },
   { binding = "USAGE", id = "" },

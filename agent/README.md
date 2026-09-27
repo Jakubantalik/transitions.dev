@@ -17,7 +17,7 @@ The `fix` command sends the affected files to the hosted fix service (your licen
 | Mode | What it does | Risk |
 |---|---|---|
 | `--mode polish` (default) | Small safe adjustments only: durations onto motion tokens, `prefers-reduced-motion` guard, named properties instead of `transition: all`, missing transition lines on hover bases. Never restructures anything. | Minimal, few-line diffs |
-| `--mode revamp` | Full rewrite where a finding matches a transitions.dev recipe: modals, tooltips, dropdowns get the recipe's proper enter and exit motion, keyframes, and easing. Logic is never touched. | Larger diffs, review the PR |
+| `--mode revamp` (Team plan) | Full rewrite where a finding matches a transitions.dev recipe: modals, tooltips, dropdowns get the recipe's proper enter and exit motion, keyframes, and easing. Logic is never touched. | Larger diffs, review the PR |
 
 ```bash
 npx transitions-agent fix                # polish: safe token-level cleanup
@@ -60,5 +60,14 @@ Copy [templates/transitions-agent.yml](templates/transitions-agent.yml) to `.git
 `worker/` contains the Cloudflare Worker behind `api.transitions.dev/v1/agent/fix`: it validates the license key, meters monthly fix quota, and calls Claude with the service key. Teams never handle an AI key. See [worker/wrangler.toml](worker/wrangler.toml) for deployment.
 
 In revamp mode the service feeds the model the real transitions.dev recipe sources, Pro recipes included, so rewrites match the library exactly instead of an approximation. [worker/pack-recipes.mjs](worker/pack-recipes.mjs) packs the free and Pro recipe files into the RECIPES KV namespace; re-run it whenever recipes change.
+
+## Plans
+
+| | Scan + score + Action | Fix via your own Claude Code/Cursor | Hosted polish fixes | Hosted revamp (Pro recipes) |
+|---|---|---|---|---|
+| **Free** (sign-up) | unlimited | unlimited | 10/month, 2/day | no |
+| **Team** ($39/month) | unlimited | unlimited | 200/month | yes |
+
+Free hosted fixes run on a faster model and share a global monthly capacity pool (`FREE_GLOBAL_MONTHLY` in [worker/wrangler.toml](worker/wrangler.toml)), so free-tier AI spend has a hard ceiling. Team traffic is never affected by the pool.
 
 MIT for the scanner and CLI. The fix service requires a Transitions Agent license from [transitions.dev](https://transitions.dev).

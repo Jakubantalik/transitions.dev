@@ -4,16 +4,24 @@
 // license, meters monthly usage, asks Claude for fixed files, and returns them.
 //
 // Bindings (wrangler.toml):
-//   KV  LICENSES  key: license key,        value: {"plan":"team","quota":200,"active":true}
+//   KV  LICENSES  key: license key,        value: {"plan":"free"|"team","quota":10|200,"active":true}
 //   KV  USAGE     key: "<license>:<YYYY-MM>", value: "<count>"
+//                 also "<license>:d:<YYYY-MM-DD>" (free daily) and
+//                 "global:free:<YYYY-MM>" (free-tier budget fuse)
 //   KV  RECIPES   key: "recipe:<slug>",    value: {"slug","tier","variants":{css,react,...}}
 //                 populated by pack-recipes.mjs (free + Pro recipe sources)
+//   var FREE_GLOBAL_MONTHLY   total free-tier fixes across all users per month
 //   secret ANTHROPIC_API_KEY
 //
 // Deploy: npx wrangler deploy   (route it under api.transitions.dev)
+//
+// Plans. free: polish only, haiku, 10 fixes/month, 2/day, shared monthly budget
+// fuse. team: polish + revamp, sonnet, 200 fixes/month.
 
-const MODEL = "claude-sonnet-5";
-const DEFAULT_QUOTA = 200;
+const MODELS = { free: "claude-haiku-4-5-20251001", paid: "claude-sonnet-5" };
+const QUOTAS = { free: 10, paid: 200 };
+const FREE_DAILY_LIMIT = 2;
+const DEFAULT_FREE_GLOBAL_MONTHLY = 2000;
 const MAX_BODY_BYTES = 600_000;
 
 export default {
@@ -32,12 +40,30 @@ async function handleFix(request, env) {
 
   const record = await env.LICENSES.get(license, { type: "json" });
   if (!record || record.active === false) return json({ error: "invalid license" }, 401);
+  const isFree = record.plan === "free";
 
   const month = new Date().toISOString().slice(0, 7);
   const usageKey = `${license}:${month}`;
   const used = parseInt((await env.USAGE.get(usageKey)) || "0", 10);
-  const quota = record.quota || DEFAULT_QUOTA;
+  const quota = record.quota || (isFree ? QUOTAS.free : QUOTAS.paid);
   if (used >= quota) return json({ error: "quota exceeded", used, quota }, 429);
+
+  // Free-tier valves: per-day rate limit and a global monthly budget fuse.
+  let dayKey, globalKey, dayUsed, globalUsed;
+  if (isFree) {
+    const day = new Date().toISOString().slice(0, 10);
+    dayKey = `${license}:d:${day}`;
+    dayUsed = parseInt((await env.USAGE.get(dayKey)) || "0", 10);
+    if (dayUsed >= FREE_DAILY_LIMIT) {
+      return json({ error: "daily limit", detail: `Free plan allows ${FREE_DAILY_LIMIT} fixes per day. Try again tomorrow or upgrade.` }, 429);
+    }
+    globalKey = `global:free:${month}`;
+    globalUsed = parseInt((await env.USAGE.get(globalKey)) || "0", 10);
+    const globalCap = parseInt(env.FREE_GLOBAL_MONTHLY || "", 10) || DEFAULT_FREE_GLOBAL_MONTHLY;
+    if (globalUsed >= globalCap) {
+      return json({ error: "free capacity", detail: "Free fix capacity for this month is used up. It resets on the 1st; Team plans are unaffected." }, 429);
+    }
+  }
 
   const raw = await request.text();
   if (raw.length > MAX_BODY_BYTES) return json({ error: "payload too large" }, 413);
@@ -46,15 +72,24 @@ async function handleFix(request, env) {
   const { findings = [], files = [], mode = "polish" } = body;
   if (!files.length) return json({ error: "no files" }, 400);
   if (mode !== "polish" && mode !== "revamp") return json({ error: "bad mode" }, 400);
+  if (mode === "revamp" && isFree) {
+    return json({ error: "revamp requires team", detail: "Revamp mode (full recipe rewrites, Pro library) is part of the Team plan." }, 403);
+  }
 
   // Revamp rewrites against the real library source, Pro recipes included:
   // the license already paid for the fix, so tier does not gate the source here.
   const recipes = mode === "revamp" ? await loadRecipes(env, findings) : [];
 
-  const fixed = await proposeFixes(env, findings, files, mode, recipes);
-  await env.USAGE.put(usageKey, String(used + 1), { expirationTtl: 60 * 60 * 24 * 62 });
+  const model = isFree ? MODELS.free : MODELS.paid;
+  const fixed = await proposeFixes(env, findings, files, mode, recipes, model);
+  const ttl = { expirationTtl: 60 * 60 * 24 * 62 };
+  await env.USAGE.put(usageKey, String(used + 1), ttl);
+  if (isFree) {
+    await env.USAGE.put(dayKey, String(dayUsed + 1), { expirationTtl: 60 * 60 * 48 });
+    await env.USAGE.put(globalKey, String(globalUsed + 1), ttl);
+  }
 
-  return json({ ...fixed, usage: { used: used + 1, quota } });
+  return json({ ...fixed, usage: { used: used + 1, quota, plan: record.plan || "team" } });
 }
 
 const MAX_RECIPES = 4;
@@ -69,7 +104,7 @@ async function loadRecipes(env, findings) {
   return recipes;
 }
 
-async function proposeFixes(env, findings, files, mode, recipes) {
+async function proposeFixes(env, findings, files, mode, recipes, model) {
   // polish: token-level adjustments only. revamp: full recipe rewrites allowed.
   const modeRules = mode === "revamp"
     ? [
@@ -114,7 +149,7 @@ async function proposeFixes(env, findings, files, mode, recipes) {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: MODEL,
+      model,
       max_tokens: 16000,
       system,
       messages: [{ role: "user", content: user }],

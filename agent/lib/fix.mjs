@@ -70,7 +70,16 @@ export async function runFix(root, result, opts) {
     return 1;
   }
   if (res.status === 401) { console.error(c.red("✗ ") + "License key not valid. Check TRANSITIONS_AGENT_LICENSE."); return 1; }
-  if (res.status === 429) { console.error(c.red("✗ ") + "Monthly fix quota reached. Top up at transitions.dev/pro."); return 1; }
+  if (res.status === 403 || res.status === 429) {
+    const err = await res.json().catch(() => ({}));
+    if (err.error === "revamp requires team") {
+      console.error(c.yellow("Revamp mode is a Team plan feature") + " (full recipe rewrites, Pro library).");
+      console.error("Your free plan includes polish mode. Upgrade at " + c.bold("transitions.dev/pro") + " or run without --mode revamp.");
+    } else {
+      console.error(c.red("✗ ") + (err.detail || "Monthly fix quota reached. Upgrade at transitions.dev/pro."));
+    }
+    return 1;
+  }
   if (!res.ok) { console.error(c.red("✗ ") + `Fix service error (${res.status}).`); return 1; }
   const data = await res.json();
   const proposed = (data.files || []).filter((f) => f.path && typeof f.content === "string");
