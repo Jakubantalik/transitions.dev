@@ -18,7 +18,7 @@ The `fix` command sends the affected files to the hosted fix service (your licen
 | Mode | What it does | Risk |
 |---|---|---|
 | `--mode polish` (default) | Small safe adjustments only: durations onto motion tokens, `prefers-reduced-motion` guard, named properties instead of `transition: all`, missing transition lines on hover bases. Never restructures anything. | Minimal, few-line diffs |
-| `--mode revamp` (Business plan) | Full rewrite where a finding matches a transitions.dev recipe: modals, tooltips, dropdowns get the recipe's proper enter and exit motion, keyframes, and easing. Logic is never touched. | Larger diffs, review the PR |
+| `--mode revamp` (Business plan) | Superset of polish: confident recipe matches (modals, tooltips, dropdowns) get the recipe's full enter and exit motion, keyframes, and easing; every other finding gets the polish treatment. Logic is never touched. | Larger diffs, review the PR |
 
 ```bash
 npx transitions-agent fix                # polish: safe token-level cleanup
