@@ -4372,6 +4372,12 @@
         <p class="skill-section-note">
           One workflow file and every pull request gets a motion score comment: what the change did to your app's motion, which elements ship without transitions, and an optional <code>min-score</code> gate that blocks merges when motion quality drops. Runs on GitHub's machines, scan only, no AI key needed.
         </p>
+        <p class="skill-section-note" style="color: var(--text); font-weight: 500; margin-top: 20px;">Set it up</p>
+        <ol class="skill-section-note" style="margin: 8px 0 0; padding-left: 20px;">
+          <li style="margin-bottom: 8px;">Copy <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into your repo at <code>.github/workflows/</code>. Every pull request now gets the motion score comment - no account, no secrets.</li>
+          <li style="margin-bottom: 8px;">Optional merge gate: set <code>min-score</code> in that file (for example <code>"75"</code>) and pull requests that drop the score below it fail the check.</li>
+          <li style="margin-bottom: 8px;">Fix pull requests from CI (Business): add one repo secret, <code>TRANSITIONS_AGENT_LICENSE</code> - your key from <code>npx transitions-agent signup</code> or the Business email - then copy <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a> and run it from the Actions tab. A fix PR opens with the diffs; your team reviews and merges. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</li>
+        </ol>
       </div>
 
       <div class="skill-section" id="features">
