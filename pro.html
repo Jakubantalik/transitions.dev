@@ -4093,13 +4093,31 @@
        in with an 80ms appear-delay, instant out. The delay lives ONLY in
        the hover/focus rule, so leaving snaps the delay to 0 and the exit
        plays immediately. transform is used for both centering and scale. */
+    /* Tooltip open/close — transitions.dev recipe (skill 17-tooltip):
+       fade + scale in after a short appear-delay, disappear immediately on
+       leave (the delay lives only in the hover/focus rule). The badge is the
+       positioned wrap, so it plays the .t-tt-wrap role from the recipe. */
+    :root {
+      --tt-in-dur: 150ms;
+      --tt-out-dur: 50ms;
+      --tt-scale: 0.98;
+      --tt-delay: 80ms;
+      --tt-in-ease: ease-out;
+      --tt-out-ease: ease-out;
+      --tt-bg: #ffffff;
+      --tt-fg: #2f2f2f;
+    }
+    html[data-theme="dark"] {
+      --tt-bg: #181818;
+      --tt-fg: #e3e3e3;
+    }
     .pro-badge-tip {
       position: absolute;
       bottom: calc(100% + 8px);
       left: 50%;
-      transform: translate(-50%, 0) scale(0.98);
+      transform: translate(-50%, 0) scale(var(--tt-scale));
       transform-origin: 50% 100%;
-      padding: 5px 9px;
+      padding: 8px 12px;
       border-radius: 8px;
       font-family: var(--font-sans);
       font-size: 12px;
@@ -4108,35 +4126,33 @@
       pointer-events: none;
       z-index: 10;
       opacity: 0;
-      background: #ffffff;
-      color: #17181c;
+      background: var(--tt-bg);
+      color: var(--tt-fg);
       box-shadow:
         0 0 0 1px rgba(0, 0, 0, 0.06),
         0 2px 6px 0 rgba(0, 0, 0, 0.05),
         0 4px 42px 0 rgba(0, 0, 0, 0.06);
       /* Default rule = the LEAVE state: quick out, no delay. */
       transition:
-        opacity 50ms ease-out,
-        transform 50ms ease-out;
+        opacity var(--tt-out-dur) var(--tt-out-ease),
+        transform var(--tt-out-dur) var(--tt-out-ease);
     }
     html[data-theme="dark"] .pro-badge-tip {
-      background: #181818;
-      color: #e3e3e3;
       box-shadow:
         0 1px 16px 0 rgba(0, 0, 0, 0.4),
         inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
         inset 0 0 0 1px rgba(196, 196, 196, 0.08);
     }
     /* Gated to pointer devices so a tap on touch doesn't stick the tip
-       open. The 80ms delay belongs only here, so hover-out is instant. */
+       open. The appear-delay belongs only here, so hover-out is instant. */
     @media (hover: hover) {
       .pro-badge:hover .pro-badge-tip,
       .pro-badge:focus-visible .pro-badge-tip {
         opacity: 1;
         transform: translate(-50%, 0) scale(1);
-        transition-duration: 150ms;
-        transition-timing-function: ease-out;
-        transition-delay: 80ms;
+        transition-duration: var(--tt-in-dur);
+        transition-timing-function: var(--tt-in-ease);
+        transition-delay: var(--tt-delay);
       }
     }
     @media (prefers-reduced-motion: reduce) {
