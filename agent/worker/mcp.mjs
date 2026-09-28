@@ -112,8 +112,11 @@ async function getRecipe(id, args, request, env) {
     }
     const record = await env.LICENSES.get(license, { type: "json" });
     if (!record || record.active === false) return toolError(id, "license key not valid");
-    if (record.plan === "free") {
-      return toolError(id, `"${slug}" is a Pro recipe; the Business plan includes the full library (https://transitions.dev/pro.html). Free recipes work without limits.`);
+    // Raw Pro sources through MCP are an Enterprise feature (bring-your-own
+    // AI). Business gets Pro-grade output through the hosted fix service,
+    // where the sources stay server-side.
+    if (record.plan !== "enterprise") {
+      return toolError(id, `"${slug}" is a Pro recipe. Business plans get Pro-grade fixes through the hosted service (npx transitions-agent fix); raw Pro sources over MCP are part of the Enterprise plan (https://transitions.dev/pro.html). Free recipes work without limits.`);
     }
     const month = new Date().toISOString().slice(0, 7);
     const key = `${license}:r:${month}`;
