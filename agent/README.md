@@ -57,7 +57,7 @@ Prefer your own Claude to do the fixing? Connect the Transitions Agent MCP serve
 claude mcp add --transport http transitions-agent https://api.transitions.dev/v1/agent/mcp --header "Authorization: Bearer $TRANSITIONS_AGENT_LICENSE"
 ```
 
-Tools: `scan_instructions`, `fix_guidance(mode)`, `list_recipes`, `get_recipe(slug, variant)`. Free recipes need no key; raw Pro recipe sources over MCP are an Enterprise feature (Business gets Pro-grade fixes through the hosted service, where the sources stay server-side).
+Tools: `scan_instructions`, `fix_guidance(mode)`, `list_recipes`, `get_recipe(slug, variant)`. Free recipes need no key; Pro recipe sources need a paid plan (Pro, Business, or Enterprise).
 
 ### Fixing from CI
 
