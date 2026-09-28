@@ -738,6 +738,7 @@
     document.querySelectorAll(".pro-price-cta[data-plan]").forEach(function (cta) {
       cta.addEventListener("click", function (e) {
         e.preventDefault();
+        if (cta.getAttribute("aria-disabled") === "true") return;
         var plan = cta.getAttribute("data-plan");
         if (cta.getAttribute("data-action") === "portal") startPortal();
         else if (plan === "free") startFree();

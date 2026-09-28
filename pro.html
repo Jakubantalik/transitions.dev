@@ -4175,6 +4175,14 @@
     @media (max-width: 900px) {
       .pro-price-grid { grid-template-columns: minmax(0, 325px); }
     }
+    /* Business has no lifetime: under the Lifetime toggle its card dims and
+       the CTA goes inert instead of quietly selling the monthly plan. */
+    .pro-price-card { transition: opacity 200ms var(--ease-smooth-out); }
+    .pro-price-card[data-disabled="true"] { opacity: 0.4; }
+    .pro-price-card[data-disabled="true"] .pro-price-cta {
+      pointer-events: none;
+      cursor: default;
+    }
     .pro-price-head { display: flex; flex-direction: column; gap: 4px; }
     .pro-price-amount {
       display: flex;
@@ -6231,6 +6239,14 @@ description: Production-ready CSS
             swapText(perEl, p.per, priceReady, shrinking ? 200 : 0);
           }
           card.setAttribute("data-last-per", p.per);
+          // Business goes inert under Lifetime (no lifetime plan to sell).
+          var disabled = plan === "team" && curBilling === "lifetime";
+          card.setAttribute("data-disabled", disabled ? "true" : "false");
+          var cardCta = card.querySelector(".pro-price-cta");
+          if (cardCta) {
+            cardCta.setAttribute("aria-disabled", disabled ? "true" : "false");
+            cardCta.setAttribute("tabindex", disabled ? "-1" : "0");
+          }
           if (seatEl) seatEl.textContent = p.seat;
         });
         priceReady = true;
