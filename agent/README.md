@@ -11,7 +11,7 @@ npx transitions-agent fix                 # propose fixes as diffs, confirm, app
 npx transitions-agent fix --pr            # after applying: branch, commit, push, open a PR
 ```
 
-The `fix` command sends the affected files to the hosted fix service (your license key, our AI). Without a license key it writes `transitions-agent-fixes.md`, a ready-made task for your own Claude Code or Cursor.
+The `fix` command sends the affected files to the hosted fix service (your license key, our AI). Without a license key it writes `transitions-agent-fixes.md`, a ready-made task for your own Claude Code, Cursor or Codex.
 
 ### Fix modes
 
