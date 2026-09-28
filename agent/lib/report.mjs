@@ -77,6 +77,10 @@ export function renderMarkdown(result, opts = {}) {
   }
   lines.push("");
   lines.push("Run `npx transitions-agent` locally for details, or `npx transitions-agent fix` to get fixes as a pull request.");
+  if (opts.licenseCta) {
+    lines.push("");
+    lines.push("**Want these fixed automatically?** Add a `TRANSITIONS_AGENT_LICENSE` repo secret and the [fix workflow](https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml) - free key: `npx transitions-agent signup` · [plans](https://transitions.dev/pro.html)");
+  }
   return lines.join("\n");
 }
 

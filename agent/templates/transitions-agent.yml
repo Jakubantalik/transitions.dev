@@ -18,3 +18,5 @@ jobs:
         with:
           # Fail the check when the motion score drops below this (0 = report only).
           min-score: "0"
+          # Optional: with a license configured, the comment drops its setup hint.
+          license: ${{ secrets.TRANSITIONS_AGENT_LICENSE }}
