@@ -80,6 +80,11 @@ export async function runFix(root, result, opts) {
     }
     return 1;
   }
+  if (res.status === 502) {
+    const err = await res.json().catch(() => ({}));
+    console.error(c.yellow("The fix service could not reach the AI backend.") + " " + (err.detail || "Try again in a minute."));
+    return 1;
+  }
   if (!res.ok) { console.error(c.red("✗ ") + `Fix service error (${res.status}).`); return 1; }
   const data = await res.json();
   const proposed = (data.files || []).filter((f) => f.path && typeof f.content === "string");
