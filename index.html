@@ -1394,9 +1394,12 @@
     /* Slightly darker than the body copy — points at the Skill page. */
     .subtitle-skill {
       color: var(--text);
-      text-decoration: none;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+      transition: text-decoration-color 180ms ease;
     }
-    .subtitle-skill:hover { text-decoration: underline; text-underline-offset: 2px; }
+    .subtitle-skill:hover { text-decoration-color: currentColor; }
 
     /* Hero CTA row (same component as /refine + /skill). Primary pill is
        dark in light theme and light in dark theme; secondary keeps a
@@ -2097,9 +2100,12 @@
     }
     .sponsors-note a {
       color: var(--text);
-      text-decoration: none;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+      transition: text-decoration-color 180ms ease;
     }
-    .sponsors-note a:hover { text-decoration: underline; text-underline-offset: 2px; }
+    .sponsors-note a:hover { text-decoration-color: currentColor; }
 
     /* Pill button mirrors Figma 351:374 (Button/Small/Primary).
        In light mode the pill is near-black with white text, mirrored

@@ -985,13 +985,16 @@
       line-height: 24.2px;
       color: var(--text-muted);
     }
-    /* Same in-subtitle link treatment as the homepage (.subtitle-skill):
-       slightly darker than the body copy, underline only on hover. */
+    /* House inline-link style (same as the homepage): darker than the body
+       copy, underlined at rest with a softened line that solidifies on hover. */
     .subtitle a {
       color: var(--text);
-      text-decoration: none;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+      transition: text-decoration-color 180ms ease;
     }
-    .subtitle a:hover { text-decoration: underline; text-underline-offset: 2px; }
+    .subtitle a:hover { text-decoration-color: currentColor; }
 
     /* ─── Cards grid ──────────────────────────────────────────── */
     .cards {
