@@ -48,4 +48,4 @@ jobs:
         working-directory: agent
         run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.REFINE }}
+          NODE_AUTH_TOKEN: ${{ secrets.AGENT }}
