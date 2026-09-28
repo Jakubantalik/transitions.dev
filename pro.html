@@ -985,6 +985,14 @@
       line-height: 24.2px;
       color: var(--text-muted);
     }
+    .subtitle a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: rgba(108, 108, 108, 0.4);
+      transition: color 150ms var(--ease-smooth-out), text-decoration-color 150ms var(--ease-smooth-out);
+    }
+    .subtitle a:hover { color: var(--text); text-decoration-color: currentColor; }
 
     /* ─── Cards grid ──────────────────────────────────────────── */
     .cards {
@@ -4343,7 +4351,7 @@
     .pro-customers.pro-customers { margin: 0 auto 48px; }
     .pro-customers-label {
       margin: 0 0 24px;
-      font-size: 11px;
+      font-size: 13px;
       line-height: 18px;
       text-align: center;
       color: #979797;
@@ -5140,8 +5148,8 @@
     <header class="header">
       <h1 class="title">Pricing</h1>
       <p class="subtitle">
-        36+ production-ready transitions, the Pro skill for your agent,<br />
-        and the Transitions Agent that scans your app, scores its motion,<br />
+        36+ production-ready transitions, the <a href="/skill.html">Pro skill</a> for your agent,<br />
+        and the <a href="/agent.html">Transitions Agent</a> that scans your app, scores its motion,<br />
         and fixes it as pull requests.
       </p>
     </header>
