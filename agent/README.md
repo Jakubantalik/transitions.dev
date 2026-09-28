@@ -59,7 +59,14 @@ claude mcp add --transport http transitions-agent https://api.transitions.dev/v1
 
 Tools: `scan_instructions`, `fix_guidance(mode)`, `list_recipes`, `get_recipe(slug, variant)`. Free recipes need no key; Pro recipe sources need a Business license.
 
-The same works in CI: [templates/transitions-fix.yml](templates/transitions-fix.yml) runs `claude-code-action` on your Anthropic key, connected to this MCP server, and opens a fix PR. The score/gate Action stays AI-free either way.
+### Fixing from CI
+
+Two workflow templates, pick by who supplies the AI:
+
+- **[transitions-fix.yml](templates/transitions-fix.yml)** (Business, zero friction): one secret - the license key. Fixes run through the hosted service on our AI, metered against the plan's 200/month, and land as a pull request.
+- **[transitions-fix-own-claude.yml](templates/transitions-fix-own-claude.yml)** (bring your own Claude): runs `claude-code-action` on your Anthropic key, connected to this MCP server. Unmetered fixing on your own tokens.
+
+The score/gate Action stays AI-free either way.
 
 ## Safety model
 
