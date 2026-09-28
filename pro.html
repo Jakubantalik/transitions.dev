@@ -4773,9 +4773,8 @@
       .pro2-card, .p22-toast { transition: none; }
     }
 
-    /* Refine tool — timeline panel (recreated from Figma refine card).
-       A cropped top-left corner of the Refine timeline: Selected header,
-       ruler with time ticks, and property rows with drag handles + tracks. */
+    /* Transitions Agent — terminal mock (cropped panel, same bleed as the
+       Pro-skill code card): scan output with motion score and findings. */
     .pro-refine-frame {
       position: absolute; left: 32px; right: -150px; top: 132px; bottom: -24px;
       background: #fff; border: 1px solid var(--card-border);
@@ -4795,36 +4794,6 @@
     .ag-dot--major { background: #e5484d; }
     .ag-dot--warn { background: #f5a623; }
     .ag-check { color: #30a46c; font-weight: 600; margin-right: 7px; }
-    .rf-topbar { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; border-bottom: 1px solid #f0f0f0; }
-    html[data-theme="dark"] .rf-topbar { border-bottom-color: #2a2a2a; }
-    .rf-tb-label { font-size: 10px; color: #696969; white-space: nowrap; }
-    html[data-theme="dark"] .rf-tb-label { color: #8b8b8b; }
-    .rf-tb-pill { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border-radius: 7px;
-      background: rgba(0,0,0,0.03); font-size: 10px; font-weight: 500; color: #1b1b1b; white-space: nowrap; }
-    html[data-theme="dark"] .rf-tb-pill { background: rgba(255,255,255,0.06); color: #fbfbfb; }
-    .rf-tb-pill .rf-dim { color: #979797; }
-    .rf-tb-pill svg { width: 10px; height: 10px; color: #696969; }
-    .rf-tb-count { margin-left: auto; font-size: 10px; color: #9b9b9b; white-space: nowrap; }
-    .rf-rows { position: relative; }
-    .rf-divider { position: absolute; top: 0; bottom: 0; left: 84px; width: 1px; background: #f0f0f0; z-index: 2; }
-    html[data-theme="dark"] .rf-divider { background: #2a2a2a; }
-    .rf-row { display: flex; align-items: center; height: 26px; }
-    .rf-row + .rf-row { box-shadow: inset 0 1px 0 0 #f4f4f4; }
-    html[data-theme="dark"] .rf-row + .rf-row { box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.03); }
-    .rf-row-label { width: 84px; flex: none; display: flex; align-items: center; gap: 7px; padding-left: 10px; font-size: 10px; font-weight: 500; color: #171717; }
-    html[data-theme="dark"] .rf-row-label { color: #e6e6e6; }
-    .rf-dots { width: 8px; height: 8px; flex: none; color: #cfcfcf;
-      background-image: radial-gradient(currentColor 42%, transparent 46%); background-size: 4px 4px; background-position: 0 0; }
-    html[data-theme="dark"] .rf-dots { color: #4a4a4a; }
-    .rf-lane { position: relative; flex: 1; align-self: stretch; }
-    .rf-bar { position: absolute; top: 50%; transform: translateY(-50%); height: 14px; border-radius: 7px;
-      background: #eeeeef; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06), inset 0 -0.5px 0 0 rgba(0,0,0,0.1); }
-    html[data-theme="dark"] .rf-bar { background: rgba(255,255,255,0.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
-    .rf-ruler { position: relative; height: 18px; }
-    .rf-ruler-ticks { position: absolute; left: 92px; right: 8px; top: 9px; height: 4px;
-      background-image: repeating-linear-gradient(90deg, #dcdce0 0 1px, transparent 1px 12px); }
-    html[data-theme="dark"] .rf-ruler-ticks { background-image: repeating-linear-gradient(90deg, #333 0 1px, transparent 1px 12px); }
-    .rf-ruler-lbl { position: absolute; top: 4px; font-size: 8px; color: #8b9099; transform: translateX(-1px); }
 
     @media (max-width: 720px) {
       /* Single column; rows size to their own card (grid-auto-rows:1fr
