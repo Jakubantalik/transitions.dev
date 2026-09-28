@@ -4783,6 +4783,18 @@
       font-family: var(--font-sans);
     }
     html[data-theme="dark"] .pro-refine-frame { background: #191919; border-color: rgba(255,255,255,0.07); }
+    .pro-agent-frame { padding: 10px 12px; }
+    .ag-term { font-family: var(--font-mono); font-size: 10.5px; line-height: 2; color: #3c3c3c; white-space: nowrap; }
+    html[data-theme="dark"] .ag-term { color: #cfcfcf; }
+    .ag-line strong { font-weight: 600; color: #111; }
+    html[data-theme="dark"] .ag-line strong { color: #fff; }
+    .ag-cmd { color: #111; font-weight: 500; }
+    html[data-theme="dark"] .ag-cmd { color: #fff; }
+    .ag-dim { color: #979797; }
+    .ag-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+    .ag-dot--major { background: #e5484d; }
+    .ag-dot--warn { background: #f5a623; }
+    .ag-check { color: #30a46c; font-weight: 600; margin-right: 7px; }
     .rf-topbar { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; border-bottom: 1px solid #f0f0f0; }
     html[data-theme="dark"] .rf-topbar { border-bottom-color: #2a2a2a; }
     .rf-tb-label { font-size: 10px; color: #696969; white-space: nowrap; }
@@ -5402,29 +5414,17 @@ description: Production-ready CSS
         </div>
 
         <div class="pro-bento-card pro-bento-card--sm">
-          <h3 class="pro-bento-title">Refine tool</h3>
-          <p class="pro-bento-desc">Tune your transitions live and align them to the motion tokens.</p>
-          <div class="pro-refine-frame" aria-hidden="true">
-            <div class="rf-topbar">
-              <span class="rf-tb-label">Selected transition</span>
-              <span class="rf-tb-pill">Box resize <span class="rf-dim">400ms</span>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
-              </span>
-              <span class="rf-tb-count">4 transitions found</span>
-            </div>
-            <div class="rf-rows">
-              <div class="rf-divider"></div>
-              <div class="rf-ruler">
-                <div class="rf-ruler-ticks"></div>
-                <span class="rf-ruler-lbl" style="left:92px">0s</span>
-                <span class="rf-ruler-lbl" style="left:150px">5s</span>
-                <span class="rf-ruler-lbl" style="left:208px">10s</span>
-                <span class="rf-ruler-lbl" style="left:266px">15s</span>
-              </div>
-              <div class="rf-row"><span class="rf-row-label"><span class="rf-dots"></span>Width</span><span class="rf-lane"><span class="rf-bar" style="left:8px;width:56px"></span></span></div>
-              <div class="rf-row"><span class="rf-row-label"><span class="rf-dots"></span>Height</span><span class="rf-lane"><span class="rf-bar" style="left:8px;width:182px"></span></span></div>
-              <div class="rf-row"><span class="rf-row-label"><span class="rf-dots"></span>Opacity</span><span class="rf-lane"><span class="rf-bar" style="left:40px;width:66px"></span></span></div>
-              <div class="rf-row"><span class="rf-row-label"><span class="rf-dots"></span>Radius</span><span class="rf-lane"><span class="rf-bar" style="left:8px;width:120px"></span></span></div>
+          <h3 class="pro-bento-title">Transitions Agent</h3>
+          <p class="pro-bento-desc">Scans your app, scores the motion, and fixes it <span class="dim">as pull requests.</span></p>
+          <div class="pro-refine-frame pro-agent-frame" aria-hidden="true">
+            <div class="ag-term">
+              <div class="ag-line ag-cmd">$ npx transitions-agent</div>
+              <div class="ag-line">Motion score <strong>71 / 100</strong> <span class="ag-dim">(decent)</span></div>
+              <div class="ag-line"><span class="ag-dot ag-dot--major"></span>Modal.tsx:24 <span class="ag-dim">modal pops in with no transition</span></div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>nav.css:118 <span class="ag-dim">hover snaps, no transition on base</span></div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>app.css:203 <span class="ag-dim">transition: all animates layout</span></div>
+              <div class="ag-line ag-cmd">$ npx transitions-agent fix --pr</div>
+              <div class="ag-line"><span class="ag-check">✓</span>3 fixes applied, PR opened <span class="ag-dim">(score 89)</span></div>
             </div>
           </div>
         </div>
