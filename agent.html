@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
 
-  <title>Transitions.dev Refine - Tune your motion, live</title>
+  <title>Transitions Agent - Fix your UI motion from the terminal and GitHub</title>
   <meta
     name="description"
-    content="Refine is a live, agent-driven panel for tuning CSS and Motion transitions. One command docks a timeline onto your running app - click Refine and an agent suggests token-aligned timing, then writes it back to your code."
+    content="Transitions Agent scans your codebase for missing or janky UI motion, gives it a motion score, and fixes it with transitions.dev recipes - as diffs in your terminal or pull requests on GitHub."
   />
   <meta
     name="keywords"
-    content="Refine, transitions, CSS transitions, web animations, motion tuning, motion tokens, Claude Code, Cursor, Codex, frontend, AI coding agent"
+    content="Transitions Agent, UI transitions, motion score, CSS transitions, web animations, motion lint, GitHub Action, Claude Code, Cursor, frontend, AI coding agent"
   />
   <meta name="author" content="Transitions.dev" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -24,9 +24,9 @@
   <meta name="apple-mobile-web-app-title" content="Transitions.dev" />
   <meta name="application-name" content="Transitions.dev" />
 
-  <link rel="canonical" href="https://transitions.dev/refine.html" />
-  <link rel="alternate" hreflang="en" href="https://transitions.dev/refine.html" />
-  <link rel="alternate" hreflang="x-default" href="https://transitions.dev/refine.html" />
+  <link rel="canonical" href="https://transitions.dev/agent.html" />
+  <link rel="alternate" hreflang="en" href="https://transitions.dev/agent.html" />
+  <link rel="alternate" hreflang="x-default" href="https://transitions.dev/agent.html" />
 
   <link rel="icon" href="assets/favicon-light-mode.png?v=4" type="image/png" sizes="any" />
   <link rel="icon" href="assets/favicon-light-mode.png?v=4" media="(prefers-color-scheme: light)" type="image/png" />
@@ -36,10 +36,10 @@
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Transitions.dev" />
-  <meta property="og:url" content="https://transitions.dev/refine.html" />
+  <meta property="og:url" content="https://transitions.dev/agent.html" />
   <meta property="og:locale" content="en_US" />
-  <meta property="og:title" content="Transitions.dev Refine - Tune your motion, live" />
-  <meta property="og:description" content="A live, agent-driven panel for tuning CSS and Motion transitions. Click Refine; an agent suggests token-aligned timing and writes it back to your code." />
+  <meta property="og:title" content="Transitions Agent - Fix your UI motion" />
+  <meta property="og:description" content="Scan for janky motion, get a motion score, fix it with transitions.dev recipes as pull requests." />
   <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
   <meta property="og:image:secure_url" content="https://transitions.dev/assets/og-main.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
@@ -48,8 +48,8 @@
   <meta property="og:image:alt" content="Transitions.dev Refine - Tune your motion, live" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Transitions.dev Refine - Tune your motion, live" />
-  <meta name="twitter:description" content="A live, agent-driven panel for tuning CSS and Motion transitions. Click Refine; an agent suggests token-aligned timing and writes it back to your code." />
+  <meta name="twitter:title" content="Transitions Agent - Fix your UI motion" />
+  <meta name="twitter:description" content="Scan for janky motion, get a motion score, fix it with transitions.dev recipes as pull requests." />
   <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
   <meta name="twitter:image:alt" content="Transitions.dev Refine - Tune your motion, live" />
 
@@ -89,8 +89,8 @@
         },
         {
           "@type": "WebPage",
-          "@id": "https://transitions.dev/refine.html#webpage",
-          "url": "https://transitions.dev/refine.html",
+          "@id": "https://transitions.dev/agent.html#webpage",
+          "url": "https://transitions.dev/agent.html",
           "name": "Transitions.dev Refine - Tune your motion, live",
           "isPartOf": { "@id": "https://transitions.dev/#website" },
           "inLanguage": "en",
@@ -4103,7 +4103,8 @@
         <nav class="site-nav-menu" aria-label="Primary">
           <a class="nav-pill" href="detail.html?t=card-resize">Transitions</a>
           <a class="nav-pill" href="/skill.html">Skill</a>
-          <a class="nav-pill nav-pill--active" href="/refine.html" aria-current="page">Refine tool</a>
+          <a class="nav-pill nav-pill--active" href="/agent.html" aria-current="page">Agent</a>
+          <a class="nav-pill" href="/pro.html">Pricing</a>
         </nav>
       </div>
       <div class="site-nav-right">
@@ -4220,7 +4221,7 @@
       <ul class="mobile-menu-list">
         <li><a class="mobile-menu-link mobile-menu-link--1" href="detail.html?t=card-resize">Transitions</a></li>
         <li><a class="mobile-menu-link mobile-menu-link--2" href="/skill.html">Skill</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--3" href="/refine.html" aria-current="page">Refine tool</a></li>
+        <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html" aria-current="page">Agent</a></li>
         <li><a class="mobile-menu-link mobile-menu-link--4 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
       </ul>
       <a class="mobile-menu-cta" id="mobile-signin" href="/pro.html">Sign in</a>
@@ -4229,21 +4230,22 @@
 
   <main id="main" class="app">
     <header class="header">
-      <p class="hero-eyebrow">Refine<span class="beta-badge">Beta</span></p>
-      <h1 class="title">Transitions refining for agents</h1>
+      <p class="hero-eyebrow">Agent<span class="beta-badge">Beta</span></p>
+      <h1 class="title">Your UI motion, fixed by an agent</h1>
       <p class="subtitle">
-        Tune your UI transitions live in your agent. <br>The integrated
-        transitions.dev skill suggests refinements you can apply
-        instantly.
+        Scan your codebase for missing and janky transitions, get a motion score,<br />
+        and let the agent fix it with transitions.dev recipes -
+        as diffs you confirm, or a pull request.
       </p>
       <div class="skill-cta-row">
         <a class="skill-btn skill-btn--primary" href="#get-started">Get started</a>
-        <a class="skill-btn skill-btn--secondary" href="/website-demo.html" target="_blank" rel="noopener noreferrer">See demo</a>
+        <a class="skill-btn skill-btn--secondary" href="/pro.html">See pricing</a>
       </div>
     </header>
 
-    <section class="hero-visual-wrap" id="demo" aria-label="Refine demo">
-      <div class="hero-visual" aria-label="Refine panel docked onto a running app">
+    <section class="hero-visual-wrap" id="demo" aria-label="Agent demo">
+      <div class="hero-visual" aria-label="Transitions Agent fixing motion from the terminal">
+        <!-- PLACEHOLDER: swap assets/agent-demo(.mp4/-dark.mp4) for the real hero capture. -->
         <!-- Autoplay loop. Two themed sources: light shows in light mode, dark in dark mode.
              Drop the files in /assets (mp4 + optional webm). Add a poster image if available. -->
         <video
@@ -4255,7 +4257,7 @@
           preload="metadata"
           aria-hidden="true"
         >
-          <source src="assets/refine-web.mp4" type="video/mp4" />
+          <source src="assets/agent-demo.mp4" type="video/mp4" />
         </video>
         <video
           class="hero-video hero-video--dark"
@@ -4266,112 +4268,121 @@
           preload="metadata"
           aria-hidden="true"
         >
-          <source src="assets/refine-web-dark.mp4?v=202606302149" type="video/mp4" />
+          <source src="assets/agent-demo-dark.mp4" type="video/mp4" />
         </video>
       </div>
-      <p class="hero-caption">Works with Cursor CLI, Claude Code and Codex</p>
+      <p class="hero-caption">Runs in your terminal and on GitHub pull requests</p>
     </section>
 
-    <section class="skill-content" aria-label="Refine documentation">
+    <section class="skill-content" aria-label="Agent documentation">
       <div class="skill-section" id="get-started">
         <h2 class="skill-section-title">Get started</h2>
-        <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">There are two ways to install and use it.</p>
+        <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">Scan is free and instant. Fixes need a license key - the free plan takes one command.</p>
         <div class="get-started-grid">
           <div class="gs-step">
             <div class="gs-step-block">
               <div class="gs-step-head">
-                <span class="gs-step-label">Run with CLI agent</span>
+                <span class="gs-step-label">Scan your project</span>
               </div>
               <div class="skill-code-row">
-                <code id="cmd-cli">npx transitions-refine live</code>
-                <button
-                  type="button"
-                  class="card-copy"
-                  aria-label="Copy terminal command"
-                  data-copy-target="#cmd-cli"
-                >
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                <code id="cmd-scan">npx transitions-agent</code>
+                <button type="button" class="card-copy" aria-label="Copy scan command" data-copy-target="#cmd-scan">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                 </button>
               </div>
             </div>
             <p class="skill-section-note">
-              Run it in your terminal. Works with the Cursor CLI, Claude Code and Codex - the relay wires your agent and answers Refine jobs persistently, with no chat loop and no idle credit burn. Run <code>npx transitions-refine stop</code> to remove it.
+              Walks your stylesheets and components, prints a motion score (0 to 100) and every finding with the matching transitions.dev recipe: overlays that pop with no transition, hover states that snap, hardcoded durations, missing <code>prefers-reduced-motion</code>. No AI, no account, your code never leaves the machine.
             </p>
           </div>
 
           <div class="gs-step">
             <div class="gs-step-block">
               <div class="gs-step-head">
-                <span class="gs-step-label">Run with agent (no CLI)</span>
+                <span class="gs-step-label">Get your free key</span>
               </div>
               <div class="skill-code-row">
-                <code id="cmd-install">npx transitions-refine live</code>
-                <button
-                  type="button"
-                  class="card-copy"
-                  aria-label="Copy install command"
-                  data-copy-target="#cmd-install"
-                >
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </button>
-              </div>
-              <div class="skill-code-row">
-                <code id="cmd-run">/refine live</code>
-                <button
-                  type="button"
-                  class="card-copy"
-                  aria-label="Copy run command"
-                  data-copy-target="#cmd-run"
-                >
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                <code id="cmd-signup">npx transitions-agent signup you@email.com</code>
+                <button type="button" class="card-copy" aria-label="Copy signup command" data-copy-target="#cmd-signup">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                 </button>
               </div>
             </div>
             <p class="skill-section-note">
-              Run the install command in your project, then <code>/refine live</code> in the editor (Cursor, Claude Code or Codex). Your agent becomes the poller and keeps polling for Refine jobs - so it stays running and uses your chat credits while open. Say <strong>stop refine</strong> to end the loop, or run <code>npx transitions-refine stop</code> to remove the panel.
+              Your license key arrives by email. The free plan includes 10 hosted polish fixes a month; the <a href="/pro.html">Business plan</a> raises that to 200 and unlocks revamp mode.
             </p>
           </div>
         </div>
       </div>
 
-      <div class="skill-section" id="how-you-use-it">
-        <h2 class="skill-section-title">How you use it</h2>
-        <ol class="skill-steps">
-          <li>Wait until Refine scans your project and your agent understands all your transitions.</li>
-          <li>Select the transition you want to tune from the transition dropdown.</li>
-          <li>Manually tune it using the timeline or the value controls in the right column.</li>
-          <li>Use <strong>Refine</strong> for improvement suggestions powered by the integrated transitions.dev skill.</li>
-          <li>Save changes by accepting them straight into your source code.</li>
-        </ol>
+      <div class="skill-section" id="fix">
+        <h2 class="skill-section-title">Fix and open a PR</h2>
+        <div class="get-started-grid">
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Polish: safe, small diffs</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-fix">npx transitions-agent fix</code>
+                <button type="button" class="card-copy" aria-label="Copy fix command" data-copy-target="#cmd-fix">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <p class="skill-section-note">
+              Every proposed change is shown as a diff first and applied only after you type yes. Polish mode keeps diffs small: durations onto motion tokens, a reduced-motion guard, named properties instead of <code>transition: all</code>.
+            </p>
+          </div>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Revamp: recipe rewrites + PR</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-revamp">npx transitions-agent fix --mode revamp --pr</code>
+                <button type="button" class="card-copy" aria-label="Copy revamp command" data-copy-target="#cmd-revamp">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <p class="skill-section-note">
+              Revamp replaces janky motion wholesale with the matching transitions.dev recipe, real library source, Pro recipes included. With <code>--pr</code> it opens a pull request on a new branch after one more confirmation. It never pushes to your main branch.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="skill-section" id="github">
+        <h2 class="skill-section-title">GitHub Action</h2>
+        <div class="gs-step-block">
+          <div class="skill-code-row">
+            <code id="cmd-action">uses: Jakubantalik/transitions.dev/agent@main</code>
+            <button type="button" class="card-copy" aria-label="Copy Action reference" data-copy-target="#cmd-action">
+              <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            </button>
+          </div>
+        </div>
+        <p class="skill-section-note">
+          One workflow file and every pull request gets a motion score comment: what the change did to your app's motion, which elements ship without transitions, and an optional <code>min-score</code> gate that blocks merges when motion quality drops. Runs on GitHub's machines, scan only, no AI key needed.
+        </p>
       </div>
 
       <div class="skill-section" id="features">
         <h2 class="skill-section-title">Features</h2>
         <ul class="feature-list">
-          <li><span class="feature-name">Timeline</span><span class="feature-desc">See every property's duration, delay and easing laid out on a shared time ruler.</span></li>
-          <li><span class="feature-name">Value controls</span><span class="feature-desc">Drag or type to tune timings and curves, with the live component updating as you go.</span></li>
-          <li><span class="feature-name">Refine: small improvements</span><span class="feature-desc">The agent nudges your timings toward proven motion tokens for cleaner, snappier feel.</span></li>
-          <li><span class="feature-name">Refine: replace transitions</span><span class="feature-desc">Swap a transition for a better-fit recipe straight from the transitions.dev library.</span></li>
-          <li><span class="feature-name">Accept changes</span><span class="feature-desc">Write the refined values back into your source in whatever styling approach you use.</span></li>
-          <li><span class="feature-name">motion.dev support</span><span class="feature-desc">Motion animations are detected automatically via the Web Animations API - previewed, refined and written back to your transition props.</span></li>
+          <li><span class="feature-name">Motion score</span><span class="feature-desc">One number (0 to 100) for how polished your app's motion is - track it per project or per pull request.</span></li>
+          <li><span class="feature-name">Deterministic scanner</span><span class="feature-desc">Six rule families catch untransitioned overlays, snapping hovers, transition: all, hardcoded durations, missing reduced-motion guards and inconsistent duration scales.</span></li>
+          <li><span class="feature-name">Polish mode</span><span class="feature-desc">Small, safe adjustments aligned to the transitions.dev motion tokens. Few-line diffs, nothing restructured.</span></li>
+          <li><span class="feature-name">Revamp mode</span><span class="feature-desc">Rewrites motion with the real recipe source from the library, Pro recipes included, adapted to your selectors and class names.</span></li>
+          <li><span class="feature-name">Diffs, then a PR</span><span class="feature-desc">Changes are proposed as diffs, applied after an explicit yes, and can land as a pull request your team reviews. Never a push to main.</span></li>
+          <li><span class="feature-name">Works with your agent</span><span class="feature-desc">No license key? The scan writes a ready-made task file for Claude Code or Cursor and your own agent applies the fixes.</span></li>
         </ul>
       </div>
 
@@ -4380,105 +4391,62 @@
         <div class="faq-list">
           <div class="t-acc" data-open="false">
             <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>What is Refine?</span>
+              <span>What is Transitions Agent?</span>
               <span class="t-acc-chevron" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
               </span>
             </button>
             <div class="t-acc-panel">
               <div class="t-acc-panel-inner">
-                <p>A timeline panel that docks onto your running app and lets you tune its UI transitions live. Pick a transition, drag the timing, and let your agent suggest values aligned to the transitions.dev motion tokens - then write them back into your code.</p>
+                <p>An agent that finds missing, janky or inconsistent UI motion in your codebase and fixes it with transitions.dev recipes. It runs in your terminal and on GitHub pull requests: scan gives a motion score and findings, fix proposes diffs and opens a pull request after your confirmation.</p>
               </div>
             </div>
           </div>
 
           <div class="t-acc" data-open="false">
             <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>How do I install it?</span>
+              <span>Can it break my app?</span>
               <span class="t-acc-chevron" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
               </span>
             </button>
             <div class="t-acc-panel">
               <div class="t-acc-panel-inner">
-                <p>There are two ways. <strong>With a CLI agent:</strong> run <code>npx transitions-refine live</code> in your terminal - it wires your agent (Cursor CLI, Claude Code or Codex) and answers Refine jobs persistently, with no chat loop or idle credit burn. <strong>With an agent (no CLI):</strong> run <code>npx transitions-refine live</code> in your project, then <code>/refine live</code> in the editor so your agent becomes the poller. Either way the panel is injected onto the running page - no edits to your code. Run <code>npx transitions-refine stop</code> to remove it.</p>
+                <p>The agent never commits to your main branch. Every change is shown as a diff and applied only after you confirm; with <code>--pr</code> the changes arrive as a pull request your team reviews, your tests run on, and a human merges. Fixes touch motion only - CSS transitions and animation guards, never logic - and any merged change is one <code>git revert</code> away.</p>
               </div>
             </div>
           </div>
 
           <div class="t-acc" data-open="false">
             <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>How does it find my transitions?</span>
+              <span>Where does the AI run?</span>
               <span class="t-acc-chevron" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
               </span>
             </button>
             <div class="t-acc-panel">
               <div class="t-acc-panel-inner">
-                <p>Refine scans your project and detects the CSS transitions and animations automatically. It also picks up <a href="https://motion.dev" target="_blank" rel="noopener">motion.dev</a> (Framer Motion) animations by intercepting the Web Animations API - no wrapper or code changes needed. They show up in the transition dropdown - select one to load its timeline and value controls. One caveat: Motion animations driven by its JS loop (some springs and layout animations) bypass the Web Animations API and aren't detected automatically.</p>
+                <p>Scanning is deterministic and runs on your machine - no AI involved. Hosted fixes run through the transitions.dev fix service with our AI key, so your team never manages API keys or model bills; usage is metered per plan. Prefer your own agent? Without a license key the scan hands a ready-made task to Claude Code or Cursor instead.</p>
               </div>
             </div>
           </div>
 
           <div class="t-acc" data-open="false">
             <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>Which styling approaches does it support?</span>
+              <span>What do Free and Business include?</span>
               <span class="t-acc-chevron" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
               </span>
             </button>
             <div class="t-acc-panel">
               <div class="t-acc-panel-inner">
-                <p>Plain CSS, CSS Modules, styled-components, Tailwind, and inline styles. On Accept, Refine writes the values back in whichever one you already use.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="t-acc" data-open="false">
-            <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>Are my changes reversible before I accept?</span>
-              <span class="t-acc-chevron" aria-hidden="true">
-                <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
-              </span>
-            </button>
-            <div class="t-acc-panel">
-              <div class="t-acc-panel-inner">
-                <p>Yes. The running component is the preview - there's no play button. Every edit is applied live and stays reversible until you click <strong>Accept</strong>, which writes the values into your source.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="t-acc" data-open="false">
-            <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>Can I use it in production?</span>
-              <span class="t-acc-chevron" aria-hidden="true">
-                <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
-              </span>
-            </button>
-            <div class="t-acc-panel">
-              <div class="t-acc-panel-inner">
-                <p>No - Refine is a dev-only tool. It runs against your local app while you tune, and ships nothing to production. Run <code>npx transitions-refine stop</code> when you're done.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="t-acc" data-open="false">
-            <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>How do I report bugs or request features?</span>
-              <span class="t-acc-chevron" aria-hidden="true">
-                <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
-              </span>
-            </button>
-            <div class="t-acc-panel">
-              <div class="t-acc-panel-inner">
-                <p>Open an issue on <a href="https://github.com/Jakubantalik/transitions.dev" target="_blank" rel="noopener noreferrer">GitHub</a> or contact <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>.</p>
+                <p><strong>Free</strong>: unlimited scans, the GitHub Action, and 10 hosted polish fixes a month. <strong>Business</strong> ($59/mo): 200 hosted fixes a month, revamp mode grounded in the Pro recipe library, the pull-request gate, and 5 Transitions Pro seats. See <a href="/pro.html">pricing</a>.</p>
               </div>
             </div>
           </div>
         </div>
       </div>
     </section>
-
     <footer class="footer">
       <div class="footer-top">
         <div class="footer-brand">
@@ -4500,7 +4468,8 @@
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/skill.html">Skill</a>
             <a href="/agent.html">Agent</a>
-            <a href="/pro.html">Get Pro</a>
+            <a href="/refine.html">Refine tool</a>
+            <a href="/pro.html">Pricing</a>
           </div>
           <div class="footer-col">
             <p class="footer-col-title">Docs</p>
@@ -5031,6 +5000,7 @@
       var CMD_ITEMS = [
         { group: "Pages", label: "Transitions", hint: "Home", href: "/", ic: "grid" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Agent", hint: "Motion fixes + PRs", href: "/agent.html", ic: "wand" },
         { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
