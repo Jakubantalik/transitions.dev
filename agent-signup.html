@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Transitions Agent sign-up</title>
+  <meta name="description" content="Get your free Transitions Agent license key." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="assets/favicon-light-mode.png?v=4" type="image/png" sizes="any" />
+  <link rel="icon" href="assets/favicon-darkmode.png?v=4" media="(prefers-color-scheme: dark)" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd; --text: #0d0d0d; --text-muted: #6c6c6c; --text-faint: #8f8f8f;
+      --card-bg: #ffffff; --card-border: rgba(0, 0, 0, 0.08);
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212; --text: #ffffff; --text-muted: rgba(202, 202, 202, 0.7); --text-faint: #8f8f8f;
+      --card-bg: #1a1a1a; --card-border: rgba(255, 255, 255, 0.1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: var(--bg); color: var(--text); font-family: var(--font-sans); padding: 24px;
+    }
+    .card {
+      width: 420px; max-width: 100%; background: var(--card-bg);
+      border: 1px solid var(--card-border); border-radius: 20px; padding: 28px;
+    }
+    h1 { margin: 0 0 8px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+    p { margin: 0 0 18px; font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+    .code {
+      display: inline-block; font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+      padding: 3px 8px; border-radius: 6px; background: rgba(0, 0, 0, 0.05); color: var(--text);
+    }
+    html[data-theme="dark"] .code { background: rgba(255, 255, 255, 0.08); }
+    input[type="email"] {
+      width: 100%; height: 44px; padding: 0 14px; font-size: 15px; font-family: var(--font-sans);
+      color: var(--text); background: transparent; border: 1px solid var(--card-border);
+      border-radius: 12px; outline: none; margin-bottom: 12px;
+    }
+    input[type="email"]:focus { border-color: #1651f4; }
+    button {
+      width: 100%; height: 44px; border: 0; border-radius: 26px; font-size: 14px; font-weight: 500;
+      font-family: var(--font-sans); cursor: pointer; background: #17181c; color: #ffffff;
+    }
+    html[data-theme="dark"] button { background: #ffffff; color: #111111; }
+    button[disabled] { opacity: 0.6; cursor: default; }
+    .msg { margin-top: 14px; font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+    .msg strong { color: var(--text); }
+    .err { color: #e5484d; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Transitions Agent sign-up</h1>
+    <p id="intro">Free plan: unlimited motion scans and 10 hosted polish fixes a month. Enter your email and the license key goes to <strong>your terminal</strong> and your inbox.</p>
+    <form id="form">
+      <input type="email" id="email" placeholder="you@company.com" required autocomplete="email" autofocus />
+      <button type="submit" id="submit">Get my free key</button>
+    </form>
+    <div class="msg" id="msg"></div>
+  </main>
+  <script>
+    (function () {
+      "use strict";
+      var API = "https://api.transitions.dev";
+      var code = (new URLSearchParams(location.search).get("code") || "").toUpperCase();
+      var form = document.getElementById("form");
+      var msg = document.getElementById("msg");
+      var btn = document.getElementById("submit");
+      if (code) {
+        document.getElementById("intro").innerHTML =
+          'Connecting terminal session <span class="code">' + code.replace(/[^A-Z0-9-]/g, "") +
+          "</span>. Enter your email - the key lands in your waiting terminal and your inbox.";
+      }
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var email = document.getElementById("email").value.trim();
+        btn.disabled = true;
+        msg.className = "msg";
+        msg.textContent = "Issuing your key...";
+        fetch(API + "/agent/signup", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(code ? { email: email, code: code } : { email: email }),
+        }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+            if (res.ok) {
+              msg.innerHTML = code
+                ? "<strong>Done.</strong> Your terminal picks the key up in a few seconds - you can close this tab. A copy is in your inbox."
+                : "<strong>Done.</strong> Check your inbox for the license key.";
+            } else {
+              btn.disabled = false;
+              msg.className = "msg err";
+              msg.textContent = "That didn't go through (" + (res.d.error || "error") + "). Try again.";
+            }
+          })
+          .catch(function () {
+            btn.disabled = false;
+            msg.className = "msg err";
+            msg.textContent = "Could not reach the server. Try again.";
+          });
+      });
+    })();
+  </script>
+</body>
+</html>
