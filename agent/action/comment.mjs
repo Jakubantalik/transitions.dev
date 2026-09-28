@@ -6,4 +6,7 @@ import { renderMarkdown } from "../lib/report.mjs";
 
 const [reportPath, previous] = process.argv.slice(2);
 const result = JSON.parse(readFileSync(reportPath, "utf8"));
-console.log(renderMarkdown(result, { previousScore: previous ? Number(previous) : undefined }));
+console.log(renderMarkdown(result, {
+  previousScore: previous ? Number(previous) : undefined,
+  licenseCta: process.env.TA_HAS_LICENSE !== "1",
+}));
