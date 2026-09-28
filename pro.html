@@ -4307,7 +4307,8 @@
       width: 560px;
       max-width: 100%;
       max-height: 85vh;
-      overflow: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
       background: var(--card-bg);
       border-radius: 20px;
       box-shadow:
@@ -4344,6 +4345,59 @@
     .plan-cmp tr + tr { border-top: 1px solid var(--card-border); }
     .plan-cmp .cmp-yes { color: #30a46c; }
     .plan-cmp .cmp-no { color: var(--text-faint); }
+    .cmp-info { position: relative; display: inline-flex; margin-left: 6px; vertical-align: -3px; }
+    .cmp-info-btn {
+      border: 0; padding: 0; width: 16px; height: 16px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(0, 0, 0, 0.06); color: var(--text-faint);
+      font-family: var(--font-sans); font-size: 10.5px; font-weight: 600; line-height: 1;
+      cursor: help;
+    }
+    html[data-theme="dark"] .cmp-info-btn { background: rgba(255, 255, 255, 0.1); }
+    .cmp-info-btn:hover { color: var(--text); }
+    .cmp-tip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      right: -8px;
+      transform: scale(var(--tt-scale));
+      transform-origin: 90% 100%;
+      width: 240px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 17px;
+      text-align: left;
+      white-space: normal;
+      pointer-events: none;
+      z-index: 20;
+      opacity: 0;
+      background: var(--tt-bg);
+      color: var(--tt-fg);
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+      transition:
+        opacity var(--tt-out-dur) var(--tt-out-ease),
+        transform var(--tt-out-dur) var(--tt-out-ease);
+    }
+    html[data-theme="dark"] .cmp-tip {
+      box-shadow:
+        0 1px 16px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.08);
+    }
+    @media (hover: hover) {
+      .cmp-info:hover .cmp-tip,
+      .cmp-info-btn:focus-visible + .cmp-tip {
+        opacity: 1;
+        transform: scale(1);
+        transition-duration: var(--tt-in-dur);
+        transition-timing-function: var(--tt-in-ease);
+        transition-delay: var(--tt-delay);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) { .cmp-tip { transition: none !important; } }
     .plan-modal-note { margin: 14px 0 0; font-size: 12px; color: var(--text-faint); }
     .plan-modal-note a { color: var(--text); }
     .plan-modal [data-cmp-panel] { display: none; }
@@ -5430,7 +5484,7 @@
             <tr><td>Motion scans + score</td><td>Unlimited</td><td>Unlimited</td></tr>
             <tr><td>GitHub Action: PR score + merge gate</td><td class="cmp-yes">&#10003;</td><td class="cmp-yes">&#10003;</td></tr>
             <tr><td>Hosted fixes</td><td>10 / month</td><td>200 / month</td></tr>
-            <tr><td>Fix modes</td><td>Polish</td><td>Polish + Revamp</td></tr>
+            <tr><td>Fix modes</td><td>Polish</td><td>Polish + Revamp<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is revamp?" aria-describedby="cmp-tip-revamp">i</button><span class="cmp-tip" id="cmp-tip-revamp" role="tooltip">Revamp does everything polish does, and where a finding matches a transitions.dev recipe it rewrites the motion with the recipe's real source: proper enter and exit states, keyframes, and easing.</span></span></td></tr>
             <tr><td>Rewrites from the Pro recipe library</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
             <tr><td>Recipe sources for your own AI (MCP)</td><td>Free recipes</td><td>Full library incl. Pro</td></tr>
             <tr><td>Fix pull requests from CI, one secret</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
