@@ -5192,7 +5192,6 @@
               <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">0</span></span></span>
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
-            <div class="pro-price-seat" data-price-seat>No account needed</div>
             <div class="pro-plan-pills" aria-hidden="true">
               <span class="plan-pill">Free skill</span>
               <span class="plan-pill">Free Agent</span>
@@ -5214,7 +5213,6 @@
               <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">9</span></span></span>
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
-            <div class="pro-price-seat" data-price-seat>Single seat</div>
             <div class="pro-plan-pills" aria-hidden="true">
               <span class="plan-pill plan-pill--accent">Pro skill</span>
               <span class="plan-pill">Free Agent</span>
@@ -5239,7 +5237,6 @@
               <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char" data-stagger="1">5</span><span class="p9-char" data-stagger="2">9</span></span></span>
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
-            <div class="pro-price-seat" data-price-seat>5 seats + Agent · +$9/seat after</div>
             <div class="pro-plan-pills" aria-hidden="true">
               <span class="plan-pill plan-pill--accent">Pro skill</span>
               <span class="plan-pill plan-pill--accent">Full Agent</span>
@@ -5247,7 +5244,7 @@
           </div>
           <div class="pro-price-divider"></div>
           <ul class="pro-feature-list">
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Everything in Pro, for 5 seats</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Everything in Pro, for 5 seats, +$9/mo per extra seat</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Transitions Agent included: 200 hosted fixes/mo</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Polish + revamp modes, grounded in the Pro recipes</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>GitHub Action with pull-request motion gate</li>
@@ -6079,19 +6076,19 @@ description: Production-ready CSS
          under Lifetime its card falls back to the monthly price. */
       var PRICES = {
         free: {
-          monthly: { v: "$0", per: "/mo", seat: "No account needed" },
-          annual:  { v: "$0", per: "/yr", seat: "No account needed" },
-          lifetime: { v: "$0", per: "once", seat: "Free forever" }
+          monthly: { v: "$0", per: "/mo" },
+          annual:  { v: "$0", per: "/yr" },
+          lifetime: { v: "$0", per: "once" }
         },
         solo: {
-          monthly: { v: "$9", per: "/mo", seat: "Single seat" },
-          annual:  { v: "$90", per: "/yr", seat: "Single seat · billed yearly" },
-          lifetime: { v: "$149", per: "once", seat: "Single seat · pay once, yours forever" }
+          monthly: { v: "$9", per: "/mo" },
+          annual:  { v: "$90", per: "/yr" },
+          lifetime: { v: "$149", per: "once" }
         },
         team: {
-          monthly: { v: "$59", per: "/mo", seat: "5 seats + Agent · +$9/seat after" },
-          annual:  { v: "$590", per: "/yr", seat: "5 seats + Agent · +$90/seat after · billed yearly" },
-          lifetime: { v: "$59", per: "/mo", seat: "Monthly or annual only · Agent runs on live AI" }
+          monthly: { v: "$59", per: "/mo" },
+          annual:  { v: "$590", per: "/yr" },
+          lifetime: { v: "$59", per: "/mo" }
         }
       };
       var billing = document.getElementById("pro-billing");
@@ -6229,7 +6226,6 @@ description: Production-ready CSS
           var p = PRICES[plan][curBilling];
           var valueEl = card.querySelector("[data-price-value]");
           var perEl = card.querySelector("[data-price-per]");
-          var seatEl = card.querySelector("[data-price-seat]");
           var shrinking = false;
           if (valueEl) shrinking = setPriceNumber(valueEl, p.v, priceReady);
           // Only swap "/mo" ↔ "/yr" when it actually changes. The digits'
@@ -6249,7 +6245,6 @@ description: Production-ready CSS
             cardCta.setAttribute("aria-disabled", disabled ? "true" : "false");
             cardCta.setAttribute("tabindex", disabled ? "-1" : "0");
           }
-          if (seatEl) seatEl.textContent = p.seat;
         });
         priceReady = true;
         if (billing) billing.setAttribute("data-billing", curBilling);
