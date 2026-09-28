@@ -1,27 +1,23 @@
 # Transitions Agent fix service.
-#   npx wrangler kv namespace create LICENSES
-#   npx wrangler kv namespace create USAGE
-#   npx wrangler kv namespace create RECIPES
 #   npx wrangler secret put ANTHROPIC_API_KEY
 #   node agent/worker/pack-recipes.mjs            (from the repo root; packs free + Pro)
-#   npx wrangler kv bulk put recipes-kv.json --namespace-id <RECIPES id>
+#   npx wrangler kv bulk put recipes-kv.json --namespace-id <RECIPES id> --remote
 #   npx wrangler deploy
 # Re-run the pack + bulk put whenever recipes change.
 name = "transitions-agent-api"
 main = "worker.mjs"
 compatibility_date = "2026-08-01"
 
-# Fill in the namespace ids printed by "kv namespace create".
+kv_namespaces = [
+  { binding = "LICENSES", id = "73398617348a4f6ca3891d36743948c9" },
+  { binding = "USAGE", id = "152c8166c8b74f18ae7d3c61e6d75cd4" },
+  { binding = "RECIPES", id = "57b69ecb5f0149d893535348b7340a82" },
+]
+
+# Route under the existing API host, next to the transitions-pro endpoints.
+routes = [{ pattern = "api.transitions.dev/v1/agent/*", zone_name = "transitions.dev" }]
+
 # Budget fuse: total free-tier fixes per month across all free users.
 # At ~$0.02-0.05 per haiku polish fix, 2000 caps free-tier spend near $50-100.
 [vars]
 FREE_GLOBAL_MONTHLY = "2000"
-
-kv_namespaces = [
-  { binding = "LICENSES", id = "" },
-  { binding = "USAGE", id = "" },
-  { binding = "RECIPES", id = "" },
-]
-
-# Route under the existing API host, next to the transitions-pro endpoints.
-# routes = [{ pattern = "api.transitions.dev/v1/agent/*", zone_name = "transitions.dev" }]
