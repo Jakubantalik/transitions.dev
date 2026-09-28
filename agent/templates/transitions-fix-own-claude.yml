@@ -1,0 +1,55 @@
+# Transitions Agent: fix motion issues from CI using YOUR OWN Claude.
+# ENTERPRISE LICENSE REQUIRED: running the Agent in CI with your own model
+# keys is licensed on the Enterprise plan (transitions.dev/terms.html).
+# Business plans use the hosted workflow instead (transitions-fix.yml).
+# Copy to .github/workflows/transitions-fix.yml. Trigger it manually from the
+# Actions tab; it scans, fixes findings with transitions.dev recipes via the
+# Transitions Agent MCP server, and opens a pull request. Nothing touches main.
+#
+# Secrets needed:
+#   ANTHROPIC_API_KEY            your team's Anthropic key (Claude runs on it)
+#   TRANSITIONS_AGENT_LICENSE    your transitions.dev license key
+#     (free plan: npx transitions-agent signup you@email.com;
+#      Business unlocks the Pro recipe library in revamp mode)
+name: Transitions Agent fix
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "polish (safe token-level) or revamp (recipe rewrites)"
+        default: "polish"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          mcp_config: |
+            {
+              "mcpServers": {
+                "transitions-agent": {
+                  "type": "http",
+                  "url": "https://api.transitions.dev/v1/agent/mcp",
+                  "headers": {
+                    "Authorization": "Bearer ${{ secrets.TRANSITIONS_AGENT_LICENSE }}"
+                  }
+                }
+              }
+            }
+          prompt: |
+            Fix this repository's UI motion in ${{ inputs.mode }} mode:
+            1. Call the transitions-agent MCP tool scan_instructions, then run the scan it describes.
+            2. Call fix_guidance with mode "${{ inputs.mode }}" and follow it exactly,
+               fetching recipe sources with get_recipe where findings name one.
+            3. Apply the fixes, re-run the scan to confirm the motion score improved.
+            4. Create a branch transitions-agent/${{ inputs.mode }}-ci, commit, push, and
+               open a pull request titled "Fix UI transitions" whose body lists the
+               before/after motion score and each fixed finding.
