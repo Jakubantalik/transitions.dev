@@ -85,16 +85,33 @@ if (command === "scan") {
 }
 
 if (command === "fix") {
-  const mode = flags.mode || "polish";
-  if (mode !== "polish" && mode !== "revamp") {
+  let mode = flags.mode;
+  if (mode && mode !== "polish" && mode !== "revamp") {
     console.error(`Unknown mode "${mode}". Use --mode polish or --mode revamp.`);
     process.exit(1);
   }
   console.log(renderTerminal(result));
+  // No explicit mode + a human at the keyboard + a license that could use
+  // either: ask. Agents and CI pass --mode (or get the polish default).
+  const license = flags.license || process.env.TRANSITIONS_AGENT_LICENSE || "";
+  if (!mode && license && process.stdin.isTTY && !flags.yes) {
+    const readline = await import("node:readline");
+    const answer = await new Promise((resolve) => {
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      rl.question(
+        "  Fix mode:  [1] polish - small safe adjustments to motion tokens (default)\n" +
+        "             [2] revamp - rewrite matches with transitions.dev recipes (Business)\n" +
+        "  Choose [1/2]: ",
+        (a) => { rl.close(); resolve(a.trim()); }
+      );
+    });
+    mode = answer === "2" || /^r/i.test(answer) ? "revamp" : "polish";
+  }
+  mode = mode || "polish";
   const code = await runFix(root, result, {
     mode,
     api,
-    license: flags.license || process.env.TRANSITIONS_AGENT_LICENSE || "",
+    license,
     yes: !!flags.yes,
     pr: !!flags.pr,
   });
