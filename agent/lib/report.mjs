@@ -27,6 +27,9 @@ export function renderTerminal(result) {
   lines.push(c.bold("  transitions-agent") + c.dim(`  scanned ${result.scannedFiles} files`));
   lines.push("");
   lines.push("  Motion score  " + scoreColor(c.bold(`${result.score} / 100`)) + c.dim(`  (${result.grade})`));
+  // Gauge: 20 cells, filled portion in the score color.
+  const filled = Math.round(result.score / 5);
+  lines.push("  " + scoreColor("█".repeat(filled)) + c.dim("░".repeat(20 - filled)));
   lines.push("");
   if (!result.findings.length) {
     lines.push(c.green("  No issues found. Your motion is in good shape."));
