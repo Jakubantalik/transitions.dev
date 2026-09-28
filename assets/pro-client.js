@@ -324,26 +324,19 @@
     if (footerLink) {
       footerLink.textContent = state.authenticated ? "Account" : "Sign in";
     }
-    // CTA reflects entitlement: entitled users manage their plan instead of buying.
-    var cta = document.getElementById("pro-price-cta");
-    if (cta && state.pro) {
-      cta.textContent = "Manage subscription";
-      cta.setAttribute("data-action", "portal");
+    // CTAs reflect entitlement: entitled users manage their plan instead of
+    // buying. Only the paid cards switch; "Start free" stays as it is.
+    if (state.pro) {
+      document.querySelectorAll('.pro-price-cta[data-plan="solo"], .pro-price-cta[data-plan="team"]').forEach(function (c) {
+        c.textContent = "Manage subscription";
+        c.setAttribute("data-action", "portal");
+      });
     }
   }
 
   function selectedBilling() {
     var billing = document.getElementById("pro-billing");
     return (billing && billing.getAttribute("data-billing")) || "monthly";
-  }
-  function selectedPlan() {
-    return selectedBilling() === "annual" ? "yearly" : "monthly";
-  }
-  function teamSelected() {
-    return !!document.querySelector('.pro-price-tab[data-plan="team"][data-active="true"]');
-  }
-  function freeSelected() {
-    return !!document.querySelector('.pro-price-tab[data-plan="free"][data-active="true"]');
   }
 
   // Free plan has no checkout: the Agent signup happens in the terminal.
@@ -368,21 +361,22 @@
     } catch (e) { return null; }
   }
 
-  function startCheckout() {
-    if (freeSelected()) { startFree(); return; }
-    // Team → per-seat subscription (buyer adjusts seat count on Stripe Checkout).
-    // The billing toggle carries monthly / annual / lifetime; lifetime is a
-    // one-time payment plan on both Solo and Team.
+  function startCheckout(plan, ctaEl) {
+    if (plan === "free") { startFree(); return; }
+    // Business (team) → per-seat subscription (buyer adjusts the seat count on
+    // Stripe Checkout). The billing toggle carries monthly / annual / lifetime;
+    // lifetime exists for Pro only — Business includes the hosted Agent, which
+    // runs on live AI, so it falls back to monthly.
     var billingKind = selectedBilling();
     var payload;
-    if (billingKind === "lifetime") {
-      payload = { plan: teamSelected() ? "team-lifetime" : "lifetime" };
-    } else if (teamSelected()) {
+    if (plan === "team") {
       payload = { plan: "team", interval: billingKind === "annual" ? "year" : "month" };
+    } else if (billingKind === "lifetime") {
+      payload = { plan: "lifetime" };
     } else {
-      payload = { plan: selectedPlan() };
+      payload = { plan: billingKind === "annual" ? "yearly" : "monthly" };
     }
-    var cta = document.getElementById("pro-price-cta");
+    var cta = ctaEl || document.querySelector('.pro-price-cta[data-plan="' + (plan || "solo") + '"]');
     setBusy(cta, true);
     var promo = urlPromoCode();
     if (promo) payload.code = promo;
@@ -741,16 +735,15 @@
   }
 
   function wire() {
-    var cta = document.getElementById("pro-price-cta");
-    if (cta) {
+    document.querySelectorAll(".pro-price-cta[data-plan]").forEach(function (cta) {
       cta.addEventListener("click", function (e) {
         e.preventDefault();
-        var action = cta.getAttribute("data-action");
-        if (action === "portal") startPortal();
-        else if (action === "free") startFree();
-        else startCheckout();
+        var plan = cta.getAttribute("data-plan");
+        if (cta.getAttribute("data-action") === "portal") startPortal();
+        else if (plan === "free") startFree();
+        else startCheckout(plan, cta);
       });
-    }
+    });
     var signin = document.getElementById("pm-signin");
     if (signin) {
       signin.addEventListener("click", function (e) {

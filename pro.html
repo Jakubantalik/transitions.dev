@@ -4157,19 +4157,24 @@
         inset 0 0 0 1px rgba(196, 196, 196, 0.1);
       padding: 20px;
     }
-    .pro-price-tabs { display: flex; gap: 24px; }
-    .pro-price-tab {
-      border: 0;
-      background: none;
-      padding: 0;
+    /* Three plan cards side by side; they stack on narrow viewports. */
+    .pro-price-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 325px));
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+    }
+    .pro-price-grid .pro-price-card { width: auto; }
+    .pro-price-plan-name {
       font-family: var(--font-sans);
       font-size: 18px;
       font-weight: 500;
-      color: var(--text-faint);
-      cursor: pointer;
-      transition: color 150ms var(--ease-smooth-out);
+      color: var(--text);
     }
-    .pro-price-tab[data-active="true"] { color: var(--text); }
+    @media (max-width: 900px) {
+      .pro-price-grid { grid-template-columns: minmax(0, 325px); }
+    }
     .pro-price-head { display: flex; flex-direction: column; gap: 4px; }
     .pro-price-amount {
       display: flex;
@@ -5183,36 +5188,71 @@
       <span class="pro-annual-note pro-lifetime-note" id="pro-lifetime-note">pay once</span>
     </div>
 
-    <!-- ─── Pricing card (Solo / Team) ─────────────────────────── -->
+    <!-- ─── Pricing cards (Free / Pro / Business) ──────────────── -->
     <div class="pro-price-wrap">
-      <div class="pro-price-card" id="pro-price-card">
-        <div class="pro-price-tabs" role="tablist" aria-label="Plan">
-          <button type="button" class="pro-price-tab" data-plan="free" data-active="false" role="tab" aria-selected="false">Free</button>
-          <button type="button" class="pro-price-tab" data-plan="solo" data-active="true" role="tab" aria-selected="true">Pro</button>
-          <button type="button" class="pro-price-tab" data-plan="team" data-active="false" role="tab" aria-selected="false">Business</button>
-        </div>
-        <div class="pro-price-head">
-          <div class="pro-price-amount">
-            <span class="pro-price-value p9-number" id="pro-price-value" aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">9</span></span></span>
-            <span class="pro-price-per p6-text" id="pro-price-per">/mo</span>
+      <div class="pro-price-grid">
+
+        <div class="pro-price-card" data-plan-card="free">
+          <div class="pro-price-plan-name">Free</div>
+          <div class="pro-price-head">
+            <div class="pro-price-amount">
+              <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">0</span></span></span>
+              <span class="pro-price-per p6-text" data-price-per>/mo</span>
+            </div>
+            <div class="pro-price-seat" data-price-seat>Free skill + free Agent</div>
           </div>
-          <div class="pro-price-seat" id="pro-price-seat">Single seat</div>
+          <div class="pro-price-divider"></div>
+          <ul class="pro-feature-list">
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Core transitions library with copy-ready snippets</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Free Transitions skill for Claude Code and Cursor</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Transitions Agent free: unlimited motion scans, 10 hosted polish fixes/mo</li>
+          </ul>
+          <a class="pro-price-cta" href="#" data-plan="free">Start free</a>
         </div>
-        <div class="pro-price-divider"></div>
-        <ul class="pro-feature-list">
-          <li class="pro-feature" data-plans="free"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Core transitions library with copy-ready snippets</li>
-          <li class="pro-feature" data-plans="free"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Free Transitions skill for Claude Code and Cursor</li>
-          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>36+ production-ready transitions ready for React, Next.js, Typescript</li>
-          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
-          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Refine tool with Pro transitions skill</li>
-          <li class="pro-feature" data-plans="free,solo"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Transitions Agent free: unlimited motion scans, 10 hosted polish fixes/mo</li>
-          <li class="pro-feature" data-plans="team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Transitions Agent included: 200 hosted fixes/mo, polish + revamp modes, PR gate</li>
-          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Every future transition, free</li>
-          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license, unlimited projects</li>
-        </ul>
-        <a class="pro-price-cta" href="mailto:jakubja@gmail.com?subject=Transitions%20Pro%20access" id="pro-price-cta">Get access</a>
+
+        <div class="pro-price-card" data-plan-card="solo">
+          <div class="pro-price-plan-name">Pro</div>
+          <div class="pro-price-head">
+            <div class="pro-price-amount">
+              <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">9</span></span></span>
+              <span class="pro-price-per p6-text" data-price-per>/mo</span>
+            </div>
+            <div class="pro-price-seat" data-price-seat>Single seat</div>
+          </div>
+          <div class="pro-price-divider"></div>
+          <ul class="pro-feature-list">
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>36+ production-ready transitions ready for React, Next.js, Typescript</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Refine tool with Pro transitions skill</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Transitions Agent free tier included</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Every future transition, free</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license, unlimited projects</li>
+          </ul>
+          <a class="pro-price-cta" href="#" data-plan="solo">Get Pro</a>
+        </div>
+
+        <div class="pro-price-card" data-plan-card="team">
+          <div class="pro-price-plan-name">Business</div>
+          <div class="pro-price-head">
+            <div class="pro-price-amount">
+              <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char" data-stagger="1">5</span><span class="p9-char" data-stagger="2">9</span></span></span>
+              <span class="pro-price-per p6-text" data-price-per>/mo</span>
+            </div>
+            <div class="pro-price-seat" data-price-seat>5 seats + Agent · +$9/seat after</div>
+          </div>
+          <div class="pro-price-divider"></div>
+          <ul class="pro-feature-list">
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Everything in Pro, for 5 seats</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Transitions Agent included: 200 hosted fixes/mo</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Polish + revamp modes, grounded in the Pro recipes</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>GitHub Action with pull-request motion gate</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license for the whole team</li>
+          </ul>
+          <a class="pro-price-cta" href="#" data-plan="team">Get Business</a>
+        </div>
+
       </div>
-      <!-- Purchasing-power-parity bar (Figma 2361:84298) — sits below the card,
+      <!-- Purchasing-power-parity bar (Figma 2361:84298) — sits below the cards,
            filled by pro-client.js when the visitor's country qualifies. -->
       <div class="pro-ppp" id="pro-ppp" hidden></div>
     </div>
@@ -5441,7 +5481,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p><strong>Free</strong> is the open library, the free skill, and the free Transitions Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $9/mo, a single seat with the full Pro library, and includes the free Agent tier. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $9/mo) plus the paid Transitions Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase, $149 for one seat or $499 for 5 seats, covering the library forever; the hosted Agent stays subscription-only because every fix runs on live AI.</p>
+            <p><strong>Free</strong> is the open library, the free skill, and the free Transitions Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $9/mo, a single seat with the full Pro library, and includes the free Agent tier. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $9/mo) plus the paid Transitions Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase for Pro, $149 for a single seat, covering the library forever (the free Agent tier included); the paid Agent stays subscription-only because every fix runs on live AI, so Business has no lifetime option.</p>
           </div></div>
         </div>
 
@@ -6039,9 +6079,11 @@ description: Production-ready CSS
         }
       });
 
-      /* ── Pricing: billing (Monthly/Annual) × plan (Free/Pro/Business) ──
-         data-plan keys stay "solo"/"team" (pro-client.js and the checkout
-         API key on them); only the visible labels read Pro / Business. */
+      /* ── Pricing: billing (Monthly/Annual/Lifetime) × three cards ──
+         Card keys stay "solo"/"team" internally (pro-client.js and the
+         checkout API key on them); the visible names read Pro / Business.
+         Business has no lifetime (the hosted Agent runs on live AI), so
+         under Lifetime its card falls back to the monthly price. */
       var PRICES = {
         free: {
           monthly: { v: "$0", per: "/mo", seat: "Free skill + free Agent" },
@@ -6056,7 +6098,7 @@ description: Production-ready CSS
         team: {
           monthly: { v: "$59", per: "/mo", seat: "5 seats + Agent · +$9/seat after" },
           annual:  { v: "$590", per: "/yr", seat: "5 seats + Agent · +$90/seat after · billed yearly" },
-          lifetime: { v: "$499", per: "once", seat: "5 seats · library forever · Agent not included" }
+          lifetime: { v: "$59", per: "/mo", seat: "Monthly or annual only · Agent runs on live AI" }
         }
       };
       var billing = document.getElementById("pro-billing");
@@ -6075,13 +6117,9 @@ description: Production-ready CSS
         billingIndicator.style.width = active.offsetWidth + "px";
         billingIndicator.style.transform = "translateX(" + active.offsetLeft + "px)";
       }
-      var planTabs = document.querySelectorAll(".pro-price-tab");
-      var priceValue = document.getElementById("pro-price-value");
-      var pricePer = document.getElementById("pro-price-per");
-      var priceSeat = document.getElementById("pro-price-seat");
-      var curBilling = "monthly", curPlan = "solo";
+      var priceCards = document.querySelectorAll("[data-plan-card]");
+      var curBilling = "monthly";
       var priceReady = false;
-      var lastPer = "/mo";
 
       // Number pop-in (skills/transitions-dev/02-number-pop-in.md): old
       // chars snapshot into a .p9-ghost that pops out while fresh .p9-char
@@ -6193,25 +6231,26 @@ description: Production-ready CSS
       }
 
       function renderPrice() {
-        var p = PRICES[curPlan][curBilling];
-        var shrinking = false;
-        if (priceValue) shrinking = setPriceNumber(priceValue, p.v, priceReady);
-        // Only swap "/mo" ↔ "/yr" when it actually changes — Solo↔Team
-        // both keep "/mo", so re-running the swap there just read as a jump.
-        // The digits' width-glide (see setPriceNumber) also carries "/mo"
-        // along horizontally, since it's a flex sibling. When the number
-        // shrinks ($90 → $9), "/mo" is gliding left at the same time its
-        // own cross-blur would start — a delay lets the glide land first
-        // so the blur doesn't clash with that leftward motion. Growing
-        // ($9 → $90) pushes "/mo" further from the digits as it moves, so
-        // the two don't visually compete and no delay is needed.
-        if (pricePer && p.per !== lastPer) {
-          var perStag = shrinking ? 200 : 0;
-          swapText(pricePer, p.per, priceReady, perStag);
-        }
-        lastPer = p.per;
+        priceCards.forEach(function (card) {
+          var plan = card.getAttribute("data-plan-card");
+          var p = PRICES[plan][curBilling];
+          var valueEl = card.querySelector("[data-price-value]");
+          var perEl = card.querySelector("[data-price-per]");
+          var seatEl = card.querySelector("[data-price-seat]");
+          var shrinking = false;
+          if (valueEl) shrinking = setPriceNumber(valueEl, p.v, priceReady);
+          // Only swap "/mo" ↔ "/yr" when it actually changes. The digits'
+          // width-glide (see setPriceNumber) also carries "/mo" along
+          // horizontally, since it's a flex sibling. When the number shrinks
+          // ($90 → $9) a delay lets the glide land before the cross-blur.
+          var lastPer = card.getAttribute("data-last-per") || "/mo";
+          if (perEl && p.per !== lastPer) {
+            swapText(perEl, p.per, priceReady, shrinking ? 200 : 0);
+          }
+          card.setAttribute("data-last-per", p.per);
+          if (seatEl) seatEl.textContent = p.seat;
+        });
         priceReady = true;
-        if (priceSeat) priceSeat.textContent = p.seat;
         if (billing) billing.setAttribute("data-billing", curBilling);
         billingOpts.forEach(function (o) {
           var on = o.getAttribute("data-billing-opt") === curBilling;
@@ -6219,35 +6258,10 @@ description: Production-ready CSS
           o.setAttribute("aria-selected", on ? "true" : "false");
         });
         positionBillingIndicator();
-        planTabs.forEach(function (t) {
-          var on = t.getAttribute("data-plan") === curPlan;
-          t.setAttribute("data-active", on ? "true" : "false");
-          t.setAttribute("aria-selected", on ? "true" : "false");
-        });
-        // Feature list follows the plan: each li declares data-plans.
-        document.querySelectorAll(".pro-feature[data-plans]").forEach(function (li) {
-          var show = li.getAttribute("data-plans").split(",").indexOf(curPlan) !== -1;
-          li.style.display = show ? "" : "none";
-        });
-        // CTA follows the plan too, unless pro-client already switched it to
-        // "Manage subscription" for an entitled visitor.
-        var cta = document.getElementById("pro-price-cta");
-        if (cta && cta.getAttribute("data-action") !== "portal") {
-          if (curPlan === "free") {
-            cta.textContent = "Start free";
-            cta.setAttribute("data-action", "free");
-          } else {
-            cta.textContent = "Get access";
-            cta.setAttribute("data-action", "checkout");
-          }
-        }
       }
       function setBilling(b) { curBilling = b; renderPrice(); }
       billingOpts.forEach(function (o) {
         o.addEventListener("click", function () { setBilling(o.getAttribute("data-billing-opt")); });
-      });
-      planTabs.forEach(function (t) {
-        t.addEventListener("click", function () { curPlan = t.getAttribute("data-plan"); renderPrice(); });
       });
       renderPrice();
       // Re-measure the pill once fonts settle and on resize so it stays
