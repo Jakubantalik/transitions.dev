@@ -4178,6 +4178,28 @@
     @media (max-width: 900px) {
       .pro-price-grid { grid-template-columns: minmax(0, 325px); }
     }
+    /* Plan pills under the price (Figma 1668:4823): what each plan bundles
+       at a glance. Accent pill marks the paid pieces. */
+    .pro-plan-pills { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .plan-pill {
+      display: inline-flex; align-items: center; height: 24px; padding: 0 10px;
+      border-radius: 50px; font-size: 13px; font-weight: 500; line-height: 16px;
+      white-space: nowrap; color: #5a5a5a;
+      background: rgba(158, 158, 158, 0.06);
+      box-shadow: 0 0 0 1px rgba(174, 174, 174, 0.18);
+    }
+    html[data-theme="dark"] .plan-pill {
+      color: #b3b3b3; background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.09);
+    }
+    .plan-pill--accent {
+      color: #1651f4; background: rgba(237, 245, 252, 0.73);
+      box-shadow: 0 0 0 1px rgba(32, 82, 219, 0.12);
+    }
+    html[data-theme="dark"] .plan-pill--accent {
+      color: #8ab2ff; background: rgba(22, 81, 244, 0.16);
+      box-shadow: 0 0 0 1px rgba(96, 137, 255, 0.25);
+    }
     /* Business has no lifetime: under the Lifetime toggle its card dims and
        the CTA goes inert instead of quietly selling the monthly plan. */
     .pro-price-card { transition: opacity 200ms var(--ease-smooth-out); }
@@ -5170,7 +5192,11 @@
               <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">0</span></span></span>
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
-            <div class="pro-price-seat" data-price-seat>Free skill + free Agent</div>
+            <div class="pro-price-seat" data-price-seat>No account needed</div>
+            <div class="pro-plan-pills" aria-hidden="true">
+              <span class="plan-pill">Free skill</span>
+              <span class="plan-pill">Free Agent</span>
+            </div>
           </div>
           <div class="pro-price-divider"></div>
           <ul class="pro-feature-list">
@@ -5189,6 +5215,10 @@
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
             <div class="pro-price-seat" data-price-seat>Single seat</div>
+            <div class="pro-plan-pills" aria-hidden="true">
+              <span class="plan-pill plan-pill--accent">Pro skill</span>
+              <span class="plan-pill">Free Agent</span>
+            </div>
           </div>
           <div class="pro-price-divider"></div>
           <ul class="pro-feature-list">
@@ -5210,6 +5240,10 @@
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
             <div class="pro-price-seat" data-price-seat>5 seats + Agent · +$9/seat after</div>
+            <div class="pro-plan-pills" aria-hidden="true">
+              <span class="plan-pill plan-pill--accent">Pro skill</span>
+              <span class="plan-pill plan-pill--accent">Full Agent</span>
+            </div>
           </div>
           <div class="pro-price-divider"></div>
           <ul class="pro-feature-list">
@@ -6045,8 +6079,8 @@ description: Production-ready CSS
          under Lifetime its card falls back to the monthly price. */
       var PRICES = {
         free: {
-          monthly: { v: "$0", per: "/mo", seat: "Free skill + free Agent" },
-          annual:  { v: "$0", per: "/yr", seat: "Free skill + free Agent" },
+          monthly: { v: "$0", per: "/mo", seat: "No account needed" },
+          annual:  { v: "$0", per: "/yr", seat: "No account needed" },
           lifetime: { v: "$0", per: "once", seat: "Free forever" }
         },
         solo: {
