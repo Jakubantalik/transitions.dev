@@ -64,7 +64,7 @@ Tools: `scan_instructions`, `fix_guidance(mode)`, `list_recipes`, `get_recipe(sl
 Two workflow templates, pick by who supplies the AI:
 
 - **[transitions-fix.yml](templates/transitions-fix.yml)** (Business, zero friction): one secret - the license key. Fixes run through the hosted service on our AI, metered against the plan's 200/month, and land as a pull request.
-- **[transitions-fix-own-claude.yml](templates/transitions-fix-own-claude.yml)** (bring your own Claude): runs `claude-code-action` on your Anthropic key, connected to this MCP server. Unmetered fixing on your own tokens.
+- **[transitions-fix-own-claude.yml](templates/transitions-fix-own-claude.yml)** (Enterprise): runs `claude-code-action` on your own Anthropic key, connected to this MCP server. Unmetered, and your code never flows through our fix service - it goes only to Anthropic under your own agreement. Part of the Enterprise plan (org-wide license, custom rules, priority support).
 
 The score/gate Action stays AI-free either way.
 

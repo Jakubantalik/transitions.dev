@@ -4226,6 +4226,23 @@
       color: #8ab2ff; background: rgba(22, 81, 244, 0.16);
       box-shadow: 0 0 0 1px rgba(96, 137, 255, 0.25);
     }
+    .pro-enterprise-note {
+      margin: 4px 0 0;
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--text-muted);
+      text-align: center;
+      text-wrap: balance;
+    }
+    .pro-enterprise-note strong { color: var(--text); font-weight: 500; }
+    .pro-enterprise-note a {
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+      transition: text-decoration-color 180ms ease;
+    }
+    .pro-enterprise-note a:hover { text-decoration-color: currentColor; }
     /* Business has no lifetime: under the Lifetime toggle its card dims and
        the CTA goes inert instead of quietly selling the monthly plan. */
     .pro-price-card { transition: opacity 200ms var(--ease-smooth-out); }
@@ -5284,6 +5301,13 @@
       </div>
       <!-- Purchasing-power-parity bar (Figma 2361:84298) — sits below the cards,
            filled by pro-client.js when the visitor's country qualifies. -->
+      <!-- Enterprise: sold by conversation, not by card. BYO AI keys is the
+           feature - code never flows through our fix service. -->
+      <p class="pro-enterprise-note">
+        <strong>Enterprise</strong>: unlimited Agent on your own AI keys, org-wide license,
+        custom motion rules, priority support.
+        <a href="mailto:jakubja@gmail.com?subject=Transitions%20Enterprise">Talk to us</a>
+      </p>
       <div class="pro-ppp" id="pro-ppp" hidden></div>
     </div>
 
