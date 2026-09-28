@@ -1,0 +1,51 @@
+name: Publish Agent
+
+# Publishes the agent/ package (transitions-agent) to npm using the REFINE
+# repository secret as the npm auth token. Runs on demand, and automatically
+# when agent/ changes on main (skips if the version is already published).
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "agent/**"
+      - ".github/workflows/publish-agent.yml"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Run tests
+        working-directory: agent
+        run: npm test
+
+      - name: Check if version already published
+        id: check
+        working-directory: agent
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Resolving $NAME@$VERSION"
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is already on npm — skipping publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
+        if: steps.check.outputs.exists == 'false'
+        working-directory: agent
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.REFINE }}
