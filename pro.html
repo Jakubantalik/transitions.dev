@@ -4243,6 +4243,113 @@
       transition: text-decoration-color 180ms ease;
     }
     .pro-enterprise-note a:hover { text-decoration-color: currentColor; }
+    /* Plan pills open the comparison modals. Button reset keeps the pill look. */
+    button.plan-pill {
+      border: 0;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: filter 150ms var(--ease-smooth-out);
+    }
+    button.plan-pill:hover { filter: brightness(0.96); }
+    html[data-theme="dark"] button.plan-pill:hover { filter: brightness(1.25); }
+    button.plan-pill:focus-visible { outline: 2px solid #1651f4; outline-offset: 2px; }
+
+    /* Comparison modal — transitions.dev modal recipe (skill 06-modal). */
+    :root {
+      --modal-open-dur: 250ms;
+      --modal-close-dur: 150ms;
+      --modal-scale: 0.96;
+      --modal-scale-close: 0.96;
+      --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .plan-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.32);
+      opacity: 0;
+      transition: opacity var(--modal-open-dur) var(--modal-ease);
+    }
+    .plan-modal-overlay[data-open] { display: flex; }
+    .plan-modal-overlay.is-open { opacity: 1; }
+    .plan-modal-overlay.is-closing { opacity: 0; transition-duration: var(--modal-close-dur); }
+    .t-modal {
+      transform-origin: center;
+      transform: scale(var(--modal-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--modal-open-dur) var(--modal-ease),
+        opacity   var(--modal-open-dur) var(--modal-ease);
+      will-change: transform, opacity;
+    }
+    .t-modal.is-open {
+      transform: scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .t-modal.is-closing {
+      transform: scale(var(--modal-scale-close));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--modal-close-dur) var(--modal-ease),
+        opacity   var(--modal-close-dur) var(--modal-ease);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .t-modal, .plan-modal-overlay { transition: none !important; }
+    }
+    .plan-modal {
+      width: 560px;
+      max-width: 100%;
+      max-height: 85vh;
+      overflow: auto;
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow:
+        var(--card-shadow),
+        inset 0 0 0 1px var(--card-border),
+        0 24px 80px rgba(0, 0, 0, 0.18);
+      padding: 24px;
+    }
+    .plan-modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .plan-modal-title { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+    .plan-modal-close {
+      border: 0;
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text-muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+    }
+    html[data-theme="dark"] .plan-modal-close { background: rgba(255, 255, 255, 0.08); }
+    .plan-modal-close:hover { color: var(--text); }
+    .plan-cmp { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 18px; }
+    .plan-cmp th, .plan-cmp td { text-align: left; padding: 9px 10px; }
+    .plan-cmp th { font-weight: 600; color: var(--text); }
+    .plan-cmp td { color: var(--text-muted); }
+    .plan-cmp td:first-child { color: var(--text); }
+    .plan-cmp tr + tr { border-top: 1px solid var(--card-border); }
+    .plan-cmp .cmp-yes { color: #30a46c; }
+    .plan-cmp .cmp-no { color: var(--text-faint); }
+    .plan-modal-note { margin: 14px 0 0; font-size: 12px; color: var(--text-faint); }
+    .plan-modal-note a { color: var(--text); }
+    .plan-modal [data-cmp-panel] { display: none; }
+    .plan-modal[data-show="agent"] [data-cmp-panel="agent"],
+    .plan-modal[data-show="skill"] [data-cmp-panel="skill"] { display: block; }
+
     /* Business has no lifetime: under the Lifetime toggle its card dims and
        the CTA goes inert instead of quietly selling the monthly plan. */
     .pro-price-card { transition: opacity 200ms var(--ease-smooth-out); }
@@ -5237,9 +5344,9 @@
               <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">0</span></span></span>
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
-            <div class="pro-plan-pills" aria-hidden="true">
-              <span class="plan-pill">Free skill</span>
-              <span class="plan-pill">Free Agent</span>
+            <div class="pro-plan-pills">
+              <button type="button" class="plan-pill" data-cmp="skill">Free skill</button>
+              <button type="button" class="plan-pill" data-cmp="agent">Free Agent</button>
             </div>
           </div>
           <div class="pro-price-divider"></div>
@@ -5258,9 +5365,9 @@
               <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">9</span></span></span>
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
-            <div class="pro-plan-pills" aria-hidden="true">
-              <span class="plan-pill plan-pill--accent">Pro skill</span>
-              <span class="plan-pill">Free Agent</span>
+            <div class="pro-plan-pills">
+              <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
+              <button type="button" class="plan-pill" data-cmp="agent">Free Agent</button>
             </div>
           </div>
           <div class="pro-price-divider"></div>
@@ -5282,9 +5389,9 @@
               <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char" data-stagger="1">5</span><span class="p9-char" data-stagger="2">9</span></span></span>
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
-            <div class="pro-plan-pills" aria-hidden="true">
-              <span class="plan-pill plan-pill--accent">Pro skill</span>
-              <span class="plan-pill plan-pill--accent">Full Agent</span>
+            <div class="pro-plan-pills">
+              <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
+              <button type="button" class="plan-pill plan-pill--accent" data-cmp="agent">Full Agent</button>
             </div>
           </div>
           <div class="pro-price-divider"></div>
@@ -5308,6 +5415,43 @@
         custom motion rules, priority support.
         <a href="mailto:jakubja@gmail.com?subject=Transitions%20Enterprise">Talk to us</a>
       </p>
+
+    <!-- Plan comparison modal: opened by the plan pills. Uses the
+         transitions.dev modal recipe (skill 06-modal). -->
+    <div class="plan-modal-overlay" id="plan-modal-overlay" role="presentation">
+      <div class="plan-modal t-modal" id="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-modal-title" data-show="agent">
+        <div class="plan-modal-head">
+          <h3 class="plan-modal-title" id="plan-modal-title">Comparison</h3>
+          <button type="button" class="plan-modal-close" id="plan-modal-close" aria-label="Close">&#10005;</button>
+        </div>
+        <div data-cmp-panel="agent">
+          <table class="plan-cmp">
+            <tr><th></th><th>Free Agent</th><th>Full Agent</th></tr>
+            <tr><td>Motion scans + score</td><td>Unlimited</td><td>Unlimited</td></tr>
+            <tr><td>GitHub Action: PR score + merge gate</td><td class="cmp-yes">&#10003;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Hosted fixes</td><td>10 / month</td><td>200 / month</td></tr>
+            <tr><td>Fix modes</td><td>Polish</td><td>Polish + Revamp</td></tr>
+            <tr><td>Rewrites from the Pro recipe library</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Recipe sources for your own AI (MCP)</td><td>Free recipes</td><td>Full library incl. Pro</td></tr>
+            <tr><td>Fix pull requests from CI, one secret</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Use</td><td>Personal + evaluation</td><td>Commercial, whole team</td></tr>
+          </table>
+          <p class="plan-modal-note">Full Agent comes with the Business plan. More detail on the <a href="/agent.html">Agent page</a>.</p>
+        </div>
+        <div data-cmp-panel="skill">
+          <table class="plan-cmp">
+            <tr><th></th><th>Free skill</th><th>Pro skill</th></tr>
+            <tr><td>Transitions included</td><td>Core set</td><td>All 36+</td></tr>
+            <tr><td>Variants</td><td>CSS</td><td>CSS + React + TypeScript</td></tr>
+            <tr><td>Refine tool with Pro recipes</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Every future transition</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Works with</td><td colspan="2">Claude Code, Cursor and Codex</td></tr>
+            <tr><td>License</td><td>MIT core transitions</td><td>Commercial, unlimited projects</td></tr>
+          </table>
+          <p class="plan-modal-note">Pro skill comes with the Pro and Business plans. More on the <a href="/skill.html">Skill page</a>.</p>
+        </div>
+      </div>
+    </div>
       <div class="pro-ppp" id="pro-ppp" hidden></div>
     </div>
 
@@ -6422,5 +6566,52 @@ description: Production-ready CSS
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
   <script src="assets/pro-client.js?v=29" defer></script>
+
+  <!-- Plan comparison modal behavior (recipe: skill 06-modal state dance). -->
+  <script>
+    (function () {
+      "use strict";
+      var overlay = document.getElementById("plan-modal-overlay");
+      var modal = document.getElementById("plan-modal");
+      var title = document.getElementById("plan-modal-title");
+      var closeBtn = document.getElementById("plan-modal-close");
+      if (!overlay || !modal) return;
+      var CLOSE_MS = 150;
+      var lastTrigger = null;
+
+      function open(kind, trigger) {
+        lastTrigger = trigger || null;
+        modal.setAttribute("data-show", kind);
+        if (title) title.textContent = kind === "skill" ? "Free skill vs Pro skill" : "Free Agent vs Full Agent";
+        overlay.setAttribute("data-open", "");
+        modal.classList.remove("is-closing");
+        overlay.classList.remove("is-closing");
+        void modal.offsetHeight;
+        overlay.classList.add("is-open");
+        modal.classList.add("is-open");
+        if (closeBtn) closeBtn.focus();
+      }
+      function close() {
+        modal.classList.remove("is-open");
+        overlay.classList.remove("is-open");
+        modal.classList.add("is-closing");
+        overlay.classList.add("is-closing");
+        window.setTimeout(function () {
+          modal.classList.remove("is-closing");
+          overlay.classList.remove("is-closing");
+          overlay.removeAttribute("data-open");
+          if (lastTrigger && lastTrigger.focus) lastTrigger.focus();
+        }, CLOSE_MS);
+      }
+      document.querySelectorAll(".plan-pill[data-cmp]").forEach(function (pill) {
+        pill.addEventListener("click", function () { open(pill.getAttribute("data-cmp"), pill); });
+      });
+      if (closeBtn) closeBtn.addEventListener("click", close);
+      overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && overlay.hasAttribute("data-open")) close();
+      });
+    })();
+  </script>
 </body>
 </html>
