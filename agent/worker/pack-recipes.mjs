@@ -72,6 +72,13 @@ if (existsSync(PRO_DIR)) {
   console.error(`warning: Pro directory not found at ${PRO_DIR}; packing free recipes only.`);
 }
 
+// Index the catalog for the MCP list_recipes tool.
+const index = entries.map((e) => {
+  const v = JSON.parse(e.value);
+  return { slug: v.slug, name: v.name || v.slug, tier: v.tier };
+});
+entries.push({ key: "recipe-index", value: JSON.stringify(index) });
+
 writeFileSync(OUT, JSON.stringify(entries, null, 2));
 console.log(`Packed ${entries.length} recipes (${proCount} Pro) into ${OUT}.`);
 console.log(`Upload: npx wrangler kv bulk put ${OUT} --namespace-id <RECIPES id from wrangler.toml>`);

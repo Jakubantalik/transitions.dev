@@ -49,6 +49,18 @@ Copy [templates/transitions-agent.yml](templates/transitions-agent.yml) to `.git
 | no-reduced-motion | Animation with no `prefers-reduced-motion` guard |
 | inconsistent-durations | Too many different duration values across the project |
 
+## MCP server (your AI, our recipes)
+
+Prefer your own Claude to do the fixing? Connect the Transitions Agent MCP server and your assistant gets the scanner contract, the fix guidance, and the real recipe sources (Pro included on Business) - fixing runs on your subscription, not our meters:
+
+```bash
+claude mcp add --transport http transitions-agent https://api.transitions.dev/v1/agent/mcp --header "Authorization: Bearer $TRANSITIONS_AGENT_LICENSE"
+```
+
+Tools: `scan_instructions`, `fix_guidance(mode)`, `list_recipes`, `get_recipe(slug, variant)`. Free recipes need no key; Pro recipe sources need a Business license.
+
+The same works in CI: [templates/transitions-fix.yml](templates/transitions-fix.yml) runs `claude-code-action` on your Anthropic key, connected to this MCP server, and opens a fix PR. The score/gate Action stays AI-free either way.
+
 ## Safety model
 
 1. Proposed fixes are shown as diffs first; nothing is written without a yes.

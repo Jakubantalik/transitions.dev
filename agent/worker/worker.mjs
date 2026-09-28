@@ -24,11 +24,22 @@ const FREE_DAILY_LIMIT = 2;
 const DEFAULT_FREE_GLOBAL_MONTHLY = 2000;
 const MAX_BODY_BYTES = 600_000;
 
+import { handleMcp } from "./mcp.mjs";
+import { BASE_RULES, MODE_RULES } from "./guidance.mjs";
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (request.method === "POST" && url.pathname === "/v1/agent/fix") {
       return handleFix(request, env);
+    }
+    // MCP (streamable HTTP): the user's own AI connects here and fixes on
+    // its own tokens; this server serves guidance + recipe sources only.
+    if (request.method === "POST" && url.pathname === "/v1/agent/mcp") {
+      return handleMcp(request, env);
+    }
+    if (request.method === "GET" && url.pathname === "/v1/agent/mcp") {
+      return new Response(null, { status: 405 }); // JSON-only transport, no SSE stream
     }
     return json({ error: "not found" }, 404);
   },
@@ -106,34 +117,11 @@ async function loadRecipes(env, findings) {
 
 async function proposeFixes(env, findings, files, mode, recipes, model) {
   // polish: token-level adjustments only. revamp: full recipe rewrites allowed.
-  const modeRules = mode === "revamp"
-    ? [
-        "Mode: REVAMP. Where a finding names a transitions.dev recipe, replace the",
-        "existing motion wholesale with that recipe's pattern: proper enter and exit",
-        "states, keyframes, easing curves. The user message includes a `recipes` array",
-        "with the authoritative library source for the matched recipes (Pro recipes",
-        "included), each with css and sometimes react/typescript variants. Base every",
-        "rewrite on that source, keeping its keyframes, easings, durations, and tunable",
-        "variables verbatim; adapt only selectors and class names to the project, and",
-        "pick the variant matching the file type. You may add CSS classes and keyframes",
-        "and adjust class names in markup, but never change component logic, state, or",
-        "behavior. If no recipe source is provided for a finding, improve it minimally",
-        "in the same style instead of inventing a new pattern.",
-      ]
-    : [
-        "Mode: POLISH. Make only small, safe adjustments: move literal durations to a",
-        "motion token scale (define :root tokens once if missing), add one",
-        "prefers-reduced-motion guard, replace transition: all with named properties,",
-        "add missing transition declarations to hover bases. Never restructure markup,",
-        "components, keyframes, or selectors. Every diff must be a few lines.",
-      ];
+  // (Shared with the MCP server's fix_guidance tool - see guidance.mjs.)
   const system = [
-    "You are Transitions Agent, an expert in production UI motion.",
+    ...BASE_RULES,
     "You receive source files and a list of motion findings. Return the corrected files.",
-    "Rules: animate transform and opacity, never layout properties. Keep durations on",
-    "a small token scale. Always respect prefers-reduced-motion. Change as little as",
-    "possible; never touch logic, only motion. Style guidance: https://transitions.dev.",
-    ...modeRules,
+    ...MODE_RULES[mode] || MODE_RULES.polish,
     'Respond with ONLY a JSON object: {"summary": "<short human summary>",',
     '"files": [{"path": "...", "content": "<full corrected file>"}]}.',
     "Include only files you actually changed.",
