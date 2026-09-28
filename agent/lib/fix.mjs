@@ -73,8 +73,8 @@ export async function runFix(root, result, opts) {
   if (res.status === 403 || res.status === 429) {
     const err = await res.json().catch(() => ({}));
     if (err.error === "revamp requires team") {
-      console.error(c.yellow("Revamp mode is a Team plan feature") + " (full recipe rewrites, Pro library).");
-      console.error("Your free plan includes polish mode. Upgrade at " + c.bold("transitions.dev/pro") + " or run without --mode revamp.");
+      console.error(c.yellow("Revamp mode is a Business plan feature") + " (full recipe rewrites, Pro library).");
+      console.error("Your free plan includes polish mode. Upgrade at " + c.bold("transitions.dev/pro.html") + " or run without --mode revamp.");
     } else {
       console.error(c.red("✗ ") + (err.detail || "Monthly fix quota reached. Upgrade at transitions.dev/pro."));
     }
