@@ -5187,8 +5187,9 @@
     <div class="pro-price-wrap">
       <div class="pro-price-card" id="pro-price-card">
         <div class="pro-price-tabs" role="tablist" aria-label="Plan">
-          <button type="button" class="pro-price-tab" data-plan="solo" data-active="true" role="tab" aria-selected="true">Solo</button>
-          <button type="button" class="pro-price-tab" data-plan="team" data-active="false" role="tab" aria-selected="false">Team</button>
+          <button type="button" class="pro-price-tab" data-plan="free" data-active="false" role="tab" aria-selected="false">Free</button>
+          <button type="button" class="pro-price-tab" data-plan="solo" data-active="true" role="tab" aria-selected="true">Pro</button>
+          <button type="button" class="pro-price-tab" data-plan="team" data-active="false" role="tab" aria-selected="false">Business</button>
         </div>
         <div class="pro-price-head">
           <div class="pro-price-amount">
@@ -5199,11 +5200,15 @@
         </div>
         <div class="pro-price-divider"></div>
         <ul class="pro-feature-list">
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>36+ production-ready transitions ready for React, Next.js, Typescript</li>
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Refine tool with Pro transitions skill</li>
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Every future transition, free</li>
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license, unlimited projects</li>
+          <li class="pro-feature" data-plans="free"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Core transitions library with copy-ready snippets</li>
+          <li class="pro-feature" data-plans="free"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Free Transitions skill for Claude Code and Cursor</li>
+          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>36+ production-ready transitions ready for React, Next.js, Typescript</li>
+          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
+          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Refine tool with Pro transitions skill</li>
+          <li class="pro-feature" data-plans="free,solo"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Transitions Agent free: unlimited motion scans, 10 hosted polish fixes/mo</li>
+          <li class="pro-feature" data-plans="team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Transitions Agent included: 200 hosted fixes/mo, polish + revamp modes, PR gate</li>
+          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Every future transition, free</li>
+          <li class="pro-feature" data-plans="solo,team"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license, unlimited projects</li>
         </ul>
         <a class="pro-price-cta" href="mailto:jakubja@gmail.com?subject=Transitions%20Pro%20access" id="pro-price-cta">Get access</a>
       </div>
@@ -5416,7 +5421,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p>The free site showcases the core transitions with copy-ready snippets. Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-pro add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan.</p>
+            <p>The free site showcases the core transitions with copy-ready snippets, and the free Transitions Agent scans any codebase for missing or janky motion (<code>npx transitions-agent</code>). Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-pro add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan. Business adds the paid Transitions Agent on top: hosted AI fixes as pull requests, grounded in the Pro recipe library.</p>
           </div></div>
         </div>
 
@@ -5436,7 +5441,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p><strong>Solo</strong> is a single seat for one person across all of their projects. <strong>Team</strong> is $39/mo and includes 5 seats for people in the same organization; each seat beyond 5 is an extra $9/mo. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase — $149 for Solo, $499 for a 5-seat Team — with every future transition included, forever. Switch the plan tab above to see team pricing.</p>
+            <p><strong>Free</strong> is the open library, the free skill, and the free Transitions Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $9/mo, a single seat with the full Pro library, and includes the free Agent tier. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $9/mo) plus the paid Transitions Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase, $149 for one seat or $499 for 5 seats, covering the library forever; the hosted Agent stays subscription-only because every fix runs on live AI.</p>
           </div></div>
         </div>
 
@@ -6034,17 +6039,24 @@ description: Production-ready CSS
         }
       });
 
-      /* ── Pricing: billing (Monthly/Annual) × plan (Solo/Team) ── */
+      /* ── Pricing: billing (Monthly/Annual) × plan (Free/Pro/Business) ──
+         data-plan keys stay "solo"/"team" (pro-client.js and the checkout
+         API key on them); only the visible labels read Pro / Business. */
       var PRICES = {
+        free: {
+          monthly: { v: "$0", per: "/mo", seat: "Free skill + free Agent" },
+          annual:  { v: "$0", per: "/yr", seat: "Free skill + free Agent" },
+          lifetime: { v: "$0", per: "once", seat: "Free forever" }
+        },
         solo: {
           monthly: { v: "$9", per: "/mo", seat: "Single seat" },
           annual:  { v: "$90", per: "/yr", seat: "Single seat · billed yearly" },
           lifetime: { v: "$149", per: "once", seat: "Single seat · pay once, yours forever" }
         },
         team: {
-          monthly: { v: "$39", per: "/mo", seat: "5 seats · +$9/seat after" },
-          annual:  { v: "$390", per: "/yr", seat: "5 seats · +$90/seat after · billed yearly" },
-          lifetime: { v: "$499", per: "once", seat: "5 seats · pay once, yours forever" }
+          monthly: { v: "$59", per: "/mo", seat: "5 seats + Agent · +$9/seat after" },
+          annual:  { v: "$590", per: "/yr", seat: "5 seats + Agent · +$90/seat after · billed yearly" },
+          lifetime: { v: "$499", per: "once", seat: "5 seats · library forever · Agent not included" }
         }
       };
       var billing = document.getElementById("pro-billing");
@@ -6212,6 +6224,23 @@ description: Production-ready CSS
           t.setAttribute("data-active", on ? "true" : "false");
           t.setAttribute("aria-selected", on ? "true" : "false");
         });
+        // Feature list follows the plan: each li declares data-plans.
+        document.querySelectorAll(".pro-feature[data-plans]").forEach(function (li) {
+          var show = li.getAttribute("data-plans").split(",").indexOf(curPlan) !== -1;
+          li.style.display = show ? "" : "none";
+        });
+        // CTA follows the plan too, unless pro-client already switched it to
+        // "Manage subscription" for an entitled visitor.
+        var cta = document.getElementById("pro-price-cta");
+        if (cta && cta.getAttribute("data-action") !== "portal") {
+          if (curPlan === "free") {
+            cta.textContent = "Start free";
+            cta.setAttribute("data-action", "free");
+          } else {
+            cta.textContent = "Get access";
+            cta.setAttribute("data-action", "checkout");
+          }
+        }
       }
       function setBilling(b) { curBilling = b; renderPrice(); }
       billingOpts.forEach(function (o) {

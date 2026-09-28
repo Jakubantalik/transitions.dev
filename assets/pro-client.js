@@ -342,6 +342,16 @@
   function teamSelected() {
     return !!document.querySelector('.pro-price-tab[data-plan="team"][data-active="true"]');
   }
+  function freeSelected() {
+    return !!document.querySelector('.pro-price-tab[data-plan="free"][data-active="true"]');
+  }
+
+  // Free plan has no checkout: the Agent signup happens in the terminal.
+  var FREE_SIGNUP_CMD = "npx transitions-agent signup you@email.com";
+  function startFree() {
+    try { navigator.clipboard.writeText(FREE_SIGNUP_CMD); } catch (e) { /* clipboard optional */ }
+    notify("Run in your terminal: " + FREE_SIGNUP_CMD + " (copied). Your free Agent key arrives by email.");
+  }
 
   function setBusy(el, busy) {
     if (!el) return;
@@ -359,6 +369,7 @@
   }
 
   function startCheckout() {
+    if (freeSelected()) { startFree(); return; }
     // Team → per-seat subscription (buyer adjusts seat count on Stripe Checkout).
     // The billing toggle carries monthly / annual / lifetime; lifetime is a
     // one-time payment plan on both Solo and Team.
@@ -734,7 +745,9 @@
     if (cta) {
       cta.addEventListener("click", function (e) {
         e.preventDefault();
-        if (cta.getAttribute("data-action") === "portal") startPortal();
+        var action = cta.getAttribute("data-action");
+        if (action === "portal") startPortal();
+        else if (action === "free") startFree();
         else startCheckout();
       });
     }
