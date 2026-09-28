@@ -65,7 +65,7 @@ export async function handleMcp(request, env) {
         capabilities: { tools: {} },
         serverInfo: { name: "transitions-agent", version: "0.1.0" },
         instructions:
-          "Transitions Agent: scan a repo for janky UI motion (scan_instructions), then fix findings following fix_guidance, pulling exact library sources with get_recipe. A transitions.dev license key (free or Business) goes in the Authorization header; get one with: npx transitions-agent signup you@email.com",
+          "Transitions Agent: scan a repo for janky UI motion (scan_instructions), then fix findings following fix_guidance, pulling exact library sources with get_recipe. A transitions.dev license key goes in the Authorization header; get one with: npx transitions-agent signup you@email.com. Licensing: interactive editor/terminal use is included in every paid plan; automated CI fixing on your own model keys requires an Enterprise license (Business plans use the hosted CI workflow) - https://transitions.dev/terms.html",
       });
     case "ping":
       return rpcResult(id, {});
