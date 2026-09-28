@@ -17,6 +17,9 @@ inputs:
   github-token:
     description: "Token used to post the PR comment."
     default: ${{ github.token }}
+  license:
+    description: "Transitions Agent license key (optional). Only used to hide the fix-setup hint in the comment when present."
+    default: ""
 
 outputs:
   score:
