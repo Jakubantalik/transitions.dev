@@ -985,14 +985,13 @@
       line-height: 24.2px;
       color: var(--text-muted);
     }
+    /* Same in-subtitle link treatment as the homepage (.subtitle-skill):
+       slightly darker than the body copy, underline only on hover. */
     .subtitle a {
-      color: inherit;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      text-decoration-color: rgba(108, 108, 108, 0.4);
-      transition: color 150ms var(--ease-smooth-out), text-decoration-color 150ms var(--ease-smooth-out);
+      color: var(--text);
+      text-decoration: none;
     }
-    .subtitle a:hover { color: var(--text); text-decoration-color: currentColor; }
+    .subtitle a:hover { text-decoration: underline; text-underline-offset: 2px; }
 
     /* ─── Cards grid ──────────────────────────────────────────── */
     .cards {
