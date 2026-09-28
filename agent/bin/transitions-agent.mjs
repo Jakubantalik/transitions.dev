@@ -100,7 +100,7 @@ if (command === "fix") {
       const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
       rl.question(
         "  Fix mode:  [1] polish - small safe adjustments to motion tokens (default)\n" +
-        "             [2] revamp - rewrite matches with transitions.dev recipes (Business)\n" +
+        "             [2] revamp - everything polish does, plus recipe rewrites where a transitions.dev recipe matches (Business)\n" +
         "  Choose [1/2]: ",
         (a) => { rl.close(); resolve(a.trim()); }
       );
