@@ -3747,6 +3747,287 @@
       color: var(--text);
     }
 
+    /* ─── Get started tabs (transitions-dev 16, tabs sliding) ─────
+       The bar is a flex container; the pill's width and transform are
+       written inline by JS so the tween runs between measured
+       positions. Panels simply toggle [hidden]. */
+    .gs-tabs {
+      position: relative;
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      margin: 4px 0 8px;
+      border-radius: 48px;
+      background: #f1f1f1;
+    }
+    html[data-theme="dark"] .gs-tabs { background: rgba(255, 255, 255, 0.06); }
+    .gs-tabs .t-tab {
+      position: relative;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      height: 30px;
+      padding: 4px 12px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 22px;
+      color: rgba(15, 15, 15, 0.8);
+      cursor: pointer;
+      border-radius: 48px;
+      z-index: 1;
+      white-space: nowrap;
+      transition: color var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+    }
+    html[data-theme="dark"] .gs-tabs .t-tab { color: rgba(255, 255, 255, 0.7); }
+    .gs-tabs .t-tab:not([aria-selected="true"]):hover,
+    .gs-tabs .t-tab[aria-selected="true"] { color: #0f0f0f; }
+    html[data-theme="dark"] .gs-tabs .t-tab:not([aria-selected="true"]):hover,
+    html[data-theme="dark"] .gs-tabs .t-tab[aria-selected="true"] { color: #ffffff; }
+    .gs-tabs .t-tab:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+    .gs-tabs .t-tabs-pill {
+      position: absolute;
+      top: 3px;
+      left: 0;
+      height: 30px;
+      width: 0;
+      background: #ffffff;
+      border-radius: 48px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      transform: translateX(0);
+      transition:
+        transform var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+        width     var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+      will-change: transform, width;
+      z-index: 0;
+      pointer-events: none;
+    }
+    html[data-theme="dark"] .gs-tabs .t-tabs-pill { background: #2a2a2a; box-shadow: none; }
+    .gs-panel { display: flex; flex-direction: column; gap: 8px; }
+    .gs-panel[hidden] { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .gs-tabs .t-tabs-pill, .gs-tabs .t-tab { transition: none !important; }
+    }
+
+    /* ─── What the Agent does: bento, same frame as the Pro page ─── */
+    .agent-bento-wrap {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto 96px;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    .agent-bento-heading {
+      text-align: center;
+      font-family: "Saans", var(--font-sans);
+      font-size: 30px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 0 0 40px;
+    }
+    .agent-bento {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      grid-auto-rows: 1fr;
+      gap: 16px;
+    }
+    .agent-bento-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #f6f6f6;
+      border-radius: 24px;
+      padding: 28px 32px;
+    }
+    html[data-theme="dark"] .agent-bento-card { background: #141414; }
+    /* Inset hairline drawn above the bleeding mockups so the frame stays
+       crisp on every edge. */
+    .agent-bento-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.03) inset;
+    }
+    html[data-theme="dark"] .agent-bento-card::after {
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.03) inset;
+    }
+    .agent-bento-card--tall { grid-row: span 2; min-height: 512px; }
+    .agent-bento-card--sm { min-height: 248px; }
+    .agent-bento-title {
+      font-family: "Saans", var(--font-sans);
+      font-weight: 500; font-size: 22px; line-height: 28px;
+      letter-spacing: -0.01em; color: var(--text); margin: 0 0 10px;
+    }
+    .agent-bento-desc { font-size: 15px; line-height: 22px; color: var(--text); margin: 0; max-width: 42ch; position: relative; z-index: 2; }
+    .agent-bento-desc .dim { color: var(--text-muted); }
+
+    /* The mockups sit in flow below the copy (titles and descriptions
+       wrap to different line counts per card) and fill the leftover
+       height, bleeding off the card's right and bottom edges, which the
+       card clips. */
+    .ab-frame {
+      position: relative;
+      flex: 1 1 0;
+      min-height: 120px;
+      /* The bottom bleed matches the card's 28px padding exactly, so the
+         frame runs flush off the bottom edge with no sliver of card
+         behind it. */
+      margin: 20px -40px -28px 0;
+      background: #ffffff; border: 1px solid var(--card-border);
+      border-radius: 10px 0 0 0; box-shadow: var(--card-shadow); overflow: hidden;
+      font-family: var(--font-sans);
+    }
+    html[data-theme="dark"] .ab-frame { background: #191919; border-color: rgba(255, 255, 255, 0.07); }
+    .ab-frame--tall { padding: 14px 16px; }
+    .ab-frame--diff { margin-right: -60px; }
+    .ab-frame--pr { margin-right: -60px; }
+    .ab-term { font-family: var(--font-mono); font-size: 11px; line-height: 2; color: #3c3c3c; white-space: nowrap; }
+    html[data-theme="dark"] .ab-term { color: #cfcfcf; }
+    .ab-term .ag-line strong { font-weight: 600; color: #111; }
+    html[data-theme="dark"] .ab-term .ag-line strong { color: #fff; }
+    .ag-cmd { color: #111; font-weight: 500; }
+    html[data-theme="dark"] .ag-cmd { color: #fff; }
+    .ag-dim { color: #979797; }
+    .ag-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+    .ag-dot--major { background: #e5484d; }
+    .ag-dot--warn { background: #f5a623; }
+    .ag-check { color: #30a46c; font-weight: 600; margin-right: 7px; }
+    .ab-gap { height: 10px; }
+    .ab-recipe { padding-left: 13px; color: #979797; }
+    .ab-recipe::before { content: "\2514\00a0"; color: #c8c8c8; }
+
+    /* Diff mockup */
+    .ab-diff { font-family: var(--font-mono); font-size: 11px; line-height: 20px; white-space: nowrap; }
+    .ab-diff-file {
+      padding: 8px 14px; font-size: 10.5px; color: #6c6c6c;
+      border-bottom: 1px solid var(--card-border); background: #fafafa;
+    }
+    html[data-theme="dark"] .ab-diff-file { background: #1f1f1f; color: #9a9a9a; border-color: rgba(255, 255, 255, 0.07); }
+    .ab-diff-line { padding: 0 14px; color: #3c3c3c; }
+    html[data-theme="dark"] .ab-diff-line { color: #cfcfcf; }
+    .ab-diff-ctx { color: #8a8a8a; }
+    .ab-diff-del { background: #fff1f0; color: #b42318; }
+    .ab-diff-add { background: #ecfdf3; color: #067647; }
+    html[data-theme="dark"] .ab-diff-del { background: rgba(229, 72, 77, 0.12); color: #f28b8f; }
+    html[data-theme="dark"] .ab-diff-add { background: rgba(48, 164, 108, 0.14); color: #6fd39a; }
+    .ab-diff-prompt { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--card-border); color: #111; font-weight: 500; }
+    html[data-theme="dark"] .ab-diff-prompt { color: #fff; border-color: rgba(255, 255, 255, 0.07); }
+    .ab-caret {
+      display: inline-block; width: 6px; height: 12px; margin-left: 2px; vertical-align: -2px;
+      background: currentColor; animation: ab-blink 1s steps(2, start) infinite;
+    }
+    @keyframes ab-blink { to { visibility: hidden; } }
+
+    /* Pull request comment mockup */
+    .ab-pr { font-size: 11px; line-height: 18px; color: #3c3c3c; }
+    html[data-theme="dark"] .ab-pr { color: #cfcfcf; }
+    /* Same strip as the diff card's file header: padded, tinted, ruled. */
+    .ab-pr-head {
+      display: flex; align-items: center; gap: 6px; white-space: nowrap;
+      padding: 8px 14px; font-size: 10.5px; line-height: 16px;
+      border-bottom: 1px solid var(--card-border); background: #fafafa;
+    }
+    html[data-theme="dark"] .ab-pr-head { background: #1f1f1f; border-color: rgba(255, 255, 255, 0.07); }
+    /* The transitions.dev mark, same path as the nav brand, in a
+       GitHub-style round avatar. */
+    .ab-pr-avatar {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      background: #ffffff; color: #111;
+      box-shadow: 0 0 0 1px var(--card-border) inset;
+    }
+    .ab-pr-avatar svg { width: 11px; height: 12.4px; display: block; }
+    html[data-theme="dark"] .ab-pr-avatar { background: #262626; color: #fff; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset; }
+    .ab-pr-name { font-weight: 600; color: #111; }
+    html[data-theme="dark"] .ab-pr-name { color: #fff; }
+    .ab-pr-bot { padding: 0 5px; border: 1px solid var(--card-border); border-radius: 10px; font-size: 9.5px; line-height: 14px; color: #6c6c6c; }
+    .ab-pr-time { color: #979797; }
+    .ab-pr-body { padding: 10px 14px 12px; }
+    .ab-pr-score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+    .ab-pr-score-label { color: #6c6c6c; }
+    .ab-pr-score-val { font-family: "Saans", var(--font-sans); font-size: 22px; line-height: 26px; font-weight: 500; color: #979797; letter-spacing: -0.01em; }
+    .ab-pr-score-val--up { color: #111; }
+    html[data-theme="dark"] .ab-pr-score-val--up { color: #fff; }
+    .ab-pr-arrow { color: #b0b0b0; }
+    .ab-pr-row { white-space: nowrap; }
+    .ab-pr-row code { font-family: var(--font-mono); font-size: 10.5px; }
+    .ab-pr-muted { color: #979797; }
+
+    @media (max-width: 720px) {
+      .agent-bento-wrap { padding: 0 16px; }
+      .agent-bento-heading { font-size: 23px; margin-bottom: 28px; }
+      .agent-bento { grid-template-columns: 1fr; grid-auto-rows: auto; }
+      .agent-bento-card--tall { grid-row: auto; min-height: 520px; }
+      .agent-bento-card--sm { min-height: 300px; }
+      .agent-bento-title { font-size: 18px; }
+      .ab-frame { min-height: 140px; margin: 16px -32px -28px 0; }
+      .agent-bento-wrap { margin-bottom: 64px; }
+      .gs-tabs { align-self: stretch; }
+      .gs-tabs .t-tab { flex: 1; padding: 4px 8px; font-size: 12px; }
+    }
+
+    /* ─── Polish pass ──────────────────────────────────────────────
+       Headings balance their line breaks, body copy avoids orphans,
+       numbers that read as data sit on tabular figures, pressable
+       controls give a 0.96 press and a 40px hit area. */
+    .title,
+    .agent-bento-heading,
+    .agent-bento-title,
+    .skill-section-title,
+    .t-acc-head > span:first-child {
+      text-wrap: balance;
+    }
+    .agent-bento-desc,
+    .skill-section-note,
+    .hero-caption,
+    .feature-list li,
+    .t-acc-panel-inner p {
+      text-wrap: pretty;
+    }
+    .ab-term,
+    .ab-diff,
+    .ab-pr-score-val,
+    .ab-pr-row {
+      font-variant-numeric: tabular-nums;
+    }
+    .gs-tabs .t-tab {
+      transition:
+        color var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+        scale 150ms cubic-bezier(0.2, 0, 0, 1);
+    }
+    .gs-tabs .t-tab:active { scale: 0.96; }
+    /* The bar is only 36px tall: extend each tab's hit area vertically to
+       40px. Neighbouring tabs sit 3px apart, so no horizontal extension,
+       which would overlap them. */
+    .gs-tabs .t-tab::before {
+      content: "";
+      position: absolute;
+      inset: -5px 0;
+    }
+    .skill-code-row .card-copy {
+      transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        scale 150ms cubic-bezier(0.2, 0, 0, 1);
+    }
+    .skill-code-row .card-copy:active { scale: 0.96; }
+    /* 32px visible, 40px hit area (the row is 40px tall). */
+    .skill-code-row .card-copy::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .gs-tabs .t-tab, .skill-code-row .card-copy { scale: none !important; }
+    }
+
     /* ─── Features ─────────────────────────────────────────────── */
     .feature-list {
       margin: 0;
@@ -4274,110 +4555,211 @@
       <p class="hero-caption">Runs in your terminal and on GitHub pull requests</p>
     </section>
 
-    <section class="skill-content" aria-label="Agent documentation">
-      <div class="skill-section" id="get-started">
-        <h2 class="skill-section-title">Get started</h2>
-        <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">Run these in a terminal at your project's root folder - or paste them to your coding agent (Claude Code, Cursor, Codex) and it runs them for you. Scan is free and instant; fixes need a license key, and the free plan takes one command.</p>
-        <div class="get-started-grid">
-          <div class="gs-step">
-            <div class="gs-step-block">
-              <div class="gs-step-head">
-                <span class="gs-step-label">Scan your project</span>
-              </div>
-              <div class="skill-code-row">
-                <code id="cmd-scan">npx transitions-agent</code>
-                <button type="button" class="card-copy" aria-label="Copy scan command" data-copy-target="#cmd-scan">
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                </button>
-              </div>
+    <!-- ─── What the Agent does (bento, same frame as the Pro page) ─── -->
+    <section class="agent-bento-wrap" aria-labelledby="agent-bento-title">
+      <h2 class="agent-bento-heading" id="agent-bento-title">What the Agent does</h2>
+      <div class="agent-bento">
+        <div class="agent-bento-card agent-bento-card--tall">
+          <h3 class="agent-bento-title">A motion score for every codebase</h3>
+          <p class="agent-bento-desc">One command scores your motion 0 to 100, <span class="dim">every finding mapped to the recipe that fixes it. Local and deterministic: no AI, no account.</span></p>
+          <div class="ab-frame ab-frame--tall" aria-hidden="true">
+            <div class="ab-term">
+              <div class="ag-line ag-cmd">$ npx transitions-agent</div>
+              <div class="ag-line ag-dim">Scanning 142 files in ./src</div>
+              <div class="ag-line">Motion score <strong>64 / 100</strong> <span class="ag-dim">(needs work)</span></div>
+              <div class="ag-line ab-gap"></div>
+              <div class="ag-line"><span class="ag-dot ag-dot--major"></span>Modal.tsx:24 <span class="ag-dim">modal pops in with no transition</span></div>
+              <div class="ag-line ab-recipe">recipe: modal open/close</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--major"></span>Tooltip.tsx:41 <span class="ag-dim">tooltip appears with no transition</span></div>
+              <div class="ag-line ab-recipe">recipe: tooltip open/close</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>nav.css:118 <span class="ag-dim">hover snaps, no transition on base</span></div>
+              <div class="ag-line ab-recipe">recipe: learn more hover</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>app.css:203 <span class="ag-dim">transition: all animates layout</span></div>
+              <div class="ag-line ab-recipe">fix: name the properties</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>Toast.tsx:12 <span class="ag-dim">hardcoded 0.3s, no motion token</span></div>
+              <div class="ag-line ab-recipe">fix: --duration-quick</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>global.css:9 <span class="ag-dim">no prefers-reduced-motion guard</span></div>
+              <div class="ag-line ab-recipe">fix: reduced-motion guard</div>
+              <div class="ag-line ab-gap"></div>
+              <div class="ag-line ag-dim">6 findings, 2 major. Run <span class="ag-cmd">fix</span> to see the diffs.</div>
             </div>
-            <p class="skill-section-note">
-              Runs in the project folder and walks your stylesheets and components, then prints a motion score (0 to 100) and every finding with the matching transitions.dev recipe: overlays that pop with no transition, hover states that snap, hardcoded durations, missing <code>prefers-reduced-motion</code>. No AI, no account, your code never leaves the machine.
-            </p>
           </div>
+        </div>
 
-          <div class="gs-step">
-            <div class="gs-step-block">
-              <div class="gs-step-head">
-                <span class="gs-step-label">Get your free key</span>
+        <div class="agent-bento-card agent-bento-card--sm">
+          <h3 class="agent-bento-title">Fixes as diffs, then a pull request</h3>
+          <p class="agent-bento-desc">Polish keeps diffs small. Revamp rewrites motion with the real recipe. <span class="dim">Nothing lands without your yes.</span></p>
+          <div class="ab-frame ab-frame--diff" aria-hidden="true">
+            <div class="ab-diff">
+              <div class="ab-diff-file">src/components/Modal.tsx</div>
+              <div class="ab-diff-line ab-diff-ctx">.modal {</div>
+              <div class="ab-diff-line ab-diff-del">-  transition: all 0.3s;</div>
+              <div class="ab-diff-line ab-diff-add">+  transition:</div>
+              <div class="ab-diff-line ab-diff-add">+    opacity var(--duration-quick) var(--ease-out),</div>
+              <div class="ab-diff-line ab-diff-add">+    transform var(--duration-quick) var(--ease-out);</div>
+              <div class="ab-diff-line ab-diff-ctx">}</div>
+              <div class="ab-diff-line ab-diff-add">+@media (prefers-reduced-motion: reduce) {</div>
+              <div class="ab-diff-line ab-diff-add">+  .modal { transition: none; }</div>
+              <div class="ab-diff-line ab-diff-add">+}</div>
+              <div class="ab-diff-line ab-diff-prompt">Apply 3 fixes? (y/n) <span class="ab-caret"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="agent-bento-card agent-bento-card--sm">
+          <h3 class="agent-bento-title">A score gate on every pull request</h3>
+          <p class="agent-bento-desc">The Action scores every pull request <span class="dim">and can block merges when motion quality drops.</span></p>
+          <div class="ab-frame ab-frame--pr" aria-hidden="true">
+            <div class="ab-pr">
+              <div class="ab-pr-head">
+                <span class="ab-pr-avatar" aria-hidden="true"><svg viewBox="0 0 18 20.2947" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 0L12.5409 1.99176L11.5604 3.73491L10 2.8572V5.14735H8V2.8572L6.43962 3.73491L5.45909 1.99176L9 0ZM14.3613 3.01571L18 5.0625V9.14735H16V7.3794L14.0359 8.51337L13.0359 6.78132L14.9804 5.65867L13.3807 4.75886L14.3613 3.01571ZM4.61925 4.75887L3.01961 5.65867L4.9641 6.78132L3.9641 8.51337L2 7.3794L2 9.14735H0L1.54972e-06 5.0625L3.63873 3.01572L4.61925 4.75887ZM2 11.1473V12.9153L3.9641 11.7813L4.9641 13.5134L3.01961 14.636L4.61925 15.5358L3.63873 17.279L3.57628e-07 15.2322V11.1473H2ZM18 11.1473V15.2322L14.3613 17.279L13.3807 15.5358L14.9804 14.636L13.0359 13.5134L14.0359 11.7813L16 12.9153V11.1473H18ZM10 15.1473V17.4375L11.5604 16.5598L12.5409 18.3029L9 20.2947L5.45908 18.3029L6.43961 16.5598L8 17.4375V15.1473H10Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0981 9.51337L10 10.7247V13.1474H8V10.7247L5.90192 9.51337L6.90192 7.78132L9 8.99265L11.0981 7.78132L12.0981 9.51337Z" fill="currentColor"/></svg></span>
+                <span class="ab-pr-name">transitions-agent</span>
+                <span class="ab-pr-bot">bot</span>
+                <span class="ab-pr-time">commented 2 minutes ago</span>
               </div>
-              <div class="skill-code-row">
-                <code id="cmd-signup">npx transitions-agent signup you@email.com</code>
-                <button type="button" class="card-copy" aria-label="Copy signup command" data-copy-target="#cmd-signup">
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                </button>
+              <div class="ab-pr-body">
+                <div class="ab-pr-score"><span class="ab-pr-score-label">Motion score</span><span class="ab-pr-score-val">64</span><span class="ab-pr-arrow">&rarr;</span><span class="ab-pr-score-val ab-pr-score-val--up">91</span></div>
+                <div class="ab-pr-row"><span class="ag-check">&#10003;</span>Passes <code>min-score: "75"</code></div>
+                <div class="ab-pr-row ab-pr-muted">3 elements fixed, 0 ship without transitions</div>
               </div>
             </div>
-            <p class="skill-section-note">
-              Your license key arrives by email. The free plan includes 10 hosted polish fixes a month; the <a href="/pro.html">Business plan</a> raises that to 200 and unlocks revamp mode.
-            </p>
           </div>
         </div>
       </div>
+    </section>
 
-      <div class="skill-section" id="fix">
-        <h2 class="skill-section-title">Fix and open a PR</h2>
-        <div class="get-started-grid">
+    <section class="skill-content" aria-label="Agent documentation">
+      <div class="skill-section" id="get-started">
+        <h2 class="skill-section-title">Get started</h2>
+        <div class="gs-tabs t-tabs" role="tablist" aria-label="How to run the Agent">
+          <span class="t-tabs-pill" aria-hidden="true"></span>
+          <button class="t-tab" type="button" role="tab" id="gs-tab-cli" aria-selected="true" aria-controls="gs-panel-cli">Coding agent (CLI)</button>
+          <button class="t-tab" type="button" role="tab" id="gs-tab-gha" aria-selected="false" aria-controls="gs-panel-gha" tabindex="-1">GitHub Action</button>
+        </div>
+
+        <div class="gs-panel" id="gs-panel-cli" role="tabpanel" aria-labelledby="gs-tab-cli">
+          <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">Run these in a terminal at your project's root folder, or paste them to your coding agent (Claude Code, Cursor, Codex) and it runs them for you.</p>
+          <div class="get-started-grid">
           <div class="gs-step">
             <div class="gs-step-block">
               <div class="gs-step-head">
-                <span class="gs-step-label">Polish: safe, small diffs</span>
+                <span class="gs-step-label">Install</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-skill">npx transitions-agent</code>
+                <button type="button" class="card-copy" aria-label="Copy install command" data-copy-target="#cmd-skill">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <p class="skill-section-note">
+              Nothing to install first: the command runs through npx. The first run scans the project and installs the agent skill into <code>~/.claude/skills</code> (use <code>--dir</code> for other agents), so from then on "check this app's motion" makes your agent scan, present the fix options, run your choice and verify the score. A scan walks your stylesheets and components and prints a motion score (0 to 100) with every finding mapped to its transitions.dev recipe. No AI, no account, your code never leaves the machine.
+            </p>
+          </div>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Setup</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-license">export TRANSITIONS_AGENT_LICENSE=your-key</code>
+                <button type="button" class="card-copy" aria-label="Copy license setup command" data-copy-target="#cmd-license">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <p class="skill-section-note">
+              Scans need no key. Fixes run through the hosted fix service against your plan, and the key arrives with the <a href="/pro.html">Business plan</a> email. Set it once in your shell, or pass <code>--license your-key</code> on a single command.
+            </p>
+          </div>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Fix</span>
               </div>
               <div class="skill-code-row">
                 <code id="cmd-fix">npx transitions-agent fix</code>
                 <button type="button" class="card-copy" aria-label="Copy fix command" data-copy-target="#cmd-fix">
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-revamp">npx transitions-agent fix --mode revamp --pr</code>
+                <button type="button" class="card-copy" aria-label="Copy revamp command" data-copy-target="#cmd-revamp">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                 </button>
               </div>
             </div>
             <p class="skill-section-note">
-              Every proposed change is shown as a diff first and applied only after you type yes. Polish mode keeps diffs small: durations onto motion tokens, a reduced-motion guard, named properties instead of <code>transition: all</code>.
+              Every proposed change is shown as a diff first and applied only after you type yes. Polish (the default) keeps diffs small: durations onto motion tokens, a reduced-motion guard, named properties instead of <code>transition: all</code>. Revamp replaces janky motion wholesale with the matching transitions.dev recipe, Pro recipes included. With <code>--pr</code> it opens a pull request on a new branch after one more confirmation. It never pushes to your main branch.
+            </p>
+          </div>
+          </div>
+        </div>
+
+        <div class="gs-panel" id="gs-panel-gha" role="tabpanel" aria-labelledby="gs-tab-gha" hidden>
+          <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews.</p>
+          <div class="get-started-grid">
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Install</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-action">npx transitions-agent init-ci</code>
+                <button type="button" class="card-copy" aria-label="Copy workflow install command" data-copy-target="#cmd-action">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <p class="skill-section-note">
+              Writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code> - run it yourself or let your coding agent run it. Commit and every pull request gets a motion score comment: what the change did to your app's motion and which elements ship without transitions. Runs on GitHub's machines, scan only. No account, no secrets, no AI key.
             </p>
           </div>
 
           <div class="gs-step">
             <div class="gs-step-block">
               <div class="gs-step-head">
-                <span class="gs-step-label">Revamp: recipe rewrites + PR</span>
+                <span class="gs-step-label">Setup</span>
               </div>
               <div class="skill-code-row">
-                <code id="cmd-revamp">npx transitions-agent fix --mode revamp --pr</code>
-                <button type="button" class="card-copy" aria-label="Copy revamp command" data-copy-target="#cmd-revamp">
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <code id="cmd-min-score">min-score: "75"</code>
+                <button type="button" class="card-copy" aria-label="Copy min-score setting" data-copy-target="#cmd-min-score">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-license-with">license: ${{ secrets.TRANSITIONS_AGENT_LICENSE }}</code>
+                <button type="button" class="card-copy" aria-label="Copy license setting" data-copy-target="#cmd-license-with">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                 </button>
               </div>
             </div>
             <p class="skill-section-note">
-              Revamp replaces janky motion wholesale with the matching transitions.dev recipe, real library source, Pro recipes included. With <code>--pr</code> it opens a pull request on a new branch after one more confirmation. It never pushes to your main branch.
+              Both live under <code>with:</code> in the workflow file (or pass <code>--min-score 75</code> to <code>init-ci</code> and it is templated in). <code>min-score</code> is the optional merge gate: pull requests that drop the score below it fail the check, and <code>"0"</code> reports only. <code>license</code> is optional too: add a repo secret named <code>TRANSITIONS_AGENT_LICENSE</code> with the key from your <a href="/pro.html">Business plan</a> email and the comment drops its setup hint.
             </p>
           </div>
-        </div>
-      </div>
 
-      <div class="skill-section" id="github">
-        <h2 class="skill-section-title">GitHub Action</h2>
-        <div class="gs-step-block">
-          <div class="skill-code-row">
-            <code id="cmd-action">uses: Jakubantalik/transitions.dev/agent@main</code>
-            <button type="button" class="card-copy" aria-label="Copy Action reference" data-copy-target="#cmd-action">
-              <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-              <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-            </button>
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Fix from CI</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-fix-workflow">npx transitions-agent init-ci --fix</code>
+                <button type="button" class="card-copy" aria-label="Copy fix workflow install command" data-copy-target="#cmd-fix-workflow">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <p class="skill-section-note">
+              Business plan, and it needs the license secret from Setup. Run the workflow from the Actions tab: fixes go through the hosted service and land as a pull request with the diffs, which your team reviews and merges. Canceling a plan later needs no CI change.
+            </p>
+          </div>
           </div>
         </div>
-        <p class="skill-section-note">
-          One workflow file and every pull request gets a motion score comment: what the change did to your app's motion, which elements ship without transitions, and an optional <code>min-score</code> gate that blocks merges when motion quality drops. Runs on GitHub's machines, scan only, no AI key needed.
-        </p>
-        <p class="skill-section-note" style="color: var(--text); font-weight: 500; margin-top: 20px;">Set it up</p>
-        <ol class="skill-section-note" style="margin: 8px 0 0; padding-left: 20px;">
-          <li style="margin-bottom: 8px;">Copy <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into your repo at <code>.github/workflows/</code>. Every pull request now gets the motion score comment - no account, no secrets.</li>
-          <li style="margin-bottom: 8px;">Optional merge gate: set <code>min-score</code> in that file (for example <code>"75"</code>) and pull requests that drop the score below it fail the check.</li>
-          <li style="margin-bottom: 8px;">Fix pull requests from CI (Business): add one repo secret, <code>TRANSITIONS_AGENT_LICENSE</code> - your key from <code>npx transitions-agent signup</code> or the Business email - then copy <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a> and run it from the Actions tab. A fix PR opens with the diffs; your team reviews and merges. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</li>
-        </ol>
       </div>
 
       <div class="skill-section" id="features">
@@ -4388,7 +4770,6 @@
           <li><span class="feature-name">Polish mode</span><span class="feature-desc">Small, safe adjustments aligned to the transitions.dev motion tokens. Few-line diffs, nothing restructured.</span></li>
           <li><span class="feature-name">Revamp mode</span><span class="feature-desc">Rewrites motion with the real recipe source from the library, Pro recipes included, adapted to your selectors and class names.</span></li>
           <li><span class="feature-name">Diffs, then a PR</span><span class="feature-desc">Changes are proposed as diffs, applied after an explicit yes, and can land as a pull request your team reviews. Never a push to main.</span></li>
-          <li><span class="feature-name">Works with your agent</span><span class="feature-desc">No license key? The scan writes a ready-made task file for Claude Code, Cursor or Codex and your own agent applies the fixes.</span></li>
         </ul>
       </div>
 
@@ -4432,7 +4813,7 @@
             </button>
             <div class="t-acc-panel">
               <div class="t-acc-panel-inner">
-                <p>Scanning is deterministic and runs on your machine - no AI involved. Hosted fixes run through the transitions.dev fix service with our AI key, so your team never manages API keys or model bills; usage is metered per plan. Prefer your own agent? Without a license key the scan hands a ready-made task to Claude Code, Cursor or Codex instead.</p>
+                <p>Scanning is deterministic and runs on your machine - no AI involved. Hosted fixes run through the transitions.dev fix service with our AI key, so your team never manages API keys or model bills; usage is metered per plan.</p>
               </div>
             </div>
           </div>
@@ -4825,6 +5206,60 @@
           });
         });
       });
+
+      /* ── Get started tabs (transitions-dev 16) ─────────────────
+         The pill is measured from the active tab; each click writes
+         the new offset and width so CSS tweens the move. Panels toggle
+         [hidden]. Arrow keys move between tabs. */
+      (function () {
+        var bar = document.querySelector(".gs-tabs");
+        if (!bar) return;
+        var pill = bar.querySelector(".t-tabs-pill");
+        var tabs = Array.prototype.slice.call(bar.querySelectorAll(".t-tab"));
+        function moveTo(tab, animate) {
+          if (!animate) {
+            var prev = pill.style.transition;
+            pill.style.transition = "none";
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+            void pill.offsetWidth;
+            pill.style.transition = prev;
+          } else {
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+          }
+        }
+        function select(tab, animate) {
+          tabs.forEach(function (t) {
+            var on = t === tab;
+            t.setAttribute("aria-selected", on ? "true" : "false");
+            t.setAttribute("tabindex", on ? "0" : "-1");
+            var panel = document.getElementById(t.getAttribute("aria-controls"));
+            if (panel) panel.hidden = !on;
+          });
+          moveTo(tab, animate);
+        }
+        function active() {
+          return tabs.filter(function (t) { return t.getAttribute("aria-selected") === "true"; })[0] || tabs[0];
+        }
+        tabs.forEach(function (tab, i) {
+          tab.addEventListener("click", function () { select(tab, true); });
+          tab.addEventListener("keydown", function (e) {
+            var next = e.key === "ArrowRight" ? tabs[(i + 1) % tabs.length]
+                     : e.key === "ArrowLeft"  ? tabs[(i - 1 + tabs.length) % tabs.length]
+                     : null;
+            if (!next) return;
+            e.preventDefault();
+            select(next, true);
+            next.focus();
+          });
+        });
+        requestAnimationFrame(function () { moveTo(active(), false); });
+        window.addEventListener("resize", function () { moveTo(active(), false); });
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(function () { moveTo(active(), false); });
+        }
+      })();
 
       /* ── FAQ accordion ─────────────────────────────────────────
          Toggle data-open on each item; CSS owns the height
