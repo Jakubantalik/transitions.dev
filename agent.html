@@ -3590,6 +3590,8 @@
     .mobile-menu-link--2 { transition-delay: 40ms; }
     .mobile-menu-link--3 { transition-delay: 80ms; }
     .mobile-menu-link--4 { transition-delay: 120ms; }
+    .mobile-menu-link--5 { transition-delay: 160ms; }
+    .mobile-menu-link--6 { transition-delay: 200ms; }
     .mobile-menu-link--pro { color: #0053e3; }
     html[data-theme="dark"] .mobile-menu-link--pro { color: #7cd4ff; }
     .mobile-menu-link--pro[data-state="account"] { color: var(--text); }
@@ -4586,10 +4588,10 @@
           <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
         </a>
         <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="detail.html?t=card-resize">Transitions</a>
-          <a class="nav-pill" href="/skill.html">Skill</a>
-          <a class="nav-pill nav-pill--active" href="/agent.html" aria-current="page">Agent</a>
-          <a class="nav-pill" href="/pro.html">Pricing</a>
+          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <a class="nav-pill nav-pill--active" href="/agent.html" data-nav="agent" aria-current="page">Agent</a>
+          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
+          <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
         </nav>
       </div>
       <div class="site-nav-right">
@@ -4690,10 +4692,11 @@
     <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
     <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
       <ul class="mobile-menu-list">
-        <li><a class="mobile-menu-link mobile-menu-link--1" href="detail.html?t=card-resize">Transitions</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--2" href="/skill.html">Skill</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html" aria-current="page">Agent</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--4 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+        <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
+        <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html" aria-current="page">Agent</a></li>
+        <li><a class="mobile-menu-link mobile-menu-link--3" href="/skill.html">Skill</a></li>
+        <li><a class="mobile-menu-link mobile-menu-link--4" href="/detail.html?doc=introduction">Docs</a></li>
+        <li><a class="mobile-menu-link mobile-menu-link--5 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
       </ul>
       <a class="mobile-menu-cta" id="mobile-signin" href="/pro.html">Sign in</a>
     </nav>
@@ -4745,12 +4748,12 @@
         <div class="agent-feature">
           <span class="agent-feature-icon" aria-hidden="true"><img src="assets/agent/settings.svg" alt="" width="24" height="24" /></span>
           <h3 class="agent-feature-title">Polish &amp; Revamp mode</h3>
-          <p class="agent-feature-desc">Safe token-level tweaks, or rewrites with the real recipe source.</p>
+          <p class="agent-feature-desc">An AI agent polishes small fixes, or revamps motion with real recipes.</p>
         </div>
         <div class="agent-feature">
           <span class="agent-feature-icon" aria-hidden="true"><img src="assets/agent/settings.svg" alt="" width="24" height="24" /></span>
           <h3 class="agent-feature-title">GitHub Actions</h3>
-          <p class="agent-feature-desc">A motion score on every pull request, with a gate when it drops.</p>
+          <p class="agent-feature-desc">The agent reviews every pull request, scores it and can gate the merge.</p>
         </div>
       </div>
     </section>
@@ -5601,7 +5604,9 @@ jobs:
         "Shimmer text", "Tooltip open/close", "3D tilt", "Dropdown menu morph", "Accordion"
       ];
       var CMD_ITEMS = [
-        { group: "Pages", label: "Transitions", hint: "Home", href: "/", ic: "grid" },
+        { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
+        { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
+        { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Agent", hint: "Motion fixes + PRs", href: "/agent.html", ic: "wand" },
         { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },

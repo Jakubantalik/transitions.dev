@@ -850,6 +850,8 @@
     .mobile-menu-link--2 { transition-delay: 40ms; }
     .mobile-menu-link--3 { transition-delay: 80ms; }
     .mobile-menu-link--4 { transition-delay: 120ms; }
+    .mobile-menu-link--5 { transition-delay: 160ms; }
+    .mobile-menu-link--6 { transition-delay: 200ms; }
     /* "Get Pro" reads as the accent CTA in the list (Figma 2332:82664). */
     .mobile-menu-link--pro { color: #0053e3; }
     html[data-theme="dark"] .mobile-menu-link--pro { color: #7cd4ff; }
@@ -5243,10 +5245,10 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-            <a class="nav-pill" href="detail.html?t=card-resize">Transitions</a>
-            <a class="nav-pill" href="/skill.html">Skill</a>
-            <a class="nav-pill" href="/agent.html">Agent</a>
-            <a class="nav-pill" href="/pro.html">Pricing</a>
+          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
+          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
+          <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           </nav>
         </div>
         <div class="site-nav-right">
@@ -5350,10 +5352,11 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
-          <li><a class="mobile-menu-link mobile-menu-link--1" href="detail.html?t=card-resize">Transitions</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html">Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/skill.html">Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <button type="button" class="mobile-menu-cta" id="mobile-signin">Sign in</button>
       </nav>
@@ -6206,7 +6209,9 @@ description: Production-ready CSS
         "Shimmer text", "Tooltip open/close", "3D tilt", "Dropdown menu morph", "Accordion"
       ];
       var CMD_ITEMS = [
-        { group: "Pages", label: "Transitions", hint: "Home", href: "/", ic: "grid" },
+        { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
+        { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
+        { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }

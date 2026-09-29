@@ -27,6 +27,7 @@ SITE = "https://transitions.dev"
 # Pages that already exist and should stay in the sitemap.
 STATIC_PAGES = [
     ("/", "1.0", "weekly"),
+    ("/library.html", "0.9", "weekly"),
     ("/pro.html", "0.9", "weekly"),
     ("/skill.html", "0.8", "monthly"),
     ("/refine.html", "0.8", "monthly"),
