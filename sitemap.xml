@@ -21,11 +21,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://transitions.dev/refine.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://transitions.dev/detail.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

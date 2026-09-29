@@ -4582,6 +4582,14 @@
   <!-- Analytics: GoatCounter (privacy-friendly, no cookies). -->
   <script data-goatcounter="https://jakub.goatcounter.com/count"
           async src="//gc.zgo.at/count.js"></script>
+  <style>
+    /* Five nav pills: between the phone breakpoint and ~820px the top bar
+       drops the wordmark beside the mark so the pills clear the right
+       cluster. */
+    @media (min-width: 640px) and (max-width: 819px) {
+      .site-nav .brand-word { display: none; }
+    }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -4603,6 +4611,7 @@
           <a class="nav-pill nav-pill--active" href="/agent.html" data-nav="agent" aria-current="page">Agent</a>
           <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
+          <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
         </nav>
       </div>
       <div class="site-nav-right">
@@ -5046,7 +5055,6 @@ jobs:
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/skill.html">Skill</a>
             <a href="/agent.html">Agent</a>
-            <a href="/refine.html">Refine tool</a>
             <a href="/pro.html">Pricing</a>
           </div>
           <div class="footer-col">
@@ -5635,7 +5643,6 @@ jobs:
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Agent", hint: "Motion fixes + PRs", href: "/agent.html", ic: "wand" },
-        { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -5724,6 +5731,6 @@ jobs:
     })();
   </script>
   <script src="assets/pro-client.js?v=29" defer></script>
-  <script src="assets/brand-mark.js?v=1" defer></script>
+  <script src="assets/brand-mark.js?v=2" defer></script>
 </body>
 </html>

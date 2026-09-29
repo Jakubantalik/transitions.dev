@@ -3592,6 +3592,14 @@
   <!-- Analytics: GoatCounter (privacy-friendly, no cookies). -->
   <script data-goatcounter="https://jakub.goatcounter.com/count"
           async src="//gc.zgo.at/count.js"></script>
+  <style>
+    /* Five nav pills: between the phone breakpoint and ~820px the top bar
+       drops the wordmark beside the mark so the pills clear the right
+       cluster. */
+    @media (min-width: 640px) and (max-width: 819px) {
+      .site-nav .brand-word { display: none; }
+    }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -3614,6 +3622,7 @@
           <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
           <a class="nav-pill nav-pill--active" href="/skill.html" data-nav="skill" aria-current="page">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
+          <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
           </nav>
         </div>
         <div class="site-nav-right">
@@ -4537,6 +4546,6 @@
     })();
   </script>
   <script src="assets/pro-client.js?v=36" defer></script>
-  <script src="assets/brand-mark.js?v=1" defer></script>
+  <script src="assets/brand-mark.js?v=2" defer></script>
 </body>
 </html>

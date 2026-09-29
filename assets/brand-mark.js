@@ -5,9 +5,12 @@
    symbol from a dot: the dot stretches into the three centre arms, one
    wavefront travels out from the hub drawing each spoke and then its
    arrow head, and the whole symbol turns in from -90deg while scaling
-   up from 0.42. On hover the mark plays that build in reverse down to
-   the dot, rests there for a beat, then builds back out on the video's
-   own timeline (its 1.5x logo speed).
+   up from 0.42. On hover the mark folds that build back 40% of the way
+   (the arrow heads tuck in, the spokes shorten, the mark shrinks a
+   little) while it starts to spin, then grows back out on the video's
+   own timeline (its 1.5x logo speed). The spin is one full turn: it
+   picks up speed through the fold, peaks at the turnaround and settles
+   exactly as the regrowth lands.
 
    The resting mark is left exactly as authored. The script only splits
    the arrows path into its six arrows and adds the masks and arms the
@@ -52,8 +55,9 @@
   var T_GROW = 1600 * K; // turn and scale settle
   var T_FADE = 450 * K;  // symbol fade-in
   var T_END = T_GROW;
-  var GATHER_MS = 480;   // reverse build into the dot
-  var HOLD_MS = 60;      // the dot rests for a beat before building out
+  var W_FOLD = 0.6;      // fold back 40% of the wavefront's reach
+  var FOLD_MS = 320;     // the fold, soft landing at the turnaround
+  var SPIN_DEG = 360;    // one full turn across fold + regrowth
 
   /* ── Geometry from the mark's own paths ────────────────────────── */
   /* Absolute M/L/H/V/Z polygons (the brand paths use nothing else). */
@@ -211,10 +215,11 @@
     line.el.style.visibility = q > 0 ? "visible" : "hidden";
     line.el.style.strokeDashoffset = f(line.L * (1 - q));
   }
-  function renderAt(S, t) {
+  function renderAt(S, t, rot) {
     var Y = S.Y;
     var s = E(clamp(t / T_GROW));
-    S.all.style.transform = "rotate(" + lerp(-90, 0, s).toFixed(3) + "deg) scale(" + lerp(0.42, 1, s).toFixed(4) + ")";
+    var r = rot == null ? lerp(-90, 0, s) : rot;
+    S.all.style.transform = "rotate(" + r.toFixed(3) + "deg) scale(" + lerp(0.42, 1, s).toFixed(4) + ")";
     S.all.style.opacity = E(clamp(t / T_FADE)).toFixed(3);
     var wave = E(clamp((t - T_DOT) / T_WAVE)) * S.sMax;
     /* the dot: three zero-length round-capped arms; as the wavefront
@@ -252,32 +257,35 @@
   }
 
   /* ── Playback ──────────────────────────────────────────────────── */
+  /* Timeline point where the wavefront has folded back to W_FOLD. */
+  var T_FOLD = T_DOT + T_WAVE * Einv(W_FOLD);
+  var GROW_MS = T_END - T_FOLD;
+  /* The spin: ease-in through the fold, ease-out through the regrowth,
+     split so the angular speed is continuous at the turnaround. */
+  var A_FOLD = 3 * SPIN_DEG * FOLD_MS / (2 * GROW_MS + 3 * FOLD_MS);
+  function spinAt(e) {
+    if (e <= FOLD_MS) { var p = e / FOLD_MS; return A_FOLD * p * p; }
+    var q = clamp((e - FOLD_MS) / GROW_MS);
+    return A_FOLD + (SPIN_DEG - A_FOLD) * (1 - Math.pow(1 - q, 3));
+  }
   function tick(S) {
     S.raf = requestAnimationFrame(function (now) {
       var e = now - S.t0;
-      if (S.phase === "gather") {
-        var p = clamp(e / S.dur), w = S.w0 * (1 - GATHER(p));
+      if (e < FOLD_MS) {
+        var w = 1 - (1 - W_FOLD) * GATHER(e / FOLD_MS);
         S.t = T_DOT + T_WAVE * Einv(w);
-        renderAt(S, S.t);
-        if (p >= 1) { S.phase = "hold"; S.t0 = now; }
-      } else if (S.phase === "hold") {
-        if (e >= HOLD_MS) { S.phase = "build"; S.t0 = now; }
-      } else if (S.phase === "build") {
-        S.t = Math.min(T_END, T_DOT + e);
-        renderAt(S, S.t);
-        if (S.t >= T_END) { S.phase = "idle"; rest(S); return; }
+      } else {
+        S.t = Math.min(T_END, T_FOLD + (e - FOLD_MS));
       }
+      renderAt(S, S.t, spinAt(e));
+      if (e >= FOLD_MS + GROW_MS) { S.phase = "idle"; rest(S); return; }
       tick(S);
     });
   }
   function play(S) {
-    if (S.phase === "gather" || S.phase === "hold") return;
-    /* from rest, or from wherever the build has got to: the wavefront
-       folds back from its current reach, so nothing jumps */
-    var w0 = S.phase === "build" ? E(clamp((S.t - T_DOT) / T_WAVE)) : 1;
-    S.w0 = w0;
-    S.dur = Math.max(160, GATHER_MS * w0);
-    S.phase = "gather";
+    /* one full cycle per hover; a hover mid-cycle lets it finish */
+    if (S.phase === "run") return;
+    S.phase = "run";
     S.t0 = performance.now();
     cancelAnimationFrame(S.raf);
     tick(S);

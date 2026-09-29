@@ -12,7 +12,7 @@
   />
   <meta
     name="keywords"
-    content="Transitions Pro, UI transitions, CSS transitions, web animations, motion design, Pro skill, Refine tool, frontend, AI coding agent, copy paste transitions"
+    content="Transitions Pro, UI transitions, CSS transitions, web animations, motion design, Pro skill, frontend, AI coding agent, copy paste transitions"
   />
   <meta name="author" content="Transitions.dev" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -4771,6 +4771,19 @@
       .team-invite-row .btn-dark { flex: 1 1 auto; }
     }
   </style>
+  <style>
+    /* Five nav pills: between the phone breakpoint and ~820px the top bar
+       drops the wordmark beside the mark so the pills clear the right
+       cluster. */
+    @media (min-width: 640px) and (max-width: 819px) {
+      .site-nav .brand-word { display: none; }
+    }
+    /* This page's right cluster also carries Sign in, so the stars pill
+       steps out a little earlier. */
+    @media (min-width: 640px) and (max-width: 719px) {
+      .site-nav #gh-stars-btn { display: none; }
+    }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -4793,6 +4806,7 @@
           <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
           <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
+          <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
           </nav>
         </div>
         <div class="site-nav-right">
@@ -5498,7 +5512,6 @@
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
-        { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         return { group: "Transitions", label: n, hint: "Transition", href: "/#components", ic: "motion" };
@@ -6259,6 +6272,6 @@
       // handler (same as the install page) — no bespoke copy wiring needed here.
     });
   </script>
-  <script src="assets/brand-mark.js?v=1" defer></script>
+  <script src="assets/brand-mark.js?v=2" defer></script>
 </body>
 </html>
