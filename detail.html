@@ -5756,6 +5756,52 @@
     .docs-link.is-active { background: rgba(0, 0, 0, 0.05); }
     html[data-theme="dark"] .docs-link.is-active { background: rgba(255, 255, 255, 0.08); }
     .docs-link--muted { color: var(--text-muted); }
+    /* Collapsible groups (Lens-style): a head row with a chevron, and a
+       panel that tweens open on grid rows (transitions-dev 21). Children
+       sit one step in. */
+    .docs-fold { display: flex; flex-direction: column; min-width: 0; }
+    .docs-fold-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      height: 32px;
+      padding: 0 8px 0 12px;
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 16px;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: background 140ms ease;
+    }
+    .docs-fold-head:hover { background: rgba(0, 0, 0, 0.04); }
+    html[data-theme="dark"] .docs-fold-head:hover { background: rgba(255, 255, 255, 0.05); }
+    .docs-fold-head:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
+    .docs-fold-chevron {
+      display: inline-flex;
+      width: 16px;
+      height: 16px;
+      color: var(--text-subtle);
+      transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .docs-fold-chevron svg { width: 16px; height: 16px; }
+    .docs-fold[data-open="true"] .docs-fold-chevron { transform: rotate(90deg); }
+    .docs-fold-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 250ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .docs-fold[data-open="true"] .docs-fold-panel { grid-template-rows: 1fr; }
+    .docs-fold-inner { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+    .docs-link--child { padding-left: 24px; }
+    @media (prefers-reduced-motion: reduce) {
+      .docs-fold-panel, .docs-fold-chevron { transition: none !important; }
+    }
     .docs-link:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
 
     /* ── Main column ─────────────────────────────────────────── */
@@ -6228,7 +6274,7 @@
     /* Inline links inside doc copy — jakubantalik.com .inline-link style:
        native from-font underline at 30% opacity, 100% on hover, no animation. */
     .doc-article a {
-      color: inherit;
+      color: var(--text);
       display: inline-block;
       text-decoration: underline;
       text-decoration-thickness: from-font;
@@ -6515,6 +6561,10 @@
           transparent 100%);
       }
       .docs-group-label { display: none; }
+      /* The strip flattens the folds: every link becomes a chip. */
+      .docs-fold, .docs-fold-panel, .docs-fold-inner { display: contents; }
+      .docs-fold-head { display: none; }
+      .docs-link--child { padding-left: 12px; }
       .docs-group,
       .docs-list {
         flex-direction: row;
@@ -6683,7 +6733,15 @@
         <div class="docs-group">
           <div class="docs-group-label">Getting started</div>
           <a class="docs-link" href="?doc=introduction" data-doc="introduction">Introduction</a>
-          <a class="docs-link" href="?doc=installation" data-doc="installation">Installation</a>
+          <div class="docs-fold" data-open="false">
+            <button type="button" class="docs-fold-head" aria-expanded="false"><span class="docs-link-label">Installation</span><span class="docs-fold-chevron" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+            <div class="docs-fold-panel">
+              <div class="docs-fold-inner">
+                <a class="docs-link docs-link--child" href="?doc=installation" data-doc="installation">Library and Skill</a>
+                <a class="docs-link docs-link--child" href="?doc=installation-agent" data-doc="installation-agent">Agent</a>
+              </div>
+            </div>
+          </div>
           <a class="docs-link" href="?doc=accessibility" data-doc="accessibility">Accessibility</a>
         </div>
         <div class="docs-group">
@@ -6766,7 +6824,7 @@
           </article>
 
           <article class="doc-article skill-content" data-doc="installation"
-                   data-title="Installation" data-subtitle="Four ways to get transitions into your project." hidden>
+                   data-title="Library and Skill" data-subtitle="Four ways to get transitions into your project." hidden>
             <div class="skill-section">
               <h2 class="skill-section-title">Copy the snippet</h2>
               <p class="skill-section-note">There's nothing to install: open a transition, copy the CSS (or React) from the code panel, and paste it into your project; snippets are namespaced (<code>.t-*</code>) with their motion tokens exposed as CSS variables you can tweak directly.</p>
@@ -6839,6 +6897,88 @@
             </div>
           </article>
 
+          <article class="doc-article skill-content" data-doc="installation-agent"
+                   data-title="Agent" data-subtitle="Run the Agent from your terminal, or on every GitHub pull request." hidden>
+            <div class="skill-section">
+              <h2 class="skill-section-title">Coding agent (CLI)</h2>
+              <p class="skill-section-note">Run these in a terminal at your project's root folder, or paste them to your coding agent (Claude Code, Cursor, Codex) and it runs them for you. Nothing to install first: the command runs through npx.</p>
+              <div class="skill-command">
+                <span class="skill-command-label">Scan</span>
+                <div class="skill-code-row">
+                  <code id="agent-doc-scan">npx transitions-agent</code>
+                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy scan command" data-copy-target="#agent-doc-scan">
+                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </button>
+                </div>
+                <p class="skill-section-note">The first run scans the project and installs the agent skill into <code>~/.claude/skills</code>, so from then on "check this app's motion" makes your agent scan, present the fix options, run your choice and verify the score. A scan prints a motion score (0 to 100) with every finding mapped to its transitions.dev recipe. No AI, no account, your code never leaves the machine.</p>
+              </div>
+              <div class="skill-command">
+                <span class="skill-command-label">Setup</span>
+                <div class="skill-code-row">
+                  <code id="agent-doc-license">export TRANSITIONS_AGENT_LICENSE=your-key</code>
+                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy license setup command" data-copy-target="#agent-doc-license">
+                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </button>
+                </div>
+                <p class="skill-section-note">Scans need no key. Fixes run through the hosted fix service against your plan, and the key arrives with the <a href="/pro.html">Business plan</a> email. Set it once in your shell, or pass <code>--license your-key</code> on a single command.</p>
+              </div>
+              <div class="skill-command">
+                <span class="skill-command-label">Fix</span>
+                <div class="skill-code-row">
+                  <code id="agent-doc-fix">npx transitions-agent fix</code>
+                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy fix command" data-copy-target="#agent-doc-fix">
+                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </button>
+                </div>
+                <p class="skill-section-note">Every proposed change is shown as a diff first and applied only after you type yes. Polish (the default) keeps diffs small: durations onto motion tokens, a reduced-motion guard, named properties instead of <code>transition: all</code>.</p>
+              </div>
+              <div class="skill-command">
+                <span class="skill-command-label">Revamp and open a pull request</span>
+                <div class="skill-code-row">
+                  <code id="agent-doc-revamp">npx transitions-agent fix --mode revamp --pr</code>
+                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy revamp command" data-copy-target="#agent-doc-revamp">
+                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </button>
+                </div>
+                <p class="skill-section-note">Revamp replaces janky motion wholesale with the matching transitions.dev recipe, Pro recipes included. With <code>--pr</code> it opens a pull request on a new branch after one more confirmation. It never pushes to your main branch.</p>
+              </div>
+            </div>
+            <div class="skill-section">
+              <h2 class="skill-section-title">GitHub Action</h2>
+              <p class="skill-section-note">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews.</p>
+              <div class="skill-command">
+                <span class="skill-command-label">Install</span>
+                <div class="skill-code-row">
+                  <code id="agent-doc-action">curl -fsSL --create-dirs -o .github/workflows/transitions-agent.yml https://raw.githubusercontent.com/Jakubantalik/transitions.dev/main/agent/templates/transitions-agent.yml</code>
+                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy workflow install command" data-copy-target="#agent-doc-action">
+                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </button>
+                </div>
+                <p class="skill-section-note">Drops <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into your repo. Commit it and every pull request gets a motion score comment. Runs on GitHub's machines, scan only. No account, no secrets, no AI key.</p>
+              </div>
+              <div class="skill-command">
+                <span class="skill-command-label">Setup</span>
+                <div class="skill-code-row">
+                  <code id="agent-doc-min-score">min-score: "75"</code>
+                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy min-score setting" data-copy-target="#agent-doc-min-score">
+                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </button>
+                </div>
+                <p class="skill-section-note">Optional merge gate under <code>with:</code> in the workflow file: pull requests that drop the score below it fail the check, and <code>"0"</code> reports only. Add a repo secret named <code>TRANSITIONS_AGENT_LICENSE</code> with your Business key and pass it as <code>license: ${{ secrets.TRANSITIONS_AGENT_LICENSE }}</code> to drop the comment's setup hint.</p>
+              </div>
+              <div class="skill-command">
+                <span class="skill-command-label">Fix from CI</span>
+                <div class="skill-code-row">
+                  <code id="agent-doc-fix-workflow">curl -fsSL --create-dirs -o .github/workflows/transitions-fix.yml https://raw.githubusercontent.com/Jakubantalik/transitions.dev/main/agent/templates/transitions-fix.yml</code>
+                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy fix workflow install command" data-copy-target="#agent-doc-fix-workflow">
+                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </button>
+                </div>
+                <p class="skill-section-note">Business plan, and it needs the license secret from Setup. Run the workflow from the Actions tab: fixes go through the hosted service and land as a pull request with the diffs, which your team reviews and merges.</p>
+              </div>
+            </div>
+          </article>
+
           <article class="doc-article skill-content" data-doc="accessibility"
                    data-title="Accessibility" data-subtitle="Motion that respects the people using it." hidden>
             <div class="skill-section">
@@ -6858,7 +6998,7 @@
     <section class="cards" id="components" aria-label="Transition prototypes" style="scroll-margin-top: 24px;">
 
       <!-- 1. Card resize -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p4-card" data-proto-resize>
@@ -6888,7 +7028,7 @@
       </article>
 
       <!-- 2. Number pop-in -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts">
         <div class="card-stage">
           <div class="stage-inner p9-stage-inner">
             <div class="p9-number" data-proto-number aria-live="polite"
@@ -6917,7 +7057,7 @@
       </article>
 
       <!-- 3. Notification badge -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p1-stage-inner">
             <div class="p1-bell" data-proto-bell data-badge-open="false" aria-label="Notifications">
@@ -6945,7 +7085,7 @@
       </article>
 
       <!-- 4. Text states swap -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p6-stage-inner">
             <span class="p6-text" data-proto-text>Transaction processing...</span>
@@ -6968,7 +7108,7 @@
       </article>
 
       <!-- 5. Confetti burst (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="confetti-burst">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="confetti-burst" data-cat="effects">
         <div class="card-stage" id="pv1p">
           <canvas class="pv1c" id="pv1c" aria-hidden="true"></canvas>
           <button type="button" class="btn-animate" id="pv2h" data-proto="pro1">Animate</button>
@@ -6989,7 +7129,7 @@
       </article>
 
       <!-- 6. Menu dropdown -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p2-stage-inner">
             <button type="button" class="btn-animate" data-proto="2">Toggle menu</button>
@@ -7016,7 +7156,7 @@
       </article>
 
       <!-- 7. Modal open/close -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p7-dropdown is-open" data-proto-modal>
@@ -7047,7 +7187,7 @@
       </article>
 
       <!-- 8. Panel reveal -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p3-stage-inner">
             <button type="button" class="btn-animate" data-proto="3">Toggle panel</button>
@@ -7082,7 +7222,7 @@
         </button>
       </article>
 <!-- 33. Gooey plus menu (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="gooey-plus-menu">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="gooey-plus-menu" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv4k" id="pv52" data-open="false">
@@ -7184,7 +7324,7 @@
       </article>
 
       <!-- 9. Side-by-side page slide -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p8-stage-inner">
             <div class="p8-modal" data-proto-p8 data-page="1">
@@ -7255,7 +7395,7 @@
       </article>
 
       <!-- 10. Card stack hover (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="card-stack-hover">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="card-stack-hover" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv1r" aria-label="Card stack">
@@ -7284,7 +7424,7 @@
       </article>
 
       <!-- 11. Icon swap -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p5-stage-inner">
             <div class="p5-icon-wrap" data-proto-icon data-animated="false">
@@ -7321,7 +7461,7 @@
       </article>
 
       <!-- 12. Success check -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p10-stage-inner">
             <div class="p10-check" data-proto-check data-state="out" aria-hidden="true">
@@ -7355,7 +7495,7 @@
       </article>
 
       <!-- 13. Avatar group hover spring -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner p11-stage-inner">
             <div class="p11-avatars" data-proto-avatars>
@@ -7397,7 +7537,7 @@
       </article>
 
       <!-- 14. Input shake on error -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p12-stage-inner">
             <div class="p12-input-wrap" data-proto-shake>
@@ -7428,7 +7568,7 @@
       </article>
 
       <!-- 15. Organic shimmer (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="organic-shimmer">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="organic-shimmer" data-cat="effects ai">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="pv63" data-playing="true" aria-hidden="true">
@@ -7461,7 +7601,7 @@
       </article>
 
       <!-- 16. Input clear with dissolve -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner p13-stage-inner">
             <div class="p13-search has-value" data-proto-p13>
@@ -7506,7 +7646,7 @@
       </article>
 
       <!-- 17. Skeleton loader and reveal -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p14-stage-inner">
             <div class="p14-card" data-proto-skeleton>
@@ -7547,7 +7687,7 @@
       </article>
 
       <!-- 18. Texts reveal -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts">
         <div class="card-stage">
           <div class="stage-inner p18-stage-inner">
             <div class="p18-text" data-proto-stagger>
@@ -7573,7 +7713,7 @@
       </article>
 
       <!-- 19. Tabs sliding -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p16-stage-inner">
             <div class="p16-tabs" data-proto-tabs role="tablist" aria-label="Mode">
@@ -7599,7 +7739,7 @@
         </button>
       </article>
 <!-- 34. Drag &amp; drop with physics (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="drag-drop-physics">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="drag-drop-physics" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv57">
@@ -7650,7 +7790,7 @@
       </article>
 
       <!-- 20. Image open tilt (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="image-open-tilt">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="image-open-tilt" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1u">
             <button type="button" class="pv28" id="pv28" aria-expanded="false" aria-label="Open image">
@@ -7682,7 +7822,7 @@
       </article>
 
       <!-- 21. Shimmer text -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts ai">
         <div class="card-stage">
           <div class="stage-inner p15-stage-inner">
             <span class="p15-shimmer" data-proto-shimmer data-text="Planning next moves">Planning next moves</span>
@@ -7705,7 +7845,7 @@
       </article>
 
       <!-- 22. Tooltip open/close -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p17-stage-inner">
             <span class="p17-group" data-proto-tooltip>
@@ -7732,7 +7872,7 @@
       </article>
 
       <!-- 23. Tilt card -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner p19-stage-inner">
             <div class="p19-tilt" id="p19-tilt">
@@ -7764,7 +7904,7 @@
       </article>
 
       <!-- 24. Plus → menu morph -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p20-stage-inner">
             <div class="p20-anchor">
@@ -7800,7 +7940,7 @@
       </article>
 
       <!-- 25. Accordion expand/collapse -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p21-stage-inner">
             <div class="p21-accordion" id="p21-accordion">
@@ -7842,7 +7982,7 @@
       </article>
 
       <!-- 25. Toast open / close -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p22-toast" data-proto-toast role="status" aria-hidden="true">
@@ -7868,7 +8008,7 @@
       </article>
 
       <!-- 26. Like button: fill + pop + particle burst -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="p-pill p23-like" data-proto-like data-liked="false" aria-pressed="false">
@@ -7900,7 +8040,7 @@
       </article>
 
       <!-- 28. Learn more hover: chevron shift + spread -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="p-pill p24-btn">Learn more
@@ -7929,7 +8069,7 @@
       </article>
 
       <!-- 29. Checkbox with check path draw -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="p25-field">
@@ -7957,7 +8097,7 @@
         </button>
       </article>
 <!-- 35. Spinner to check morph (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="spinner-check-morph">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="spinner-check-morph" data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv5j">
@@ -7998,7 +8138,7 @@
       </article>
 
       <!-- 30. Spinning reel counter -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p26-value" data-proto-reel aria-label="Count"></div>
@@ -8021,7 +8161,7 @@
       </article>
 
       <!-- 31. Toggle with double-bounce thumb -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="p27-switch" data-proto-toggle role="switch" aria-checked="false" data-on="false" aria-label="Toggle">
@@ -8045,7 +8185,7 @@
       </article>
 
       <!-- 32. Pro gradient text (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="pro-gradient-text">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="pro-gradient-text" data-cat="texts ai">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1w">
             <h2 class="pv17"><span class="pv7">Pro</span></h2>
@@ -8067,7 +8207,7 @@
       </article>
 
       <!-- 33. Delete image with smoky dissolve (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="smoky-dissolve">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="smoky-dissolve" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1y">
             <div class="pv2c" id="pv2c">
@@ -8102,7 +8242,7 @@
       </article>
 
       <!-- 34. Thinking states: shimmer + text swap -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner">
             <span class="p28-swap" data-proto-think role="status"><span class="p28-sizer" aria-hidden="true">Setting up a workplace</span><span class="p28-text" data-text="Setting up a workplace">Setting up a workplace</span></span>
@@ -8125,7 +8265,7 @@
       </article>
 
       <!-- 35. Agent reasoning stream -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p29-card" aria-hidden="true">
@@ -8159,7 +8299,7 @@
       </article>
 
       <!-- 36. Streaming text: word-by-word cross-blur -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p30-block" data-proto-stream aria-hidden="true">Animating mask-position never composites — it repaints the element. And the element being repainted sits inside a displacement chain, so the whole filter re-executes on the CPU each frame. That compounds: it isn't one cost, it's the repaint feeding the filter.</div>
@@ -8182,7 +8322,7 @@
       </article>
 
       <!-- 37. Matrix dot loaders -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="p33-row" aria-hidden="true">
@@ -8209,7 +8349,7 @@
       </article>
 
       <!-- 38. Banner stacking -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p34-stage-inner">
             <div class="p34-stack" data-proto-stack aria-hidden="true"></div>
@@ -8232,7 +8372,7 @@
       </article>
 
       <!-- 39. Image generation placeholder (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="image-gen-placeholder">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="image-gen-placeholder" data-cat="ai effects">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="pv6n" data-proto-imgen aria-hidden="true">
@@ -8258,7 +8398,7 @@
       </article>
 
       <!-- 40. Get Pro button (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="get-pro-button">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="get-pro-button" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="pv6u"><span class="pv6m">Get Pro</span></button>
@@ -13297,12 +13437,61 @@ export function Surface({ open, children }) {
               title: title,
               subtitle: s ? s.textContent.trim() : "",
               slug: slugify(title),
-              pro: card.getAttribute("data-pro") === "true"
+              pro: card.getAttribute("data-pro") === "true",
+              cat: card.getAttribute("data-cat") || "essential"
             });
           });
           if (!items.length) return;
 
-          // Build the sidebar list.
+          // Fold toggles: every .docs-fold head flips data-open; CSS tweens
+          // the panel. Selecting a link inside a fold opens it.
+          function setFold(fold, open) {
+            fold.setAttribute("data-open", open ? "true" : "false");
+            var head = fold.querySelector(".docs-fold-head");
+            if (head) head.setAttribute("aria-expanded", open ? "true" : "false");
+          }
+          function openFoldFor(el) {
+            var fold = el && el.closest ? el.closest(".docs-fold") : null;
+            if (fold) setFold(fold, true);
+          }
+          function makeFold(label) {
+            var fold = document.createElement("div");
+            fold.className = "docs-fold";
+            fold.setAttribute("data-open", "false");
+            var head = document.createElement("button");
+            head.type = "button";
+            head.className = "docs-fold-head";
+            head.setAttribute("aria-expanded", "false");
+            head.innerHTML = '<span class="docs-link-label"></span>'
+              + '<span class="docs-fold-chevron" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+            head.querySelector(".docs-link-label").textContent = label;
+            var panel = document.createElement("div");
+            panel.className = "docs-fold-panel";
+            var inner = document.createElement("div");
+            inner.className = "docs-fold-inner";
+            panel.appendChild(inner);
+            fold.appendChild(head);
+            fold.appendChild(panel);
+            return { root: fold, inner: inner };
+          }
+          document.querySelectorAll(".docs-fold-head").forEach(function (head) {
+            head.addEventListener("click", function () {
+              var fold = head.closest(".docs-fold");
+              setFold(fold, fold.getAttribute("data-open") !== "true");
+            });
+          });
+
+          // Build the sidebar list: one fold per homepage category.
+          var CATS = [["essential", "Essential"], ["ai", "AI Agents"], ["effects", "Effects"], ["texts", "Texts"]];
+          var foldByCat = {};
+          CATS.forEach(function (c) {
+            var f = makeFold(c[1]);
+            f.root.querySelector(".docs-fold-head").addEventListener("click", function () {
+              setFold(f.root, f.root.getAttribute("data-open") !== "true");
+            });
+            foldByCat[c[0]] = f;
+            listEl.appendChild(f.root);
+          });
           var linkBySlug = {};
           items.forEach(function (it) {
             var a = document.createElement("a");
@@ -13327,7 +13516,8 @@ export function Surface({ open, children }) {
               setTab("preview");
               selectSlug(it.slug, true);
             });
-            listEl.appendChild(a);
+            a.classList.add("docs-link--child");
+            (foldByCat[it.cat] || foldByCat.essential).inner.appendChild(a);
             linkBySlug[it.slug] = a;
           });
 
@@ -13412,6 +13602,7 @@ export function Surface({ open, children }) {
               if (l.getAttribute("data-doc") === name) {
                 l.classList.add("is-active");
                 l.setAttribute("aria-current", "page");
+                openFoldFor(l);
               }
             });
             document.title = (art.getAttribute("data-title") || name) + " — Transitions.dev";
@@ -13625,6 +13816,7 @@ export function Surface({ open, children }) {
 
             clearActiveLinks();
             var active = linkBySlug[it.slug];
+            openFoldFor(active);
             if (active) {
               active.classList.add("is-active");
               active.setAttribute("aria-current", "page");

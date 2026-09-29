@@ -3992,11 +3992,14 @@
       color: var(--text);
       margin: 0 0 70px;
     }
+    /* The row spans the same inner width as the bento below, so the outer
+       columns line up with the cards' edges; each column's copy still
+       stays on the Figma 272px measure. */
     .agent-features-grid {
       display: grid;
-      grid-template-columns: repeat(3, 272px);
-      justify-content: center;
-      column-gap: 97px;
+      width: 100%;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 48px;
       row-gap: 40px;
     }
     /* Figma: icon, 16px, then title and description as one text block
@@ -4006,6 +4009,9 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
+      width: 100%;
+      max-width: 272px;
+      margin: 0 auto;
     }
     .agent-feature-icon {
       display: block;
@@ -4029,7 +4035,7 @@
       margin: 0;
     }
     @media (max-width: 960px) {
-      .agent-features-grid { grid-template-columns: repeat(3, minmax(0, 272px)); column-gap: 40px; }
+      .agent-features-grid { column-gap: 32px; }
     }
     @media (max-width: 720px) {
       .agent-features { padding: 0 16px; margin-bottom: 64px; }

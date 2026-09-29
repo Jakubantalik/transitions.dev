@@ -1485,6 +1485,10 @@
       outline-offset: 3px;
     }
 
+    /* Library: a bare centred title above the filters. */
+    .library-header { padding-bottom: 8px; }
+    .library-header .title { margin-top: 0; }
+
     /* ─── Cards grid ──────────────────────────────────────────── */
     .cards {
       width: 100%;
@@ -1505,8 +1509,7 @@
     .cards-toolbar {
       width: 100%;
       max-width: 1008px;
-      /* No hero above on this page: the toolbar sets its own inset. */
-      margin: 40px auto 24px;
+      margin: 0 auto 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -5944,6 +5947,10 @@
          the icon button opens a Newest/Oldest sort menu. Reordering is
          done with CSS `order`, so card prototypes never move in the DOM
          and their JS keeps working. -->
+    <header class="header library-header">
+      <h1 class="title">Library</h1>
+    </header>
+
     <div class="cards-toolbar" id="cards-toolbar">
       <div class="cards-filters" role="tablist" aria-label="Filter transitions by category">
         <button type="button" class="cards-filter" data-filter="all" data-active="true" role="tab" aria-selected="true"><span class="cards-filter-label">All</span></button>
