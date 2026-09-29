@@ -43,7 +43,7 @@
        ────────────────────────────────────────────────────────────── */
     :root {
       /* Surfaces */
-      --bg-page: #fdfdfd;
+      --bg-page: #f6f6f6;
       --bg-modal: #ffffff;
       --bg-tab-active: rgba(94, 94, 94, 0.08);
       --bg-ghost-hover: rgba(61, 61, 61, 0.04);
@@ -231,7 +231,7 @@
     html[data-theme="dark"] .compare-pane-label { color: #ededed; }
     .compare-pane-iframe {
       display: block; width: 100%; height: 460px; border: 0; border-radius: 14px;
-      background: #f9f9f9; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+      background: #f6f6f6; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
     }
     html[data-theme="dark"] .compare-pane-iframe {
       background: #181818; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
@@ -240,6 +240,12 @@
       body:not([data-embed="true"]) .compare-stage { flex-direction: column; align-items: stretch; padding: 32px 16px; }
       .compare-pane { max-width: 100%; }
     }
+
+    /* Always-open mode: the trigger is removed and the menu sits in
+       flow where the button was (same presentation collection.html
+       uses to show the component open in place). */
+    body[data-open-mode="always"] .share-btn { display: none; }
+    body[data-open-mode="always"] .dd-shell { position: static; }
 
     .toolbar { position: fixed; top: 16px; right: 16px; display: flex; gap: 8px; z-index: 40; }
     .tool-btn {
@@ -562,6 +568,7 @@
 </head>
 <body>
   <div class="toolbar">
+    <button class="tool-btn" id="openModeToggle" type="button">Always open</button>
     <button class="tool-btn" id="themeToggle" type="button">Dark mode</button>
   </div>
 
@@ -716,6 +723,7 @@
     const copyIconA  = $('copyIconA');
     const copyIconB  = $('copyIconB');
     const themeToggle = $('themeToggle');
+    const openModeToggle = $('openModeToggle');
 
     /* ── Render static icons + people rows ────────────────────────── */
     function renderChevron() {
@@ -807,6 +815,7 @@
       getComputedStyle(document.documentElement).getPropertyValue('--dropdown-close-dur')
     ) || 150;
     let ddOpen = false;
+    let alwaysOpen = false;
     function openDD() {
       if (ddOpen) return;
       ddOpen = true;
@@ -820,6 +829,7 @@
       shareBtn.setAttribute('aria-expanded', 'true');
     }
     function closeDD() {
+      if (alwaysOpen) return;
       if (!ddOpen) return;
       ddOpen = false;
       dropdown.classList.remove('is-open');
@@ -869,6 +879,39 @@
       }, 1400);
     });
 
+    /* ── Always-open mode ─────────────────────────────────────────── */
+    function applyOpenMode(mode) {
+      alwaysOpen = mode === 'always';
+      if (alwaysOpen) {
+        document.body.dataset.openMode = 'always';
+        // Snap open without replaying the entry animation.
+        ddOpen = true;
+        dropdown.classList.remove('is-closing');
+        dropdown.classList.add('is-open');
+        shareBtn.setAttribute('aria-expanded', 'true');
+        requestAnimationFrame(() => { movePill(activeTab(), false); sizeBody(false); });
+      } else {
+        delete document.body.dataset.openMode;
+        ddOpen = true;      // let closeDD run its exit
+        closeDD();
+      }
+      if (openModeToggle) {
+        openModeToggle.textContent = alwaysOpen ? 'With trigger' : 'Always open';
+      }
+    }
+    if (openModeToggle) {
+      openModeToggle.addEventListener('click', () => {
+        const next = alwaysOpen ? 'trigger' : 'always';
+        applyOpenMode(next);
+        ['compareIframeOff', 'compareIframeOn'].forEach((id) => {
+          const f = document.getElementById(id);
+          if (f && f.contentWindow) {
+            try { f.contentWindow.postMessage({ type: 'openMode', mode: next }, '*'); } catch (_) {}
+          }
+        });
+      });
+    }
+
     /* ── Theme ────────────────────────────────────────────────────── */
     function applyTheme(next) {
       document.documentElement.dataset.theme = next;
@@ -896,10 +939,12 @@
       if (style === 'generic') document.body.dataset.style = 'generic';
       const initialTheme = params.get('theme');
       if (initialTheme === 'dark' || initialTheme === 'light') applyTheme(initialTheme);
+      if (params.get('open') === 'always') applyOpenMode('always');
       window.addEventListener('message', (event) => {
         const data = event.data;
         if (!data) return;
         if (data.type === 'theme' && (data.theme === 'dark' || data.theme === 'light')) applyTheme(data.theme);
+        if (data.type === 'openMode' && (data.mode === 'always' || data.mode === 'trigger')) applyOpenMode(data.mode);
       });
     })();
 
