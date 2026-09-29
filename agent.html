@@ -4195,8 +4195,11 @@
     @media (max-width: 720px) {
       .agent-bento-wrap { padding: 0 16px; }
       .agent-bento-heading { font-size: 23px; margin-bottom: 28px; }
-      .agent-bento { grid-template-columns: 1fr; grid-auto-rows: auto; }
-      .agent-bento-card--tall { grid-row: auto; min-height: 520px; }
+      /* Single column, every card the same height (the tallest row sets
+         it), so the score card matches its neighbours; its terminal is
+         simply clipped lower down. */
+      .agent-bento { grid-template-columns: 1fr; grid-auto-rows: 1fr; }
+      .agent-bento-card--tall { grid-row: auto; min-height: 300px; }
       .agent-bento-card--sm { min-height: 300px; }
       .agent-bento-title { font-size: 18px; }
       .ab-frame { min-height: 140px; margin: 16px -32px -28px 0; }
