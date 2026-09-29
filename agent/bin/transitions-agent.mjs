@@ -65,6 +65,21 @@ const api = (flags.api || process.env.TRANSITIONS_AGENT_API || "https://api.tran
 // One-command experience: a plain scan on a machine that uses Claude Code
 // (~/.claude/skills exists) quietly installs the agent skill, so from the
 // second conversation on, "check this app's motion" does everything.
+// Keyless scan in a human terminal: one keystroke to the free plan.
+async function maybeOfferSignup() {
+  try {
+    const hasKey = flags.license || process.env.TRANSITIONS_AGENT_LICENSE || (loadCreds() || {}).license;
+    if (hasKey || !process.stdin.isTTY) return;
+    const readline = await import("node:readline");
+    const answer = await new Promise((resolve) => {
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      rl.question("  Sign up free for hosted fixes? 10 polish fixes/month, key via your browser. [Y/n] ",
+        (a) => { rl.close(); resolve(a.trim()); });
+    });
+    if (answer === "" || /^y/i.test(answer)) await browserSignup();
+  } catch { /* the scan already succeeded; never fail on the offer */ }
+}
+
 function maybeInstallSkill() {
   try {
     const skillsDir = join(homedir(), ".claude", "skills");
@@ -93,43 +108,47 @@ if (command === "skill") {
   process.exit(0);
 }
 
+// Browser signup - works even when this terminal cannot ask questions
+// (a coding agent's shell): the human types their email in the browser
+// and this process polls until the key exists, then stores it.
+async function browserSignup() {
+  let start;
+  try {
+    const res = await fetch(api + "/agent/signup/start", { method: "POST" });
+    if (!res.ok) throw new Error("start failed (" + res.status + ")");
+    start = await res.json();
+  } catch (e) {
+    console.error("Could not start browser signup: " + e.message);
+    console.error("Fallback: npx transitions-agent signup you@email.com");
+    return false;
+  }
+  console.log("Opening your browser to finish sign-up (code " + start.code + ").");
+  console.log("If it does not open: " + start.url);
+  openBrowser(start.url);
+  const deadline = Date.now() + (start.expires_in || 900) * 1000;
+  while (Date.now() < deadline) {
+    await sleep((start.interval || 3) * 1000);
+    let poll;
+    try { poll = await fetch(api + "/agent/signup/poll?secret=" + encodeURIComponent(start.secret)); }
+    catch { continue; }
+    if (poll.status === 202) continue;
+    const data = await poll.json().catch(() => ({}));
+    if (data.status === "ready" && data.license) {
+      saveCreds({ license: data.license, plan: data.plan || "free" });
+      console.log("\u2713 License key received and saved to " + CREDS_PATH);
+      console.log("You are set: npx transitions-agent fix");
+      return true;
+    }
+    if (data.status === "expired") break;
+  }
+  console.error("Sign-up timed out. Try again, or: npx transitions-agent signup you@email.com");
+  return false;
+}
+
 if (command === "signup") {
   const email = (positional[1] || "").trim();
   if (!email) {
-    // Browser signup - works even when this terminal cannot ask questions
-    // (a coding agent's shell): the human types their email in the browser
-    // and this process polls until the key exists, then stores it.
-    let start;
-    try {
-      const res = await fetch(api + "/agent/signup/start", { method: "POST" });
-      if (!res.ok) throw new Error("start failed (" + res.status + ")");
-      start = await res.json();
-    } catch (e) {
-      console.error("Could not start browser signup: " + e.message);
-      console.error("Fallback: npx transitions-agent signup you@email.com");
-      process.exit(1);
-    }
-    console.log("Opening your browser to finish sign-up (code " + start.code + ").");
-    console.log("If it does not open: " + start.url);
-    openBrowser(start.url);
-    const deadline = Date.now() + (start.expires_in || 900) * 1000;
-    while (Date.now() < deadline) {
-      await sleep((start.interval || 3) * 1000);
-      let poll;
-      try { poll = await fetch(api + "/agent/signup/poll?secret=" + encodeURIComponent(start.secret)); }
-      catch { continue; }
-      if (poll.status === 202) continue;
-      const data = await poll.json().catch(() => ({}));
-      if (data.status === "ready" && data.license) {
-        saveCreds({ license: data.license, plan: data.plan || "free" });
-        console.log("\u2713 License key received and saved to " + CREDS_PATH);
-        console.log("You are set: npx transitions-agent fix");
-        process.exit(0);
-      }
-      if (data.status === "expired") break;
-    }
-    console.error("Sign-up timed out. Try again, or: npx transitions-agent signup you@email.com");
-    process.exit(1);
+    process.exit((await browserSignup()) ? 0 : 1);
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     console.error("Usage: transitions-agent signup [you@company.com]");
@@ -164,6 +183,7 @@ if (command === "scan") {
   else {
     console.log(renderTerminal(result));
     maybeInstallSkill();
+    await maybeOfferSignup();
   }
   if (Number.isFinite(flags.minScore) && result.score < flags.minScore) {
     console.error(`Motion score ${result.score} is below the required minimum ${flags.minScore}.`);
