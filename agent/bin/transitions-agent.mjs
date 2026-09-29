@@ -100,9 +100,16 @@ function maybeInstallSkill() {
     if (existsSync(codexDir) && !existing.includes(START)) {
       const body = readFileSync(join(PKG_DIR, "skill", "SKILL.md"), "utf8").replace(/^---[\s\S]*?---\n/, "").trim();
       const block = START + "\n" + body + "\n<!-- transitions-agent:end -->";
-      writeFileSync(agentsFile, (existing ? existing.trimEnd() + "\n\n" : "") + block + "\n");
-      console.log("  \u2713 Codex instructions added (" + agentsFile + ", managed block)");
-      console.log("    Remove anytime by deleting the transitions-agent block.");
+      try {
+        writeFileSync(agentsFile, (existing ? existing.trimEnd() + "\n\n" : "") + block + "\n");
+        console.log("  \u2713 Codex instructions added (" + agentsFile + ", managed block)");
+        console.log("    Remove anytime by deleting the transitions-agent block.");
+      } catch {
+        // Codex's sandbox only allows writes inside the project, so this is
+        // the expected path when Codex itself ran the scan.
+        console.log("  Codex setup needs one step outside Codex's sandbox. In your own terminal:");
+        console.log("    npx transitions-agent skill --codex");
+      }
     }
   } catch { /* never let convenience break the scan */ }
 }
