@@ -459,6 +459,11 @@
       --p17-delay:           var(--duration-micro);
       --p17-in-ease:         var(--ease-out);
       --p17-out-ease:        var(--ease-out);
+      /* One bubble is shared by the whole trigger group. When it is
+         already showing, a new target tweens its x + width on the move
+         clock, so it travels between triggers rather than popping. */
+      --p17-move-dur:        160ms;
+      --p17-move-ease:       cubic-bezier(0.22, 1, 0.36, 1);
       --p17-bg:              #ffffff;
       --p17-fg:              #2f2f2f;
 
@@ -650,13 +655,16 @@
          smaller, higher, dimmer — instead of moving away. Max 3
          visible; the oldest fades out when a fourth arrives. Depth
          steps: −--p34-peek px, ×(1 − depth·scale), opacity
-         −depth·fade. */
+         −depth·fade, plus a per-depth blur so the queue reads as
+         receding rather than merely dimmed. */
       --p34-open-dur:        350ms;
       --p34-close-dur:       250ms;
-      --p34-distance:        80px;
+      --p34-distance:        60px;
       --p34-blur:            var(--blur-small);
       --p34-scale-in:        0.97;
       --p34-peek:            12px;
+      --p34-depth1-blur:     1px;   /* second banner in the stack */
+      --p34-depth2-blur:     2px;   /* third */
       /* Hovering the stack fans the banners into a list: each one
          climbs its own height plus --p34-spread-gap and drops the
          depth scale and fade. */
@@ -1393,11 +1401,14 @@
     }
     /* Slightly darker than the body copy — points at the Skill page. */
     .subtitle-skill {
-      color: var(--text);
+      color: inherit;
+      display: inline-block;
       text-decoration: underline;
-      text-underline-offset: 2px;
-      text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
-      transition: text-decoration-color 180ms ease;
+      text-decoration-thickness: from-font;
+      text-underline-position: from-font;
+      text-decoration-skip-ink: auto;
+      text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+      transition: none;
     }
     .subtitle-skill:hover { text-decoration-color: currentColor; }
 
@@ -3805,15 +3816,19 @@
     .p17-stage-inner {
       padding-top: 56px;
     }
-    .p17-wrap {
+    /* One tooltip per group. It stays mounted and retargets by tweening
+       its x-position and width across the triggers, so moving along the
+       row reads as one bubble travelling rather than three popping. */
+    .p17-group {
       position: relative;
-      display: inline-block;
+      display: inline-flex;
+      gap: 8px;
     }
     /* Trigger styling mirrors `.btn-animate` so every interactive
        affordance on a card reads as the same pill control: same
        height, padding, radius, type scale, and theme-aware bg
        tokens. Positioning stays inline (no absolute / bottom)
-       because the tooltip anchors off this element via `.p17-wrap`. */
+       because the tooltip anchors off the surrounding `.p17-group`. */
     .p17-trigger {
       appearance: none;
       -webkit-appearance: none;
@@ -3863,8 +3878,17 @@
     .p17-tooltip {
       position: absolute;
       bottom: calc(100% + 8px);
-      left: 50%;
-      transform: translate(-50%, 0) scale(var(--p17-scale-from));
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 0;                 /* initP17 writes the measured width */
+      overflow: hidden;
+      /* Individual transform properties: the travel (translate) and the
+         appear (scale) run on their own clocks without sharing one
+         transform. */
+      translate: var(--p17-x, 0px) 0;
+      scale: var(--p17-scale-from);
       transform-origin: 50% 100%;
       padding: 8px 10px;
       border-radius: 10px;
@@ -3883,21 +3907,28 @@
       pointer-events: none;
       transition:
         opacity   var(--p17-out-dur) var(--p17-out-ease),
-        transform var(--p17-out-dur) var(--p17-out-ease);
+        scale     var(--p17-out-dur) var(--p17-out-ease),
+        translate var(--p17-move-dur) var(--p17-move-ease),
+        width     var(--p17-move-dur) var(--p17-move-ease);
     }
+    .p17-tooltip-text { white-space: nowrap; }
     html[data-theme="dark"] .p17-tooltip {
       box-shadow:
         inset 0 0 0 1px rgba(255, 255, 255, 0.03),
         0 1px 1px 0 rgba(0, 0, 0, 0.08),
         0 2px 6px 0 rgba(0, 0, 0, 0.15);
     }
-    .p17-wrap:hover .p17-tooltip,
-    .p17-trigger:focus-visible + .p17-tooltip {
+    /* The appear delay belongs ONLY to the show rule, so hiding snaps it
+       back to 0. The move lanes carry no delay, so a retarget while
+       showing starts at once. */
+    .p17-tooltip[data-show="true"] {
       opacity: 1;
-      transform: translate(-50%, 0) scale(1);
-      transition-duration: var(--p17-in-dur);
-      transition-timing-function: var(--p17-in-ease);
-      transition-delay: var(--p17-delay);
+      scale: 1;
+      transition:
+        opacity   var(--p17-in-dur) var(--p17-in-ease) var(--p17-delay),
+        scale     var(--p17-in-dur) var(--p17-in-ease) var(--p17-delay),
+        translate var(--p17-move-dur) var(--p17-move-ease),
+        width     var(--p17-move-dur) var(--p17-move-ease);
     }
 
     /* ─── Prototype 18 — Primary + secondary text appear ───────
@@ -4999,6 +5030,7 @@
       transform: translateY(calc(var(--p34-peek) * -1))
                  scale(calc(1 - var(--p34-depth-scale)));
       opacity: calc(1 - var(--p34-depth-fade));
+      filter: blur(var(--p34-depth1-blur));
     }
     .p34-banner[data-depth="2"] {
       z-index: 1;
@@ -5006,6 +5038,7 @@
       transform: translateY(calc(var(--p34-peek) * -2))
                  scale(calc(1 - var(--p34-depth-scale) * 2));
       opacity: calc(1 - var(--p34-depth-fade) * 1.6);
+      filter: blur(var(--p34-depth2-blur));
     }
     /* Spread: the stack reads as a list. Newest stays put and the
        older ones climb by one banner height each. Driven by a class,
@@ -5015,6 +5048,7 @@
     .p34-stack.is-spread .p34-banner[data-depth="1"],
     .p34-stack.is-spread .p34-banner[data-depth="2"] {
       opacity: 1;
+      filter: blur(0);
     }
     .p34-stack.is-spread .p34-banner[data-depth="1"] {
       transform: translateY(calc((46px + var(--p34-spread-gap)) * -1)) scale(1);
@@ -6802,15 +6836,17 @@
       <article class="card" data-proto-card data-cat="essential" data-seq="18">
         <div class="card-stage">
           <div class="stage-inner p17-stage-inner">
-            <span class="p17-wrap">
-              <button type="button" class="p17-trigger" aria-describedby="p17-tooltip-text">Hover me</button>
-              <span class="p17-tooltip" id="p17-tooltip-text" role="tooltip">Tooltip text</span>
+            <span class="p17-group" data-proto-tooltip>
+              <button type="button" class="p17-trigger" data-tooltip="Copy link" aria-describedby="p17-tooltip-text">Copy</button>
+              <button type="button" class="p17-trigger" data-tooltip="Share with team" aria-describedby="p17-tooltip-text">Share</button>
+              <button type="button" class="p17-trigger" data-tooltip="More options" aria-describedby="p17-tooltip-text">More</button>
+              <span class="p17-tooltip" id="p17-tooltip-text" role="tooltip" aria-hidden="true" data-show="false"><span class="p17-tooltip-text"></span></span>
             </span>
           </div>
         </div>
         <div class="card-meta">
           <div class="card-title">Tooltip open/close</div>
-          <div class="card-subtitle">Appear-only delay, instant exit</div>
+          <div class="card-subtitle">Delayed in, travels, instant out</div>
         </div>
         <button type="button" class="card-copy" aria-label="Copy Tooltip open/close CSS" data-copy-key="p17">
           <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -8398,16 +8434,77 @@ export function SlidingTabs({ tabs }) {
 </script>
 
   <script type="text/plain" data-react-key="p17">// Pair with the CSS from the CSS tab.
-// Pure CSS — hover / focus state lives entirely in selectors.
-// Bring your own trigger styling.
-export function Tooltip({ id, content, children }) {
+// One tooltip per group, shared by every trigger. Hovering a trigger
+// writes the bubble's x + width: when it is already showing the move
+// tweens (it travels); when hidden the geometry snaps and only the
+// appear plays. Bring your own trigger styling.
+import { useRef } from "react";
+
+export function TooltipGroup({ id, items }) {
+  // items: [{ label: "Copy", tooltip: "Copy link", onClick }]
+  const group = useRef(null);
+  const tip = useRef(null);
+  const text = useRef(null);
+
+  const hide = () => {
+    tip.current.setAttribute("data-show", "false");
+    tip.current.setAttribute("aria-hidden", "true");
+  };
+
+  const place = (trigger, label) => {
+    const t = tip.current;
+    const showing = t.getAttribute("data-show") === "true";
+    text.current.textContent = label;
+    const cs = getComputedStyle(t);
+    const width = Math.ceil(
+      text.current.scrollWidth +
+        parseFloat(cs.paddingLeft) +
+        parseFloat(cs.paddingRight)
+    );
+    const g = group.current.getBoundingClientRect();
+    const r = trigger.getBoundingClientRect();
+    const x = r.left - g.left + r.width / 2 - width / 2;
+    if (!showing) {
+      // Snap the geometry while hidden so only the appear plays.
+      t.style.transition = "none";
+      t.style.width = `${width}px`;
+      t.style.setProperty("--tt-x", `${x}px`);
+      void t.offsetWidth;
+      t.style.transition = "";
+    } else {
+      t.style.width = `${width}px`;
+      t.style.setProperty("--tt-x", `${x}px`);
+    }
+    t.setAttribute("data-show", "true");
+    t.setAttribute("aria-hidden", "false");
+  };
+
   return (
-    <span className="t-tt-wrap">
-      {/* The trigger needs `aria-describedby` pointed at the
-          tooltip's id; CSS uses :focus-visible + sibling selector
-          so the tooltip also shows on keyboard focus. */}
-      {children({ "aria-describedby": id, className: "t-tt-trigger" })}
-      <span id={id} className="t-tt" role="tooltip">{content}</span>
+    <span ref={group} className="t-tt-group" onPointerLeave={hide}>
+      {items.map((item) => (
+        <button
+          key={item.label}
+          type="button"
+          className="t-tt-trigger"
+          aria-describedby={id}
+          onPointerEnter={(e) => place(e.currentTarget, item.tooltip)}
+          onFocus={(e) => place(e.currentTarget, item.tooltip)}
+          onBlur={hide}
+          onClick={item.onClick}
+        >
+          {item.label}
+        </button>
+      ))}
+      <span
+        ref={tip}
+        id={id}
+        className="t-tt"
+        role="tooltip"
+        aria-hidden="true"
+        data-show="false"
+      >
+        <span ref={text} className="t-tt-text" />
+      </span>
     </span>
   );
 }
@@ -8581,6 +8678,553 @@ export function Accordion({ title, children }) {
 </script>
 
   <!-- ─── Motion-token React templates ─────────────────────────── -->
+  <script type="text/plain" data-react-key="p22">import { useState } from "react";
+
+// Pair with the CSS from the CSS tab. Toggle `.is-open` on the toast —
+// opening uses the slower clock, the resting (closed) transition uses the
+// faster one, so a single class gives the open/close asymmetry.
+export function Toast({ children }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button type="button" onClick={() => setOpen((v) => !v)}>Animate</button>
+      <div
+        className={"t-toast" + (open ? " is-open" : "")}
+        role="status"
+        aria-hidden={!open}
+      >
+        {children}
+      </div>
+    </>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p23">import { useRef, useState } from "react";
+
+// Pair with the CSS from the CSS tab. Liking fills the heart, springs a
+// pop, and fires an 8-dot burst whose per-particle vectors / velocity /
+// delay / size are re-randomised each time so the spray never repeats.
+const DIST = 20; // px — matches --like-particle-dist
+
+export function LikeButton() {
+  const [liked, setLiked] = useState(false);
+  const ref = useRef(null);
+
+  function seedParticles() {
+    const dots = ref.current.querySelectorAll(".t-like-particles i");
+    dots.forEach((dot, i) => {
+      const angle = (360 / dots.length) * i + (Math.random() * 2 - 1) * 16;
+      const mag = DIST * (0.68 + Math.random() * 0.5);
+      const rad = (angle * Math.PI) / 180;
+      const s = dot.style;
+      s.setProperty("--px", `${(Math.cos(rad) * mag).toFixed(2)}px`);
+      s.setProperty("--py", `${(Math.sin(rad) * mag).toFixed(2)}px`);
+      s.setProperty("--pdur", `calc(var(--like-particle-dur) * ${(0.78 + Math.random() * 0.44).toFixed(3)})`);
+      s.setProperty("--pdelay", `${Math.round(Math.random() * 70)}ms`);
+      s.setProperty("--p-end-scale", (0.35 + Math.random() * 0.4).toFixed(2));
+      s.setProperty("--psize", (0.6 + Math.random() * 0.8).toFixed(2));
+    });
+  }
+
+  function toggle() {
+    const el = ref.current;
+    if (liked) {
+      setLiked(false);
+      el.classList.remove("is-bursting");
+      return;
+    }
+    setLiked(true);
+    el.classList.remove("is-bursting");
+    seedParticles();
+    void el.offsetWidth; // reflow so the burst replays
+    el.classList.add("is-bursting");
+  }
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className="t-like"
+      data-liked={liked ? "true" : "false"}
+      aria-pressed={liked}
+      onClick={toggle}
+    >
+      <span className="t-like-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M7.99511 3.42388C6.66221 1.8656 4.4395 1.44643 2.76947 2.87334C1.09944 4.30026 0.86432 6.68598 2.17581 8.3736C3.26622 9.77674 6.56619 12.7361 7.64774 13.6939C7.76874 13.801 7.82925 13.8546 7.89982 13.8757C7.96141 13.8941 8.02881 13.8941 8.0904 13.8757C8.16097 13.8546 8.22147 13.801 8.34248 13.6939C9.42403 12.7361 12.724 9.77674 13.8144 8.3736C15.1259 6.68598 14.9195 4.28525 13.2207 2.87334C11.522 1.46144 9.32801 1.8656 7.99511 3.42388Z"
+            className="t-like-heart-path"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+      <span className="t-like-particles" aria-hidden="true">
+        {Array.from({ length: 8 }, (_, i) => <i key={i} />)}
+      </span>
+      Like
+    </button>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p24">// Pair with the CSS from the CSS tab. Pure CSS — the hover shifts the
+// chevron right and rotates its two arms apart about the apex; no JS.
+export function LearnMore() {
+  return (
+    <button type="button" className="t-learn">
+      Learn more
+      <span className="t-learn-chevron" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path className="t-learn-arm t-learn-arm-top" d="M6 4L10 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path className="t-learn-arm t-learn-arm-bot" d="M10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    </button>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p25">import { useEffect, useRef, useState } from "react";
+
+// Pair with the CSS from the CSS tab. Toggle `aria-checked`; the box fills
+// then the check stroke-draws. Measure the path length into --check-len on
+// mount so the dasharray/dashoffset pair never over/under-draws.
+export function Checkbox({ label }) {
+  const [checked, setChecked] = useState(false);
+  const boxRef = useRef(null);
+  const pathRef = useRef(null);
+
+  useEffect(() => {
+    const len = pathRef.current.getTotalLength();
+    boxRef.current.style.setProperty("--check-len", String(Math.ceil(len) + 1));
+  }, []);
+
+  return (
+    <label className="t-field" onClick={() => setChecked((v) => !v)}>
+      <button ref={boxRef} type="button" className="t-check" role="checkbox" aria-checked={checked}>
+        <svg width="10" height="10" viewBox="0 0 10.1668 10.1668" fill="none">
+          <path ref={pathRef} d="M1 5.52L3.92 9.17L9.17 1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {label}
+    </label>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p26">import { useEffect, useRef } from "react";
+
+// Pair with the CSS from the CSS tab. Each digit is a clipped reel of
+// 0-9 cells; the strip translates up (spins*10 + digit) cells to spin then
+// land, with a per-column delay for a left-to-right cascade. (The vertical
+// SVG motion-blur driver is omitted here for brevity — see the demo.)
+const SPINS = 3, CELL = 30, DUR = 1400, STAGGER = 90;
+const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+
+export function Counter({ target = 100 }) {
+  const ref = useRef(null);
+
+  function build(str) {
+    ref.current.innerHTML = "";
+    const strips = [];
+    [...str].forEach((ch) => {
+      if (ch < "0" || ch > "9") {
+        const sep = document.createElement("span");
+        sep.className = "t-reel-sep";
+        sep.textContent = ch;
+        ref.current.appendChild(sep);
+        return;
+      }
+      const col = document.createElement("span");
+      col.className = "t-reel-col";
+      const strip = document.createElement("span");
+      strip.className = "t-reel-strip";
+      for (let k = 0; k < (SPINS + 1) * 10 + 1; k++) {
+        const cell = document.createElement("span");
+        cell.className = "t-reel-digit";
+        cell.textContent = String(k % 10);
+        strip.appendChild(cell);
+      }
+      col.appendChild(strip);
+      ref.current.appendChild(col);
+      strips.push({ strip, digit: +ch });
+    });
+    return strips;
+  }
+
+  useEffect(() => {
+    // Rest at 0.
+    build("0").forEach(({ strip, digit }) => {
+      strip.style.transform = `translateY(-${digit * CELL}px)`;
+    });
+  }, []);
+
+  function spin() {
+    const strips = build(Math.round(target).toLocaleString("en-US"));
+    strips.forEach(({ strip }) => {
+      strip.style.transition = "none";
+      strip.style.transform = "translateY(0)";
+    });
+    void ref.current.offsetWidth;
+    strips.forEach(({ strip, digit }, i) => {
+      strip.style.transition = `transform ${DUR}ms ${EASE} ${i * STAGGER}ms`;
+      strip.style.transform = `translateY(-${(SPINS * 10 + digit) * CELL}px)`;
+    });
+  }
+
+  return (
+    <>
+      <div ref={ref} className="t-reel" aria-label={String(target)} />
+      <button type="button" onClick={spin}>Animate</button>
+    </>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p27">import { useState } from "react";
+
+// Pair with the CSS from the CSS tab. `.is-init` gates the keyframes so the
+// "off" animation doesn't play on mount; flipping `data-on` swaps the
+// animation, which restarts the double-bounce thumb travel.
+export function Toggle() {
+  const [on, setOn] = useState(false);
+  const [init, setInit] = useState(false);
+
+  return (
+    <button
+      type="button"
+      className={"t-toggle" + (init ? " is-init" : "")}
+      role="switch"
+      aria-checked={on}
+      data-on={on ? "true" : "false"}
+      onClick={() => { setInit(true); setOn((v) => !v); }}
+    >
+      <span className="t-toggle-thumb" aria-hidden="true" />
+    </button>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p28">import { useEffect, useLayoutEffect, useRef, useState } from "react";
+
+// Pair with the CSS from the CSS tab. Two absolutely positioned copies swap
+// over a box the hidden sizer holds steady: the outgoing line exits up
+// through a small blur while the incoming one rises in from below, so a
+// swap costs one --think-swap, not two.
+const DEFAULT_STATES = ["Setting up a workplace", "Running a command", "Browsing files"];
+
+const ms = (name, fallback) => {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
+};
+
+export function ThinkingStates({ states = DEFAULT_STATES }) {
+  const [current, setCurrent] = useState(0);
+  const [leaving, setLeaving] = useState(null); // index of the exiting line
+  const [entering, setEntering] = useState(false);
+  const liveRef = useRef(null);
+
+  // Hold, then swap to the next state.
+  useEffect(() => {
+    const hold = setTimeout(() => {
+      setLeaving(current);
+      setCurrent((i) => (i + 1) % states.length);
+      setEntering(true);
+    }, ms("--think-hold", 2000));
+    return () => clearTimeout(hold);
+  }, [current, states.length]);
+
+  // Flush the enter-start rest pose before paint, release it after
+  // --think-gap, and drop the outgoing copy once its swap has played.
+  useLayoutEffect(() => {
+    if (!entering) return;
+    if (liveRef.current) void liveRef.current.offsetWidth;
+    const gap = ms("--think-gap", 50);
+    const swap = ms("--think-swap", 150);
+    const release = setTimeout(() => setEntering(false), gap);
+    const done = setTimeout(() => setLeaving(null), swap + gap);
+    return () => { clearTimeout(release); clearTimeout(done); };
+  }, [entering]);
+
+  // The sizer holds the longest state so the box never resizes mid-swap.
+  const longest = states.reduce((a, b) => (b.length > a.length ? b : a), "");
+
+  return (
+    <span className="t-think" role="status">
+      <span className="t-think-sizer" aria-hidden="true">{longest}</span>
+      {leaving !== null && (
+        <span className="t-think-text is-exit" data-text={states[leaving]} aria-hidden="true">
+          {states[leaving]}
+        </span>
+      )}
+      <span
+        key={current}
+        ref={liveRef}
+        className={"t-think-text" + (entering ? " is-enter-start" : "")}
+        data-text={states[current]}
+      >
+        {states[current]}
+      </span>
+    </span>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p29">import { useEffect, useRef } from "react";
+
+// Pair with the CSS from the CSS tab. The transcript is rendered twice so the
+// loop wraps without a visible jump; the scroll steps up --reason-lines
+// lines every --reason-hold. Give .t-reason a height (it clips the copies).
+const num = (name, fallback) => {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
+};
+
+export function ReasoningStream({ children, className = "" }) {
+  const scrollRef = useRef(null);
+  const textRef = useRef(null);
+
+  useEffect(() => {
+    const scroll = scrollRef.current;
+    const text = textRef.current;
+    if (!scroll || !text) return;
+    let offset = 0;
+    let timer;
+
+    const step = () => {
+      timer = setTimeout(() => {
+        const lineH = parseFloat(getComputedStyle(text).lineHeight) || 18;
+        const stepPx = lineH * num("--reason-lines", 2);
+        const dur = num("--reason-step", 500);
+        const ease =
+          getComputedStyle(document.documentElement).getPropertyValue("--reason-ease").trim() ||
+          "ease-out";
+        offset += stepPx;
+        scroll.style.transition = "transform " + dur + "ms " + ease;
+        scroll.style.transform = "translateY(" + -offset + "px)";
+        timer = setTimeout(() => {
+          // Wrap by one copy's height; the clone underneath hides the jump.
+          const copyH = text.offsetHeight;
+          if (offset >= copyH) {
+            offset -= copyH;
+            scroll.style.transition = "none";
+            scroll.style.transform = "translateY(" + -offset + "px)";
+            void scroll.offsetWidth; // flush before the next tween
+          }
+          step();
+        }, dur + 30);
+      }, num("--reason-hold", 840));
+    };
+
+    step();
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className={"t-reason" + (className ? " " + className : "")}>
+      <div className="t-reason-viewport">
+        <div className="t-reason-scroll" ref={scrollRef}>
+          <div className="t-reason-text" ref={textRef}>{children}</div>
+          <div className="t-reason-text" aria-hidden="true">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p30">import { useEffect, useRef } from "react";
+
+// Pair with the CSS from the CSS tab. Each word is a span that rests
+// visible; a replay wipes them all with no transition, flushes one reflow,
+// then resolves them in order through opacity plus a small blur, one
+// every --stream-gap. Bump `replayKey` to stream the text again.
+export function StreamingText({ text, replayKey = 0, autoplay = true }) {
+  const words = text.trim().split(/\s+/);
+  const spansRef = useRef([]);
+  const timer = useRef(null);
+
+  useEffect(() => {
+    if (!autoplay && replayKey === 0) return;
+    const spans = spansRef.current.filter(Boolean);
+    if (!spans.length) return;
+    clearTimeout(timer.current);
+
+    // Snap back to nothing without animating the wipe itself.
+    spans.forEach((s) => {
+      s.style.transition = "none";
+      s.classList.remove("is-in");
+    });
+    void spans[0].offsetWidth; // flush the wipe in the same task
+    spans.forEach((s) => { s.style.transition = ""; });
+
+    const gap =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--stream-gap")) || 60;
+    const next = (n) => {
+      if (n >= spans.length) return;
+      spans[n].classList.add("is-in");
+      timer.current = setTimeout(() => next(n + 1), gap);
+    };
+    next(0);
+    return () => clearTimeout(timer.current);
+  }, [text, replayKey, autoplay]);
+
+  return (
+    <div className="t-stream">
+      {words.map((w, i) => (
+        <span
+          key={i}
+          ref={(el) => { spansRef.current[i] = el; }}
+          className="t-stream-w is-in"
+        >
+          {w}
+          {i < words.length - 1 ? " " : ""}
+        </span>
+      ))}
+    </div>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p33">// Pair with the CSS from the CSS tab. Sixteen 2px dots share one
+// colour-pulse keyframe; the variant is just a per-dot delay table into
+// that cycle. `cycle` must match --matrix-cycle (1200ms by default).
+const CORNERS = [0, 3, 12, 15];
+// Clockwise perimeter (corner-less ring), then centre cells.
+const RING = [1, 2, 7, 11, 14, 13, 8, 4];
+const INNER = [5, 6, 9, 10];
+const TWINKLE = [7, 2, 11, 5, 14, 9, 0, 12, 3, 15, 6, 10, 13, 1, 8, 4];
+
+function delayFor(variant, idx, cycle) {
+  const col = idx % 4;
+  if (variant === "scan") return Math.round(col * (cycle / 10));
+  if (variant === "twinkle") return Math.round(TWINKLE[idx] * (cycle / 16));
+  if (variant === "orbit") {
+    const k = RING.indexOf(idx);
+    return k === -1 ? null : Math.round(k * (cycle / 8)); // null: centre holds steady
+  }
+  if (variant === "pulse") return Math.round((INNER.includes(idx) ? 0 : 1) * (cycle * 0.16));
+  return 0;
+}
+
+export function MatrixLoader({ variant = "scan", rounded = false, cycle = 1200, label = "Loading" }) {
+  return (
+    <div className="t-matrix" data-variant={variant} role="status" aria-label={label}>
+      {Array.from({ length: 16 }, (_, idx) => {
+        if (rounded && CORNERS.includes(idx)) return <i key={idx} className="is-gap" />;
+        const d = delayFor(variant, idx, cycle);
+        return <i key={idx} style={d === null ? { animation: "none" } : { "--d": d }} />;
+      })}
+    </div>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p34">import { useLayoutEffect, useRef, useState } from "react";
+
+// Pair with the CSS from the CSS tab. Sonner-style stacking: a new banner
+// enters at depth 0 while everything already stacked steps one depth back;
+// a fourth arrival sends the oldest out. Hover spread is geometry on the
+// wrapper, not :hover, because the gaps between spread banners belong to
+// no element.
+//
+// Usage: keep the queue in the parent and push { id, node } entries.
+//   const [banners, setBanners] = useState([]);
+//   setBanners((b) => [...b, { id: Date.now(), node: <YourBanner /> }]);
+//   <BannerStack banners={banners} />
+const ms = (name, fallback) => {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
+};
+
+export function BannerStack({ banners, className = "" }) {
+  const [items, setItems] = useState([]); // newest first
+  const [spread, setSpread] = useState(false);
+  const stackRef = useRef(null);
+  const seen = useRef(new Set());
+
+  // Adopt the newest banner: depth 0 with the pre-open pose, older ones
+  // step back, anything past depth 2 starts leaving.
+  useLayoutEffect(() => {
+    const latest = banners[banners.length - 1];
+    if (!latest || seen.current.has(latest.id)) return;
+    seen.current.add(latest.id);
+    setItems((prev) => [
+      { ...latest, depth: 0, enter: true, leaving: false },
+      ...prev.map((b, i) =>
+        i + 1 > 2 ? { ...b, leaving: true } : { ...b, depth: i + 1 }
+      ),
+    ]);
+  }, [banners]);
+
+  // Flush the pre-open rest state before paint, then release it in the
+  // same task; drop banners that have left after --stack-close.
+  useLayoutEffect(() => {
+    const entering = items.find((b) => b.enter);
+    if (entering && stackRef.current) {
+      const el = stackRef.current.querySelector('[data-id="' + entering.id + '"]');
+      if (el) void el.offsetWidth;
+      setItems((prev) => prev.map((b) => (b.enter ? { ...b, enter: false } : b)));
+    }
+    if (items.some((b) => b.leaving)) {
+      const t = setTimeout(
+        () => setItems((prev) => prev.filter((b) => !b.leaving)),
+        ms("--stack-close", 250) + 60
+      );
+      return () => clearTimeout(t);
+    }
+  }, [items]);
+
+  const within = (e, above) => {
+    const r = stackRef.current.getBoundingClientRect();
+    return (
+      e.clientX >= r.left && e.clientX <= r.right &&
+      e.clientY <= r.bottom && e.clientY >= r.top - above
+    );
+  };
+  const onPointerMove = (e) => {
+    const stack = stackRef.current;
+    if (!stack) return;
+    const spreadHeight = (stack.offsetHeight + ms("--stack-spread-gap", 8)) * 2;
+    if (spread) {
+      if (!within(e, spreadHeight)) setSpread(false);
+    } else if (within(e, 0)) {
+      setSpread(true);
+    }
+  };
+
+  return (
+    <div
+      className={"t-stack-stage" + (className ? " " + className : "")}
+      onPointerMove={onPointerMove}
+      onPointerLeave={() => setSpread(false)}
+    >
+      <div ref={stackRef} className={"t-stack" + (spread ? " is-spread" : "")}>
+        {items.map((b) => (
+          <div
+            key={b.id}
+            data-id={b.id}
+            data-depth={b.depth}
+            className={
+              "t-stack-banner" +
+              (b.enter ? " is-enter" : "") +
+              (b.leaving ? " is-leaving" : "")
+            }
+          >
+            {b.node}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+</script>
+
   <script type="text/plain" data-react-key="tok-duration">// Motion token — Duration
 // A small, consistent time scale shared across components (ms).
 export const duration = {
@@ -10291,17 +10935,21 @@ export function Surface({ open, children }) {
         p17: {
           name: "Tooltip open/close",
           usage:
-            "    <span class=\"t-tt-wrap\">\n" +
-            "      <button class=\"t-tt-trigger\" aria-describedby=\"tt-1\">…</button>\n" +
-            "      <span class=\"t-tt\" id=\"tt-1\" role=\"tooltip\">Tooltip text</span>\n" +
+            "    <span class=\"t-tt-group\">\n" +
+            "      <button class=\"t-tt-trigger\" data-tooltip=\"Copy link\" aria-describedby=\"tt-1\">…</button>\n" +
+            "      <button class=\"t-tt-trigger\" data-tooltip=\"Share\" aria-describedby=\"tt-1\">…</button>\n" +
+            "      <span class=\"t-tt\" id=\"tt-1\" role=\"tooltip\" aria-hidden=\"true\" data-show=\"false\">\n" +
+            "        <span class=\"t-tt-text\"></span>\n" +
+            "      </span>\n" +
             "    </span>\n" +
             "\n" +
-            "  Pure CSS — no JS. The wrap (not the trigger) is the hover\n" +
-            "  target so the pointer can drift onto the tooltip without\n" +
-            "  flicker. transition-delay only applies in the hover/focus\n" +
-            "  rule, so leaving snaps it to 0 and the disappear plays\n" +
-            "  immediately. Trigger styling is yours; only the tooltip\n" +
-            "  positioning + its transition live here.",
+            "  One tooltip per group, shared by every trigger. The JS snippet\n" +
+            "  writes the bubble's x + width for the hovered trigger: when it is\n" +
+            "  already showing, the move tweens on --tt-move-dur so the bubble\n" +
+            "  travels between triggers; when hidden, the geometry snaps and only\n" +
+            "  the appear plays. The appear delay belongs to the show rule alone,\n" +
+            "  so leaving the group hides it immediately. Trigger styling is\n" +
+            "  yours; only the tooltip and its motion live here.",
           vars: [
             ["--tt-in-dur",    "--p17-in-dur"],
             ["--tt-out-dur",   "--p17-out-dur"],
@@ -10309,19 +10957,30 @@ export function Surface({ open, children }) {
             ["--tt-delay",     "--p17-delay"],
             ["--tt-in-ease",   "--p17-in-ease"],
             ["--tt-out-ease",  "--p17-out-ease"],
+            ["--tt-move-dur",  "--p17-move-dur"],
+            ["--tt-move-ease", "--p17-move-ease"],
             ["--tt-bg",        "--p17-bg"],
             ["--tt-fg",        "--p17-fg"]
           ],
           css:
-            ".t-tt-wrap {\n" +
+            ".t-tt-group {\n" +
             "  position: relative;\n" +
-            "  display: inline-block;\n" +
+            "  display: inline-flex;\n" +
             "}\n" +
             ".t-tt {\n" +
             "  position: absolute;\n" +
             "  bottom: calc(100% + 8px);\n" +
-            "  left: 50%;\n" +
-            "  transform: translate(-50%, 0) scale(var(--tt-scale));\n" +
+            "  left: 0;\n" +
+            "  box-sizing: border-box;\n" +
+            "  display: inline-flex;\n" +
+            "  align-items: center;\n" +
+            "  justify-content: center;\n" +
+            "  width: 0;                 /* the JS writes the measured width */\n" +
+            "  overflow: hidden;\n" +
+            "  /* Individual transform properties: the travel (translate) and the\n" +
+            "     appear (scale) run on their own clocks. */\n" +
+            "  translate: var(--tt-x, 0px) 0;\n" +
+            "  scale: var(--tt-scale);\n" +
             "  transform-origin: 50% 100%;\n" +
             "  padding: 8px 12px;\n" +
             "  border-radius: 8px;\n" +
@@ -10334,23 +10993,26 @@ export function Surface({ open, children }) {
             "    0 4px 42px 0 rgba(0, 0, 0, 0.06);\n" +
             "  opacity: 0;\n" +
             "  pointer-events: none;\n" +
-            "  /* Default rule controls the LEAVE state. transition-delay\n" +
-            "     stays unset so leaving plays without delay. */\n" +
+            "  /* Default rule controls the LEAVE state: no delay, so hiding plays\n" +
+            "     immediately. The move lanes are always live. */\n" +
             "  transition:\n" +
             "    opacity   var(--tt-out-dur) var(--tt-out-ease),\n" +
-            "    transform var(--tt-out-dur) var(--tt-out-ease);\n" +
+            "    scale     var(--tt-out-dur) var(--tt-out-ease),\n" +
+            "    translate var(--tt-move-dur) var(--tt-move-ease),\n" +
+            "    width     var(--tt-move-dur) var(--tt-move-ease);\n" +
             "}\n" +
-            "/* The 50ms delay belongs ONLY to the hover rule so leaving\n" +
-            "   the trigger snaps the delay back to 0 and the disappear\n" +
-            "   plays immediately. */\n" +
-            ".t-tt-wrap:hover .t-tt,\n" +
-            ".t-tt-trigger:focus-visible + .t-tt {\n" +
+            "/* The appear delay belongs ONLY to the show rule, so hiding snaps it\n" +
+            "   back to 0. A retarget while showing carries no delay at all. */\n" +
+            ".t-tt[data-show=\"true\"] {\n" +
             "  opacity: 1;\n" +
-            "  transform: translate(-50%, 0) scale(1);\n" +
-            "  transition-duration: var(--tt-in-dur);\n" +
-            "  transition-timing-function: var(--tt-in-ease);\n" +
-            "  transition-delay: var(--tt-delay);\n" +
+            "  scale: 1;\n" +
+            "  transition:\n" +
+            "    opacity   var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),\n" +
+            "    scale     var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),\n" +
+            "    translate var(--tt-move-dur) var(--tt-move-ease),\n" +
+            "    width     var(--tt-move-dur) var(--tt-move-ease);\n" +
             "}\n" +
+            ".t-tt-text { white-space: nowrap; }\n" +
             "\n" +
             "@media (prefers-reduced-motion: reduce) {\n" +
             "  .t-tt { transition: none !important; }\n" +
@@ -11201,6 +11863,8 @@ export function Surface({ open, children }) {
             ["--stack-spread-gap",  "--p34-spread-gap"],
             ["--stack-depth-scale", "--p34-depth-scale"],
             ["--stack-depth-fade",  "--p34-depth-fade"],
+            ["--stack-depth1-blur", "--p34-depth1-blur"],
+            ["--stack-depth2-blur", "--p34-depth2-blur"],
             ["--stack-ease",        "--p34-ease"]
           ],
           css:
@@ -11233,6 +11897,7 @@ export function Surface({ open, children }) {
             "  transform: translateY(calc(var(--stack-peek) * -1))\n" +
             "             scale(calc(1 - var(--stack-depth-scale)));\n" +
             "  opacity: calc(1 - var(--stack-depth-fade));\n" +
+            "  filter: blur(var(--stack-depth1-blur));\n" +
             "}\n" +
             ".t-stack-banner[data-depth=\"2\"] {\n" +
             "  z-index: 1;\n" +
@@ -11240,12 +11905,13 @@ export function Surface({ open, children }) {
             "  transform: translateY(calc(var(--stack-peek) * -2))\n" +
             "             scale(calc(1 - var(--stack-depth-scale) * 2));\n" +
             "  opacity: calc(1 - var(--stack-depth-fade) * 1.6);\n" +
+            "  filter: blur(var(--stack-depth2-blur));\n" +
             "}\n" +
             "/* Spread: newest stays put, older ones climb one banner height\n" +
             "   each (100% = the banner's own height). Driven by a class, not\n" +
             "   :hover — the gaps between spread banners belong to no element. */\n" +
             ".t-stack.is-spread .t-stack-banner[data-depth=\"1\"],\n" +
-            ".t-stack.is-spread .t-stack-banner[data-depth=\"2\"] { opacity: 1; }\n" +
+            ".t-stack.is-spread .t-stack-banner[data-depth=\"2\"] { opacity: 1; filter: blur(0); }\n" +
             ".t-stack.is-spread .t-stack-banner[data-depth=\"1\"] {\n" +
             "  transform: translateY(calc((100% + var(--stack-spread-gap)) * -1)) scale(1);\n" +
             "}\n" +
@@ -12204,6 +12870,56 @@ export function Surface({ open, children }) {
             el.addEventListener("mouseenter", function () { setShifts(i, "in"); });
           });
           root.addEventListener("mouseleave", function () { setShifts(null, "out"); });
+        });
+      })();
+
+      /* Prototype 17: one tooltip per group. Hovering a trigger writes
+         the bubble's x + width for that trigger. When it is already
+         showing the move tweens so it travels; when hidden the geometry
+         snaps under it and only the appear plays. Leaving the group
+         hides it with no delay. */
+      (function initP17() {
+        var groups = document.querySelectorAll("[data-proto-tooltip]");
+        if (!groups.length) return;
+        groups.forEach(function (group) {
+          var tip = group.querySelector(".p17-tooltip");
+          var text = group.querySelector(".p17-tooltip-text");
+          var triggers = Array.prototype.slice.call(group.querySelectorAll(".p17-trigger"));
+          if (!tip || !text || !triggers.length) return;
+          function hide() {
+            tip.setAttribute("data-show", "false");
+            tip.setAttribute("aria-hidden", "true");
+          }
+          function place(trigger) {
+            var showing = tip.getAttribute("data-show") === "true";
+            text.textContent = trigger.getAttribute("data-tooltip") || "";
+            var cs = getComputedStyle(tip);
+            var width = Math.ceil(
+              text.scrollWidth + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)
+            );
+            var g = group.getBoundingClientRect();
+            var r = trigger.getBoundingClientRect();
+            var x = (r.left - g.left) + r.width / 2 - width / 2;
+            if (!showing) {
+              // Snap the geometry while hidden so only the appear plays.
+              tip.style.transition = "none";
+              tip.style.width = width + "px";
+              tip.style.setProperty("--p17-x", x + "px");
+              void tip.offsetWidth;
+              tip.style.transition = "";
+            } else {
+              tip.style.width = width + "px";
+              tip.style.setProperty("--p17-x", x + "px");
+            }
+            tip.setAttribute("data-show", "true");
+            tip.setAttribute("aria-hidden", "false");
+          }
+          triggers.forEach(function (t) {
+            t.addEventListener("pointerenter", function () { place(t); });
+            t.addEventListener("focus", function () { place(t); });
+            t.addEventListener("blur", hide);
+          });
+          group.addEventListener("pointerleave", hide);
         });
       })();
 
@@ -14526,7 +15242,7 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: mounts Pro badges on data-pro cards, reads auth state. -->
-  <script src="assets/pro-client.js?v=29" defer></script>
+  <script src="assets/pro-client.js?v=36" defer></script>
 </body>
 </html>
 

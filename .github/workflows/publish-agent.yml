@@ -1,16 +1,16 @@
-name: Publish CLI
+name: Publish Agent
 
-# Publishes the cli/ package (transitions-dev) to npm using the REFINE
+# Publishes the agent/ package (transitions-agent) to npm using the REFINE
 # repository secret as the npm auth token. Runs on demand, and automatically
-# when cli/ changes on main (skips if the version is already published).
+# when agent/ changes on main (skips if the version is already published).
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - "cli/**"
-      - ".github/workflows/publish-cli.yml"
+      - "agent/**"
+      - ".github/workflows/publish-agent.yml"
 
 jobs:
   publish:
@@ -25,9 +25,13 @@ jobs:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
 
+      - name: Run tests
+        working-directory: agent
+        run: npm test
+
       - name: Check if version already published
         id: check
-        working-directory: cli
+        working-directory: agent
         run: |
           NAME=$(node -p "require('./package.json').name")
           VERSION=$(node -p "require('./package.json').version")
@@ -41,7 +45,7 @@ jobs:
 
       - name: Publish to npm
         if: steps.check.outputs.exists == 'false'
-        working-directory: cli
+        working-directory: agent
         run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.REFINE }}
+          NODE_AUTH_TOKEN: ${{ secrets.AGENT }}

@@ -30,7 +30,7 @@
   // `resolved` flips true only once /me has actually ANSWERED (2xx JSON) —
   // pages must not present a definitive "signed out" UI before that, or a
   // transient fetch failure paints a signed-in user as logged out.
-  var state = { authenticated: false, email: null, pro: false, lifetime: false, billing: false, subscription: null, ppp: null, resolved: false };
+  var state = { authenticated: false, email: null, name: null, pro: false, lifetime: false, billing: false, subscription: null, ppp: null, resolved: false };
 
   // Last-known auth state, cached so a navigation can paint the signed-in UI
   // on the FIRST frame instead of flashing the signed-out version for the
@@ -155,6 +155,7 @@
       .then(function (me) {
         state.authenticated = !!me.authenticated;
         state.email = me.email || null;
+        state.name = me.name || null;
         state.pro = !!(me.entitlements && me.entitlements.pro);
         state.lifetime = !!me.lifetime;
         state.subscription = me.subscription || null;
@@ -252,6 +253,7 @@
     state.authenticated = false;
     state.pro = false;
     state.email = null;
+    state.name = null;
     state.lifetime = false;
     state.billing = false;
     state.subscription = null;
@@ -430,7 +432,7 @@
     return apiJSON("/device/approve", "POST", { user_code: (userCode || "").trim().toUpperCase() });
   }
 
-  // After checkout: resolve the buyer's email from the Stripe session and email a sign-in link.
+  // After checkout: resolve the buyer's email from the Stripe session and email a sign-in code.
   function signInFromCheckout(sessionId) {
     return apiJSON("/auth/from-checkout", "POST", { session_id: sessionId });
   }
@@ -490,25 +492,29 @@
       '<div class="tp-modal-backdrop" data-tp-close></div>' +
       '<div class="tp-modal-card" role="dialog" aria-modal="true" aria-labelledby="tp-modal-title">' +
         '<button type="button" class="tp-modal-x" aria-label="Close" data-tp-close>&times;</button>' +
-        '<p class="tp-modal-intro" id="tp-modal-title">Enter your email you used at checkout.' +
-          ' <span class="tp-modal-intro-muted">We’ll send you a sign-in link.</span></p>' +
+        // Two steps, one question each: ask for the email, then ask for the code.
+        // Both forms used to sit on screen together, so the card presented two
+        // inputs and two buttons at once and left the user deciding which they
+        // were meant to use.
+        '<p class="tp-modal-intro" id="tp-modal-title">Enter your email address' +
+          '<span class="tp-modal-intro-muted" data-step-sub>The one you used at checkout.</span></p>' +
         '<form class="tp-modal-form" novalidate>' +
           '<div class="tp-modal-field">' +
-            '<label class="tp-modal-label" for="tp-modal-email">Your email</label>' +
-            '<input class="tp-modal-input" id="tp-modal-email" type="email" name="email" placeholder="name@example.com" autocomplete="email" />' +
+            '<input class="tp-modal-input" id="tp-modal-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" aria-label="Email address" />' +
             '<p class="tp-modal-error" role="alert" hidden>Please enter a valid email.</p>' +
           '</div>' +
-          '<button class="tp-modal-btn" type="submit">Send login link</button>' +
+          '<button class="tp-modal-btn" type="submit">Send code</button>' +
+          '<button class="tp-modal-btn tp-modal-btn--ghost" type="button" data-tp-close>Back</button>' +
         '</form>' +
-        '<p class="tp-modal-note" role="status" hidden></p>' +
         '<form class="tp-modal-form tp-modal-code-form" novalidate hidden>' +
           '<div class="tp-modal-field">' +
-            '<label class="tp-modal-label" for="tp-modal-code">Or enter the code from the email</label>' +
-            '<input class="tp-modal-input" id="tp-modal-code" type="text" name="code" placeholder="XXXX-XXXX" autocomplete="one-time-code" spellcheck="false" style="text-transform:uppercase" />' +
+            '<input class="tp-modal-input" id="tp-modal-code" type="text" name="code" placeholder="XXXX-XXXX" autocomplete="one-time-code" spellcheck="false" inputmode="text" style="text-transform:uppercase" aria-label="One-time code" />' +
             '<p class="tp-modal-error" role="alert" hidden>That code didn\u2019t work \u2014 check it and try again.</p>' +
           '</div>' +
-          '<button class="tp-modal-btn" type="submit">Sign in with code</button>' +
+          '<button class="tp-modal-btn" type="submit">Verify</button>' +
+          '<button class="tp-modal-btn tp-modal-btn--ghost" type="button" data-tp-restart>Use a different email</button>' +
         '</form>' +
+        '<p class="tp-modal-note" role="status" hidden></p>' +
         '<p class="tp-modal-foot">No access? <a href="pro.html">Get Pro</a></p>' +
       "</div>";
     document.body.appendChild(modalEl);
@@ -520,7 +526,39 @@
       if (e.key === "Escape" && !modalEl.hasAttribute("hidden")) closeAuthModal();
     });
 
-    var input = modalEl.querySelector(".tp-modal-input");
+    // Step control. The card shows exactly one form at a time; the heading and
+    // sub-line change with it so the user is answering one question per screen.
+    var emailForm = modalEl.querySelector(".tp-modal-form:not(.tp-modal-code-form)");
+    var codeFormEl = modalEl.querySelector(".tp-modal-code-form");
+    var titleEl = modalEl.querySelector(".tp-modal-intro");
+    function showStep(step, email) {
+      var code = step === "code";
+      emailForm.hidden = code;
+      codeFormEl.hidden = !code;
+      titleEl.firstChild.nodeValue = code ? "Enter one-time password" : "Enter your email address";
+      var sub = titleEl.querySelector("[data-step-sub]");
+      if (sub) sub.textContent = code
+        ? "We sent it to " + (email || "your inbox") + "."
+        : "The one you used at checkout.";
+      var focusEl = modalEl.querySelector(code ? "#tp-modal-code" : "#tp-modal-email");
+      setTimeout(function () { if (focusEl) focusEl.focus(); }, 0);
+    }
+    modalEl.__showStep = showStep;
+
+    // "Use a different email" returns to step one rather than closing, so a
+    // typo in the address costs one click instead of restarting the flow.
+    var restart = modalEl.querySelector("[data-tp-restart]");
+    if (restart) {
+      restart.addEventListener("click", function () {
+        var note = modalEl.querySelector(".tp-modal-note");
+        setModalNote(note, "", "");
+        codeFormEl.querySelector(".tp-modal-error").hidden = true;
+        codeFormEl.querySelector(".tp-modal-input").value = "";
+        showStep("email");
+      });
+    }
+
+    var input = modalEl.querySelector("#tp-modal-email");
     var errEl = modalEl.querySelector(".tp-modal-error");
     function setError(on) {
       input.classList.toggle("is-error", on);
@@ -555,12 +593,13 @@
               "err");
             return;
           }
-          setModalNote(note, "Check your email — click the link, or type the code below.", "ok");
-          var cf = modalEl.querySelector(".tp-modal-code-form");
-          if (cf) { cf.hidden = false; cf.querySelector("input").focus(); }
+          // The step itself already says an email was sent and to which address;
+          // a second confirmation line only competes with it.
+          setModalNote(note, "", "");
+          if (modalEl.__showStep) modalEl.__showStep("code", email);
         })
         .catch(function () { setModalNote(note, "Couldn’t send the link. Please try again.", "err"); })
-        .finally(function () { btn.disabled = false; btn.textContent = "Send login link"; });
+        .finally(function () { btn.disabled = false; btn.textContent = "Send code"; });
     });
 
     // Typed-code path: signs this browser in even when the emailed link was
@@ -590,7 +629,7 @@
           setTimeout(function () { cInput.classList.remove("is-shaking"); }, 300);
         })
         .catch(function () { cErr.hidden = false; })
-        .finally(function () { cBtn.disabled = false; cBtn.textContent = "Sign in with code"; });
+        .finally(function () { cBtn.disabled = false; cBtn.textContent = "Verify"; });
     });
     return modalEl;
   }
@@ -604,6 +643,7 @@
     var m = ensureAuthModal();
     lastFocus = document.activeElement;
     setModalNote(m.querySelector(".tp-modal-note"), "", "");
+    if (m.__showStep) m.__showStep("email");
     m.classList.remove("is-closing");
     m.removeAttribute("hidden");
     // Reflow so the enter transition plays from the closed (scale .96 / opacity 0) state.
@@ -654,8 +694,13 @@
       ".tp-modal-x:hover{opacity:.9}" +
       ".tp-modal-x:active{scale:.9}" +
       ".tp-modal-intro{margin:0;font-size:16px;line-height:24.2px;font-weight:400;padding-right:20px}" +
-      ".tp-modal-intro-muted{color:#8a8a8a}" +
-      ".tp-modal-form{display:flex;flex-direction:column;gap:24px}" +
+      ".tp-modal-intro-muted{color:#8a8a8a;display:block}" +
+      ".tp-modal-form{display:flex;flex-direction:column;gap:12px}" +
+      // An author display rule outranks the UA [hidden] style, so every element
+      // this modal toggles needs its own companion rule. Without it the code
+      // form was permanently on screen: the card showed two inputs and two
+      // submit buttons at once, and the "step" it advanced to was already there.
+      ".tp-modal-form[hidden],.tp-modal-note[hidden],.tp-modal-error[hidden]{display:none}" +
       ".tp-modal-field{display:flex;flex-direction:column;gap:6px}" +
       ".tp-modal-label{font-size:13px;line-height:1.4;color:#4d4d4d}" +
       'html[data-theme="dark"] .tp-modal-label{color:#b5b5b5}' +
@@ -675,6 +720,14 @@
       "box-shadow:0 1px 2px rgba(0,0,0,.2);transition:scale 120ms cubic-bezier(0.22,1,0.36,1),opacity 120ms ease}" +
       ".tp-modal-btn:not([disabled]):active{scale:.96}" +
       ".tp-modal-btn[disabled]{opacity:.6;cursor:default}" +
+      // Site secondary tokens, matching the paywall's secondary action: the
+      // 0 1px 2px shadow belongs to the PRIMARY variant only, so the secondary
+      // drops it rather than inheriting it from the base class. Doubled class
+      // so this outranks the themed base rule whatever the sheet order.
+      ".tp-modal-btn.tp-modal-btn--ghost{background:#e9e9e9;color:#17181c;box-shadow:none}" +
+      ".tp-modal-btn.tp-modal-btn--ghost:hover{background:#e0e0e0}" +
+      'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost{background:#2a2a2c;color:#f2f2f2}' +
+      'html[data-theme="dark"] .tp-modal-btn.tp-modal-btn--ghost:hover{background:#333336}' +
       'html[data-theme="dark"] .tp-modal-btn{background:#f2f2f2;color:#111}' +
       ".tp-modal-note{margin:0;font-size:13px;line-height:1.4}" +
       '.tp-modal-note[data-kind="ok"]{color:#16a34a}' +

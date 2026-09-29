@@ -139,6 +139,7 @@
       var me = {
         authenticated: true,
         email: "jakub@transitions.dev",
+        name: "Jakub Antalik",
         entitlements: { pro: true },
         subscription: {
           interval: monthly ? "month" : "year",
@@ -188,6 +189,28 @@
     })();
   </script>
   <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
     /* Saans - used for the hero eyebrow + title (Medium / 500). */
     @font-face {
       font-family: "Saans";
@@ -4945,6 +4968,10 @@
               <span class="settings-label">Payment</span>
               <button type="button" class="row-btn" id="acc-portal">Manage in Stripe</button>
             </div>
+            <div class="settings-row" id="acc-name-row" hidden>
+              <span class="settings-label">Name</span>
+              <span class="settings-value" id="acc-name"></span>
+            </div>
             <div class="settings-row">
               <span class="settings-label">Email</span>
               <span class="settings-value" id="acc-email"></span>
@@ -5022,7 +5049,7 @@
             <div class="skill-section-rows">
               <div class="skill-command">
                 <div class="skill-code-row">
-                  <code id="acc-cmd-skill">npx transitions-pro skill</code>
+                  <code id="acc-cmd-skill">npx transitions-dev skill</code>
                   <button type="button" class="card-copy" aria-label="Copy Pro skill install command" data-copy-target="#acc-cmd-skill">
                     <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
                     <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
@@ -5032,7 +5059,7 @@
               </div>
               <div class="skill-command">
                 <div class="skill-code-row">
-                  <code id="acc-cmd-recipes">npx transitions-pro add --pro</code>
+                  <code id="acc-cmd-recipes">npx transitions-dev add --pro</code>
                   <button type="button" class="card-copy" aria-label="Copy Pro recipes install command" data-copy-target="#acc-cmd-recipes">
                     <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
                     <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
@@ -5849,7 +5876,7 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=29" defer></script>
+  <script src="assets/pro-client.js?v=36" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;
@@ -5911,6 +5938,10 @@
           return;
         }
         el("acc-email").textContent = s.email || "—";
+        // Name comes from the billing details at checkout, and some payment
+        // methods send none. Hide the row rather than show an empty value.
+        el("acc-name").textContent = s.name || "";
+        el("acc-name-row").hidden = !s.name;
         var sub = s.subscription || null;
         var yearly = sub && sub.interval === "year";
         if (s.lifetime) {

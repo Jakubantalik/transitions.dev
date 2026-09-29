@@ -1,0 +1,1430 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example - Buttons, request &amp; notifications UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
+  <script>
+    (function seedThemeBeforePaint() {
+      // Prevent light->dark flash inside embedded iframes by setting
+      // data-theme before CSS parses. Priority:
+      // 1) explicit ?theme= param
+      // 2) parent document theme (same-origin embed)
+      // 3) OS preference fallback
+      var html = document.documentElement;
+      var params = new URLSearchParams(window.location.search);
+      var q = params.get("theme");
+      if (q === "dark" || q === "light") {
+        html.dataset.theme = q;
+        return;
+      }
+      var seeded = null;
+      if (params.get("embed") === "1") {
+        try {
+          if (window.parent && window.parent !== window) {
+            var parentTheme = window.parent.document.documentElement.dataset.theme;
+            if (parentTheme === "dark" || parentTheme === "light") seeded = parentTheme;
+          }
+        } catch (_) {}
+      }
+      if (!seeded && window.matchMedia) {
+        seeded = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      if (seeded) html.dataset.theme = seeded;
+    })();
+  </script>
+  <style>
+    /* ──────────────────────────────────────────────────────────────
+       Design tokens — mirrors example-dropdown.html (Figma light
+       2625:1791). Light is the source of truth; dark overrides.
+       ────────────────────────────────────────────────────────────── */
+    :root {
+      /* Surfaces */
+      --bg-page: #f6f6f6;
+      --bg-modal: #ffffff;
+      --bg-ghost-hover: rgba(61, 61, 61, 0.024);
+
+      /* Text */
+      --text-strong: #0f0f0f;
+      --text-body: #505050;
+      --text-muted: #737373;
+      --text-on-dropdown: #17181c;
+
+      /* Strokes */
+      --stroke-btn:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1);
+
+      /* Shadows — Figma "Light Mode/Shadow 25" */
+      --shadow-modal:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+      --shadow-btn: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+
+      /* Stepper (Figma quantity-stepper/32) */
+      --stepper-track: rgba(0, 0, 0, 0.06);
+      --stepper-border: rgba(0, 0, 0, 0.08);
+      --stepper-btn-bg: #ffffff;
+      --stepper-btn-shadow:
+        0 1px 0 0 rgba(0, 0, 0, 0.08),
+        0 2px 2px -2px rgba(0, 0, 0, 0.04),
+        0 2px 6px -1px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.06);
+
+      /* Toggle chrome (Figma 2625:1892 bg/elipse) */
+      --toggle-track-off: #e0e0e0;
+      --toggle-track-on: #34c759;
+      --toggle-thumb-bg: #ffffff;
+
+      /* Radii */
+      --radius-menu: 18px;
+      --radius-row: 12px;
+      --radius-btn: 50px;
+
+      /* ── transitions.dev — tunables (from skill _root.css) ── */
+      /* Card resize (01) — Copy button width follows its label */
+      --resize-dur: 300ms;
+      --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Icon swap (09) */
+      --icon-swap-dur: 200ms;
+      --icon-swap-blur: 2px;
+      --icon-swap-start-scale: 0.25;
+      --icon-swap-ease: ease-in-out;
+      /* Text states swap (04) */
+      --text-swap-dur: 150ms;
+      --text-swap-enter-delay: 0ms;
+      --text-swap-translate-y: 4px;
+      --text-swap-blur: 2px;
+      --text-swap-ease: ease-in-out;
+      /* Like button (23) */
+      --like-color: #f40051;
+      --like-fill: 150ms;
+      --like-pop: 350ms;
+      --like-pop-ease: cubic-bezier(0.34, 1.96, 0.64, 1);
+      --like-particle-dur: 600ms;
+      --like-particle-dist: 20px;
+      --like-particle-size: 2.5px;
+      --like-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Learn more hover (24) */
+      --learn-shift: 2px;
+      --learn-spread: 8deg;
+      --learn-in: 350ms;
+      --learn-out: 350ms;
+      --learn-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Number pop-in (02) */
+      --digit-dur: 500ms;
+      --digit-distance: 8px;
+      --digit-stagger: 70ms;
+      --digit-blur: 2px;
+      --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
+      --digit-dir-x: 0;
+      --digit-dir-y: 1;
+      /* Success check (10 — example.html tuning) */
+      --check-opacity-dur: 550ms;
+      --check-rotate-dur: 550ms;
+      --check-rotate-from: 80deg;
+      --check-bob-dur: 450ms;
+      --check-y-amount: 16.8px;
+      --check-blur-dur: 500ms;
+      --check-blur-from: 10px;
+      --check-path-dur: 550ms;
+      --check-path-delay: 80ms;
+      --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
+      --check-ease-rotate: cubic-bezier(0.22, 1, 0.36, 1);
+      --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
+      --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Beat between the button finishing its fade-out and the
+         success check + copy starting. */
+      --request-gap: 50ms;
+      /* Texts reveal (18) — recipe values. No base delay: the recipe
+         has none, and --request-gap already holds the whole success
+         state back after the button leaves. */
+      --stagger-dur: 500ms;
+      --stagger-delay: 0ms;
+      --stagger-distance: 8.4px;
+      --stagger-stagger: 40ms;
+      --stagger-blur: 3px;
+      --stagger-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Accordion expand (21) */
+      --acc-blur: 2px;
+      --acc-expand: 250ms;
+      --acc-collapse: 250ms;
+      --acc-chevron: 250ms;
+      --acc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Toggle (27) — 40×20 track, 20px thumb, 3.33px inset */
+      --toggle-dur: 350ms;
+      --toggle-travel: 13.34px;
+      --toggle-ov1: 1px;
+      --toggle-ov2: 0px;
+      --toggle-track: 0ms;
+      --toggle-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
+    }
+
+    /* Dark mode — values mirrored from example-dropdown.html */
+    html[data-theme="dark"] {
+      --bg-page: #070707;
+      --bg-modal: #181818;
+      --bg-ghost-hover: rgba(245, 245, 245, 0.036);
+
+      --text-strong: #f7f7f7;
+      --text-body: #c6c6c6;
+      --text-muted: #a3a3a3;
+      --text-on-dropdown: #f7f7f7;
+
+      --stroke-btn:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+      --shadow-modal:
+        0 1px 3px 0 rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.6),
+        0 4px 42px 0 rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      --shadow-btn: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+
+      --stepper-track: rgba(255, 255, 255, 0.08);
+      --stepper-border: rgba(255, 255, 255, 0.1);
+      --stepper-btn-bg: #2c2c2c;
+      --stepper-btn-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+
+      --toggle-track-off: #3b3b3b;
+      --toggle-thumb-bg: #f2f2f2;
+    }
+
+    /* ── Base ─────────────────────────────────────────────────────── */
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      -webkit-text-size-adjust: 100%;
+      font-feature-settings: "cv11", "ss01";
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg-page);
+      color: var(--text-strong);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 16px;
+      transition: background-color 200ms ease, color 200ms ease;
+    }
+    button {
+      font-family: inherit;
+      -webkit-font-smoothing: inherit;
+      -moz-osx-font-smoothing: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    @media (hover: none) and (pointer: coarse) {
+      .demo-btn, .t-like, .t-learn, .t-acc-head, .t-toggle, .stepper-btn { -webkit-touch-callout: none; user-select: none; }
+    }
+
+    /* ── Embed mode ───────────────────────────────────────────────── */
+    html[data-embed="true"] { background: transparent; overflow: visible; }
+    body[data-embed="true"] { background: transparent; min-height: 0; width: 100%; overflow: visible; }
+    html[data-embed="true"][data-theme="dark"] { background: transparent; color-scheme: dark; }
+    body[data-embed="true"] .toolbar { display: none; }
+
+    .proto-root { display: none; }
+    body[data-embed="true"] .proto-root {
+      display: flex;
+      position: relative;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 40px 24px 48px;
+      gap: 40px;
+      box-sizing: border-box;
+      overflow: visible;
+    }
+
+    /* ── Standalone compare stage (non-embed) ─────────────────────── */
+    .compare-stage { display: none; }
+    body:not([data-embed="true"]) .compare-stage {
+      display: flex;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 64px 24px;
+      gap: 24px;
+      flex-direction: row;
+      justify-content: center;
+      align-items: stretch;
+      flex-wrap: wrap;
+      box-sizing: border-box;
+    }
+    .compare-pane {
+      flex: 1 1 360px;
+      min-width: 0;
+      max-width: 540px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .compare-pane-heading { display: inline-flex; align-items: center; gap: 6px; }
+    .compare-pane-badge {
+      width: 20px; height: 20px; border-radius: 20px; flex: 0 0 20px;
+      display: inline-grid; place-items: center;
+      box-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.1),
+        0 1px 4px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.09);
+    }
+    .compare-pane-badge--off { background: #f03434; }
+    .compare-pane-badge--on  { background: #35ba00; }
+    .compare-pane-badge svg { display: block; width: 10px; height: 10px; }
+    .compare-pane-label { font-weight: 500; font-size: 14px; line-height: 14px; color: #232323; }
+    html[data-theme="dark"] .compare-pane-label { color: #ededed; }
+    .compare-pane-iframe {
+      display: block; width: 100%; height: 760px; border: 0; border-radius: 14px;
+      background: #f6f6f6; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+    }
+    html[data-theme="dark"] .compare-pane-iframe {
+      background: #181818; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+    @media (max-width: 760px) {
+      body:not([data-embed="true"]) .compare-stage { flex-direction: column; align-items: stretch; padding: 32px 16px; }
+      .compare-pane { max-width: 100%; }
+    }
+
+    .toolbar { position: fixed; top: 16px; right: 16px; display: flex; gap: 8px; z-index: 40; }
+    .tool-btn {
+      height: 34px; padding: 0 12px; border-radius: 10px;
+      background: var(--bg-modal); border: 1px solid rgba(0, 0, 0, 0.08);
+      color: var(--text-strong); font-weight: 500; font-size: 13px; cursor: pointer;
+      box-shadow: var(--shadow-modal);
+    }
+
+    /* ══ 1 · Buttons column (Figma 2625:1900) ═════════════════════ */
+    /* Left-aligned: the Copy button grows rightward on resize, so its
+       left edge — and the icon inside it — never drifts. */
+    .buttons-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 28px;
+    }
+
+    /* Shared pill button (Figma "Tooltip" pills — 40px, radius 50) */
+    .demo-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 40px;
+      border: 0;
+      border-radius: var(--radius-btn);
+      background: var(--bg-modal);
+      color: var(--text-strong);
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 16px;
+      cursor: pointer;
+      box-shadow: var(--shadow-btn), var(--stroke-btn);
+      transition: background-color 130ms ease, transform 130ms ease, box-shadow 130ms ease;
+    }
+    .demo-btn:hover { background: color-mix(in srgb, var(--bg-modal) 96.4%, #000); }
+    html[data-theme="dark"] .demo-btn:hover { background: color-mix(in srgb, var(--bg-modal) 92.8%, #fff); }
+    .demo-btn:active { transform: scale(0.97); }
+
+    /* ── Copy — icon swap (09) + text swap (04), as example-dropdown ── */
+    .copy-btn { padding: 0 14px; }
+    .copy-icon-slot {
+      position: relative;
+      display: inline-grid;
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
+      line-height: 0;
+      opacity: 0.85;
+    }
+    .copy-icon-slot .t-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+    }
+    .copy-icon-slot .t-icon svg { display: block; }
+
+    /* Text slot hugs its label; the button width follows. The width is
+       written by JS from a hidden measurer and tweened with card
+       resize (01), so Copy → Copied grows instead of jumping. */
+    .copy-text-slot {
+      position: relative;
+      display: inline-block;
+      line-height: 16px;
+      overflow: hidden;
+      transition: width var(--resize-dur) var(--resize-ease);
+      will-change: width;
+    }
+    .copy-text-measure {
+      display: inline-block;
+      visibility: hidden;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .proto-root .copy-text-slot .t-text-swap { position: absolute; top: 0; left: 0; text-align: left; white-space: nowrap; }
+
+    /* Icon swap (09) */
+    .proto-root .t-icon-swap { position: relative; display: inline-grid; }
+    .proto-root .t-icon-swap .t-icon {
+      grid-area: 1 / 1;
+      transition:
+        opacity   var(--icon-swap-dur) var(--icon-swap-ease),
+        filter    var(--icon-swap-dur) var(--icon-swap-ease),
+        transform var(--icon-swap-dur) var(--icon-swap-ease);
+      will-change: opacity, filter, transform;
+    }
+    .proto-root .t-icon-swap[data-state="a"] .t-icon[data-icon="a"],
+    .proto-root .t-icon-swap[data-state="b"] .t-icon[data-icon="b"] { opacity: 1; filter: blur(0); transform: scale(1); }
+    .proto-root .t-icon-swap[data-state="a"] .t-icon[data-icon="b"],
+    .proto-root .t-icon-swap[data-state="b"] .t-icon[data-icon="a"] { opacity: 0; filter: blur(var(--icon-swap-blur)); transform: scale(var(--icon-swap-start-scale)); }
+
+    /* Text states swap (04) */
+    .proto-root .t-text-swap {
+      display: inline-block; transform: translateY(0); filter: blur(0); opacity: 1;
+      transition:
+        transform var(--text-swap-dur) var(--text-swap-ease),
+        filter    var(--text-swap-dur) var(--text-swap-ease),
+        opacity   var(--text-swap-dur) var(--text-swap-ease);
+      will-change: transform, filter, opacity;
+    }
+    .proto-root .t-text-swap.is-exit { transform: translateY(var(--text-swap-translate-y)); filter: blur(var(--text-swap-blur)); opacity: 0; }
+    .proto-root .t-text-swap.is-enter-start { transform: translateY(calc(var(--text-swap-translate-y) * -1)); filter: blur(var(--text-swap-blur)); opacity: 0; transition: none; }
+
+    /* ── Like button (23) — verbatim from collection.html ─────────── */
+    .t-like {
+      position: relative;
+      padding: 0 14px;
+    }
+    .t-like-icon { display: inline-flex; }
+    .t-like-heart { color: currentColor; transition: color var(--like-fill) var(--like-ease); }
+    .t-like-heart path {
+      fill: transparent; stroke: currentColor;
+      transition: fill var(--like-fill) var(--like-ease), stroke var(--like-fill) var(--like-ease);
+    }
+    .t-like[data-liked="true"] .t-like-heart { color: var(--like-color); }
+    .t-like[data-liked="true"] .t-like-heart path { fill: currentColor; }
+    /* Pop scale lives on an HTML wrapper, never the <svg> itself. */
+    .t-like[data-liked="true"] .t-like-icon { animation: t-like-pop var(--like-pop) var(--like-pop-ease); }
+    @keyframes t-like-pop { 0% { transform: scale(1); } 30% { transform: scale(0.82); } 100% { transform: scale(1); } }
+    /* Burst origin centred on the heart glyph: padding-left 14px +
+       half of the 16px icon = 22px from the button's left edge. */
+    .t-like-particles {
+      position: absolute; left: 22px; top: 50%;
+      width: 0; height: 0; pointer-events: none;
+      color: var(--like-color);
+    }
+    .t-like-particles i {
+      position: absolute;
+      left: calc(var(--like-particle-size) * var(--psize, 1) / -2);
+      top: calc(var(--like-particle-size) * var(--psize, 1) / -2);
+      width: calc(var(--like-particle-size) * var(--psize, 1));
+      height: calc(var(--like-particle-size) * var(--psize, 1));
+      border-radius: 50%; background: currentColor; opacity: 0;
+    }
+    @keyframes t-like-burst {
+      0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+      20%  { opacity: 1; transform: translate(calc(var(--px) * 0.25), calc(var(--py) * 0.25)) scale(1); }
+      100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(var(--p-end-scale, 0.6)); }
+    }
+    .t-like.is-bursting .t-like-particles i {
+      animation: t-like-burst var(--pdur, var(--like-particle-dur)) ease-out var(--pdelay, 0ms) forwards;
+    }
+
+    /* ── Learn more hover (24) — verbatim from collection.html ────── */
+    .t-learn { padding: 0 10px 0 16px; }
+    .t-learn-chevron {
+      display: inline-flex;
+      color: var(--text-muted);   /* muted chevron */
+      transform: translateX(0);
+      transition: transform var(--learn-out) var(--learn-ease);
+    }
+    .t-learn-chevron svg { display: block; }
+    .t-learn-arm {
+      fill: none; stroke: currentColor; stroke-width: 1.5;
+      stroke-linecap: round;
+      transform-box: view-box;
+      transform-origin: 10px 8px;
+      vector-effect: non-scaling-stroke;
+      transition: transform var(--learn-out) var(--learn-ease);
+    }
+    .t-learn:hover .t-learn-chevron { transform: translateX(var(--learn-shift)); transition-duration: var(--learn-in); }
+    .t-learn:hover .t-learn-arm { transition-duration: var(--learn-in); }
+    .t-learn:hover .t-learn-arm-top { transform: rotate(var(--learn-spread)); }
+    .t-learn:hover .t-learn-arm-bot { transform: rotate(calc(var(--learn-spread) * -1)); }
+
+    /* ── Stepper (Figma quantity-stepper/32) + number pop-in (02) ── */
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 88px;
+      height: 32px;
+      /* 3px + the 1px border = the same 4px the 24px buttons get
+         vertically from centring in the 30px content box. */
+      padding: 0 3px;
+      border-radius: 100px;
+      background: var(--stepper-track);
+      border: 1px solid var(--stepper-border);
+    }
+    .stepper-btn {
+      display: grid;
+      place-items: center;
+      width: 24px; height: 24px;
+      flex: 0 0 24px;
+      padding: 0;
+      border: 0;
+      border-radius: 100px;
+      background: var(--stepper-btn-bg);
+      color: var(--text-strong);
+      cursor: pointer;
+      box-shadow: var(--stepper-btn-shadow);
+      transition: transform 130ms ease, background-color 130ms ease;
+    }
+    .stepper-btn:hover { background: color-mix(in srgb, var(--stepper-btn-bg) 97.6%, #000); }
+    html[data-theme="dark"] .stepper-btn:hover { background: color-mix(in srgb, var(--stepper-btn-bg) 92.8%, #fff); }
+    .stepper-btn:active { transform: scale(0.94); }
+    .stepper-btn svg { display: block; }
+    .stepper-value {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 18px;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-strong);
+    }
+
+    /* Number pop-in (02) — ghost choreography from collection.html */
+    @keyframes t-digit-pop-in {
+      0% {
+        transform: translate(
+          calc(var(--digit-distance) * var(--digit-dir-x)),
+          calc(var(--digit-distance) * var(--digit-dir-y))
+        );
+        opacity: 0;
+        filter: blur(var(--digit-blur));
+      }
+      100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+    }
+    .t-digit-group { position: relative; display: inline-flex; align-items: baseline; }
+    .t-digit { display: inline-block; will-change: transform, opacity, filter; }
+    .t-digit-group.is-animating > .t-digit {
+      animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;
+    }
+    .t-digit-group.is-animating > .t-digit[data-stagger="1"] { animation-delay: var(--digit-stagger); }
+    /* Ghost layer: the OLD digits pop out opposite the new ones. */
+    .t-digit-group .t-digit-ghost {
+      position: absolute;
+      inset: 0;
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .t-digit-group .t-digit-ghost .t-digit {
+      animation: t-digit-pop-out var(--digit-dur) var(--digit-ease) both;
+    }
+    .t-digit-group .t-digit-ghost .t-digit[data-stagger="1"] { animation-delay: var(--digit-stagger); }
+    @keyframes t-digit-pop-out {
+      0%   { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+      100% {
+        transform: translate(
+          calc(var(--digit-distance) * var(--digit-dir-x) * -1),
+          calc(var(--digit-distance) * var(--digit-dir-y) * -1)
+        );
+        opacity: 0;
+        filter: blur(var(--digit-blur));
+      }
+    }
+
+    /* ══ 2 · Send request → success (Figma 2625:1802 / 2625:1917) ══
+       Success check (10) + texts reveal (18). The slot is fixed-height
+       so the button and the success state swap in place, no reflow. */
+    .request-slot {
+      position: relative;
+      width: 240px;
+      height: 132px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Kept in flow (the slot flex-centres it) so the shared
+       .demo-btn:active scale doesn't fight a centering transform. */
+    .request-btn { padding: 0 14px; }
+    /* Plain fade + blur for the outgoing button (t-fade-blur). */
+    .proto-root .t-fade-blur {
+      opacity: 1;
+      filter: blur(0);
+      transition:
+        filter     var(--text-swap-dur) var(--text-swap-ease),
+        opacity    var(--text-swap-dur) var(--text-swap-ease),
+        transform  130ms ease,
+        background-color 130ms ease,
+        box-shadow 130ms ease;
+      will-change: filter, opacity;
+    }
+    .proto-root .t-fade-blur.is-fading {
+      opacity: 0;
+      filter: blur(var(--text-swap-blur));
+      pointer-events: none;
+    }
+    .request-success {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      cursor: pointer;
+      pointer-events: none;
+    }
+    .request-slot[data-sent="true"] .request-success { pointer-events: auto; }
+    .request-badge-slot {
+      width: 28px; height: 28px;
+      line-height: 0;
+    }
+    /* Figma 2625:1918 — 28px green disc, 14px check. Same layered
+       shadow as the compare-pane badge (outer drop + inset hairline
+       + inset bottom lip), which SVG drop-shadow can't reproduce. */
+    .request-check-disc {
+      display: grid;
+      place-items: center;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #35ba00;
+      box-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.1),
+        0 1px 5.6px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.09);
+    }
+
+    /* Success check (10-success-check) — verbatim from the skill. */
+    .t-success-check {
+      display: inline-block;
+      transform-origin: center;
+      opacity: 0;
+      will-change: transform, opacity, filter;
+    }
+    .t-success-check svg { display: block; overflow: visible; }
+    .t-success-check svg path {
+      stroke-dasharray: 20;
+      stroke-dashoffset: 20;
+    }
+    .t-success-check[data-state="in"] {
+      animation:
+        t-check-fade   var(--check-opacity-dur) var(--check-ease-opacity) forwards,
+        t-check-rotate var(--check-rotate-dur)  var(--check-ease-rotate)  forwards,
+        t-check-blur   var(--check-blur-dur)    var(--check-ease-out)     forwards,
+        t-check-bob    var(--check-bob-dur)     var(--check-ease-bob)     forwards;
+    }
+    .t-success-check[data-state="in"] svg path {
+      animation: t-check-draw var(--check-path-dur) var(--check-ease-path) var(--check-path-delay, 0ms) forwards;
+    }
+    @keyframes t-check-fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes t-check-rotate {
+      from { transform: rotate(var(--check-rotate-from)); }
+      to   { transform: rotate(0deg); }
+    }
+    @keyframes t-check-blur {
+      from { filter: blur(var(--check-blur-from)); }
+      to   { filter: blur(0); }
+    }
+    @keyframes t-check-bob {
+      from { translate: 0 var(--check-y-amount); }
+      to   { translate: 0 0; }
+    }
+    @keyframes t-check-draw { to { stroke-dashoffset: 0; } }
+    @keyframes t-check-generic-pop { from { transform: scale(0.4); } to { transform: scale(1); } }
+
+    /* Texts reveal (18-texts-reveal) — verbatim from the skill. */
+    .t-stagger {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 203px;
+      text-align: center;
+    }
+    .t-stagger-line {
+      display: block;
+      opacity: 0;
+      transform: translateY(var(--stagger-distance));
+      filter: blur(var(--stagger-blur));
+      transition:
+        opacity   var(--stagger-dur) var(--stagger-ease),
+        transform var(--stagger-dur) var(--stagger-ease),
+        filter    var(--stagger-dur) var(--stagger-ease);
+      will-change: transform, opacity, filter;
+    }
+    .t-stagger-line { transition-delay: var(--stagger-delay); }
+    .t-stagger-line--2 { transition-delay: calc(var(--stagger-delay) + var(--stagger-stagger)); }
+    .t-stagger.is-shown .t-stagger-line {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+    /* Exit decouples from the stagger: one quiet fade, no Y return. */
+    .t-stagger.is-hiding .t-stagger-line {
+      opacity: 0;
+      transform: translateY(0);
+      filter: blur(0);
+      transition:
+        opacity 200ms ease,
+        transform 0s linear,
+        filter 0s linear;
+      transition-delay: 0s;
+    }
+    .request-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 16px;
+      color: var(--text-strong);
+    }
+    .request-copy {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
+      color: var(--text-muted);
+    }
+
+    /* ══ 3 · Notification card (Figma 2625:1858 / 2625:1874) ══════
+       Accordion expand (21) for the card open/close + toggle (27)
+       rows, both from the transitions.dev skill. */
+    .notif-card {
+      width: 245px;
+      padding: 0;
+      overflow: hidden;
+      border-radius: var(--radius-menu);
+      background: var(--bg-modal);
+      box-shadow: var(--shadow-modal);
+    }
+    /* Full-bleed: the padding that used to sit on the card lives here
+       instead, so the button spans the whole collapsed card. */
+    .t-acc-head {
+      width: 100%;
+      height: 56px;
+      padding: 8px 18px;
+      border: 0;
+      background: transparent;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 14px; font-weight: 500; line-height: 22px;
+      color: var(--text-on-dropdown);
+      border-radius: var(--radius-menu);
+      cursor: pointer;
+      transition: background-color 120ms ease;
+    }
+    /* Hover fill only while collapsed — once open the header is a
+       state indicator, not an invitation. Held off through the collapse
+       too: data-open flips to false on the first frame, so without
+       .is-closing the wash would snap in under a still-parked cursor
+       while the panel is mid-close. */
+    .t-acc[data-open="false"]:not(.is-closing) .t-acc-head:hover { background: var(--bg-ghost-hover); }
+    .t-acc-chevron {
+      display: inline-flex;
+      color: var(--text-muted);
+      transform: scaleY(1);
+      transform-origin: center;
+      transition: transform var(--acc-chevron) var(--acc-ease);
+    }
+    .t-acc-chevron svg { display: block; }
+    .t-acc-chevron path {
+      fill: none; stroke: currentColor; stroke-width: 1.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+    .t-acc[data-open="true"] .t-acc-chevron { transform: scaleY(-1); }
+    .t-acc-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows var(--acc-collapse) var(--acc-ease);
+    }
+    .t-acc[data-open="true"] .t-acc-panel {
+      grid-template-rows: 1fr;
+      transition: grid-template-rows var(--acc-expand) var(--acc-ease);
+    }
+    .t-acc-panel-inner { overflow: hidden; }
+    .notif-rows { padding: 10px 10px 12px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .notif-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 32px;
+      opacity: 0;
+      filter: blur(var(--acc-blur));
+      transition:
+        opacity var(--acc-collapse) var(--acc-ease),
+        filter var(--acc-collapse) var(--acc-ease);
+      will-change: opacity, filter;
+    }
+    .t-acc[data-open="true"] .notif-row {
+      opacity: 1;
+      filter: blur(0);
+      transition-duration: var(--acc-expand), var(--acc-expand);
+    }
+    .notif-row-label {
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 22px;
+      color: var(--text-body);
+    }
+
+    /* Toggle (27) — from collection.html, sized to Figma 40×20 */
+    .t-toggle {
+      display: block;
+      width: 40px; height: 20px;
+      flex: 0 0 40px;
+      padding: 0;
+      border: 0;
+      border-radius: 122px;
+      background: var(--toggle-track-off);
+      position: relative;
+      cursor: pointer;
+      transition: background var(--toggle-track) var(--toggle-ease),
+                  background-color 200ms ease;
+    }
+    .t-toggle[data-on="true"] { background: var(--toggle-track-on); }
+    .t-toggle-thumb {
+      position: absolute;
+      left: 3.33px; top: 3.33px;
+      width: 20px; height: 13.34px;
+      border-radius: 122px;
+      background: var(--toggle-thumb-bg);
+      box-shadow:
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06),
+        0 1px 2px rgba(0, 0, 0, 0.18);
+      translate: 0 0;
+    }
+    /* will-change only once the user interacts: a permanently promoted
+       thumb rasterizes on its own compositor layer and escapes the
+       accordion panel's animating opacity/blur, so the switches popped
+       in late instead of fading with the row labels. */
+    .t-toggle.is-init .t-toggle-thumb { will-change: translate; }
+    .t-toggle[data-on="true"] .t-toggle-thumb { translate: var(--toggle-travel) 0; }
+    .t-toggle.is-init[data-on="true"] .t-toggle-thumb { animation: t-toggle-on var(--toggle-dur) var(--toggle-ease) both; }
+    .t-toggle.is-init[data-on="false"] .t-toggle-thumb { animation: t-toggle-off var(--toggle-dur) var(--toggle-ease) both; }
+    @keyframes t-toggle-on {
+      0% { translate: 0 0; }
+      55% { translate: calc(var(--toggle-travel) + var(--toggle-ov1)) 0; }
+      80% { translate: calc(var(--toggle-travel) - var(--toggle-ov2)) 0; }
+      100% { translate: var(--toggle-travel) 0; }
+    }
+    @keyframes t-toggle-off {
+      0% { translate: var(--toggle-travel) 0; }
+      55% { translate: calc(0px - var(--toggle-ov1)) 0; }
+      80% { translate: var(--toggle-ov2) 0; }
+      100% { translate: 0 0; }
+    }
+
+    /* prefers-reduced-motion — required by every snippet. */
+    @media (prefers-reduced-motion: reduce) {
+      .proto-root .t-icon-swap .t-icon,
+      .proto-root .t-text-swap,
+      .proto-root .t-fade-blur,
+      .t-like-heart, .t-like-heart path,
+      .t-learn-chevron, .t-learn-arm,
+      .t-stagger-line,
+      .t-acc-panel, .t-acc-panel-inner, .t-acc-chevron, .notif-row {
+        transition: none !important;
+      }
+      .t-acc[data-open="true"] .notif-row { opacity: 1; filter: none; }
+      .t-like-icon, .t-like-particles i,
+      .t-digit-group .t-digit,
+      .t-toggle-thumb,
+      .t-success-check, .t-success-check svg path {
+        animation: none !important;
+      }
+      .t-success-check[data-state="in"] { opacity: 1; }
+      .t-success-check[data-state="in"] svg path { stroke-dashoffset: 0; }
+    }
+
+    /* ── "Generic AI output" mode ─────────────────────────────────── */
+    @media (prefers-reduced-motion: no-preference) {
+      /* Copy interaction: simple fade out/fade in only. Neutralize blur,
+         scale and translate via the recipe VARS (not filter/transform:
+         none) so the hooks stay live and Refine can raise them. */
+      body[data-style="generic"] .proto-root .t-icon-swap {
+        --icon-swap-blur: 0px;
+        --icon-swap-start-scale: 1;
+      }
+      body[data-style="generic"] .proto-root .t-icon-swap .t-icon {
+        transition: opacity var(--icon-swap-dur) ease-in-out;
+      }
+      body[data-style="generic"] .proto-root .t-text-swap {
+        --text-swap-blur: 0px;
+        --text-swap-translate-y: 0px;
+        transition: opacity var(--text-swap-dur) ease-in-out;
+      }
+      body[data-style="generic"] .proto-root .t-text-swap.is-enter-start {
+        transition: none;
+      }
+      /* Copy button width snaps to the new label instead of tweening.
+         Driven through the recipe var so the hook stays live. */
+      body[data-style="generic"] .proto-root .copy-text-slot {
+        --resize-dur: 0ms;
+      }
+
+      /* Like: fill color only — no pop, no particle burst. */
+      body[data-style="generic"] .proto-root .t-like[data-liked="true"] .t-like-icon { animation: none; }
+      body[data-style="generic"] .proto-root .t-like.is-bursting .t-like-particles i { animation: none; }
+
+      /* Learn more: whole chevron slides on a flat linear ramp, arms
+         never spread — no acceleration, no settle. */
+      body[data-style="generic"] .proto-root .t-learn {
+        --learn-spread: 0deg;
+        --learn-in: 200ms;
+        --learn-out: 200ms;
+        --learn-ease: linear;
+      }
+
+      /* Stepper: number cross-fades in place — no travel, no blur,
+         no stagger, plain ease. */
+      body[data-style="generic"] .proto-root .stepper {
+        --digit-distance: 0px;
+        --digit-blur: 0px;
+        --digit-stagger: 0ms;
+        --digit-dur: 250ms;
+        --digit-ease: ease-in-out;
+      }
+
+      /* Success state: a blunt scale-up pop on the check and one
+         chunky uniform rise for the copy, both on the same flat
+         300ms ease-in-out — no rotate, no bob, no blur, no stroke
+         draw, no stagger, no hold before it starts. */
+      body[data-style="generic"] .proto-root .request-slot {
+        --check-path-dur: 0ms;
+        --check-path-delay: 0ms;
+        --request-gap: 0ms;
+        --stagger-distance: 20px;
+        --stagger-blur: 0px;
+        --stagger-stagger: 0ms;
+        --stagger-delay: 0ms;
+        --stagger-dur: 300ms;
+        --stagger-ease: ease-in-out;
+        --text-swap-blur: 0px;
+      }
+      body[data-style="generic"] .proto-root .t-success-check[data-state="in"] {
+        animation:
+          t-check-fade        300ms ease-in-out forwards,
+          t-check-generic-pop 300ms ease-in-out forwards;
+      }
+
+      /* Notification card: chunky ease-in-out height, content and
+         chevron snap — no cross-blur, no flip choreography. */
+      body[data-style="generic"] .proto-root .t-acc {
+        --acc-expand: 300ms;
+        --acc-collapse: 300ms;
+        --acc-ease: ease-in-out;
+      }
+      body[data-style="generic"] .proto-root .notif-row {
+        --acc-blur: 0px;
+        opacity: 1;
+        filter: none;
+        transition: none;
+      }
+      body[data-style="generic"] .proto-root .t-acc-chevron { transition: none; }
+
+      /* Toggle: plain linear slide, no overshoot spring. */
+      body[data-style="generic"] .proto-root .t-toggle-thumb {
+        animation: none !important;
+        transition: translate 250ms ease-in-out;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="tool-btn" id="themeToggle" type="button">Dark mode</button>
+  </div>
+
+  <!-- ── Standalone compare stage (non-embed only) ────────────────── -->
+  <div class="compare-stage">
+    <div class="compare-pane">
+      <div class="compare-pane-heading">
+        <span class="compare-pane-badge compare-pane-badge--off" aria-hidden="true">
+          <svg viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <path d="M2.25 2.25L7.75 7.75M7.75 2.25L2.25 7.75" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="compare-pane-label">Generic AI output</span>
+      </div>
+      <iframe
+        id="compareIframeOff"
+        class="compare-pane-iframe"
+        src="demo-example-skill.html?embed=1&style=generic&v=20260820-1"
+        title="Buttons and cards demo without Transitions.dev skill"
+        loading="lazy"
+      ></iframe>
+    </div>
+    <div class="compare-pane">
+      <div class="compare-pane-heading">
+        <span class="compare-pane-badge compare-pane-badge--on" aria-hidden="true">
+          <svg viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M8.55 2.27a.75.75 0 0 1 0 1.06L4.28 7.6a.75.75 0 0 1-1.06 0L1.45 5.83a.75.75 0 1 1 1.06-1.06l1.24 1.24 3.74-3.74a.75.75 0 0 1 1.06 0Z" fill="#ffffff"/>
+          </svg>
+        </span>
+        <span class="compare-pane-label">With Transitions.dev skill</span>
+      </div>
+      <iframe
+        id="compareIframeOn"
+        class="compare-pane-iframe"
+        src="demo-example-skill.html?embed=1&v=20260820-1"
+        title="Buttons and cards demo with Transitions.dev skill"
+        loading="lazy"
+      ></iframe>
+    </div>
+  </div>
+
+  <!-- ── Prototype (embed) ────────────────────────────────────────── -->
+  <div class="proto-root">
+
+    <!-- 1 · Buttons -->
+    <div class="buttons-col">
+      <!-- Copy — icon swap (09) + text swap (04) -->
+      <button class="demo-btn copy-btn" id="copyBtn" type="button" aria-label="Copy">
+        <span class="copy-icon-slot t-icon-swap" id="copyIconSwap" data-state="a">
+          <span class="t-icon" data-icon="a">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
+              <path d="M3.33333 10C2.71208 10 2.40145 10 2.15642 9.89851C1.82972 9.76318 1.57015 9.50361 1.43483 9.17691C1.33333 8.93188 1.33333 8.62125 1.33333 8V3.46667C1.33333 2.71993 1.33333 2.34656 1.47866 2.06135C1.60649 1.81046 1.81046 1.60649 2.06135 1.47866C2.34656 1.33333 2.71993 1.33333 3.46667 1.33333H8C8.62125 1.33333 8.93188 1.33333 9.17691 1.43483C9.50361 1.57015 9.76318 1.82972 9.89851 2.15642C10 2.40145 10 2.71208 10 3.33333M8.13333 14.6667H12.5333C13.2801 14.6667 13.6534 14.6667 13.9387 14.5213C14.1895 14.3935 14.3935 14.1895 14.5213 13.9387C14.6667 13.6534 14.6667 13.2801 14.6667 12.5333V8.13333C14.6667 7.3866 14.6667 7.01323 14.5213 6.72801C14.3935 6.47713 14.1895 6.27316 13.9387 6.14532C13.6534 6 13.2801 6 12.5333 6H8.13333C7.3866 6 7.01323 6 6.72801 6.14532C6.47713 6.27316 6.27316 6.47713 6.14532 6.72801C6 7.01323 6 7.3866 6 8.13333V12.5333C6 13.2801 6 13.6534 6.14532 13.9387C6.27316 14.1895 6.47713 14.3935 6.72801 14.5213C7.01323 14.6667 7.3866 14.6667 8.13333 14.6667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="t-icon" data-icon="b">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
+              <path transform="translate(2.25 4.25)" fill-rule="evenodd" clip-rule="evenodd" d="M11.2803 0.21967C11.5732 0.512563 11.5732 0.987437 11.2803 1.28033L4.28033 8.28033C3.98744 8.57322 3.51256 8.57322 3.21967 8.28033L0.21967 5.28033C-0.0732233 4.98744 -0.0732233 4.51256 0.21967 4.21967C0.512563 3.92678 0.987437 3.92678 1.28033 4.21967L3.75 6.68934L10.2197 0.21967C10.5126 -0.0732233 10.9874 -0.0732233 11.2803 0.21967Z" fill="currentColor"/>
+            </svg>
+          </span>
+        </span>
+        <span class="copy-text-slot" id="copyTextSlot">
+          <span class="copy-text-measure" id="copyTextMeasure" aria-hidden="true">Copy</span>
+          <span class="t-text-swap" id="copyText">Copy</span>
+        </span>
+      </button>
+
+      <!-- Like — like button (23), exactly as collection.html -->
+      <button type="button" class="demo-btn t-like" data-liked="false">
+        <span class="t-like-icon">
+          <svg class="t-like-heart" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 13.8C8 13.8 1.75 10.3 1.75 6.05C1.75 4.13 3.3 2.58 5.22 2.58C6.4 2.58 7.44 3.17 8 4.07C8.56 3.17 9.6 2.58 10.78 2.58C12.7 2.58 14.25 4.13 14.25 6.05C14.25 10.3 8 13.8 8 13.8Z" stroke-width="1.4" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="t-like-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        Like
+      </button>
+
+      <!-- Learn more — learn more hover (24), exactly as collection.html -->
+      <button type="button" class="demo-btn t-learn">Learn more
+        <span class="t-learn-chevron">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <path class="t-learn-arm t-learn-arm-top" d="M6 4L10 8"/>
+            <path class="t-learn-arm t-learn-arm-bot" d="M10 8L6 12"/>
+          </svg>
+        </span>
+      </button>
+
+      <!-- Stepper — number pop-in (02) on the value -->
+      <div class="stepper" role="group" aria-label="Quantity stepper">
+        <button type="button" class="stepper-btn" id="stepperMinus" aria-label="Decrease">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2.6 7H11.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <span class="stepper-value" id="stepperValue" aria-live="polite">
+          <span class="t-digit-group"></span>
+        </span>
+        <button type="button" class="stepper-btn" id="stepperPlus" aria-label="Increase">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M7 2.6V11.4M2.6 7H11.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2 · Send request → success (10 success check + 18 texts reveal) -->
+    <div class="request-slot" id="requestSlot" data-sent="false">
+      <button type="button" class="demo-btn request-btn t-fade-blur" id="requestBtn">Send request</button>
+      <div class="request-success" id="requestSuccess" role="status">
+        <span class="request-badge-slot" aria-hidden="true">
+          <span class="t-success-check" id="requestCheck" data-state="out">
+            <span class="request-check-disc">
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" aria-hidden="true">
+                <path d="M2.9 7.3L5.3 9.8L11.1 3.7"
+                      stroke="#ffffff" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </span>
+        </span>
+        <div class="t-stagger" id="requestTexts">
+          <p class="request-title t-stagger-line t-stagger-line--1">Request sent</p>
+          <p class="request-copy t-stagger-line t-stagger-line--2">Thanks for your interest!<br>We will get back to you soon.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 · Notification card — accordion expand (21) + toggle (27) -->
+    <div class="notif-card t-acc" id="notifCard" data-open="false">
+      <button type="button" class="t-acc-head" aria-expanded="false">
+        Notifications
+        <span class="t-acc-chevron">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6.5L8 10.5L12 6.5"/></svg>
+        </span>
+      </button>
+      <div class="t-acc-panel">
+        <div class="t-acc-panel-inner">
+          <div class="notif-rows">
+            <div class="notif-row">
+              <span class="notif-row-label">Desktop notifications</span>
+              <button type="button" class="t-toggle" role="switch" data-on="false" aria-checked="false" aria-label="Desktop notifications">
+                <span class="t-toggle-thumb"></span>
+              </button>
+            </div>
+            <div class="notif-row">
+              <span class="notif-row-label">Email notifications</span>
+              <button type="button" class="t-toggle" role="switch" data-on="false" aria-checked="false" aria-label="Email notifications">
+                <span class="t-toggle-thumb"></span>
+              </button>
+            </div>
+            <div class="notif-row">
+              <span class="notif-row-label">Direct messages</span>
+              <button type="button" class="t-toggle" role="switch" data-on="false" aria-checked="false" aria-label="Direct messages">
+                <span class="t-toggle-thumb"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+      var docStyle = getComputedStyle(document.documentElement);
+      function cssNum(name, fb) {
+        var v = parseFloat(docStyle.getPropertyValue(name));
+        return Number.isFinite(v) ? v : fb;
+      }
+
+      /* ── Copy — text swap (04) + icon swap (09) ─────────────────── */
+      (function () {
+        var copyBtn = document.getElementById("copyBtn");
+        var copyText = document.getElementById("copyText");
+        var copyTextSlot = document.getElementById("copyTextSlot");
+        var copyTextMeasure = document.getElementById("copyTextMeasure");
+        var copyIconSwap = document.getElementById("copyIconSwap");
+        var textSwapDur = cssNum("--text-swap-dur", 150);
+        var textEnterDelay = cssNum("--text-swap-enter-delay", 0);
+        var textSwapAt = Math.max(0, textSwapDur + textEnterDelay);
+        function swapText(el, next) {
+          el.classList.add("is-exit");
+          setTimeout(function () {
+            el.textContent = next;
+            el.classList.remove("is-exit");
+            el.classList.add("is-enter-start");
+            void el.offsetHeight;
+            el.classList.remove("is-enter-start");
+          }, textSwapAt);
+        }
+        // Card resize (01): the slot width is measured off-screen for
+        // the incoming label and tweened, so the button hugs its text
+        // and grows into "Copied" instead of being pinned to the wider
+        // of the two states.
+        function sizeSlot(label, animate) {
+          copyTextMeasure.textContent = label;
+          var next = Math.ceil(copyTextMeasure.getBoundingClientRect().width);
+          if (!animate) {
+            var prev = copyTextSlot.style.transition;
+            copyTextSlot.style.transition = "none";
+            copyTextSlot.style.width = next + "px";
+            void copyTextSlot.offsetWidth;
+            copyTextSlot.style.transition = prev;
+          } else {
+            copyTextSlot.style.width = next + "px";
+          }
+        }
+        sizeSlot("Copy", false);
+        // Web fonts land after first paint; re-pin to the real metrics.
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(function () { sizeSlot(copyText.textContent, false); });
+        }
+
+        var copyResetTimer = null;
+        copyBtn.addEventListener("click", function () {
+          try { navigator.clipboard.writeText("https://transitions.dev/example"); } catch (_) {}
+          copyIconSwap.setAttribute("data-state", "b");
+          sizeSlot("Copied", true);
+          swapText(copyText, "Copied");
+          clearTimeout(copyResetTimer);
+          copyResetTimer = setTimeout(function () {
+            copyIconSwap.setAttribute("data-state", "a");
+            sizeSlot("Copy", true);
+            swapText(copyText, "Copy");
+          }, 1400);
+        });
+      })();
+
+      /* ── Like button (recipe 23) — from collection.html ─────────── */
+      (function () {
+        var like = document.querySelector(".t-like");
+        var dots = like.querySelectorAll(".t-like-particles i");
+        var burstTimer = null;
+        like.addEventListener("click", function () {
+          var liked = like.getAttribute("data-liked") === "true";
+          like.setAttribute("data-liked", String(!liked));
+          if (liked) return; // celebration only on the way in
+          var dist = cssNum("--like-particle-dist", 20);
+          var dur = cssNum("--like-particle-dur", 600);
+          dots.forEach(function (dot, i) {
+            var angle = (i / dots.length) * Math.PI * 2 + (Math.random() - 0.5) * 0.9;
+            var d = dist * (0.75 + Math.random() * 0.5);
+            dot.style.setProperty("--px", (Math.cos(angle) * d).toFixed(1) + "px");
+            dot.style.setProperty("--py", (Math.sin(angle) * d).toFixed(1) + "px");
+            dot.style.setProperty("--pdur", Math.round(dur * (0.8 + Math.random() * 0.4)) + "ms");
+            dot.style.setProperty("--pdelay", Math.round(Math.random() * 60) + "ms");
+            dot.style.setProperty("--psize", (0.8 + Math.random() * 0.7).toFixed(2));
+            dot.style.setProperty("--p-end-scale", (0.4 + Math.random() * 0.4).toFixed(2));
+          });
+          like.classList.remove("is-bursting");
+          void like.offsetWidth;
+          like.classList.add("is-bursting");
+          clearTimeout(burstTimer);
+          burstTimer = setTimeout(function () {
+            like.classList.remove("is-bursting");
+          }, dur * 1.4 + 80);
+        });
+      })();
+
+      /* ── Stepper — number pop-in (recipe 02) with ghost pop-out ── */
+      (function () {
+        var group = document.querySelector("#stepperValue .t-digit-group");
+        var minus = document.getElementById("stepperMinus");
+        var plus = document.getElementById("stepperPlus");
+        var value = 4;
+
+        var digitDur = cssNum("--digit-dur", 500);
+        var digitStagger = cssNum("--digit-stagger", 70);
+
+        function setDigits(str, dir) {
+          // dir: 1 → new digits rise in from below (increment),
+          //     -1 → drop in from above (decrement).
+          group.style.setProperty("--digit-dir-y", String(dir));
+
+          var oldGhost = group.querySelector(".t-digit-ghost");
+          if (oldGhost) oldGhost.remove();
+
+          var liveChars = group.querySelectorAll(":scope > .t-digit");
+          if (liveChars.length) {
+            var ghost = document.createElement("span");
+            ghost.className = "t-digit-ghost";
+            liveChars.forEach(function (ch) {
+              ghost.appendChild(ch.cloneNode(true));
+            });
+            group.appendChild(ghost);
+            setTimeout(function () {
+              if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+            }, digitDur + digitStagger + 50);
+          }
+
+          group.classList.remove("is-animating");
+          group.querySelectorAll(":scope > .t-digit").forEach(function (el) { el.remove(); });
+          var chars = str.split("");
+          chars.forEach(function (ch, i) {
+            var span = document.createElement("span");
+            span.className = "t-digit";
+            span.textContent = ch;
+            if (chars.length > 1 && i === chars.length - 1) span.dataset.stagger = "1";
+            var ghostEl = group.querySelector(".t-digit-ghost");
+            if (ghostEl) group.insertBefore(span, ghostEl);
+            else group.appendChild(span);
+          });
+          void group.offsetHeight;
+          group.classList.add("is-animating");
+        }
+
+        function render(dir) { setDigits(String(value), dir); }
+        // First paint: no animation, just the digits.
+        group.textContent = "";
+        String(value).split("").forEach(function (ch) {
+          var span = document.createElement("span");
+          span.className = "t-digit";
+          span.textContent = ch;
+          group.appendChild(span);
+        });
+        minus.addEventListener("click", function () {
+          if (value <= 0) return;
+          value -= 1;
+          render(-1);
+        });
+        plus.addEventListener("click", function () {
+          value += 1;
+          render(1);
+        });
+      })();
+
+      /* ── Send request → success (10 + 18) ───────────────────────── */
+      (function () {
+        var slot = document.getElementById("requestSlot");
+        var btn = document.getElementById("requestBtn");
+        var badge = document.getElementById("requestCheck");
+        var texts = document.getElementById("requestTexts");
+
+        // Calibrate the check draw to the real path length so it
+        // never pre-reveals or over-draws (skill 10 requirement).
+        var checkPath = badge.querySelector("path");
+        var checkLen = Math.ceil(checkPath.getTotalLength()) + 1;
+        checkPath.style.strokeDasharray = String(checkLen);
+        checkPath.style.strokeDashoffset = String(checkLen);
+
+        var fadeDur = cssNum("--text-swap-dur", 150);
+        var successGap = cssNum("--request-gap", 200);
+        var sent = false;
+        var sentAt = 0;
+        var successTimer = null;
+
+        function playSuccessCheck() {
+          badge.style.transition = "";
+          badge.style.opacity = "";
+          badge.setAttribute("data-state", "out");
+          checkPath.style.strokeDashoffset = String(checkLen);
+          void badge.offsetWidth; // reflow to replay keyframes from 0
+          badge.setAttribute("data-state", "in");
+        }
+        function fadeBadgeOut() {
+          var cs = getComputedStyle(badge);
+          badge.style.opacity = cs.opacity;
+          badge.setAttribute("data-state", "out"); // drop the keyframes
+          void badge.offsetWidth;
+          badge.style.transition = "opacity " + Math.max(fadeDur, 200) + "ms ease";
+          badge.style.opacity = "0";
+        }
+        function showTexts() {
+          texts.classList.remove("is-hiding");
+          texts.classList.remove("is-shown");
+          void texts.offsetHeight;
+          texts.classList.add("is-shown");
+        }
+        function hideTexts() {
+          texts.classList.add("is-hiding");
+          texts.classList.remove("is-shown");
+          setTimeout(function () { texts.classList.remove("is-hiding"); }, 200);
+        }
+
+        btn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (sent) return;
+          sent = true;
+          sentAt = performance.now();
+          slot.setAttribute("data-sent", "true");
+          btn.classList.add("is-fading");
+          // Let the button clear the stage, hold a beat, then celebrate.
+          clearTimeout(successTimer);
+          successTimer = setTimeout(function () {
+            playSuccessCheck();
+            showTexts();
+          }, fadeDur + successGap);
+        });
+        // In the success state the whole area takes the click to reset.
+        slot.querySelector(".request-success").addEventListener("click", function () {
+          // Ignore the tail of the same tap that just sent (touch
+          // emulation can re-dispatch a click onto the new overlay).
+          if (!sent || performance.now() - sentAt < 300) return;
+          sent = false;
+          clearTimeout(successTimer);
+          slot.setAttribute("data-sent", "false");
+          fadeBadgeOut();
+          hideTexts();
+          btn.classList.remove("is-fading");
+        });
+      })();
+
+      /* ── Notification card — accordion (21) + toggles (27) ──────── */
+      (function () {
+        var acc = document.getElementById("notifCard");
+        var head = acc.querySelector(".t-acc-head");
+        var accCollapse = cssNum("--acc-collapse", 250);
+        var closingTimer = null;
+        head.addEventListener("click", function () {
+          var open = acc.getAttribute("data-open") === "true";
+          acc.setAttribute("data-open", String(!open));
+          head.setAttribute("aria-expanded", String(!open));
+          clearTimeout(closingTimer);
+          acc.classList.remove("is-closing");
+          if (open) {
+            // Suppress the header hover until the panel has finished
+            // collapsing under the cursor.
+            acc.classList.add("is-closing");
+            closingTimer = setTimeout(function () {
+              acc.classList.remove("is-closing");
+            }, accCollapse);
+          }
+        });
+        acc.querySelectorAll(".t-toggle").forEach(function (toggle) {
+          toggle.addEventListener("click", function (e) {
+            e.stopPropagation();
+            // .is-init on first interaction so the off keyframes don't
+            // play once at page load.
+            toggle.classList.add("is-init");
+            var on = toggle.getAttribute("data-on") === "true";
+            toggle.setAttribute("data-on", String(!on));
+            toggle.setAttribute("aria-checked", String(!on));
+          });
+        });
+      })();
+
+      /* ── Theme ──────────────────────────────────────────────────── */
+      var themeToggle = document.getElementById("themeToggle");
+      function applyTheme(next) {
+        document.documentElement.dataset.theme = next;
+        if (themeToggle) themeToggle.textContent = next === "dark" ? "Light mode" : "Dark mode";
+      }
+      if (themeToggle) {
+        themeToggle.addEventListener("click", function () {
+          var next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+          applyTheme(next);
+          ["compareIframeOff", "compareIframeOn"].forEach(function (id) {
+            var f = document.getElementById(id);
+            if (f && f.contentWindow) {
+              try { f.contentWindow.postMessage({ type: "theme", theme: next }, "*"); } catch (_) {}
+            }
+          });
+        });
+      }
+
+      /* ── Embed init ─────────────────────────────────────────────── */
+      (function initEmbed() {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get("embed") !== "1") return;
+        document.documentElement.dataset.embed = "true";
+        document.body.dataset.embed = "true";
+        var style = params.get("style");
+        if (style === "generic") document.body.dataset.style = "generic";
+        var initialTheme = params.get("theme");
+        if (initialTheme === "dark" || initialTheme === "light") applyTheme(initialTheme);
+        window.addEventListener("message", function (event) {
+          var data = event.data;
+          if (!data) return;
+          if (data.type === "theme" && (data.theme === "dark" || data.theme === "light")) applyTheme(data.theme);
+        });
+      })();
+    })();
+  </script>
+</body>
+</html>

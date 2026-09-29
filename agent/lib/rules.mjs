@@ -11,6 +11,74 @@ const JSXISH = new Set([".jsx", ".tsx", ".js", ".mjs", ".ts"]);
 const DURATION_RE = /\b(transition|animation)(?:-duration)?\s*:\s*([^;}"']*\b\d*\.?\d+m?s\b[^;}"']*)/g;
 const TIME_RE = /(\d*\.?\d+)(ms|s)\b/g;
 
+// CSS vocabulary that also shows up in prose; excluded when counting "plain words".
+const CSS_WORDS = new Set([
+  "all", "ease", "linear", "opacity", "transform", "color", "background", "none",
+  "both", "forwards", "backwards", "infinite", "alternate", "normal", "reverse",
+  "running", "paused", "width", "height", "top", "left", "right", "bottom",
+  "transition", "animation", "scale", "translate", "rotate", "filter", "visibility",
+  "margin", "padding", "border", "shadow", "inherit", "initial", "unset",
+]);
+
+// Single-pass tokenizer: ranges of '...'/"..." string literals and //, /* */ comments
+// in a JS-ish file. Template literals are tracked so their contents stay scannable
+// (CSS-in-JS lives there) but are not reported as quoted strings.
+function literalRanges(src) {
+  const strings = [];
+  const comments = [];
+  let mode = null; // "'" | '"' | "`" | "line" | "block"
+  let start = 0;
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (mode === null) {
+      if (c === "'" || c === '"' || c === "`") { mode = c; start = i; }
+      else if (c === "/" && src[i + 1] === "/") { mode = "line"; start = i; }
+      else if (c === "/" && src[i + 1] === "*") { mode = "block"; start = i; i++; }
+    } else if (mode === "'" || mode === '"') {
+      if (c === "\\") i++;
+      else if (c === mode) { strings.push({ start, end: i, text: src.slice(start + 1, i) }); mode = null; }
+      else if (c === "\n") mode = null; // unterminated; bail on this literal
+    } else if (mode === "`") {
+      if (c === "\\") i++;
+      else if (c === "`") mode = null;
+    } else if (mode === "line") {
+      if (c === "\n") { comments.push({ start, end: i }); mode = null; }
+    } else if (mode === "block") {
+      if (c === "*" && src[i + 1] === "/") { comments.push({ start, end: i + 1 }); mode = null; i++; }
+    }
+  }
+  if (mode === "line") comments.push({ start, end: src.length });
+  return { strings, comments };
+}
+
+function rangeAt(ranges, index) {
+  for (const r of ranges) if (index >= r.start && index <= r.end) return r;
+  return null;
+}
+
+// A quoted string is message text when it reads like prose rather than CSS:
+// several non-CSS words, or sentence punctuation.
+function isMessageText(text) {
+  if (/[.!?]\s|[.!?]$/.test(text)) return true;
+  const plain = text.split(/\s+/).filter((w) => {
+    const bare = w.replace(/[.,!?:;()"']+$/, "");
+    return /^[A-Za-z][A-Za-z']*$/.test(bare) && !CSS_WORDS.has(bare.toLowerCase());
+  });
+  return plain.length >= 4;
+}
+
+// True when a match in a JS-ish file sits inside a comment, or inside a quoted
+// string that is clearly a human-facing message rather than real CSS.
+function inNonCssLiteral(lits, index, { needsDuration = false } = {}) {
+  if (rangeAt(lits.comments, index)) return true;
+  const str = rangeAt(lits.strings, index);
+  if (!str) return false;
+  if (isMessageText(str.text)) return true;
+  // e.g. a bare "transition: all" label with no time value animates nothing.
+  if (needsDuration && !/\d\s*m?s\b/.test(str.text)) return true;
+  return false;
+}
+
 export function runRules(files) {
   const findings = [];
   const durations = []; // { value(ms), path, line }
@@ -20,6 +88,7 @@ export function runRules(files) {
   for (const f of files) {
     if (!CSSISH.has(f.ext)) continue;
     const src = f.content;
+    const lits = JSXISH.has(f.ext) ? literalRanges(src) : null;
 
     if (/prefers-reduced-motion/.test(src)) hasReducedMotion = true;
     if (/@keyframes|\banimation(?:-name)?\s*:/.test(src)) hasAnimation = true;
@@ -28,6 +97,7 @@ export function runRules(files) {
     DURATION_RE.lastIndex = 0;
     let m;
     while ((m = DURATION_RE.exec(src))) {
+      if (lits && inNonCssLiteral(lits, m.index)) continue;
       const valuePart = m[2];
       TIME_RE.lastIndex = 0;
       let t;
@@ -55,6 +125,7 @@ export function runRules(files) {
     // transition-all
     const allRe = /transition\s*:\s*all\b/g;
     while ((m = allRe.exec(src))) {
+      if (lits && inNonCssLiteral(lits, m.index, { needsDuration: true })) continue;
       findings.push({
         rule: "transition-all",
         severity: "warn",

@@ -1,0 +1,30 @@
+name: Deprecate old CLI name
+
+# One-off maintenance: flags transitions-pro as deprecated on npm so installs
+# point at transitions-dev. The package still works (cli-legacy/ forwards every
+# command), this only adds npm's own warning. Run by hand; reversible by
+# dispatching with an empty message.
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: "Deprecation message (empty clears the deprecation)"
+        required: false
+        default: "Renamed to transitions-dev. Run: npx transitions-dev add --free"
+
+jobs:
+  deprecate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Deprecate transitions-pro
+        run: npm deprecate transitions-pro "${{ inputs.message }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.REFINE }}

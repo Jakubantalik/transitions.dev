@@ -119,6 +119,28 @@
     })();
   </script>
   <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
     /* Saans - used for the hero eyebrow + title (Medium / 500). */
     @font-face {
       font-family: "Saans";
@@ -3862,11 +3884,19 @@
     html[data-theme="dark"] .t-acc-panel-inner code {
       background: rgba(255, 255, 255, 0.06);
     }
-    .t-acc-panel-inner a {
-      color: var(--text);
+    .t-acc-panel-inner a,
+    .skill-section-note a {
+      color: inherit;
+      display: inline-block;
       text-decoration: underline;
-      text-underline-offset: 2px;
+      text-decoration-thickness: from-font;
+      text-underline-position: from-font;
+      text-decoration-skip-ink: auto;
+      text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+      transition: none;
     }
+    .t-acc-panel-inner a:hover,
+    .skill-section-note a:hover { text-decoration-color: currentColor; }
 
     @media (prefers-reduced-motion: reduce) {
       .t-acc-panel, .t-acc-panel-inner, .t-acc-chevron {
@@ -5119,6 +5149,6 @@
       });
     })();
   </script>
-  <script src="assets/pro-client.js?v=29" defer></script>
+  <script src="assets/pro-client.js?v=36" defer></script>
 </body>
 </html>

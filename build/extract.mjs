@@ -305,8 +305,8 @@ The glow uses \`mix-blend-mode: multiply\` in light mode. In dark mode flip to \
     when: "A loading / \"thinking\" label that shimmers — streaming status, \"Generating…\", any in-progress copy that should feel alive without a spinner. Pure CSS: duplicate the string into \`data-text\` on \`.t-shimmer\` and tune \`--shimmer-base\` / \`--shimmer-highlight\` per theme." },
   { key: "p16", file: "16-tabs-sliding", summary: "Slide the active pill between tabs in a segmented control",
     when: "A segmented control / tab bar where the active pill slides between options — view switchers, filter segments, small mutually-exclusive button sets. JS writes the active tab's \`offsetLeft\` / \`offsetWidth\` onto the pill; CSS owns the tween." },
-  { key: "p17", file: "17-tooltip", summary: "Delayed fade+scale in, instant out (pure CSS)",
-    when: "A hover/focus tooltip that fades + scales in with a short appear-delay but disappears immediately on leave. Pure CSS — the wrap (not the trigger) is the hover target so the pointer can drift onto the tooltip without flicker." },
+  { key: "p17", file: "17-tooltip", summary: "Delayed fade+scale in, instant out, travels between triggers",
+    when: "A hover/focus tooltip shared by a group of triggers (toolbar buttons, icon rows, avatar stacks). It fades + scales in with a short appear-delay, disappears immediately on leave, and when the pointer moves to a neighbouring trigger while it is showing, the one bubble tweens its x-position and width to the new target instead of popping a second one. A small JS snippet measures the target and writes the geometry; CSS owns every tween." },
   { key: "p18", file: "18-texts-reveal", summary: "Staggered blurred rise for stacked text lines, quiet fade out",
     when: "A headline + supporting line that rise into view with staggered blur — hero copy, empty states, onboarding steps. Exit is decoupled: a single quiet fade with no Y-return so dismissing doesn't replay the reveal in reverse." },
   { key: "p19", file: "19-card-tilt", summary: "Tilt a card in 3D toward the pointer with a cursor-tracked glare",
@@ -682,6 +682,51 @@ tabs.forEach((tab) => {
 });
 requestAnimationFrame(() => moveTo(active(), false));
 window.addEventListener("resize", () => moveTo(active(), false));`,
+  p17: `// One tooltip per group, shared by every trigger. Hovering a trigger
+// writes the bubble's x + width for that trigger: when it is already
+// showing the move tweens (it travels), when hidden the geometry snaps
+// under it and only the appear plays. Leaving the group hides it.
+const group = document.querySelector(".t-tt-group");
+const tip = group.querySelector(".t-tt");
+const text = tip.querySelector(".t-tt-text");
+const triggers = [...group.querySelectorAll(".t-tt-trigger")];
+
+function hide() {
+  tip.setAttribute("data-show", "false");
+  tip.setAttribute("aria-hidden", "true");
+}
+
+function place(trigger) {
+  const showing = tip.getAttribute("data-show") === "true";
+  text.textContent = trigger.getAttribute("data-tooltip") || "";
+  const cs = getComputedStyle(tip);
+  const width = Math.ceil(
+    text.scrollWidth + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)
+  );
+  const g = group.getBoundingClientRect();
+  const r = trigger.getBoundingClientRect();
+  const x = r.left - g.left + r.width / 2 - width / 2;
+  if (!showing) {
+    // Snap the geometry while hidden so only the appear plays.
+    tip.style.transition = "none";
+    tip.style.width = \`\${width}px\`;
+    tip.style.setProperty("--tt-x", \`\${x}px\`);
+    void tip.offsetWidth;
+    tip.style.transition = "";
+  } else {
+    tip.style.width = \`\${width}px\`;
+    tip.style.setProperty("--tt-x", \`\${x}px\`);
+  }
+  tip.setAttribute("data-show", "true");
+  tip.setAttribute("aria-hidden", "false");
+}
+
+triggers.forEach((t) => {
+  t.addEventListener("pointerenter", () => place(t));
+  t.addEventListener("focus", () => place(t));
+  t.addEventListener("blur", hide);
+});
+group.addEventListener("pointerleave", hide);`,
   p18: `const block = document.querySelector(".t-stagger");
 
 function showText() {

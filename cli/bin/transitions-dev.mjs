@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-// transitions-pro — install transitions.dev recipes into your project.
+// transitions-dev — install transitions.dev recipes into your project.
 //
-//   npx transitions-pro list                 list free + Pro transitions
-//   npx transitions-pro add card-resize       add a transition (free = instant)
-//   npx transitions-pro add --all             add every free transition
-//   npx transitions-pro add --pro             add everything incl. Pro (auto-login)
-//   npx transitions-pro skill                 install the Pro agent skill (auto-login)
-//   npx transitions-pro login                 authenticate (opens the browser)
-//   npx transitions-pro logout                sign out
-//   npx transitions-pro whoami                show login status
+//   npx transitions-dev list                 list free + Pro transitions
+//   npx transitions-dev add card-resize       add a transition (free = instant)
+//   npx transitions-dev add --free            add every free transition
+//   npx transitions-dev add --pro             add everything incl. Pro (auto-login)
+//   npx transitions-dev skill                 install the Pro agent skill (auto-login)
+//   npx transitions-dev login                 authenticate (opens the browser)
+//   npx transitions-dev logout                sign out
+//   npx transitions-dev whoami                show login status
 //
 // Flags: --dir <path> (default ./transitions), --api <url> (default api.transitions.dev)
 // No dependencies — Node 18+ (built-in fetch).
@@ -21,7 +21,10 @@ import { spawn } from "node:child_process";
 import readline from "node:readline";
 
 const PKG_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
-const CREDS_PATH = join(homedir(), ".transitions-pro.json");
+const CREDS_PATH = join(homedir(), ".transitions-dev.json");
+// Credentials written while the package was still named transitions-pro.
+// Read as a fallback so the rename does not sign existing users out.
+const LEGACY_CREDS_PATH = join(homedir(), ".transitions-pro.json");
 
 const args = process.argv.slice(2);
 const flags = {};
@@ -53,7 +56,12 @@ function loadFreeManifest() {
   return JSON.parse(readFileSync(join(PKG_DIR, "free-manifest.json"), "utf8"));
 }
 function loadCreds() {
-  try { return JSON.parse(readFileSync(CREDS_PATH, "utf8")); } catch { return null; }
+  try { return JSON.parse(readFileSync(CREDS_PATH, "utf8")); } catch { /* try legacy */ }
+  try {
+    const legacy = JSON.parse(readFileSync(LEGACY_CREDS_PATH, "utf8"));
+    saveCreds(legacy);   // migrate once, so logout and whoami see one file
+    return legacy;
+  } catch { return null; }
 }
 function saveCreds(obj) { writeFileSync(CREDS_PATH, JSON.stringify(obj, null, 2)); }
 
@@ -79,10 +87,10 @@ async function cmdList() {
   try { pro = (await (await api("/catalog")).json()).pro || []; } catch { /* offline */ }
   if (pro.length) {
     const creds = loadCreds();
-    log("\n" + c.bold("Pro transitions") + "  " + (creds ? c.green("(signed in)") : c.yellow("(run `transitions-pro login`)")));
+    log("\n" + c.bold("Pro transitions") + "  " + (creds ? c.green("(signed in)") : c.yellow("(run `transitions-dev login`)")));
     pro.forEach((t) => log("  " + t.id.padEnd(26) + c.blue("Pro") + c.dim("  " + (t.variants || []).join(", "))));
   }
-  log("\n" + c.dim(`Add one:  npx transitions-pro add ${free[0]?.slug || "card-resize"}`) + "\n");
+  log("\n" + c.dim(`Add one:  npx transitions-dev add ${free[0]?.slug || "card-resize"}`) + "\n");
 }
 
 function writeRecipe(slug, variant, text) {
@@ -94,12 +102,14 @@ function writeRecipe(slug, variant, text) {
 }
 
 async function cmdAdd(slug) {
-  // Bulk installs: `--all` grabs every free transition; `--pro` (alone or
-  // with `--all`) grabs everything including Pro and triggers login when
-  // the terminal isn't signed in yet.
-  if (flags.all || flags.pro) return cmdAddAll(!!flags.pro);
+  // Bulk installs: `--free` grabs every free transition; `--pro` grabs
+  // everything including Pro and triggers login when the terminal isn't
+  // signed in yet. `--all` is the old spelling of `--free`, kept working
+  // because it is printed in published docs, but it read as "including Pro"
+  // and is no longer advertised.
+  if (flags.free || flags.all || flags.pro) return cmdAddAll(!!flags.pro);
 
-  if (!slug) die("Usage: transitions-pro add <name>   (or `--all` / `--pro`; see `transitions-pro list`)");
+  if (!slug) die("Usage: transitions-dev add <name>   (or `--free` / `--pro`; see `transitions-dev list`)");
   const free = loadFreeManifest();
   const freeMatch = free.find((t) => t.slug === slug);
 
@@ -117,10 +127,10 @@ async function cmdAdd(slug) {
   let pro = [];
   try { pro = (await (await api("/catalog")).json()).pro || []; } catch { /* handled below */ }
   const proMatch = pro.find((t) => t.id === slug);
-  if (!proMatch) die(`Unknown transition "${slug}". Run \`transitions-pro list\`.`);
+  if (!proMatch) die(`Unknown transition "${slug}". Run \`transitions-dev list\`.`);
 
   const creds = loadCreds();
-  if (!creds || !creds.token) die("This is a Pro transition. Run `transitions-pro login` first.");
+  if (!creds || !creds.token) die("This is a Pro transition. Run `transitions-dev login` first.");
 
   const variants = proMatch.variants && proMatch.variants.length ? proMatch.variants : ["css"];
   let wrote = 0;
@@ -129,7 +139,7 @@ async function cmdAdd(slug) {
       headers: { Authorization: "Bearer " + creds.token },
     });
     if (res.status === 401 || res.status === 403) {
-      die("Your session expired or your Pro plan isn't active. Run `transitions-pro login` again.");
+      die("Your session expired or your Pro plan isn't active. Run `transitions-dev login` again.");
     }
     if (!res.ok) { console.error(c.red("✗ ") + `${slug}/${variant}: ${res.status}`); continue; }
     const file = writeRecipe(slug, variant, await res.text());
@@ -155,7 +165,7 @@ async function cmdAddAll(includePro) {
   log(c.green("✓ ") + `Added ${c.bold(wrote + " free transitions")} → ${c.dim(dir + "/")}`);
 
   if (!includePro) {
-    log(c.dim("Run `transitions-pro add --pro` to include the Pro transitions too."));
+    log(c.dim("Run `transitions-dev add --pro` to include the Pro transitions too."));
     return;
   }
 
@@ -181,7 +191,7 @@ async function cmdAddAll(includePro) {
         headers: { Authorization: "Bearer " + creds.token },
       });
       if (res.status === 401 || res.status === 403) {
-        die("Your session expired or your Pro plan isn't active. Run `transitions-pro login` again.");
+        die("Your session expired or your Pro plan isn't active. Run `transitions-dev login` again.");
       }
       if (!res.ok) { console.error(c.red("✗ ") + `${t.id}/${variant}: ${res.status}`); continue; }
       writeRecipe(t.id, variant, await res.text());
@@ -210,7 +220,7 @@ async function fetchRecipe(id, variant, token) {
     headers: { Authorization: "Bearer " + token },
   });
   if (res.status === 401 || res.status === 403) {
-    die("Your session expired or your Pro plan isn't active. Run `transitions-pro login` again.");
+    die("Your session expired or your Pro plan isn't active. Run `transitions-dev login` again.");
   }
   if (!res.ok) { console.error(c.red("✗ ") + `${id}/${variant}: ${res.status}`); return null; }
   return res.text();
@@ -276,7 +286,7 @@ ${list}
 3. Paste the snippet and set the documented \`--<name>-*\` custom properties / hook props.
 4. Every recipe already guards \`prefers-reduced-motion\` — keep that intact.
 
-Run \`npx transitions-pro skill\` again to refresh these recipes after updates.
+Run \`npx transitions-dev skill\` again to refresh these recipes after updates.
 `;
 }
 
@@ -307,30 +317,31 @@ async function cmdLogin() {
       return;
     }
     if (r.status === "denied") die("\nAccess denied — this account doesn't have an active Pro plan.");
-    if (r.status === "expired") die("\nThe login request expired. Run `transitions-pro login` again.");
+    if (r.status === "expired") die("\nThe login request expired. Run `transitions-dev login` again.");
   }
   die("\nTimed out waiting for approval.");
 }
 
 function cmdLogout() {
-  if (existsSync(CREDS_PATH)) { rmSync(CREDS_PATH); log(c.green("✓ Signed out.")); }
+  const paths = [CREDS_PATH, LEGACY_CREDS_PATH].filter(existsSync);
+  if (paths.length) { paths.forEach((f) => rmSync(f)); log(c.green("✓ Signed out.")); }
   else log(c.dim("Not signed in."));
 }
 
 function cmdWhoami() {
   const creds = loadCreds();
   if (creds && creds.token) log(c.green("Signed in") + c.dim(`  (credentials in ${CREDS_PATH})`));
-  else log(c.yellow("Not signed in.") + c.dim("  Run `transitions-pro login`."));
+  else log(c.yellow("Not signed in.") + c.dim("  Run `transitions-dev login`."));
 }
 
 function cmdHelp() {
   log(`
-${c.bold("transitions-pro")} — install transitions.dev recipes into your project.
+${c.bold("transitions-dev")} — install transitions.dev recipes into your project.
 
 ${c.bold("Commands")}
   list                     list free + Pro transitions
   add <name>               add a transition (free is instant; Pro needs login)
-  add --all                add every free transition at once
+  add --free               add every free transition at once
   add --pro                add everything incl. Pro recipes (signs you in if needed)
   skill                    install the Pro transitions as an agent skill
   login                    sign in (opens the browser)
@@ -358,7 +369,7 @@ const [cmd, ...rest] = positional;
       case "help":
       case "--help":
       case "-h": cmdHelp(); break;
-      default: die(`Unknown command "${cmd}". Run \`transitions-pro help\`.`);
+      default: die(`Unknown command "${cmd}". Run \`transitions-dev help\`.`);
     }
   } catch (e) {
     die(e && e.message ? e.message : String(e));

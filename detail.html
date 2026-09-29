@@ -119,6 +119,28 @@
     })();
   </script>
   <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
     /* ============================================================ */
     /* Design tokens — light (default) and dark                      */
     /* ============================================================ */
@@ -437,6 +459,11 @@
       --p17-delay:           var(--duration-micro);
       --p17-in-ease:         var(--ease-out);
       --p17-out-ease:        var(--ease-out);
+      /* One bubble is shared by the whole trigger group. When it is
+         already showing, a new target tweens its x + width on the move
+         clock, so it travels between triggers rather than popping. */
+      --p17-move-dur:        160ms;
+      --p17-move-ease:       cubic-bezier(0.22, 1, 0.36, 1);
       --p17-bg:              #ffffff;
       --p17-fg:              #2f2f2f;
 
@@ -628,13 +655,16 @@
          smaller, higher, dimmer — instead of moving away. Max 3
          visible; the oldest fades out when a fourth arrives. Depth
          steps: −--p34-peek px, ×(1 − depth·scale), opacity
-         −depth·fade. */
+         −depth·fade, plus a per-depth blur so the queue reads as
+         receding rather than merely dimmed. */
       --p34-open-dur:        350ms;
       --p34-close-dur:       250ms;
-      --p34-distance:        80px;
+      --p34-distance:        60px;
       --p34-blur:            var(--blur-small);
       --p34-scale-in:        0.97;
       --p34-peek:            12px;
+      --p34-depth1-blur:     1px;   /* second banner in the stack */
+      --p34-depth2-blur:     2px;   /* third */
       /* Hovering the stack fans the banners into a list: each one
          climbs its own height plus --p34-spread-gap and drops the
          depth scale and fade. */
@@ -1374,10 +1404,16 @@
     }
     /* Slightly darker than the body copy — points at the Skill page. */
     .subtitle-skill {
-      color: var(--text);
-      text-decoration: none;
+      color: inherit;
+      display: inline-block;
+      text-decoration: underline;
+      text-decoration-thickness: from-font;
+      text-underline-position: from-font;
+      text-decoration-skip-ink: auto;
+      text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+      transition: none;
     }
-    .subtitle-skill:hover { text-decoration: underline; text-underline-offset: 2px; }
+    .subtitle-skill:hover { text-decoration-color: currentColor; }
 
     /* Hero CTA row (same component as /refine + /skill). Primary pill is
        dark in light theme and light in dark theme; secondary keeps a
@@ -3643,15 +3679,19 @@
     .p17-stage-inner {
       padding-top: 56px;
     }
-    .p17-wrap {
+    /* One tooltip per group. It stays mounted and retargets by tweening
+       its x-position and width across the triggers, so moving along the
+       row reads as one bubble travelling rather than three popping. */
+    .p17-group {
       position: relative;
-      display: inline-block;
+      display: inline-flex;
+      gap: 8px;
     }
     /* Trigger styling mirrors `.btn-animate` so every interactive
        affordance on a card reads as the same pill control: same
        height, padding, radius, type scale, and theme-aware bg
        tokens. Positioning stays inline (no absolute / bottom)
-       because the tooltip anchors off this element via `.p17-wrap`. */
+       because the tooltip anchors off the surrounding `.p17-group`. */
     .p17-trigger {
       appearance: none;
       -webkit-appearance: none;
@@ -3701,8 +3741,17 @@
     .p17-tooltip {
       position: absolute;
       bottom: calc(100% + 8px);
-      left: 50%;
-      transform: translate(-50%, 0) scale(var(--p17-scale-from));
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 0;                 /* initP17 writes the measured width */
+      overflow: hidden;
+      /* Individual transform properties: the travel (translate) and the
+         appear (scale) run on their own clocks without sharing one
+         transform. */
+      translate: var(--p17-x, 0px) 0;
+      scale: var(--p17-scale-from);
       transform-origin: 50% 100%;
       padding: 8px 10px;
       border-radius: 10px;
@@ -3721,21 +3770,28 @@
       pointer-events: none;
       transition:
         opacity   var(--p17-out-dur) var(--p17-out-ease),
-        transform var(--p17-out-dur) var(--p17-out-ease);
+        scale     var(--p17-out-dur) var(--p17-out-ease),
+        translate var(--p17-move-dur) var(--p17-move-ease),
+        width     var(--p17-move-dur) var(--p17-move-ease);
     }
+    .p17-tooltip-text { white-space: nowrap; }
     html[data-theme="dark"] .p17-tooltip {
       box-shadow:
         inset 0 0 0 1px rgba(255, 255, 255, 0.03),
         0 1px 1px 0 rgba(0, 0, 0, 0.08),
         0 2px 6px 0 rgba(0, 0, 0, 0.15);
     }
-    .p17-wrap:hover .p17-tooltip,
-    .p17-trigger:focus-visible + .p17-tooltip {
+    /* The appear delay belongs ONLY to the show rule, so hiding snaps it
+       back to 0. The move lanes carry no delay, so a retarget while
+       showing starts at once. */
+    .p17-tooltip[data-show="true"] {
       opacity: 1;
-      transform: translate(-50%, 0) scale(1);
-      transition-duration: var(--p17-in-dur);
-      transition-timing-function: var(--p17-in-ease);
-      transition-delay: var(--p17-delay);
+      scale: 1;
+      transition:
+        opacity   var(--p17-in-dur) var(--p17-in-ease) var(--p17-delay),
+        scale     var(--p17-in-dur) var(--p17-in-ease) var(--p17-delay),
+        translate var(--p17-move-dur) var(--p17-move-ease),
+        width     var(--p17-move-dur) var(--p17-move-ease);
     }
 
     /* ─── Prototype 18 — Primary + secondary text appear ───────
@@ -4837,6 +4893,7 @@
       transform: translateY(calc(var(--p34-peek) * -1))
                  scale(calc(1 - var(--p34-depth-scale)));
       opacity: calc(1 - var(--p34-depth-fade));
+      filter: blur(var(--p34-depth1-blur));
     }
     .p34-banner[data-depth="2"] {
       z-index: 1;
@@ -4844,6 +4901,7 @@
       transform: translateY(calc(var(--p34-peek) * -2))
                  scale(calc(1 - var(--p34-depth-scale) * 2));
       opacity: calc(1 - var(--p34-depth-fade) * 1.6);
+      filter: blur(var(--p34-depth2-blur));
     }
     /* Spread: the stack reads as a list. Newest stays put and the
        older ones climb by one banner height each. Driven by a class,
@@ -4853,6 +4911,7 @@
     .p34-stack.is-spread .p34-banner[data-depth="1"],
     .p34-stack.is-spread .p34-banner[data-depth="2"] {
       opacity: 1;
+      filter: blur(0);
     }
     .p34-stack.is-spread .p34-banner[data-depth="1"] {
       transform: translateY(calc((46px + var(--p34-spread-gap)) * -1)) scale(1);
@@ -5756,12 +5815,136 @@
        so the two surfaces stay identical. */
     .detail-tabs.proto-modal-tabs { align-self: flex-start; margin-bottom: 0; }
 
+    /* Tabs row with the Copy prompt pill on the right (libraries.dev
+       detail-page component, restyled to this site's flat chips). */
+    .detail-head-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .detail-prompt {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 50px;
+      /* Fill + shadow copied from the home page category tabs (.cards-filter). */
+      background: #fff;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 14px;
+      white-space: nowrap;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 140ms;
+    }
+    .detail-prompt:hover { background: #f7f7f7; }
+    .detail-prompt:active { background: #f1f1f1; }
+    html[data-theme="dark"] .detail-prompt {
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow:
+        0 1px 1px 0 rgba(0, 0, 0, 0.24),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+    }
+    html[data-theme="dark"] .detail-prompt:hover { background: rgba(255, 255, 255, 0.08); }
+    html[data-theme="dark"] .detail-prompt:active { background: rgba(255, 255, 255, 0.14); }
+    .detail-prompt:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
+    .detail-prompt-label { display: inline-block; }
+    /* Locked on Pro transitions for non-Pro viewers: muted, no copy,
+       tooltip on hover (same pill as the card copy tooltip). */
+    .detail-prompt { position: relative; }
+    .detail-prompt[aria-disabled="true"] { cursor: default; color: var(--text-faint); }
+    .detail-prompt[aria-disabled="true"]:hover,
+    .detail-prompt[aria-disabled="true"]:active { background: #fff; }
+    html[data-theme="dark"] .detail-prompt[aria-disabled="true"]:hover,
+    html[data-theme="dark"] .detail-prompt[aria-disabled="true"]:active { background: rgba(255, 255, 255, 0.04); }
+    .detail-prompt-tip {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(100% + 8px);
+      box-sizing: border-box;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 12px;
+      border-radius: 40px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear 150ms;
+      background: #ffffff;
+      color: #17181c;
+      box-shadow:
+        0 2px 8px 0 rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 1px 1px 0 rgba(0, 0, 0, 0.04);
+    }
+    html[data-theme="dark"] .detail-prompt-tip {
+      background: #181818;
+      color: #e3e3e3;
+      box-shadow: 0 1px 16px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+    .detail-prompt[aria-disabled="true"]:hover .detail-prompt-tip,
+    .detail-prompt[aria-disabled="true"]:focus-visible .detail-prompt-tip {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+    }
+    .detail-prompt-ico {
+      position: relative;
+      flex: none;
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+    }
+    .detail-prompt-ico svg {
+      position: absolute;
+      inset: 0;
+      width: 16px;
+      height: 16px;
+      display: block;
+      transform-origin: center;
+      will-change: opacity, transform, filter;
+      transition:
+        opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .detail-prompt-ico .icon-copy { opacity: 1; transform: scale(1); filter: blur(0); }
+    .detail-prompt-ico .icon-check { opacity: 0; transform: scale(0.25); filter: blur(4px); }
+    .detail-prompt[data-copied="true"] .icon-copy { opacity: 0; transform: scale(0.25); filter: blur(4px); }
+    .detail-prompt[data-copied="true"] .icon-check { opacity: 1; transform: scale(1); filter: blur(0); }
+    @media (prefers-reduced-motion: reduce) {
+      .detail-prompt-ico svg { transition: none; }
+    }
+
     .detail-body { margin-top: 24px; }
     /* Positioning context for the copy button, which lives here (a sibling
        of the overflow:hidden .detail-code) so its tooltip isn't clipped.
        Capped to the code card's / stage's own width so the button anchors
        to the card's right edge, not the wider content column. */
-    .detail-panel { position: relative; max-width: 686px; }
+    .detail-panel { position: relative; }
     .detail-panel[hidden] { display: none; }
 
     /* ── Preview panel ───────────────────────────────────────────
@@ -5773,7 +5956,6 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      max-width: 686px;
       min-height: 460px;
       border-radius: 24px;
       background: var(--stage-bg);
@@ -5914,16 +6096,16 @@
        / .skill-steps / .feature-list), so this page reads as the same
        "product docs" voice as /refine and /skill instead of inventing
        its own article style. */
-    .detail-doc { max-width: 686px; margin-top: 14px; }
+    .detail-doc { max-width: 686px; margin-top: 24px; }
     .detail-doc[hidden] { display: none; }
     .doc-article[hidden] { display: none; }
 
     .skill-content { width: 100%; display: flex; flex-direction: column; gap: 32px; }
     .skill-section { display: flex; flex-direction: column; gap: 12px; }
     .skill-section-title {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 500;
-      line-height: 22px;
+      line-height: 24px;
       color: var(--text);
       margin: 0;
     }
@@ -5937,12 +6119,13 @@
       font-family: var(--font-mono);
       font-size: 12px;
       line-height: 18px;
-      padding: 1px 6px;
+      padding: 1px 4px;
       border-radius: 6px;
       background: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.08);
       color: var(--text);
     }
-    html[data-theme="dark"] .skill-section-note code { background: rgba(255, 255, 255, 0.06); }
+    html[data-theme="dark"] .skill-section-note code { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.12); }
 
     .skill-steps {
       margin: 0;
@@ -5960,12 +6143,13 @@
       font-family: var(--font-mono);
       font-size: 12px;
       line-height: 18px;
-      padding: 1px 6px;
+      padding: 1px 4px;
       border-radius: 6px;
       background: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.08);
       color: var(--text);
     }
-    html[data-theme="dark"] .skill-steps code { background: rgba(255, 255, 255, 0.06); }
+    html[data-theme="dark"] .skill-steps code { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.12); }
 
     .feature-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 24px; }
     .feature-list li { font-size: 13px; line-height: 22px; color: var(--text-muted); }
@@ -5977,17 +6161,18 @@
       font-family: var(--font-mono);
       font-size: 12px;
       line-height: 18px;
-      padding: 1px 6px;
+      padding: 1px 4px;
       border-radius: 6px;
       background: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.08);
       color: var(--text);
     }
-    html[data-theme="dark"] .feature-desc code { background: rgba(255, 255, 255, 0.06); }
+    html[data-theme="dark"] .feature-desc code { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.12); }
 
     /* Real, copyable install commands (Skill / Refine tool) — same
        row component as /skill and /refine's Get Started section. */
     .skill-command { display: flex; flex-direction: column; gap: 6px; }
-    .skill-command-label { margin-top: 16px; font-size: 12px; font-weight: 500; color: var(--text-muted); }
+    .skill-command-label { margin-top: 16px; font-size: 14px; font-weight: 500; color: var(--text); }
     .skill-code-row {
       position: relative;
       display: flex;
@@ -6038,23 +6223,39 @@
     html[data-theme="dark"] .skill-code-copy:hover { background: rgba(255, 255, 255, 0.06); }
     .skill-code-copy svg { width: 15px; height: 15px; }
 
-    /* Inline links inside doc copy — same treatment as the hero's
-       "skill" link (.subtitle-skill): text color, no blue, underline
-       only on hover. */
+    /* Inline links inside doc copy — jakubantalik.com .inline-link style:
+       native from-font underline at 30% opacity, 100% on hover, no animation. */
     .doc-article a {
-      color: var(--text);
-      text-decoration: none;
+      color: inherit;
+      display: inline-block;
+      text-decoration: underline;
+      text-decoration-thickness: from-font;
+      text-underline-position: from-font;
+      text-decoration-skip-ink: auto;
+      text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+      transition: none;
     }
-    .doc-article a:hover { text-decoration: underline; text-underline-offset: 2px; }
+    .doc-article a:hover { text-decoration-color: currentColor; }
 
-    /* Higher-contrast body copy on the docs pages (Introduction /
-       Installation / Accessibility) — near-black in light mode, a light
-       grey in dark mode so it doesn't disappear. */
+    /* Docs body copy (Introduction / Installation / Accessibility):
+       Inter 14px #3f3f3f in light mode, light grey in dark mode. */
     .doc-article .skill-section-note,
     .doc-article .skill-steps,
     .doc-article .feature-list li,
     .doc-article .feature-name,
-    .doc-article .feature-desc { color: #0d0d0d; }
+    .doc-article .feature-desc {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 22px;
+      color: #3f3f3f;
+    }
+    /* Subtitle under the doc title reads as body copy, not display type. */
+    .docs-main.is-doc .detail-sub {
+      font-size: 14px;
+      line-height: 22px;
+      color: #3f3f3f;
+    }
+    html[data-theme="dark"] .docs-main.is-doc .detail-sub { color: #ededed; }
     html[data-theme="dark"] .doc-article .skill-section-note,
     html[data-theme="dark"] .doc-article .skill-steps,
     html[data-theme="dark"] .doc-article .feature-list li,
@@ -6062,7 +6263,7 @@
     html[data-theme="dark"] .doc-article .feature-desc { color: #ededed; }
 
     /* Doc mode hides the transition-only controls. */
-    .docs-main.is-doc .detail-tabs,
+    .docs-main.is-doc .detail-head-row,
     .docs-main.is-doc .detail-body,
     .docs-main.is-doc .detail-topbar { display: none; }
 
@@ -6070,7 +6271,6 @@
     .detail-code {
       position: relative;
       width: 100%;
-      max-width: 686px;
       border-radius: 24px;
       background: var(--card-bg);
       box-shadow: var(--card-shadow), inset 0 0 0 1px var(--card-border);
@@ -6518,11 +6718,23 @@
             <h1 class="detail-title" id="detail-title">Card resize</h1>
             <p class="detail-sub" id="detail-sub">Smooth card resize transition</p>
           </div>
-          <div class="detail-tabs proto-modal-tabs" role="tablist" aria-label="View">
-            <span class="proto-modal-tabs-indicator" aria-hidden="true"></span>
-            <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="preview" aria-selected="true">Preview</button>
-            <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="css" aria-selected="false">CSS</button>
-            <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="react" aria-selected="false">React</button>
+          <div class="detail-head-row">
+            <div class="detail-tabs proto-modal-tabs" role="tablist" aria-label="View">
+              <span class="proto-modal-tabs-indicator" aria-hidden="true"></span>
+              <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="preview" aria-selected="true">Preview</button>
+              <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="css" aria-selected="false">CSS</button>
+              <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="react" aria-selected="false">React</button>
+            </div>
+            <button type="button" class="detail-prompt" data-prompt-target="#agent-prompt" aria-label="Copy agent prompt">
+              <span class="detail-prompt-ico" aria-hidden="true">
+                <svg class="icon-copy" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5.6 5.6V3.92C5.6 3.24794 5.6 2.91191 5.73079 2.65521C5.84584 2.42942 6.02942 2.24584 6.25521 2.13079C6.51191 2 6.84794 2 7.52 2H12.08C12.7521 2 13.0881 2 13.3448 2.13079C13.5706 2.24584 13.7542 2.42942 13.8692 2.65521C14 2.91191 14 3.24794 14 3.92V8.48C14 9.15206 14 9.4881 13.8692 9.74479C13.7542 9.97058 13.5706 10.1542 13.3448 10.2692C13.0881 10.4 12.7521 10.4 12.08 10.4H10.4M3.92 14H8.48C9.15206 14 9.48809 14 9.74479 13.8692C9.97058 13.7542 10.1542 13.5706 10.2692 13.3448C10.4 13.0881 10.4 12.7521 10.4 12.08V7.52C10.4 6.84794 10.4 6.51191 10.2692 6.25521C10.1542 6.02942 9.97058 5.84584 9.74479 5.73079C9.48809 5.6 9.15206 5.6 8.48 5.6H3.92C3.24794 5.6 2.91191 5.6 2.65521 5.73079C2.42942 5.84584 2.24584 6.02942 2.13079 6.25521C2 6.51191 2 6.84794 2 7.52V12.08C2 12.7521 2 13.0881 2.13079 13.3448C2.24584 13.5706 2.42942 13.7542 2.65521 13.8692C2.91191 14 3.24794 14 3.92 14Z" />
+                </svg>
+                <svg class="icon-check" aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.46889L6.26923 11.58L12.5 4.58" /></svg>
+              </span>
+              <span class="detail-prompt-label">Copy prompt</span>
+              <span class="detail-prompt-tip" role="tooltip">Available with Pro plan</span>
+            </button>
           </div>
         </header>
 
@@ -6550,9 +6762,13 @@
           </div>
         </div>
 
+        <!-- Agent prompt source for the Copy prompt button. Filled per
+             selected transition by the detail controller. -->
+        <pre id="agent-prompt" hidden></pre>
+
         <div class="detail-doc" id="detail-doc" hidden>
           <article class="doc-article skill-content" data-doc="introduction"
-                   data-title="Introduction" data-subtitle="A copy-paste library of production-ready UI transitions" hidden>
+                   data-title="Introduction" data-subtitle="A copy-paste library of production-ready UI transitions." hidden>
             <div class="skill-section">
               <p class="skill-section-note">Transitions.dev is a curated collection of the most essential UI transitions for web apps: dropdowns, modals, notification badges, number pop-ins, page slides, accordions and more. Each one is a small, self-contained piece of motion you can drop into any project.</p>
               <p class="skill-section-note">Every transition is built with plain CSS (plus a little JavaScript only where a demo needs it) and tuned against a shared scale of motion tokens (duration, easing, distance, blur and scale), so they feel consistent no matter where you use them.</p>
@@ -6561,7 +6777,7 @@
           </article>
 
           <article class="doc-article skill-content" data-doc="installation"
-                   data-title="Installation" data-subtitle="Four ways to get transitions into your project" hidden>
+                   data-title="Installation" data-subtitle="Four ways to get transitions into your project." hidden>
             <div class="skill-section">
               <h2 class="skill-section-title">Copy the snippet</h2>
               <p class="skill-section-note">There's nothing to install: open a transition, copy the CSS (or React) from the code panel, and paste it into your project; snippets are namespaced (<code>.t-*</code>) with their motion tokens exposed as CSS variables you can tweak directly.</p>
@@ -6572,18 +6788,18 @@
               <div class="skill-command">
                 <span class="skill-command-label">Free version</span>
                 <div class="skill-code-row">
-                  <code id="cli-add-all-cmd">npx transitions-pro add --all</code>
-                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy CLI add-all command" data-copy-target="#cli-add-all-cmd">
+                  <code id="cli-add-free-cmd">npx transitions-dev add --free</code>
+                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy CLI add-free command" data-copy-target="#cli-add-free-cmd">
                     <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </button>
                 </div>
-                <p class="skill-section-note">Writes every free transition into <code>./transitions/</code>. Run <code>npx transitions-pro list</code> to see everything available.</p>
+                <p class="skill-section-note">Writes every free transition into <code>./transitions/</code>. Run <code>npx transitions-dev list</code> to see everything available.</p>
               </div>
               <div class="skill-command">
                 <span class="skill-command-label">Pro version</span>
                 <div class="skill-code-row">
-                  <code id="cli-add-pro-cmd">npx transitions-pro add --pro</code>
+                  <code id="cli-add-pro-cmd">npx transitions-dev add --pro</code>
                   <button type="button" class="skill-code-copy card-copy" aria-label="Copy CLI add-pro command" data-copy-target="#cli-add-pro-cmd">
                     <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -6593,8 +6809,8 @@
               </div>
             </div>
             <div class="skill-section">
-              <h2 class="skill-section-title">Install with the Skill &amp; Refine tool</h2>
-              <p class="skill-section-note">Prefer not to copy by hand? Two tools deliver transitions straight into your codebase.</p>
+              <h2 class="skill-section-title">Install with the Skill</h2>
+              <p class="skill-section-note">Prefer not to copy by hand? Your AI agent can drop transitions straight into your codebase.</p>
               <div class="skill-command">
                 <span class="skill-command-label">Free version</span>
                 <div class="skill-code-row">
@@ -6609,7 +6825,7 @@
               <div class="skill-command">
                 <span class="skill-command-label">Pro version</span>
                 <div class="skill-code-row">
-                  <code id="cli-skill-cmd">npx transitions-pro skill</code>
+                  <code id="cli-skill-cmd">npx transitions-dev skill</code>
                   <button type="button" class="skill-code-copy card-copy" aria-label="Copy Pro skill install command" data-copy-target="#cli-skill-cmd">
                     <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -6617,6 +6833,9 @@
                 </div>
                 <p class="skill-section-note"><a href="pro.html">Pro Skill</a>: installs the premium transitions as an agent skill (CSS, React, TypeScript). Opens your browser once to confirm your Pro account, then drops it into your skills directory. See <a href="pro.html">Transitions Pro</a>.</p>
               </div>
+            </div>
+            <div class="skill-section">
+              <h2 class="skill-section-title">Refine tool</h2>
               <div class="skill-command">
                 <span class="skill-command-label">Free &amp; Pro version</span>
                 <div class="skill-code-row">
@@ -6632,7 +6851,7 @@
           </article>
 
           <article class="doc-article skill-content" data-doc="accessibility"
-                   data-title="Accessibility" data-subtitle="Motion that respects the people using it" hidden>
+                   data-title="Accessibility" data-subtitle="Motion that respects the people using it." hidden>
             <div class="skill-section">
               <p class="skill-section-note">Motion should never get in the way. Every transition here stays accessible by default.</p>
               <ul class="feature-list">
@@ -7500,15 +7719,17 @@
       <article class="card" data-proto-card>
         <div class="card-stage">
           <div class="stage-inner p17-stage-inner">
-            <span class="p17-wrap">
-              <button type="button" class="p17-trigger" aria-describedby="p17-tooltip-text">Hover me</button>
-              <span class="p17-tooltip" id="p17-tooltip-text" role="tooltip">Tooltip text</span>
+            <span class="p17-group" data-proto-tooltip>
+              <button type="button" class="p17-trigger" data-tooltip="Copy link" aria-describedby="p17-tooltip-text">Copy</button>
+              <button type="button" class="p17-trigger" data-tooltip="Share with team" aria-describedby="p17-tooltip-text">Share</button>
+              <button type="button" class="p17-trigger" data-tooltip="More options" aria-describedby="p17-tooltip-text">More</button>
+              <span class="p17-tooltip" id="p17-tooltip-text" role="tooltip" aria-hidden="true" data-show="false"><span class="p17-tooltip-text"></span></span>
             </span>
           </div>
         </div>
         <div class="card-meta">
           <div class="card-title">Tooltip open/close</div>
-          <div class="card-subtitle">Appear-only delay, instant exit</div>
+          <div class="card-subtitle">Delayed in, travels, instant out</div>
         </div>
         <button type="button" class="card-copy" aria-label="Copy Tooltip open/close CSS" data-copy-key="p17">
           <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -9043,16 +9264,77 @@ export function SlidingTabs({ tabs }) {
 </script>
 
   <script type="text/plain" data-react-key="p17">// Pair with the CSS from the CSS tab.
-// Pure CSS — hover / focus state lives entirely in selectors.
-// Bring your own trigger styling.
-export function Tooltip({ id, content, children }) {
+// One tooltip per group, shared by every trigger. Hovering a trigger
+// writes the bubble's x + width: when it is already showing the move
+// tweens (it travels); when hidden the geometry snaps and only the
+// appear plays. Bring your own trigger styling.
+import { useRef } from "react";
+
+export function TooltipGroup({ id, items }) {
+  // items: [{ label: "Copy", tooltip: "Copy link", onClick }]
+  const group = useRef(null);
+  const tip = useRef(null);
+  const text = useRef(null);
+
+  const hide = () => {
+    tip.current.setAttribute("data-show", "false");
+    tip.current.setAttribute("aria-hidden", "true");
+  };
+
+  const place = (trigger, label) => {
+    const t = tip.current;
+    const showing = t.getAttribute("data-show") === "true";
+    text.current.textContent = label;
+    const cs = getComputedStyle(t);
+    const width = Math.ceil(
+      text.current.scrollWidth +
+        parseFloat(cs.paddingLeft) +
+        parseFloat(cs.paddingRight)
+    );
+    const g = group.current.getBoundingClientRect();
+    const r = trigger.getBoundingClientRect();
+    const x = r.left - g.left + r.width / 2 - width / 2;
+    if (!showing) {
+      // Snap the geometry while hidden so only the appear plays.
+      t.style.transition = "none";
+      t.style.width = `${width}px`;
+      t.style.setProperty("--tt-x", `${x}px`);
+      void t.offsetWidth;
+      t.style.transition = "";
+    } else {
+      t.style.width = `${width}px`;
+      t.style.setProperty("--tt-x", `${x}px`);
+    }
+    t.setAttribute("data-show", "true");
+    t.setAttribute("aria-hidden", "false");
+  };
+
   return (
-    <span className="t-tt-wrap">
-      {/* The trigger needs `aria-describedby` pointed at the
-          tooltip's id; CSS uses :focus-visible + sibling selector
-          so the tooltip also shows on keyboard focus. */}
-      {children({ "aria-describedby": id, className: "t-tt-trigger" })}
-      <span id={id} className="t-tt" role="tooltip">{content}</span>
+    <span ref={group} className="t-tt-group" onPointerLeave={hide}>
+      {items.map((item) => (
+        <button
+          key={item.label}
+          type="button"
+          className="t-tt-trigger"
+          aria-describedby={id}
+          onPointerEnter={(e) => place(e.currentTarget, item.tooltip)}
+          onFocus={(e) => place(e.currentTarget, item.tooltip)}
+          onBlur={hide}
+          onClick={item.onClick}
+        >
+          {item.label}
+        </button>
+      ))}
+      <span
+        ref={tip}
+        id={id}
+        className="t-tt"
+        role="tooltip"
+        aria-hidden="true"
+        data-show="false"
+      >
+        <span ref={text} className="t-tt-text" />
+      </span>
     </span>
   );
 }
@@ -9458,6 +9740,321 @@ export function Toggle() {
 </script>
 
   <!-- ─── Motion-token React templates ─────────────────────────── -->
+  <script type="text/plain" data-react-key="p28">import { useEffect, useLayoutEffect, useRef, useState } from "react";
+
+// Pair with the CSS from the CSS tab. Two absolutely positioned copies swap
+// over a box the hidden sizer holds steady: the outgoing line exits up
+// through a small blur while the incoming one rises in from below, so a
+// swap costs one --think-swap, not two.
+const DEFAULT_STATES = ["Setting up a workplace", "Running a command", "Browsing files"];
+
+const ms = (name, fallback) => {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
+};
+
+export function ThinkingStates({ states = DEFAULT_STATES }) {
+  const [current, setCurrent] = useState(0);
+  const [leaving, setLeaving] = useState(null); // index of the exiting line
+  const [entering, setEntering] = useState(false);
+  const liveRef = useRef(null);
+
+  // Hold, then swap to the next state.
+  useEffect(() => {
+    const hold = setTimeout(() => {
+      setLeaving(current);
+      setCurrent((i) => (i + 1) % states.length);
+      setEntering(true);
+    }, ms("--think-hold", 2000));
+    return () => clearTimeout(hold);
+  }, [current, states.length]);
+
+  // Flush the enter-start rest pose before paint, release it after
+  // --think-gap, and drop the outgoing copy once its swap has played.
+  useLayoutEffect(() => {
+    if (!entering) return;
+    if (liveRef.current) void liveRef.current.offsetWidth;
+    const gap = ms("--think-gap", 50);
+    const swap = ms("--think-swap", 150);
+    const release = setTimeout(() => setEntering(false), gap);
+    const done = setTimeout(() => setLeaving(null), swap + gap);
+    return () => { clearTimeout(release); clearTimeout(done); };
+  }, [entering]);
+
+  // The sizer holds the longest state so the box never resizes mid-swap.
+  const longest = states.reduce((a, b) => (b.length > a.length ? b : a), "");
+
+  return (
+    <span className="t-think" role="status">
+      <span className="t-think-sizer" aria-hidden="true">{longest}</span>
+      {leaving !== null && (
+        <span className="t-think-text is-exit" data-text={states[leaving]} aria-hidden="true">
+          {states[leaving]}
+        </span>
+      )}
+      <span
+        key={current}
+        ref={liveRef}
+        className={"t-think-text" + (entering ? " is-enter-start" : "")}
+        data-text={states[current]}
+      >
+        {states[current]}
+      </span>
+    </span>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p29">import { useEffect, useRef } from "react";
+
+// Pair with the CSS from the CSS tab. The transcript is rendered twice so the
+// loop wraps without a visible jump; the scroll steps up --reason-lines
+// lines every --reason-hold. Give .t-reason a height (it clips the copies).
+const num = (name, fallback) => {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
+};
+
+export function ReasoningStream({ children, className = "" }) {
+  const scrollRef = useRef(null);
+  const textRef = useRef(null);
+
+  useEffect(() => {
+    const scroll = scrollRef.current;
+    const text = textRef.current;
+    if (!scroll || !text) return;
+    let offset = 0;
+    let timer;
+
+    const step = () => {
+      timer = setTimeout(() => {
+        const lineH = parseFloat(getComputedStyle(text).lineHeight) || 18;
+        const stepPx = lineH * num("--reason-lines", 2);
+        const dur = num("--reason-step", 500);
+        const ease =
+          getComputedStyle(document.documentElement).getPropertyValue("--reason-ease").trim() ||
+          "ease-out";
+        offset += stepPx;
+        scroll.style.transition = "transform " + dur + "ms " + ease;
+        scroll.style.transform = "translateY(" + -offset + "px)";
+        timer = setTimeout(() => {
+          // Wrap by one copy's height; the clone underneath hides the jump.
+          const copyH = text.offsetHeight;
+          if (offset >= copyH) {
+            offset -= copyH;
+            scroll.style.transition = "none";
+            scroll.style.transform = "translateY(" + -offset + "px)";
+            void scroll.offsetWidth; // flush before the next tween
+          }
+          step();
+        }, dur + 30);
+      }, num("--reason-hold", 840));
+    };
+
+    step();
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className={"t-reason" + (className ? " " + className : "")}>
+      <div className="t-reason-viewport">
+        <div className="t-reason-scroll" ref={scrollRef}>
+          <div className="t-reason-text" ref={textRef}>{children}</div>
+          <div className="t-reason-text" aria-hidden="true">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p30">import { useEffect, useRef } from "react";
+
+// Pair with the CSS from the CSS tab. Each word is a span that rests
+// visible; a replay wipes them all with no transition, flushes one reflow,
+// then resolves them in order through opacity plus a small blur, one
+// every --stream-gap. Bump `replayKey` to stream the text again.
+export function StreamingText({ text, replayKey = 0, autoplay = true }) {
+  const words = text.trim().split(/\s+/);
+  const spansRef = useRef([]);
+  const timer = useRef(null);
+
+  useEffect(() => {
+    if (!autoplay && replayKey === 0) return;
+    const spans = spansRef.current.filter(Boolean);
+    if (!spans.length) return;
+    clearTimeout(timer.current);
+
+    // Snap back to nothing without animating the wipe itself.
+    spans.forEach((s) => {
+      s.style.transition = "none";
+      s.classList.remove("is-in");
+    });
+    void spans[0].offsetWidth; // flush the wipe in the same task
+    spans.forEach((s) => { s.style.transition = ""; });
+
+    const gap =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--stream-gap")) || 60;
+    const next = (n) => {
+      if (n >= spans.length) return;
+      spans[n].classList.add("is-in");
+      timer.current = setTimeout(() => next(n + 1), gap);
+    };
+    next(0);
+    return () => clearTimeout(timer.current);
+  }, [text, replayKey, autoplay]);
+
+  return (
+    <div className="t-stream">
+      {words.map((w, i) => (
+        <span
+          key={i}
+          ref={(el) => { spansRef.current[i] = el; }}
+          className="t-stream-w is-in"
+        >
+          {w}
+          {i < words.length - 1 ? " " : ""}
+        </span>
+      ))}
+    </div>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p33">// Pair with the CSS from the CSS tab. Sixteen 2px dots share one
+// colour-pulse keyframe; the variant is just a per-dot delay table into
+// that cycle. `cycle` must match --matrix-cycle (1200ms by default).
+const CORNERS = [0, 3, 12, 15];
+// Clockwise perimeter (corner-less ring), then centre cells.
+const RING = [1, 2, 7, 11, 14, 13, 8, 4];
+const INNER = [5, 6, 9, 10];
+const TWINKLE = [7, 2, 11, 5, 14, 9, 0, 12, 3, 15, 6, 10, 13, 1, 8, 4];
+
+function delayFor(variant, idx, cycle) {
+  const col = idx % 4;
+  if (variant === "scan") return Math.round(col * (cycle / 10));
+  if (variant === "twinkle") return Math.round(TWINKLE[idx] * (cycle / 16));
+  if (variant === "orbit") {
+    const k = RING.indexOf(idx);
+    return k === -1 ? null : Math.round(k * (cycle / 8)); // null: centre holds steady
+  }
+  if (variant === "pulse") return Math.round((INNER.includes(idx) ? 0 : 1) * (cycle * 0.16));
+  return 0;
+}
+
+export function MatrixLoader({ variant = "scan", rounded = false, cycle = 1200, label = "Loading" }) {
+  return (
+    <div className="t-matrix" data-variant={variant} role="status" aria-label={label}>
+      {Array.from({ length: 16 }, (_, idx) => {
+        if (rounded && CORNERS.includes(idx)) return <i key={idx} className="is-gap" />;
+        const d = delayFor(variant, idx, cycle);
+        return <i key={idx} style={d === null ? { animation: "none" } : { "--d": d }} />;
+      })}
+    </div>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p34">import { useLayoutEffect, useRef, useState } from "react";
+
+// Pair with the CSS from the CSS tab. Sonner-style stacking: a new banner
+// enters at depth 0 while everything already stacked steps one depth back;
+// a fourth arrival sends the oldest out. Hover spread is geometry on the
+// wrapper, not :hover, because the gaps between spread banners belong to
+// no element.
+//
+// Usage: keep the queue in the parent and push { id, node } entries.
+//   const [banners, setBanners] = useState([]);
+//   setBanners((b) => [...b, { id: Date.now(), node: <YourBanner /> }]);
+//   <BannerStack banners={banners} />
+const ms = (name, fallback) => {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
+};
+
+export function BannerStack({ banners, className = "" }) {
+  const [items, setItems] = useState([]); // newest first
+  const [spread, setSpread] = useState(false);
+  const stackRef = useRef(null);
+  const seen = useRef(new Set());
+
+  // Adopt the newest banner: depth 0 with the pre-open pose, older ones
+  // step back, anything past depth 2 starts leaving.
+  useLayoutEffect(() => {
+    const latest = banners[banners.length - 1];
+    if (!latest || seen.current.has(latest.id)) return;
+    seen.current.add(latest.id);
+    setItems((prev) => [
+      { ...latest, depth: 0, enter: true, leaving: false },
+      ...prev.map((b, i) =>
+        i + 1 > 2 ? { ...b, leaving: true } : { ...b, depth: i + 1 }
+      ),
+    ]);
+  }, [banners]);
+
+  // Flush the pre-open rest state before paint, then release it in the
+  // same task; drop banners that have left after --stack-close.
+  useLayoutEffect(() => {
+    const entering = items.find((b) => b.enter);
+    if (entering && stackRef.current) {
+      const el = stackRef.current.querySelector('[data-id="' + entering.id + '"]');
+      if (el) void el.offsetWidth;
+      setItems((prev) => prev.map((b) => (b.enter ? { ...b, enter: false } : b)));
+    }
+    if (items.some((b) => b.leaving)) {
+      const t = setTimeout(
+        () => setItems((prev) => prev.filter((b) => !b.leaving)),
+        ms("--stack-close", 250) + 60
+      );
+      return () => clearTimeout(t);
+    }
+  }, [items]);
+
+  const within = (e, above) => {
+    const r = stackRef.current.getBoundingClientRect();
+    return (
+      e.clientX >= r.left && e.clientX <= r.right &&
+      e.clientY <= r.bottom && e.clientY >= r.top - above
+    );
+  };
+  const onPointerMove = (e) => {
+    const stack = stackRef.current;
+    if (!stack) return;
+    const spreadHeight = (stack.offsetHeight + ms("--stack-spread-gap", 8)) * 2;
+    if (spread) {
+      if (!within(e, spreadHeight)) setSpread(false);
+    } else if (within(e, 0)) {
+      setSpread(true);
+    }
+  };
+
+  return (
+    <div
+      className={"t-stack-stage" + (className ? " " + className : "")}
+      onPointerMove={onPointerMove}
+      onPointerLeave={() => setSpread(false)}
+    >
+      <div ref={stackRef} className={"t-stack" + (spread ? " is-spread" : "")}>
+        {items.map((b) => (
+          <div
+            key={b.id}
+            data-id={b.id}
+            data-depth={b.depth}
+            className={
+              "t-stack-banner" +
+              (b.enter ? " is-enter" : "") +
+              (b.leaving ? " is-leaving" : "")
+            }
+          >
+            {b.node}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+</script>
+
   <script type="text/plain" data-react-key="tok-duration">// Motion token — Duration
 // A small, consistent time scale shared across components (ms).
 export const duration = {
@@ -11168,17 +11765,21 @@ export function Surface({ open, children }) {
         p17: {
           name: "Tooltip open/close",
           usage:
-            "    <span class=\"t-tt-wrap\">\n" +
-            "      <button class=\"t-tt-trigger\" aria-describedby=\"tt-1\">…</button>\n" +
-            "      <span class=\"t-tt\" id=\"tt-1\" role=\"tooltip\">Tooltip text</span>\n" +
+            "    <span class=\"t-tt-group\">\n" +
+            "      <button class=\"t-tt-trigger\" data-tooltip=\"Copy link\" aria-describedby=\"tt-1\">…</button>\n" +
+            "      <button class=\"t-tt-trigger\" data-tooltip=\"Share\" aria-describedby=\"tt-1\">…</button>\n" +
+            "      <span class=\"t-tt\" id=\"tt-1\" role=\"tooltip\" aria-hidden=\"true\" data-show=\"false\">\n" +
+            "        <span class=\"t-tt-text\"></span>\n" +
+            "      </span>\n" +
             "    </span>\n" +
             "\n" +
-            "  Pure CSS — no JS. The wrap (not the trigger) is the hover\n" +
-            "  target so the pointer can drift onto the tooltip without\n" +
-            "  flicker. transition-delay only applies in the hover/focus\n" +
-            "  rule, so leaving snaps it to 0 and the disappear plays\n" +
-            "  immediately. Trigger styling is yours; only the tooltip\n" +
-            "  positioning + its transition live here.",
+            "  One tooltip per group, shared by every trigger. The JS snippet\n" +
+            "  writes the bubble's x + width for the hovered trigger: when it is\n" +
+            "  already showing, the move tweens on --tt-move-dur so the bubble\n" +
+            "  travels between triggers; when hidden, the geometry snaps and only\n" +
+            "  the appear plays. The appear delay belongs to the show rule alone,\n" +
+            "  so leaving the group hides it immediately. Trigger styling is\n" +
+            "  yours; only the tooltip and its motion live here.",
           vars: [
             ["--tt-in-dur",    "--p17-in-dur"],
             ["--tt-out-dur",   "--p17-out-dur"],
@@ -11186,19 +11787,30 @@ export function Surface({ open, children }) {
             ["--tt-delay",     "--p17-delay"],
             ["--tt-in-ease",   "--p17-in-ease"],
             ["--tt-out-ease",  "--p17-out-ease"],
+            ["--tt-move-dur",  "--p17-move-dur"],
+            ["--tt-move-ease", "--p17-move-ease"],
             ["--tt-bg",        "--p17-bg"],
             ["--tt-fg",        "--p17-fg"]
           ],
           css:
-            ".t-tt-wrap {\n" +
+            ".t-tt-group {\n" +
             "  position: relative;\n" +
-            "  display: inline-block;\n" +
+            "  display: inline-flex;\n" +
             "}\n" +
             ".t-tt {\n" +
             "  position: absolute;\n" +
             "  bottom: calc(100% + 8px);\n" +
-            "  left: 50%;\n" +
-            "  transform: translate(-50%, 0) scale(var(--tt-scale));\n" +
+            "  left: 0;\n" +
+            "  box-sizing: border-box;\n" +
+            "  display: inline-flex;\n" +
+            "  align-items: center;\n" +
+            "  justify-content: center;\n" +
+            "  width: 0;                 /* the JS writes the measured width */\n" +
+            "  overflow: hidden;\n" +
+            "  /* Individual transform properties: the travel (translate) and the\n" +
+            "     appear (scale) run on their own clocks. */\n" +
+            "  translate: var(--tt-x, 0px) 0;\n" +
+            "  scale: var(--tt-scale);\n" +
             "  transform-origin: 50% 100%;\n" +
             "  padding: 8px 12px;\n" +
             "  border-radius: 8px;\n" +
@@ -11211,23 +11823,26 @@ export function Surface({ open, children }) {
             "    0 4px 42px 0 rgba(0, 0, 0, 0.06);\n" +
             "  opacity: 0;\n" +
             "  pointer-events: none;\n" +
-            "  /* Default rule controls the LEAVE state. transition-delay\n" +
-            "     stays unset so leaving plays without delay. */\n" +
+            "  /* Default rule controls the LEAVE state: no delay, so hiding plays\n" +
+            "     immediately. The move lanes are always live. */\n" +
             "  transition:\n" +
             "    opacity   var(--tt-out-dur) var(--tt-out-ease),\n" +
-            "    transform var(--tt-out-dur) var(--tt-out-ease);\n" +
+            "    scale     var(--tt-out-dur) var(--tt-out-ease),\n" +
+            "    translate var(--tt-move-dur) var(--tt-move-ease),\n" +
+            "    width     var(--tt-move-dur) var(--tt-move-ease);\n" +
             "}\n" +
-            "/* The 50ms delay belongs ONLY to the hover rule so leaving\n" +
-            "   the trigger snaps the delay back to 0 and the disappear\n" +
-            "   plays immediately. */\n" +
-            ".t-tt-wrap:hover .t-tt,\n" +
-            ".t-tt-trigger:focus-visible + .t-tt {\n" +
+            "/* The appear delay belongs ONLY to the show rule, so hiding snaps it\n" +
+            "   back to 0. A retarget while showing carries no delay at all. */\n" +
+            ".t-tt[data-show=\"true\"] {\n" +
             "  opacity: 1;\n" +
-            "  transform: translate(-50%, 0) scale(1);\n" +
-            "  transition-duration: var(--tt-in-dur);\n" +
-            "  transition-timing-function: var(--tt-in-ease);\n" +
-            "  transition-delay: var(--tt-delay);\n" +
+            "  scale: 1;\n" +
+            "  transition:\n" +
+            "    opacity   var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),\n" +
+            "    scale     var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),\n" +
+            "    translate var(--tt-move-dur) var(--tt-move-ease),\n" +
+            "    width     var(--tt-move-dur) var(--tt-move-ease);\n" +
             "}\n" +
+            ".t-tt-text { white-space: nowrap; }\n" +
             "\n" +
             "@media (prefers-reduced-motion: reduce) {\n" +
             "  .t-tt { transition: none !important; }\n" +
@@ -12078,6 +12693,8 @@ export function Surface({ open, children }) {
             ["--stack-spread-gap",  "--p34-spread-gap"],
             ["--stack-depth-scale", "--p34-depth-scale"],
             ["--stack-depth-fade",  "--p34-depth-fade"],
+            ["--stack-depth1-blur", "--p34-depth1-blur"],
+            ["--stack-depth2-blur", "--p34-depth2-blur"],
             ["--stack-ease",        "--p34-ease"]
           ],
           css:
@@ -12110,6 +12727,7 @@ export function Surface({ open, children }) {
             "  transform: translateY(calc(var(--stack-peek) * -1))\n" +
             "             scale(calc(1 - var(--stack-depth-scale)));\n" +
             "  opacity: calc(1 - var(--stack-depth-fade));\n" +
+            "  filter: blur(var(--stack-depth1-blur));\n" +
             "}\n" +
             ".t-stack-banner[data-depth=\"2\"] {\n" +
             "  z-index: 1;\n" +
@@ -12117,12 +12735,13 @@ export function Surface({ open, children }) {
             "  transform: translateY(calc(var(--stack-peek) * -2))\n" +
             "             scale(calc(1 - var(--stack-depth-scale) * 2));\n" +
             "  opacity: calc(1 - var(--stack-depth-fade) * 1.6);\n" +
+            "  filter: blur(var(--stack-depth2-blur));\n" +
             "}\n" +
             "/* Spread: newest stays put, older ones climb one banner height\n" +
             "   each (100% = the banner's own height). Driven by a class, not\n" +
             "   :hover — the gaps between spread banners belong to no element. */\n" +
             ".t-stack.is-spread .t-stack-banner[data-depth=\"1\"],\n" +
-            ".t-stack.is-spread .t-stack-banner[data-depth=\"2\"] { opacity: 1; }\n" +
+            ".t-stack.is-spread .t-stack-banner[data-depth=\"2\"] { opacity: 1; filter: blur(0); }\n" +
             ".t-stack.is-spread .t-stack-banner[data-depth=\"1\"] {\n" +
             "  transform: translateY(calc((100% + var(--stack-spread-gap)) * -1)) scale(1);\n" +
             "}\n" +
@@ -13028,9 +13647,71 @@ export function Surface({ open, children }) {
               else history.replaceState({ slug: it.slug }, "", url);
             } catch (e) {}
 
+            updateAgentPrompt(it);
+
             // Tabs are visible again in transition mode; re-sync the pill.
             positionIndicator(false);
           }
+
+          // Copy prompt: one paste hands the selected transition to a
+          // coding agent (same component as the libraries.dev detail pages).
+          var agentPromptEl = document.getElementById("agent-prompt");
+          function updateAgentPrompt(it) {
+            if (!agentPromptEl) return;
+            var lines = [
+              'Add the "' + it.title + '" transition from transitions.dev to my project.',
+              "",
+              "Install the skill (recommended):",
+              "npx skills add Jakubantalik/transitions.dev",
+              'Then ask your agent for "' + it.title + '" and it applies the snippet with the right motion tokens.',
+              "",
+              "Or pull it with the CLI:",
+              it.pro
+                ? "npx transitions-dev add --pro   (Pro transition, sign-in opens in the browser)"
+                : "npx transitions-dev add " + it.slug,
+              "",
+              "The transition ships as namespaced CSS (.t-*) with its motion tokens",
+              "(duration, easing, distance, blur, scale) exposed as CSS variables;",
+              "a React variant is available too.",
+              "Docs: https://transitions.dev/detail.html?t=" + it.slug
+            ];
+            agentPromptEl.textContent = lines.join("\n");
+            // Pro transitions: locked unless the viewer is entitled.
+            var entitled = !!(window.TransitionsPro && window.TransitionsPro.state &&
+                              window.TransitionsPro.state.pro);
+            var locked = !!it.pro && !entitled;
+            Array.prototype.forEach.call(
+              document.querySelectorAll("[data-prompt-target]"),
+              function (btn) {
+                if (locked) btn.setAttribute("aria-disabled", "true");
+                else btn.removeAttribute("aria-disabled");
+              }
+            );
+          }
+          // Unlock once auth resolves (pro-client.js dispatches pro:me).
+          document.addEventListener("pro:me", function () {
+            if (currentIndex >= 0) updateAgentPrompt(items[currentIndex]);
+          });
+          Array.prototype.forEach.call(
+            document.querySelectorAll("[data-prompt-target]"),
+            function (btn) {
+              var timer = null;
+              btn.addEventListener("click", function () {
+                if (btn.getAttribute("aria-disabled") === "true") return;
+                var src = document.querySelector(btn.getAttribute("data-prompt-target"));
+                var text = src ? (src.textContent || "").trim() : "";
+                if (!text) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(text).catch(function () {});
+                }
+                btn.setAttribute("data-copied", "true");
+                window.clearTimeout(timer);
+                timer = window.setTimeout(function () {
+                  btn.removeAttribute("data-copied");
+                }, 1600);
+              });
+            }
+          );
 
           function selectSlug(slug, push) {
             var i = indexForSlug(slug);
@@ -13620,6 +14301,56 @@ export function Surface({ open, children }) {
             el.addEventListener("mouseenter", function () { setShifts(i, "in"); });
           });
           root.addEventListener("mouseleave", function () { setShifts(null, "out"); });
+        });
+      })();
+
+      /* Prototype 17: one tooltip per group. Hovering a trigger writes
+         the bubble's x + width for that trigger. When it is already
+         showing the move tweens so it travels; when hidden the geometry
+         snaps under it and only the appear plays. Leaving the group
+         hides it with no delay. */
+      (function initP17() {
+        var groups = document.querySelectorAll("[data-proto-tooltip]");
+        if (!groups.length) return;
+        groups.forEach(function (group) {
+          var tip = group.querySelector(".p17-tooltip");
+          var text = group.querySelector(".p17-tooltip-text");
+          var triggers = Array.prototype.slice.call(group.querySelectorAll(".p17-trigger"));
+          if (!tip || !text || !triggers.length) return;
+          function hide() {
+            tip.setAttribute("data-show", "false");
+            tip.setAttribute("aria-hidden", "true");
+          }
+          function place(trigger) {
+            var showing = tip.getAttribute("data-show") === "true";
+            text.textContent = trigger.getAttribute("data-tooltip") || "";
+            var cs = getComputedStyle(tip);
+            var width = Math.ceil(
+              text.scrollWidth + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)
+            );
+            var g = group.getBoundingClientRect();
+            var r = trigger.getBoundingClientRect();
+            var x = (r.left - g.left) + r.width / 2 - width / 2;
+            if (!showing) {
+              // Snap the geometry while hidden so only the appear plays.
+              tip.style.transition = "none";
+              tip.style.width = width + "px";
+              tip.style.setProperty("--p17-x", x + "px");
+              void tip.offsetWidth;
+              tip.style.transition = "";
+            } else {
+              tip.style.width = width + "px";
+              tip.style.setProperty("--p17-x", x + "px");
+            }
+            tip.setAttribute("data-show", "true");
+            tip.setAttribute("aria-hidden", "false");
+          }
+          triggers.forEach(function (t) {
+            t.addEventListener("pointerenter", function () { place(t); });
+            t.addEventListener("focus", function () { place(t); });
+            t.addEventListener("blur", hide);
+          });
+          group.addEventListener("pointerleave", hide);
         });
       })();
 
@@ -15865,7 +16596,7 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: unlocks Pro code for entitled viewers (fires pro:me). -->
-  <script src="assets/pro-client.js?v=29" defer></script>
+  <script src="assets/pro-client.js?v=36" defer></script>
 </body>
 </html>
 

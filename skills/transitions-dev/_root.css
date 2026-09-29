@@ -167,6 +167,8 @@
   --tt-delay: 80ms;
   --tt-in-ease: ease-out;
   --tt-out-ease: ease-out;
+  --tt-move-dur: 160ms;
+  --tt-move-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --tt-bg: #ffffff;
   --tt-fg: #2f2f2f;
   /* Texts reveal */
@@ -271,12 +273,14 @@
   /* Banner stacking */
   --stack-open: 350ms;
   --stack-close: 250ms;
-  --stack-rise: 80px;
+  --stack-rise: 60px;
   --stack-blur: 2px;
   --stack-scale: 0.97;
   --stack-peek: 12px;
   --stack-spread-gap: 8px;
   --stack-depth-scale: 0.06;
   --stack-depth-fade: 0.4;
+  --stack-depth1-blur: 1px;
+  --stack-depth2-blur: 2px;
   --stack-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }

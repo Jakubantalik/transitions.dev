@@ -1,10 +1,10 @@
 {
-  "name": "transitions-pro",
-  "version": "0.2.3",
+  "name": "transitions-dev",
+  "version": "0.3.0",
   "description": "Install transitions.dev UI transitions into your project — CSS, React, and TypeScript. Free transitions work out of the box; Pro recipes and the Pro agent skill unlock after a browser sign-in.",
   "type": "module",
   "bin": {
-    "transitions-pro": "bin/transitions-pro.mjs"
+    "transitions-dev": "bin/transitions-dev.mjs"
   },
   "files": [
     "bin",

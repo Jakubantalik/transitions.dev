@@ -27,7 +27,7 @@ Thirty-two portable CSS transitions, each namespaced under `t-*` selectors with 
 | **Skeleton loader and reveal** | Pulse a placeholder, then cross-fade + cross-blur to the loaded content. | [14-skeleton-reveal.md](./14-skeleton-reveal.md) |
 | **Shimmer text** | Sweep a highlight band across muted text on a loop (pure CSS). | [15-shimmer-text.md](./15-shimmer-text.md) |
 | **Tabs sliding** | Slide the active pill between tabs in a segmented control. | [16-tabs-sliding.md](./16-tabs-sliding.md) |
-| **Tooltip open/close** | Delayed fade+scale in, instant out (pure CSS). | [17-tooltip.md](./17-tooltip.md) |
+| **Tooltip open/close** | Delayed fade+scale in, instant out, travels between triggers. | [17-tooltip.md](./17-tooltip.md) |
 | **Texts reveal** | Staggered blurred rise for stacked text lines, quiet fade out. | [18-texts-reveal.md](./18-texts-reveal.md) |
 | **Card hover tilt** | Tilt a card in 3D toward the pointer with a cursor-tracked glare. | [19-card-tilt.md](./19-card-tilt.md) |
 | **Plus to menu morph** | Morph a circular trigger into the menu / panel it opens. | [20-plus-menu-morph.md](./20-plus-menu-morph.md) |
@@ -191,7 +191,7 @@ When inserting a transition into the user's project:
 2. **Paste the chosen transition's CSS verbatim** from the relevant reference file. Do not rewrite selectors, do not collapse the transition into shorthand, do not strip `will-change`. The snippets are tuned and tested.
 3. **Wire the documented HTML hooks** — class names (`.t-dropdown`, `.t-modal`, `.t-success-check`, `.t-avatar`, `.t-clear`, `.t-skel`, `.t-shimmer`, `.t-tabs`, `.t-tt`, `.t-stagger`, `.t-tilt`, `.t-morph`, `.t-acc`, …) and state attributes (`data-open`, `data-state`, `data-page`, `data-origin`, `aria-selected`, `aria-expanded`, `.is-open`, `.is-closing`, `.is-error`, `.is-shaking`, `.has-value`, `.is-clearing`, `.is-pulsing`, `.is-revealed`, `.is-shown`, `.is-hiding`, `.is-hover`, `.is-tilting`).
 4. **Preserve the `@media (prefers-reduced-motion: reduce)` block.** Every snippet ships one. Removing it makes the component fail accessibility audits.
-5. **For transitions that need JS** (dropdown, modal, text swap, number pop-in, page slide, success check, avatar group hover, error state shake, input clear, skeleton reveal, tabs sliding, texts reveal, card hover tilt, plus → menu morph, accordion expand), copy the small orchestration snippet from the reference file and adapt the selectors to the user's DOM. Keep the timing reads (`getComputedStyle(...)getPropertyValue("--…")`) so durations stay in sync with the `:root` values. Shimmer text and tooltip are **pure CSS** — no JS needed.
+5. **For transitions that need JS** (dropdown, modal, text swap, number pop-in, page slide, success check, avatar group hover, error state shake, input clear, skeleton reveal, tabs sliding, tooltip, texts reveal, card hover tilt, plus → menu morph, accordion expand), copy the small orchestration snippet from the reference file and adapt the selectors to the user's DOM. Keep the timing reads (`getComputedStyle(...)getPropertyValue("--…")`) so durations stay in sync with the `:root` values. Shimmer text is **pure CSS** — no JS needed.
 
 Keep the diff small: only edit the files needed to introduce the transition. Don't rename the user's existing variables, don't reformat unrelated CSS, don't pull in a motion library.
 

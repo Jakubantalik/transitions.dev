@@ -119,6 +119,28 @@
     })();
   </script>
   <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
     /* Saans - used for the hero eyebrow + title (Medium / 500). */
     @font-face {
       font-family: "Saans";
@@ -5129,7 +5151,17 @@
     .t-acc-panel-inner p { margin: 0 0 16px; padding-right: 28px; font-size: 14px; line-height: 22px; color: var(--text-muted); }
     .t-acc-panel-inner code { font-family: var(--font-mono); font-size: 12px; line-height: 18px; padding: 1px 6px; border-radius: 6px; background: rgba(0, 0, 0, 0.04); color: var(--text); }
     html[data-theme="dark"] .t-acc-panel-inner code { background: rgba(255, 255, 255, 0.06); }
-    .t-acc-panel-inner a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+    .t-acc-panel-inner a {
+      color: inherit;
+      display: inline-block;
+      text-decoration: underline;
+      text-decoration-thickness: from-font;
+      text-underline-position: from-font;
+      text-decoration-skip-ink: auto;
+      text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+      transition: none;
+    }
+    .t-acc-panel-inner a:hover { text-decoration-color: currentColor; }
     @media (prefers-reduced-motion: reduce) {
       .t-acc-panel, .t-acc-panel-inner, .t-acc-chevron { transition: none !important; }
     }
@@ -5700,7 +5732,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p>The free site showcases the core transitions with copy-ready snippets, and the Free Agent scans any codebase for missing or janky motion (<code>npx transitions-agent</code>). Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-pro add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan. Business adds the Full Agent on top: hosted AI fixes as pull requests, grounded in the Pro recipe library.</p>
+            <p>The free site showcases the core transitions with copy-ready snippets, and the Free Agent scans any codebase for missing or janky motion (<code>npx transitions-agent</code>). Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-dev add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan. Business adds the Full Agent on top: hosted AI fixes as pull requests, grounded in the Pro recipe library.</p>
           </div></div>
         </div>
 
@@ -6618,7 +6650,7 @@ description: Production-ready CSS
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=29" defer></script>
+  <script src="assets/pro-client.js?v=36" defer></script>
 
   <!-- Plan comparison modal behavior (recipe: skill 06-modal state dance). -->
   <script>

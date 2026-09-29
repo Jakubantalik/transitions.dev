@@ -4,23 +4,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tooltip open/close — CSS transition | Transitions.dev</title>
-  <meta name="description" content="Tooltip open/close: Appear-only delay, instant exit. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="description" content="Tooltip open/close: Delayed in, travels, instant out. Copy-paste CSS and React, with reduced-motion support built in." />
   <link rel="canonical" href="https://transitions.dev/transitions/tooltip-open-close/" />
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="Transitions.dev" />
   <meta property="og:title" content="Tooltip open/close — Transitions.dev" />
-  <meta property="og:description" content="Tooltip open/close: Appear-only delay, instant exit. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta property="og:description" content="Tooltip open/close: Delayed in, travels, instant out. Copy-paste CSS and React, with reduced-motion support built in." />
   <meta property="og:url" content="https://transitions.dev/transitions/tooltip-open-close/" />
   <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Tooltip open/close — Transitions.dev" />
-  <meta name="twitter:description" content="Tooltip open/close: Appear-only delay, instant exit. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="twitter:description" content="Tooltip open/close: Delayed in, travels, instant out. Copy-paste CSS and React, with reduced-motion support built in." />
   <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
 
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Tooltip open/close \u2014 CSS transition", "description": "Tooltip open/close: Appear-only delay, instant exit. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/tooltip-open-close/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Tooltip open/close CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Tooltip open/close \u2014 CSS transition", "description": "Tooltip open/close: Delayed in, travels, instant out. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/tooltip-open-close/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Tooltip open/close CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
 
   <!-- Theme boot: same key the rest of the site uses, applied before
        paint so the page never flashes the wrong theme. -->
@@ -125,7 +125,7 @@
     </header>
     <p class="crumb"><a href="/">Home</a> / <a href="/transitions/">Transitions</a></p>
     <h1>Tooltip open/close</h1>
-    <p class="lede">Appear-only delay, instant exit</p>
+    <p class="lede">Delayed in, travels, instant out</p>
     <div class="cta-row">
       <a class="btn btn--primary" href="/detail.html?t=tooltip-open-close">Open the live demo</a>
       <a class="btn btn--secondary" href="/skill.html">Install with the Skill</a>
@@ -136,17 +136,21 @@
 
 /*
   Usage:
-    &lt;span class=&quot;t-tt-wrap&quot;&gt;
-      &lt;button class=&quot;t-tt-trigger&quot; aria-describedby=&quot;tt-1&quot;&gt;…&lt;/button&gt;
-      &lt;span class=&quot;t-tt&quot; id=&quot;tt-1&quot; role=&quot;tooltip&quot;&gt;Tooltip text&lt;/span&gt;
+    &lt;span class=&quot;t-tt-group&quot;&gt;
+      &lt;button class=&quot;t-tt-trigger&quot; data-tooltip=&quot;Copy link&quot; aria-describedby=&quot;tt-1&quot;&gt;…&lt;/button&gt;
+      &lt;button class=&quot;t-tt-trigger&quot; data-tooltip=&quot;Share&quot; aria-describedby=&quot;tt-1&quot;&gt;…&lt;/button&gt;
+      &lt;span class=&quot;t-tt&quot; id=&quot;tt-1&quot; role=&quot;tooltip&quot; aria-hidden=&quot;true&quot; data-show=&quot;false&quot;&gt;
+        &lt;span class=&quot;t-tt-text&quot;&gt;&lt;/span&gt;
+      &lt;/span&gt;
     &lt;/span&gt;
 
-  Pure CSS — no JS. The wrap (not the trigger) is the hover
-  target so the pointer can drift onto the tooltip without
-  flicker. transition-delay only applies in the hover/focus
-  rule, so leaving snaps it to 0 and the disappear plays
-  immediately. Trigger styling is yours; only the tooltip
-  positioning + its transition live here.
+  One tooltip per group, shared by every trigger. The JS snippet
+  writes the bubble&#x27;s x + width for the hovered trigger: when it is
+  already showing, the move tweens on --tt-move-dur so the bubble
+  travels between triggers; when hidden, the geometry snaps and only
+  the appear plays. The appear delay belongs to the show rule alone,
+  so leaving the group hides it immediately. Trigger styling is
+  yours; only the tooltip and its motion live here.
 */
 
 :root {
@@ -156,19 +160,30 @@
   --tt-delay: 80ms;
   --tt-in-ease: ease-out;
   --tt-out-ease: ease-out;
+  --tt-move-dur: 160ms;
+  --tt-move-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --tt-bg: #ffffff;
   --tt-fg: #2f2f2f;
 }
 
-.t-tt-wrap {
+.t-tt-group {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
 }
 .t-tt {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translate(-50%, 0) scale(var(--tt-scale));
+  left: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;                 /* the JS writes the measured width */
+  overflow: hidden;
+  /* Individual transform properties: the travel (translate) and the
+     appear (scale) run on their own clocks. */
+  translate: var(--tt-x, 0px) 0;
+  scale: var(--tt-scale);
   transform-origin: 50% 100%;
   padding: 8px 12px;
   border-radius: 8px;
@@ -181,23 +196,26 @@
     0 4px 42px 0 rgba(0, 0, 0, 0.06);
   opacity: 0;
   pointer-events: none;
-  /* Default rule controls the LEAVE state. transition-delay
-     stays unset so leaving plays without delay. */
+  /* Default rule controls the LEAVE state: no delay, so hiding plays
+     immediately. The move lanes are always live. */
   transition:
     opacity   var(--tt-out-dur) var(--tt-out-ease),
-    transform var(--tt-out-dur) var(--tt-out-ease);
+    scale     var(--tt-out-dur) var(--tt-out-ease),
+    translate var(--tt-move-dur) var(--tt-move-ease),
+    width     var(--tt-move-dur) var(--tt-move-ease);
 }
-/* The 50ms delay belongs ONLY to the hover rule so leaving
-   the trigger snaps the delay back to 0 and the disappear
-   plays immediately. */
-.t-tt-wrap:hover .t-tt,
-.t-tt-trigger:focus-visible + .t-tt {
+/* The appear delay belongs ONLY to the show rule, so hiding snaps it
+   back to 0. A retarget while showing carries no delay at all. */
+.t-tt[data-show=&quot;true&quot;] {
   opacity: 1;
-  transform: translate(-50%, 0) scale(1);
-  transition-duration: var(--tt-in-dur);
-  transition-timing-function: var(--tt-in-ease);
-  transition-delay: var(--tt-delay);
+  scale: 1;
+  transition:
+    opacity   var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+    scale     var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+    translate var(--tt-move-dur) var(--tt-move-ease),
+    width     var(--tt-move-dur) var(--tt-move-ease);
 }
+.t-tt-text { white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) {
   .t-tt { transition: none !important; }
@@ -207,7 +225,7 @@
     <pre><code>// Transitions.dev — Tooltip open/close (React, self-contained)
 // Drop into any React project — no extra CSS file needed.
 
-// ── Styles ──────────────────────────────────────────────
+// ── Styles ───────────────────────────────────────────────
 // Auto-injected on first import. Idempotent (guarded by
 // the element id) and SSR-safe (no-ops without document).
 const __TRANSITION_STYLES = `
@@ -218,19 +236,30 @@ const __TRANSITION_STYLES = `
   --tt-delay: 80ms;
   --tt-in-ease: ease-out;
   --tt-out-ease: ease-out;
+  --tt-move-dur: 160ms;
+  --tt-move-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --tt-bg: #ffffff;
   --tt-fg: #2f2f2f;
 }
 
-.t-tt-wrap {
+.t-tt-group {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
 }
 .t-tt {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translate(-50%, 0) scale(var(--tt-scale));
+  left: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;                 /* the JS writes the measured width */
+  overflow: hidden;
+  /* Individual transform properties: the travel (translate) and the
+     appear (scale) run on their own clocks. */
+  translate: var(--tt-x, 0px) 0;
+  scale: var(--tt-scale);
   transform-origin: 50% 100%;
   padding: 8px 12px;
   border-radius: 8px;
@@ -243,23 +272,26 @@ const __TRANSITION_STYLES = `
     0 4px 42px 0 rgba(0, 0, 0, 0.06);
   opacity: 0;
   pointer-events: none;
-  /* Default rule controls the LEAVE state. transition-delay
-     stays unset so leaving plays without delay. */
+  /* Default rule controls the LEAVE state: no delay, so hiding plays
+     immediately. The move lanes are always live. */
   transition:
     opacity   var(--tt-out-dur) var(--tt-out-ease),
-    transform var(--tt-out-dur) var(--tt-out-ease);
+    scale     var(--tt-out-dur) var(--tt-out-ease),
+    translate var(--tt-move-dur) var(--tt-move-ease),
+    width     var(--tt-move-dur) var(--tt-move-ease);
 }
-/* The 50ms delay belongs ONLY to the hover rule so leaving
-   the trigger snaps the delay back to 0 and the disappear
-   plays immediately. */
-.t-tt-wrap:hover .t-tt,
-.t-tt-trigger:focus-visible + .t-tt {
+/* The appear delay belongs ONLY to the show rule, so hiding snaps it
+   back to 0. A retarget while showing carries no delay at all. */
+.t-tt[data-show=&quot;true&quot;] {
   opacity: 1;
-  transform: translate(-50%, 0) scale(1);
-  transition-duration: var(--tt-in-dur);
-  transition-timing-function: var(--tt-in-ease);
-  transition-delay: var(--tt-delay);
+  scale: 1;
+  transition:
+    opacity   var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+    scale     var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+    translate var(--tt-move-dur) var(--tt-move-ease),
+    width     var(--tt-move-dur) var(--tt-move-ease);
 }
+.t-tt-text { white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) {
   .t-tt { transition: none !important; }
@@ -273,16 +305,77 @@ if (typeof document !== &quot;undefined&quot; &amp;&amp; !document.getElementByI
 }
 
 // Pair with the CSS from the CSS tab.
-// Pure CSS — hover / focus state lives entirely in selectors.
-// Bring your own trigger styling.
-export function Tooltip({ id, content, children }) {
+// One tooltip per group, shared by every trigger. Hovering a trigger
+// writes the bubble&#x27;s x + width: when it is already showing the move
+// tweens (it travels); when hidden the geometry snaps and only the
+// appear plays. Bring your own trigger styling.
+import { useRef } from &quot;react&quot;;
+
+export function TooltipGroup({ id, items }) {
+  // items: [{ label: &quot;Copy&quot;, tooltip: &quot;Copy link&quot;, onClick }]
+  const group = useRef(null);
+  const tip = useRef(null);
+  const text = useRef(null);
+
+  const hide = () =&gt; {
+    tip.current.setAttribute(&quot;data-show&quot;, &quot;false&quot;);
+    tip.current.setAttribute(&quot;aria-hidden&quot;, &quot;true&quot;);
+  };
+
+  const place = (trigger, label) =&gt; {
+    const t = tip.current;
+    const showing = t.getAttribute(&quot;data-show&quot;) === &quot;true&quot;;
+    text.current.textContent = label;
+    const cs = getComputedStyle(t);
+    const width = Math.ceil(
+      text.current.scrollWidth +
+        parseFloat(cs.paddingLeft) +
+        parseFloat(cs.paddingRight)
+    );
+    const g = group.current.getBoundingClientRect();
+    const r = trigger.getBoundingClientRect();
+    const x = r.left - g.left + r.width / 2 - width / 2;
+    if (!showing) {
+      // Snap the geometry while hidden so only the appear plays.
+      t.style.transition = &quot;none&quot;;
+      t.style.width = `${width}px`;
+      t.style.setProperty(&quot;--tt-x&quot;, `${x}px`);
+      void t.offsetWidth;
+      t.style.transition = &quot;&quot;;
+    } else {
+      t.style.width = `${width}px`;
+      t.style.setProperty(&quot;--tt-x&quot;, `${x}px`);
+    }
+    t.setAttribute(&quot;data-show&quot;, &quot;true&quot;);
+    t.setAttribute(&quot;aria-hidden&quot;, &quot;false&quot;);
+  };
+
   return (
-    &lt;span className=&quot;t-tt-wrap&quot;&gt;
-      {/* The trigger needs `aria-describedby` pointed at the
-          tooltip&#x27;s id; CSS uses :focus-visible + sibling selector
-          so the tooltip also shows on keyboard focus. */}
-      {children({ &quot;aria-describedby&quot;: id, className: &quot;t-tt-trigger&quot; })}
-      &lt;span id={id} className=&quot;t-tt&quot; role=&quot;tooltip&quot;&gt;{content}&lt;/span&gt;
+    &lt;span ref={group} className=&quot;t-tt-group&quot; onPointerLeave={hide}&gt;
+      {items.map((item) =&gt; (
+        &lt;button
+          key={item.label}
+          type=&quot;button&quot;
+          className=&quot;t-tt-trigger&quot;
+          aria-describedby={id}
+          onPointerEnter={(e) =&gt; place(e.currentTarget, item.tooltip)}
+          onFocus={(e) =&gt; place(e.currentTarget, item.tooltip)}
+          onBlur={hide}
+          onClick={item.onClick}
+        &gt;
+          {item.label}
+        &lt;/button&gt;
+      ))}
+      &lt;span
+        ref={tip}
+        id={id}
+        className=&quot;t-tt&quot;
+        role=&quot;tooltip&quot;
+        aria-hidden=&quot;true&quot;
+        data-show=&quot;false&quot;
+      &gt;
+        &lt;span ref={text} className=&quot;t-tt-text&quot; /&gt;
+      &lt;/span&gt;
     &lt;/span&gt;
   );
 }

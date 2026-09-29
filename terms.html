@@ -52,6 +52,28 @@
   </script>
 
   <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
     :root {
       color-scheme: light;
       --bg: #fdfdfd;
@@ -530,7 +552,7 @@
       <section>
         <h2>Open-source license</h2>
         <p>
-          The tooling — the <strong>Refine tool</strong> and the <code>transitions-pro</code> CLI —
+          The tooling — the <strong>Refine tool</strong> and the <code>transitions-dev</code> CLI —
           is released under the MIT License below. The transitions you install are licensed under
           <a href="#">Using the transitions</a> above, not the MIT terms.
         </p>

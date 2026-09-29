@@ -29,13 +29,15 @@ spread column ((stack height + gap) * 2 above).
 | --- | --- | --- |
 | `--stack-open` | `350ms` | sourced from `--p34-open-dur` |
 | `--stack-close` | `250ms` | sourced from `--p34-close-dur` |
-| `--stack-rise` | `80px` | sourced from `--p34-distance` |
+| `--stack-rise` | `60px` | sourced from `--p34-distance` |
 | `--stack-blur` | `2px` | sourced from `--p34-blur` |
 | `--stack-scale` | `0.97` | sourced from `--p34-scale-in` |
 | `--stack-peek` | `12px` | sourced from `--p34-peek` |
 | `--stack-spread-gap` | `8px` | sourced from `--p34-spread-gap` |
 | `--stack-depth-scale` | `0.06` | sourced from `--p34-depth-scale` |
 | `--stack-depth-fade` | `0.4` | sourced from `--p34-depth-fade` |
+| `--stack-depth1-blur` | `1px` | sourced from `--p34-depth1-blur` |
+| `--stack-depth2-blur` | `2px` | sourced from `--p34-depth2-blur` |
 | `--stack-ease` | `cubic-bezier(0.22, 1, 0.36, 1)` | sourced from `--p34-ease` |
 
 The `:root` defaults below match the live tuning on [transitions.dev](https://transitions.dev). Drop them into your global stylesheet once — every transition in this skill reads from semantic names like these, so multiple transitions can share a single `:root` block.
@@ -44,13 +46,15 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
 :root {
   --stack-open: 350ms;
   --stack-close: 250ms;
-  --stack-rise: 80px;
+  --stack-rise: 60px;
   --stack-blur: 2px;
   --stack-scale: 0.97;
   --stack-peek: 12px;
   --stack-spread-gap: 8px;
   --stack-depth-scale: 0.06;
   --stack-depth-fade: 0.4;
+  --stack-depth1-blur: 1px;
+  --stack-depth2-blur: 2px;
   --stack-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 ```
@@ -87,6 +91,7 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
   transform: translateY(calc(var(--stack-peek) * -1))
              scale(calc(1 - var(--stack-depth-scale)));
   opacity: calc(1 - var(--stack-depth-fade));
+  filter: blur(var(--stack-depth1-blur));
 }
 .t-stack-banner[data-depth="2"] {
   z-index: 1;
@@ -94,12 +99,13 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
   transform: translateY(calc(var(--stack-peek) * -2))
              scale(calc(1 - var(--stack-depth-scale) * 2));
   opacity: calc(1 - var(--stack-depth-fade) * 1.6);
+  filter: blur(var(--stack-depth2-blur));
 }
 /* Spread: newest stays put, older ones climb one banner height
    each (100% = the banner's own height). Driven by a class, not
    :hover — the gaps between spread banners belong to no element. */
 .t-stack.is-spread .t-stack-banner[data-depth="1"],
-.t-stack.is-spread .t-stack-banner[data-depth="2"] { opacity: 1; }
+.t-stack.is-spread .t-stack-banner[data-depth="2"] { opacity: 1; filter: blur(0); }
 .t-stack.is-spread .t-stack-banner[data-depth="1"] {
   transform: translateY(calc((100% + var(--stack-spread-gap)) * -1)) scale(1);
 }

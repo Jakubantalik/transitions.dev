@@ -1,0 +1,2437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo - Agent workspace</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
+  <style>
+    /* ──────────────────────────────────────────────────────────────
+       Agent workspace demo page (Figma Portfolio 1531:41866). Five
+       prototypes, every motion from a transitions.dev recipe:
+       1 model picker: menu dropdown (05) + page side-by-side (08) +
+         card resize (01) + text states swap (04)
+       2 image generation: organic shimmer (Pro, greyscale) +
+         shimmer text (15) + text states swap (04)
+       3 publish: modal (06) + success check (10) + confetti (Pro)
+       4 email: error state shake (12)
+       5 team: avatar group hover (11)
+       ────────────────────────────────────────────────────────────── */
+    :root {
+      --bg-page: #ffffff;
+      --bg-modal: #ffffff;
+      --bg-tertiary: rgba(61, 61, 61, 0.04);
+      --bg-ghost-hover: rgba(61, 61, 61, 0.04);
+      --bg-backdrop: rgba(0, 0, 0, 0.12);
+
+      --text-strong: #0f0f0f;
+      --text-label: #1b1b1b;
+      --text-dim: #9c9c9c;
+      --text-muted: #737373;
+      --text-on-dropdown: #17181c;
+
+      --shadow-modal:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+
+      --radius-menu: 18px;
+      --radius-row: 12px;
+      --radius-pill: 50px;
+
+      /* ── transitions.dev tunables (skill _root.css) ─────────── */
+      /* Card resize (01) */
+      --resize-dur: 300ms;
+      --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Text states swap (04) */
+      --text-swap-dur: 150ms;
+      --text-swap-enter-delay: 0ms;
+      --text-swap-translate-y: 4px;
+      --text-swap-blur: 2px;
+      --text-swap-ease: ease-in-out;
+      /* Menu dropdown (05) */
+      --dropdown-open-dur: 250ms;
+      --dropdown-close-dur: 150ms;
+      --dropdown-pre-scale: 0.97;
+      --dropdown-closing-scale: 0.99;
+      --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Modal (06) */
+      --modal-open-dur: 250ms;
+      --modal-close-dur: 150ms;
+      --modal-scale: 0.96;
+      --modal-scale-close: 0.96;
+      --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Page side-by-side (08) */
+      --page-slide-dur: 250ms;
+      --page-fade-dur: 250ms;
+      --page-slide-distance: 8px;
+      --page-blur: 3px;
+      --page-stagger: 0ms;
+      --page-exit-enabled: 1;
+      --page-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --page-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Success check (10) */
+      --check-opacity-dur: 550ms;
+      --check-rotate-dur: 550ms;
+      --check-rotate-from: 80deg;
+      --check-bob-dur: 450ms;
+      --check-y-amount: 16.8px;
+      --check-blur-dur: 500ms;
+      --check-blur-from: 10px;
+      --check-path-dur: 550ms;
+      --check-path-delay: 80ms;
+      --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
+      --check-ease-rotate: cubic-bezier(0.22, 1, 0.36, 1);
+      --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
+      --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Beat between the modal landing and the success choreography
+         starting, same as the Send-request state on demo-example-skill */
+      --request-gap: 50ms;
+      /* Texts reveal (18), tuned as on demo-example-skill.html */
+      --stagger-dur: 500ms;
+      --stagger-delay: 0ms;
+      --stagger-distance: 8.4px;
+      --stagger-stagger: 40ms;
+      --stagger-blur: 3px;
+      --stagger-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Toast stacking (homepage P34, sonner-style): a new toast rises
+         with the toast motion (22), older ones step back a peek, a
+         little smaller and dimmer; the fourth is pushed out. */
+      --stack-open: 350ms;
+      --stack-close: 250ms;
+      --stack-distance: 60px;
+      --stack-blur: 2px;
+      --stack-scale-in: 0.97;
+      --stack-peek: 12px;
+      --stack-spread-gap: 8px;
+      --stack-depth-scale: 0.06;
+      --stack-depth-fade: 0.4;
+      --stack-depth1-blur: 1px;   /* second toast in the stack */
+      --stack-depth2-blur: 2px;   /* third */
+      --stack-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Toggle (27), 40x20 as on demo-example-skill.html */
+      --toggle-dur: 350ms;
+      --toggle-travel: 13.34px;
+      --toggle-ov1: 1px;
+      --toggle-ov2: 0px;
+      --toggle-track: 0ms;
+      --toggle-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
+      --toggle-track-off: #e0e0e0;
+      --toggle-track-on: #34c759;
+      --toggle-thumb-bg: #ffffff;
+      /* Notification badge (03) */
+      --badge-slide-dur: 260ms;
+      --badge-pop-dur: 500ms;
+      --badge-pop-close-dur: 180ms;
+      --badge-fade-dur: 400ms;
+      --badge-fade-close-dur: 180ms;
+      --badge-blur: 2px;
+      --badge-offset-x: -8.2px;
+      --badge-offset-y: 12.4px;
+      --badge-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --badge-pop-ease: cubic-bezier(0.34, 1.36, 0.64, 1);
+      --badge-close-ease: cubic-bezier(0.4, 0, 0.2, 1);
+      /* Avatar group hover (11) */
+      --avatar-lift: -4px;
+      --avatar-dur: 320ms;
+      --avatar-scale: 1.05;
+      --avatar-falloff: 0.45;
+      --avatar-ease-in: cubic-bezier(0.22, 1, 0.36, 1);
+      --avatar-ease-out: cubic-bezier(0.34, 3.85, 0.64, 1);
+      /* Error state shake (12) */
+      --shake-distance: 6px;
+      --shake-overshoot: 4px;
+      --shake-dur-a: 80ms;
+      --shake-dur-b: 60ms;
+      --shake-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --revert-hold: 3000ms;
+      --revert-dur: 280ms;
+      /* Shimmer text (15) */
+      --shimmer-dur: 2000ms;
+      --shimmer-base: #7c7c7c;
+      --shimmer-highlight: #0d0d0d;
+      --shimmer-band: 400%;
+      --shimmer-ease: linear;
+      /* Organic shimmer (Pro), namespaced --organic-* here because
+         the text recipe above already owns --shimmer-dur / -ease.
+         Every colour is an RGB triplet so the recipe's per-blob alpha
+         stays intact; the dev panel writes these on :root. */
+      --organic-dur: 3000ms;
+      --organic-ease: ease-out;
+      --organic-band-span: 21%;
+      --organic-opacity: 1;
+      --organic-glow-blur: 20px;
+      --organic-glow-strength: 0.5;
+      --organic-ring-strength: 0.6;
+      --organic-scale: 1.3;   /* 185 / 142 */
+      --organic-saturation: 0.1;      /* saturate() on the whole effect */
+      --organic-shimmer-opacity: 0.75;   /* band + beam together */
+      --organic-tile-alpha: 1;        /* the grey placeholder itself */
+      /* Tuned in the dev panel: a cool blue spread, desaturated to a
+         near-mono wash with a soft beam. */
+      --organic-blue:    40, 140, 255;
+      --organic-pink:    80, 170, 255;
+      --organic-green:   30, 200, 230;
+      --organic-purple:  90, 110, 255;
+      --organic-orange:  120, 190, 255;
+      --organic-teal:    30, 185, 220;
+      --organic-violet:  60, 90, 255;
+      --organic-magenta: 100, 150, 255;
+      /* Confetti burst (Pro) */
+      --confetti-count: 90;
+      --confetti-gravity: 1300;
+      --confetti-size: 4.9px;   /* 7px, 30% smaller */
+      --confetti-sway: 16;
+      --confetti-bounce: 0.3;
+      --confetti-hold: 1600ms;
+      --confetti-fade: 600ms;
+    }
+
+    /* ── Base ─────────────────────────────────────────────────────── */
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      -webkit-text-size-adjust: 100%;
+      font-feature-settings: "cv11", "ss01";
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg-page);
+      color: var(--text-strong);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 22px;
+    }
+    button, input {
+      font-family: inherit;
+      -webkit-font-smoothing: inherit;
+      -moz-osx-font-smoothing: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Embed mode: the prototypes render only inside the iframes ─── */
+    html[data-embed="true"] { background: transparent; overflow: visible; }
+    /* The panes are painted #f6f6f6 by the parent; anything that cuts
+       out of the page colour (the avatar rings) must match that. */
+    body[data-embed="true"] { --bg-page: #f6f6f6; background: transparent; min-height: 0; width: 100%; overflow: visible; }
+    .article { display: none; }
+    body[data-embed="true"] .article { display: flex; }
+    /* The dev panel lives in the skill iframe only: absolute at the
+       top right (fixed would pin it to the bottom of a 1500px frame)
+       and collapsed until wanted. The outer page has no shimmer of
+       its own to tune, so it hides its copy. */
+    body:not([data-embed="true"]) .devpanel { display: none; }
+    body[data-embed="true"] .devpanel { position: absolute; top: 16px; right: 16px; bottom: auto; }
+    body[data-style="generic"] .devpanel { display: none; }
+
+    /* ── Standalone compare stage (same as demo-example-skill.html) ── */
+    .compare-stage { display: none; }
+    body:not([data-embed="true"]) .compare-stage {
+      display: flex;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 64px 24px;
+      gap: 24px;
+      flex-direction: row;
+      justify-content: center;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+    .compare-pane {
+      flex: 1 1 360px;
+      min-width: 0;
+      max-width: 540px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .compare-pane-heading { display: inline-flex; align-items: center; gap: 6px; }
+    .compare-pane-badge {
+      width: 20px; height: 20px; border-radius: 20px; flex: 0 0 20px;
+      display: inline-grid; place-items: center;
+      box-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.1),
+        0 1px 4px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.09);
+    }
+    .compare-pane-badge--off { background: #f03434; }
+    .compare-pane-badge--on  { background: #35ba00; }
+    .compare-pane-badge svg { display: block; width: 10px; height: 10px; }
+    .compare-pane-label { font-weight: 500; font-size: 14px; line-height: 14px; color: #232323; }
+    .compare-pane-iframe {
+      /* Sized to the embed's content (1363px) so the panes never scroll. */
+      display: block; width: 100%; height: 1370px; border: 0; border-radius: 14px;
+      background: #f6f6f6; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+    }
+    @media (max-width: 760px) {
+      body:not([data-embed="true"]) .compare-stage { flex-direction: column; align-items: stretch; padding: 32px 16px; }
+      .compare-pane { max-width: 100%; }
+    }
+
+    /* ── Article layout (same shell as article.html) ──────────────── */
+    .article {
+      max-width: 1005px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+    .demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    /* The picker reserves its tallest page in flow, so it sits closer to
+       the toast stack than the column's 32px gap suggests. */
+    .demo--picker { margin-bottom: -32px; }
+
+    /* ── Tertiary pill (Figma .Button/Small/Tertiary) ─────────────── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 36px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: var(--radius-pill);
+      background: var(--bg-tertiary);
+      color: var(--text-label);
+      font-size: 14px;
+      line-height: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 130ms ease, transform 130ms ease;
+    }
+    .pill:hover { background: rgba(61, 61, 61, 0.07); }
+    .pill:active { transform: scale(0.97); }
+    .pill--menu { padding-right: 12px; }
+    .pill .dim { color: var(--text-dim); }
+    .pill .chev { display: inline-flex; width: 16px; height: 16px; line-height: 0; color: var(--text-label); }
+    .pill .chev svg { display: block; }
+
+    /* Text slot whose width tweens to the incoming label (01) so the
+       hugging pill grows instead of jumping, with the label itself
+       swapping in place (04). Same construction as demo-example-skill. */
+    .swap-slot {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      transition: width var(--resize-dur) var(--resize-ease);
+      will-change: width;
+    }
+    .swap-measure { display: inline-block; visibility: hidden; white-space: nowrap; pointer-events: none; }
+    .swap-slot .t-text-swap { position: absolute; top: 0; left: 0; white-space: nowrap; }
+
+    /* Text states swap (04) */
+    .t-text-swap {
+      display: inline-block; transform: translateY(0); filter: blur(0); opacity: 1;
+      transition:
+        transform var(--text-swap-dur) var(--text-swap-ease),
+        filter    var(--text-swap-dur) var(--text-swap-ease),
+        opacity   var(--text-swap-dur) var(--text-swap-ease);
+      will-change: transform, filter, opacity;
+    }
+    .t-text-swap.is-exit { transform: translateY(var(--text-swap-translate-y)); filter: blur(var(--text-swap-blur)); opacity: 0; }
+    .t-text-swap.is-enter-start { transform: translateY(calc(var(--text-swap-translate-y) * -1)); filter: blur(var(--text-swap-blur)); opacity: 0; transition: none; }
+
+    /* ══ 1 · Model picker (Figma 1531:41867 + 1531:41900) ══════════ */
+    .dd-anchor {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    /* Always open: the menu sits in flow under the pill, the way
+       collection.html shows the component open in place. */
+    .dd-shell {
+      position: static;
+      margin-top: 17px;
+      z-index: 50;
+    }
+    .dropdown {
+      width: 245px;
+      padding: 6px;
+      background: var(--bg-modal);
+      border-radius: var(--radius-menu);
+      box-shadow: var(--shadow-modal);
+    }
+    /* Menu dropdown (05): translateZ(0) pre-promotes the layer so the
+       shadow rides in with the scale (Safari quirk). */
+    .t-dropdown {
+      transform-origin: top left;
+      transform: scale(var(--dropdown-pre-scale)) translateZ(0);
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--dropdown-open-dur) var(--dropdown-ease),
+        opacity   var(--dropdown-open-dur) var(--dropdown-ease);
+      will-change: transform, opacity;
+    }
+    .t-dropdown.is-open { transform: scale(1) translateZ(0); opacity: 1; pointer-events: auto; }
+    .t-dropdown.is-closing {
+      transform: scale(var(--dropdown-closing-scale)) translateZ(0);
+      opacity: 0; pointer-events: none;
+      transition:
+        transform var(--dropdown-close-dur) var(--dropdown-ease),
+        opacity   var(--dropdown-close-dur) var(--dropdown-ease);
+    }
+
+    /* Body height tweens between the two pages (01) */
+    .dd-body {
+      position: relative;
+      width: 100%;
+      /* Clip only the height tween: the sides stay open by the panel's
+         6px padding so the divider can run edge to edge. */
+      clip-path: inset(0 -6px);
+      transition: height var(--resize-dur) var(--resize-ease);
+      will-change: height;
+    }
+    /* Page side-by-side (08) */
+    .t-page-slide .t-page[data-page-id="1"] { --t-page-from-x: calc(var(--page-slide-distance) * -1); }
+    .t-page-slide .t-page[data-page-id="2"] { --t-page-from-x: var(--page-slide-distance); }
+    .t-page-slide .t-page {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(calc(var(--t-page-from-x, 0px) * var(--page-exit-enabled)));
+      filter: blur(calc(var(--page-blur) * var(--page-exit-enabled)));
+      transition:
+        opacity   var(--page-fade-dur)  var(--page-fade-ease),
+        transform var(--page-slide-dur) var(--page-slide-ease),
+        filter    var(--page-slide-dur) var(--page-slide-ease);
+      will-change: opacity, transform, filter;
+    }
+    .t-page-slide[data-page="1"] .t-page[data-page-id="1"],
+    .t-page-slide[data-page="2"] .t-page[data-page-id="2"] {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+      filter: blur(0);
+      transition-delay: var(--page-stagger);
+    }
+
+    .dd-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 6px;
+      height: 36px; padding: 0 12px; border: 0;
+      background: transparent; border-radius: var(--radius-row);
+      color: var(--text-on-dropdown); cursor: pointer; text-align: left; width: 100%;
+      font-size: 14px; line-height: 22px; font-weight: 400;
+      transition: background-color 120ms ease;
+    }
+    .dd-row:hover { background: var(--bg-ghost-hover); }
+    .dd-row[aria-checked="true"] { font-weight: 500; }
+    .dd-row .row-icon { display: inline-flex; width: 16px; height: 16px; line-height: 0; flex: 0 0 16px; }
+    .dd-row .row-icon svg { display: block; }
+    /* The check swaps between rows with icon-swap timing */
+    .dd-row .row-check { opacity: 0; transform: scale(0.25); filter: blur(2px);
+      transition: opacity 200ms ease-in-out, transform 200ms ease-in-out, filter 200ms ease-in-out; }
+    .dd-row[aria-checked="true"] .row-check { opacity: 1; transform: scale(1); filter: blur(0); }
+
+    /* Page 2: effort header + slider (Figma 1531:41909) */
+    /* Back sits at the left edge; label + value centre in the row. */
+    .effort-head {
+      position: relative;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      height: 36px; padding: 0 44px;
+      font-size: 14px; line-height: 22px; font-weight: 500;
+    }
+    .effort-back {
+      position: absolute; left: 4px; top: 2px;
+      display: grid; place-items: center;
+      width: 32px; height: 32px; padding: 0; border: 0;
+      background: transparent; color: var(--text-on-dropdown); cursor: pointer; line-height: 0;
+      border-radius: 50%;
+      transition: background-color 120ms ease;
+    }
+    .effort-back:hover { background: var(--bg-ghost-hover); }
+    .effort-back svg { display: block; }
+    .effort-label { color: #878787; }
+    /* The value slot keeps the width of "High" so the centred group
+       never shifts as the label swaps; longer values overflow right. */
+    .effort-value { color: #4c4c4c; overflow: visible; }
+
+    .slider-row { height: 36px; padding: 7px 10px; }
+    /* 1px, 2% black: separates the model list from the Effort row */
+    .dd-divider { height: 1px; margin: 6px -6px; background: rgba(0, 0, 0, 0.04); }
+    .slider {
+      position: relative;
+      width: 209px;
+      height: 22px;
+      border-radius: 122px;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.07) 0%, rgba(102, 102, 102, 0.07) 143%);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+    }
+    /* Tick marks: 2px dots on the centre line (Figma 1533:41961) */
+    .slider-ticks {
+      position: absolute; left: 17px; right: 14px; top: 10px; height: 2px;
+      display: flex; justify-content: space-between; pointer-events: none;
+    }
+    .slider-ticks i { width: 2px; height: 2px; border-radius: 1px; background: rgba(0, 0, 0, 0.12); }
+    .slider-thumb {
+      position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.04),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+      transition: left var(--resize-dur) var(--resize-ease);
+      pointer-events: none;
+    }
+    /* The real control sits on top, invisible, so keyboard and drag
+       both work; the visual thumb above tracks its value. */
+    .slider input[type="range"] {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      margin: 0; opacity: 0; cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+    }
+    .slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; }
+    .slider input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; border: 0; }
+
+    /* ══ 2 · Image generation (Figma 1531:41926) ═══════════════════ */
+    .imagegen { width: 247px; align-items: flex-start; }
+    .imagegen-label {
+      height: 22px;
+      font-size: 14px; line-height: 22px; font-weight: 500;
+      color: var(--text-strong);
+    }
+    /* Shimmer text (15): the label is the base layer, ::before paints
+       the sweeping highlight onto a duplicate of the same glyphs. */
+    .t-shimmer {
+      position: relative;
+      display: inline-block;
+      color: var(--shimmer-base);
+    }
+    .t-shimmer::before {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(
+        90deg,
+        transparent          0%,
+        transparent         40%,
+        var(--shimmer-highlight) 50%,
+        transparent         60%,
+        transparent        100%
+      );
+      background-size: var(--shimmer-band) 100%;
+      background-repeat: no-repeat;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: t-shimmer var(--shimmer-dur) var(--shimmer-ease) infinite;
+    }
+    @keyframes t-shimmer {
+      0%   { background-position: 100% 0; }
+      100% { background-position: 0% 0; }
+    }
+    /* The swapping label also has to be shimmer text, so the slot pins
+       width and the swap element carries both class hooks. */
+    /* Nothing sits beside this label, so it swaps in place with no
+       width tween: the block spans the card and never clips. */
+    .imagegen-label .swap-slot { display: block; width: 100% !important; height: 22px; overflow: visible; }
+
+    /* Organic shimmer (Pro). Class names are prefixed t-organic-
+       because the text recipe above owns .t-shimmer. Blob colours are
+       the recipe's, read from the --organic-* triplets so the dev
+       panel can retune them live. */
+    .t-organic-tile {
+      position: relative;
+      width: 247px;
+      height: 185px;
+      border-radius: 16px;
+      background: rgba(238, 238, 238, var(--organic-tile-alpha));
+      overflow: hidden;
+      isolation: isolate;
+      flex-shrink: 0;
+      /* The tile's own grey is unaffected; only the layers carry hue. */
+      filter: saturate(var(--organic-saturation));
+    }
+    .t-organic {
+      position: absolute;
+      inset: calc(-20px * var(--organic-scale));
+      filter: url(#t-organic-warp) blur(calc(5px * var(--organic-scale)));
+      opacity: calc(var(--organic-opacity) * var(--organic-shimmer-opacity));
+      pointer-events: none;
+    }
+    .t-organic-band {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 49.45% 38.46% at 20% 15%, rgba(var(--organic-blue), 0.14), transparent),
+        radial-gradient(ellipse 43.96% 32.97% at 65% 25%, rgba(var(--organic-pink), 0.13), transparent),
+        radial-gradient(ellipse 38.46% 43.96% at 30% 55%, rgba(var(--organic-green), 0.12), transparent),
+        radial-gradient(ellipse 49.45% 38.46% at 75% 65%, rgba(var(--organic-purple), 0.13), transparent),
+        radial-gradient(ellipse 38.46% 32.97% at 45% 85%, rgba(var(--organic-orange), 0.12), transparent),
+        radial-gradient(ellipse 32.97% 32.97% at 10% 85%, rgba(var(--organic-teal), 0.11), transparent),
+        linear-gradient(rgba(90, 90, 100, 0.05), rgba(90, 90, 100, 0.05));
+      -webkit-mask-image: linear-gradient(135deg,
+        transparent 0%,
+        transparent calc(50% - var(--organic-band-span) * 0.8),
+        rgba(255, 255, 255, 0.25) calc(50% - var(--organic-band-span) * 0.45),
+        rgba(255, 255, 255, 0.7) calc(50% - var(--organic-band-span) * 0.18),
+        white 50%,
+        rgba(255, 255, 255, 0.7) calc(50% + var(--organic-band-span) * 0.18),
+        rgba(255, 255, 255, 0.25) calc(50% + var(--organic-band-span) * 0.45),
+        transparent calc(50% + var(--organic-band-span) * 0.8),
+        transparent 100%);
+      -webkit-mask-size: 280% 280%; -webkit-mask-repeat: no-repeat; -webkit-mask-position: 100% 100%;
+      mask-image: linear-gradient(135deg,
+        transparent 0%,
+        transparent calc(50% - var(--organic-band-span) * 0.8),
+        rgba(255, 255, 255, 0.25) calc(50% - var(--organic-band-span) * 0.45),
+        rgba(255, 255, 255, 0.7) calc(50% - var(--organic-band-span) * 0.18),
+        white 50%,
+        rgba(255, 255, 255, 0.7) calc(50% + var(--organic-band-span) * 0.18),
+        rgba(255, 255, 255, 0.25) calc(50% + var(--organic-band-span) * 0.45),
+        transparent calc(50% + var(--organic-band-span) * 0.8),
+        transparent 100%);
+      mask-size: 280% 280%; mask-repeat: no-repeat; mask-position: 100% 100%;
+      animation: t-organic-sweep var(--organic-dur) var(--organic-ease) infinite;
+      pointer-events: none;
+    }
+    .t-organic-edge {
+      position: absolute;
+      inset: calc(-20px * var(--organic-scale));
+      z-index: 1;
+      opacity: calc(var(--organic-glow-strength) * var(--organic-shimmer-opacity));
+      pointer-events: none;
+      -webkit-mask-image: linear-gradient(135deg,
+        transparent 0%,
+        transparent calc(50% - var(--organic-band-span) * 1.4),
+        rgba(255, 255, 255, 0.06) calc(50% - var(--organic-band-span) * 1),
+        rgba(255, 255, 255, 0.18) calc(50% - var(--organic-band-span) * 0.6),
+        rgba(255, 255, 255, 0.45) calc(50% - var(--organic-band-span) * 0.25),
+        white 50%,
+        rgba(255, 255, 255, 0.5) calc(50% + var(--organic-band-span) * 0.18),
+        transparent calc(50% + var(--organic-band-span) * 0.35),
+        transparent 100%);
+      -webkit-mask-size: 280% 280%; -webkit-mask-repeat: no-repeat; -webkit-mask-position: 100% 100%;
+      mask-image: linear-gradient(135deg,
+        transparent 0%,
+        transparent calc(50% - var(--organic-band-span) * 1.4),
+        rgba(255, 255, 255, 0.06) calc(50% - var(--organic-band-span) * 1),
+        rgba(255, 255, 255, 0.18) calc(50% - var(--organic-band-span) * 0.6),
+        rgba(255, 255, 255, 0.45) calc(50% - var(--organic-band-span) * 0.25),
+        white 50%,
+        rgba(255, 255, 255, 0.5) calc(50% + var(--organic-band-span) * 0.18),
+        transparent calc(50% + var(--organic-band-span) * 0.35),
+        transparent 100%);
+      mask-size: 280% 280%; mask-repeat: no-repeat; mask-position: 100% 100%;
+      animation: t-organic-sweep var(--organic-dur) var(--organic-ease) infinite;
+    }
+    @keyframes t-organic-sweep {
+      0%   { -webkit-mask-position: 100% 100%; mask-position: 100% 100%; }
+      100% { -webkit-mask-position: 0% 0%;     mask-position: 0% 0%; }
+    }
+    .t-organic-edge-ring,
+    .t-organic-edge-glow,
+    .t-organic-edge-bloom {
+      position: absolute;
+      inset: calc(20px * var(--organic-scale));
+      border-radius: 16px;
+      pointer-events: none;
+    }
+    .t-organic-edge-ring {
+      /* The recipe scales the stroke with the tile (1.3px here), which
+         rasterises as two rows. A hairline stays a hairline: 1px flat. */
+      padding: 1px;
+      opacity: var(--organic-ring-strength);
+      background:
+        radial-gradient(ellipse 29.58% 16.90% at 33% -7.4%, rgba(var(--organic-pink), 0.62), transparent),
+        radial-gradient(ellipse 25.35% 14.79% at 12% -5%, rgba(var(--organic-blue), 0.48), transparent),
+        radial-gradient(ellipse 16.90% 29.58% at 2.1% 68.3%, rgba(var(--organic-green), 0.55), transparent),
+        radial-gradient(ellipse 8.45% 14.79% at 2.1% 68.3%, rgba(var(--organic-teal), 0.44), transparent),
+        radial-gradient(ellipse 76.06% 13.38% at 74.4% 100%, rgba(var(--organic-violet), 0.58), transparent),
+        radial-gradient(ellipse 35.92% 11.27% at 55% 100%, rgba(var(--organic-blue), 0.51), transparent),
+        radial-gradient(ellipse 30.99% 13.38% at 93.9% 0%, rgba(var(--organic-orange), 0.65), transparent),
+        radial-gradient(ellipse 11.27% 17.61% at 100% 27.1%, rgba(var(--organic-magenta), 0.5), transparent),
+        radial-gradient(ellipse 21.83% 20.42% at 100% 27.1%, rgba(var(--organic-purple), 0.56), transparent),
+        linear-gradient(rgba(90, 90, 100, 0.22), rgba(90, 90, 100, 0.22));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+    }
+    .t-organic-edge-glow {
+      background:
+        radial-gradient(ellipse 27.46% 14.79% at 33% -7.4%, rgba(var(--organic-pink), 0.34), transparent),
+        radial-gradient(ellipse 23.24% 12.68% at 12% -5%, rgba(var(--organic-blue), 0.28), transparent),
+        radial-gradient(ellipse 14.79% 27.46% at 2.1% 68.3%, rgba(var(--organic-green), 0.3), transparent),
+        radial-gradient(ellipse 6.34% 12.68% at 2.1% 68.3%, rgba(var(--organic-teal), 0.25), transparent),
+        radial-gradient(ellipse 73.24% 11.97% at 74.4% 100%, rgba(var(--organic-violet), 0.32), transparent),
+        radial-gradient(ellipse 33.80% 9.15% at 55% 100%, rgba(var(--organic-blue), 0.28), transparent),
+        radial-gradient(ellipse 28.87% 11.97% at 93.9% 0%, rgba(var(--organic-orange), 0.35), transparent),
+        radial-gradient(ellipse 9.15% 16.20% at 100% 27.1%, rgba(var(--organic-magenta), 0.28), transparent),
+        radial-gradient(ellipse 19.72% 18.31% at 100% 27.1%, rgba(var(--organic-purple), 0.3), transparent),
+        radial-gradient(ellipse 25.35% 25.35% at 0% 0%, rgba(90, 90, 100, 0.14), transparent 70%),
+        radial-gradient(ellipse 25.35% 25.35% at 100% 0%, rgba(90, 90, 100, 0.14), transparent 70%),
+        radial-gradient(ellipse 25.35% 25.35% at 0% 100%, rgba(90, 90, 100, 0.14), transparent 70%),
+        radial-gradient(ellipse 25.35% 25.35% at 100% 100%, rgba(90, 90, 100, 0.14), transparent 70%);
+      box-shadow: inset 0 0 calc(14px * var(--organic-scale)) calc(1px * var(--organic-scale)) rgba(90, 90, 100, 0.12);
+      filter: blur(calc(2px * var(--organic-scale)));
+      -webkit-mask-image:
+        linear-gradient(white, transparent calc(44px * var(--organic-scale)), transparent calc(100% - 44px * var(--organic-scale)), white),
+        linear-gradient(to right, white, transparent calc(44px * var(--organic-scale)), transparent calc(100% - 44px * var(--organic-scale)), white);
+      -webkit-mask-composite: source-over;
+      mask-image:
+        linear-gradient(white, transparent calc(44px * var(--organic-scale)), transparent calc(100% - 44px * var(--organic-scale)), white),
+        linear-gradient(to right, white, transparent calc(44px * var(--organic-scale)), transparent calc(100% - 44px * var(--organic-scale)), white);
+      mask-composite: add;
+    }
+    .t-organic-edge-bloom {
+      background:
+        radial-gradient(ellipse 38.73% 21.83% at 33% -7.4%, rgba(var(--organic-pink), 0.4), transparent),
+        radial-gradient(ellipse 33.10% 19.01% at 12% -5%, rgba(var(--organic-blue), 0.34), transparent),
+        radial-gradient(ellipse 21.83% 38.73% at 2.1% 68.3%, rgba(var(--organic-green), 0.38), transparent),
+        radial-gradient(ellipse 98.59% 17.61% at 74.4% 100%, rgba(var(--organic-violet), 0.4), transparent),
+        radial-gradient(ellipse 46.48% 14.08% at 55% 100%, rgba(var(--organic-blue), 0.35), transparent),
+        radial-gradient(ellipse 40.85% 17.61% at 93.9% 0%, rgba(var(--organic-orange), 0.44), transparent),
+        radial-gradient(ellipse 28.17% 26.76% at 100% 27.1%, rgba(var(--organic-purple), 0.38), transparent);
+      box-shadow:
+        inset 0 0 calc(var(--organic-glow-blur) * 3 * var(--organic-scale)) calc(var(--organic-glow-blur) / 2 * var(--organic-scale))
+          rgba(90, 90, 100, 0.1);
+      filter: blur(calc(var(--organic-glow-blur) * var(--organic-scale)));
+      -webkit-mask-image:
+        linear-gradient(white, transparent calc(26px * var(--organic-scale)), transparent calc(100% - 26px * var(--organic-scale)), white),
+        linear-gradient(to right, white, transparent calc(26px * var(--organic-scale)), transparent calc(100% - 26px * var(--organic-scale)), white);
+      -webkit-mask-composite: source-over;
+      mask-image:
+        linear-gradient(white, transparent calc(26px * var(--organic-scale)), transparent calc(100% - 26px * var(--organic-scale)), white),
+        linear-gradient(to right, white, transparent calc(26px * var(--organic-scale)), transparent calc(100% - 26px * var(--organic-scale)), white);
+      mask-composite: add;
+    }
+
+    /* ══ 3 · Publish → success modal (Figma 1531:41928) ════════════ */
+    /* The card is always on, sitting below the Publish button with no
+       backdrop; only its contents animate. */
+    .publish-anchor {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      /* Extra air under the success card so it is not crowded by the
+         prototype that follows. */
+      margin-bottom: 60px;
+    }
+
+    /* The Figma success card. It never opens or closes now, so recipe
+       06 is off here: the surface stands and Publish replays the check
+       (10), the staggered copy (18) and the confetti. */
+    .t-modal {
+      position: relative;
+      width: 262px;
+      height: 165px;
+      padding: 8px;
+      border-radius: var(--radius-menu);
+      background: var(--bg-modal);
+      box-shadow: var(--shadow-modal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;   /* confetti stage */
+    }
+    .success-body { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 203px; position: relative; z-index: 1; }
+    .success-texts { display: flex; flex-direction: column; gap: 6px; text-align: center; width: 100%; }
+    /* Texts reveal (18), verbatim: lines rise in from below with a
+       blur, the second held back by the stagger; exit is one quiet
+       fade with no return travel. */
+    .t-stagger-line {
+      display: block;
+      opacity: 0;
+      transform: translateY(var(--stagger-distance));
+      filter: blur(var(--stagger-blur));
+      transition:
+        opacity   var(--stagger-dur) var(--stagger-ease),
+        transform var(--stagger-dur) var(--stagger-ease),
+        filter    var(--stagger-dur) var(--stagger-ease);
+      transition-delay: var(--stagger-delay);
+      will-change: transform, opacity, filter;
+    }
+    .t-stagger-line--2 { transition-delay: calc(var(--stagger-delay) + var(--stagger-stagger)); }
+    .t-stagger.is-shown .t-stagger-line {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+    .t-stagger.is-hiding .t-stagger-line {
+      opacity: 0;
+      transform: translateY(0);
+      filter: blur(0);
+      transition:
+        opacity 200ms ease,
+        transform 0s linear,
+        filter 0s linear;
+      transition-delay: 0s;
+    }
+    .success-title { margin: 0; font-size: 13px; line-height: 16px; font-weight: 500; color: #1f1f1f; }
+    .success-copy  { margin: 0; font-size: 12px; line-height: 16px; color: var(--text-muted); }
+
+    /* Figma 1531:41943 badge: 28px, soft green gradient, inset ring */
+    .success-badge-slot { width: 28px; height: 28px; line-height: 0; }
+    .success-disc {
+      display: grid; place-items: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(180deg, rgba(161, 245, 129, 0.3) 0%, rgba(180, 227, 162, 0.3) 100%);
+      box-shadow:
+        0 1px 4px 0 rgba(64, 205, 15, 0.1),
+        inset 0 0 0 1px rgba(19, 141, 6, 0.05),
+        inset 0 -1px 0 0 rgba(65, 190, 51, 0.15);
+    }
+    /* Success check (10), verbatim */
+    .t-success-check {
+      display: inline-block;
+      transform-origin: center;
+      opacity: 0;
+      will-change: transform, opacity, filter;
+    }
+    .t-success-check svg { display: block; overflow: visible; }
+    .t-success-check svg path { stroke-dasharray: 20; stroke-dashoffset: 20; }
+    .t-success-check[data-state="in"] {
+      animation:
+        t-check-fade   var(--check-opacity-dur) var(--check-ease-opacity) forwards,
+        t-check-rotate var(--check-rotate-dur)  var(--check-ease-rotate)  forwards,
+        t-check-blur   var(--check-blur-dur)    var(--check-ease-out)     forwards,
+        t-check-bob    var(--check-bob-dur)     var(--check-ease-bob)     forwards;
+    }
+    .t-success-check[data-state="in"] svg path {
+      animation: t-check-draw var(--check-path-dur) var(--check-ease-path) var(--check-path-delay, 0ms) forwards;
+    }
+    @keyframes t-check-fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes t-check-rotate { from { transform: rotate(var(--check-rotate-from)); } to { transform: rotate(0deg); } }
+    @keyframes t-check-blur { from { filter: blur(var(--check-blur-from)); } to { filter: blur(0); } }
+    @keyframes t-check-bob { from { translate: 0 var(--check-y-amount); } to { translate: 0 0; } }
+    @keyframes t-check-draw { to { stroke-dashoffset: 0; } }
+
+    /* Confetti (Pro): the modal is the stage, the badge the collider */
+    .t-confetti-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 2; pointer-events: none;
+      transition: opacity 200ms ease;   /* the pile fades with the rest on replay */
+    }
+
+    /* ══ 4 · Email input (Figma 1533:41990 / 41995 / 42000) ═════════ */
+    .t-input-wrap { display: flex; flex-direction: column; gap: 4px; width: 232px; }
+    /* A constant 1.5px border across states keeps the tween from
+       shifting the text (recipe 12); the Figma rest state draws 1px. */
+    .t-input {
+      height: 40px;
+      padding: 4px 4px 4px 14px;
+      /* 1px at rest; focus and error thicken to 1.5px with an inset ring
+         so the box never reflows. */
+      border: 1px solid #dcdcdc;
+      box-shadow: inset 0 0 0 0.5px transparent;
+      border-radius: var(--radius-pill);
+      background: var(--bg-modal);
+      color: var(--text-strong);
+      font-size: 13px;
+      line-height: 1.4;
+      outline: 0;
+      transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+      will-change: transform;
+    }
+    .t-input::placeholder { color: var(--text-strong); opacity: 1; }
+    .t-input:focus { border-color: #585858; box-shadow: inset 0 0 0 0.5px #585858; }
+    .t-input.is-error, .t-input.is-error:focus {
+      border-color: #e23014;
+      box-shadow: inset 0 0 0 0.5px #e23014;
+      transition: border-color var(--revert-dur, 280ms) ease-out, box-shadow var(--revert-dur, 280ms) ease-out;
+    }
+    .t-error-msg {
+      font-size: 13px; line-height: 1.4; color: #d62b11;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity    var(--revert-dur, 280ms) ease-out,
+        visibility 0s linear var(--revert-dur, 280ms);
+    }
+    .t-input-wrap.is-error .t-error-msg {
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity    var(--revert-dur, 280ms) ease-out,
+        visibility 0s linear 0s;
+    }
+    /* Stops: 80, 60, 80, 60 = 280ms → 28.57 / 57.14 / 78.57 / 100 */
+    .t-input.is-shaking {
+      animation: t-input-shake calc(var(--shake-dur-a) * 2 + var(--shake-dur-b) * 2) linear;
+    }
+    @keyframes t-input-shake {
+      0%      { transform: translateX(0);                                 animation-timing-function: var(--shake-ease); }
+      28.57%  { transform: translateX(var(--shake-distance));             animation-timing-function: var(--shake-ease); }
+      57.14%  { transform: translateX(calc(var(--shake-distance) * -1)); animation-timing-function: var(--shake-ease); }
+      78.57%  { transform: translateX(var(--shake-overshoot));            animation-timing-function: var(--shake-ease); }
+      100%    { transform: translateX(0); }
+    }
+
+    /* ══ 5 · Team: avatar group hover (11) ══════════════════════════ */
+    .t-avatar-group { position: relative; display: flex; }
+    .t-avatar {
+      transform-origin: center;
+      transform: translateY(var(--shift, 0px)) scale(var(--scale-active, 1));
+      transition: transform var(--avatar-dur) var(--avatar-ease-in);
+      will-change: transform;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--bg-page);
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #f4f4f4;
+    }
+    .t-avatar + .t-avatar { margin-left: -8px; }
+    .t-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .t-avatar.is-more {
+      display: grid; place-items: center;
+      background: #e9e9e9;
+      font-size: 11px; font-weight: 500; color: var(--text-muted);
+    }
+    /* Shared name tooltip, same as collection.html */
+    .avatar-tooltip {
+      position: absolute;
+      left: 0; bottom: calc(100% + 8px);
+      transform: translateX(0);
+      height: 32px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 40px;
+      font-size: 12px; line-height: 16px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 80;
+      opacity: 0; visibility: hidden;
+      width: 0; overflow: hidden;
+      background: #ffffff; color: var(--text-on-dropdown);
+      box-shadow:
+        0 2px 8px 0 rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 1px 1px 0 rgba(0, 0, 0, 0.04);
+      transition:
+        transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        width 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 120ms cubic-bezier(0.22, 1, 0.36, 1) 50ms,
+        visibility 0s linear 170ms;
+    }
+    .avatar-tooltip[data-show="true"] {
+      opacity: 1; visibility: visible;
+      transition:
+        transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        width 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 120ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear 0s;
+    }
+    .avatar-tooltip-text { display: inline-block; white-space: nowrap; line-height: 32px; }
+
+    /* ── Dev panel: live tuning for the organic shimmer ───────────── */
+    .devpanel {
+      position: fixed; right: 16px; bottom: 16px; z-index: 200;
+      width: 248px;
+      background: var(--bg-modal);
+      border-radius: 14px;
+      box-shadow: var(--shadow-modal);
+      font-size: 12px; line-height: 16px;
+      color: var(--text-strong);
+    }
+    .devpanel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; height: 36px; padding: 0 12px;
+      border: 0; background: transparent; color: inherit;
+      font-size: 12px; font-weight: 500; cursor: pointer; text-align: left;
+    }
+    .devpanel-head .chev { display: inline-flex; transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1); }
+    .devpanel[data-open="false"] .devpanel-head .chev { transform: rotate(180deg); }
+    .devpanel-body { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+    .devpanel[data-open="false"] .devpanel-body { display: none; }
+    .devpanel-group { margin: 6px 0 2px; font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .devrow { display: grid; grid-template-columns: 76px 1fr 44px; align-items: center; gap: 8px; }
+    .devrow label { color: var(--text-muted); }
+    .devrow input[type="range"] { width: 100%; margin: 0; accent-color: #1b1b1b; }
+    .devrow input[type="color"] {
+      width: 100%; height: 22px; padding: 0; border: 0; background: transparent; cursor: pointer;
+    }
+    .devrow input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    .devrow input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; }
+    .devrow output { font-variant-numeric: tabular-nums; text-align: right; color: var(--text-muted); }
+    .devpanel-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+    .devpanel-presets .pill { height: 26px; padding: 0 10px; font-size: 12px; }
+    .devpanel-presets .pill[aria-pressed="true"] { background: #1b1b1b; color: #ffffff; }
+    .devpanel-actions { display: flex; gap: 6px; margin-top: 4px; }
+    .devpanel-actions .pill { height: 28px; padding: 0 12px; font-size: 12px; flex: 1; }
+
+    /* ══ 6 · Toast stacking (Figma 1537:43527 on homepage P34) ═════ */
+    /* No separate trigger: clicking anywhere on the stage adds a toast. */
+    .toast-stage {
+      position: relative;
+      cursor: pointer;
+      outline: none;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      width: 320px;
+      /* The spread column (three toasts plus two gaps) is 139px; the
+         stage reserves 60px less so the stack sits closer to the picker,
+         and the spread simply overflows upward. Spread tracking is
+         geometry on the document, so leaving the stage box does not
+         collapse it. */
+      height: 79px;
+      padding-bottom: 0;
+      /* The spread column overflows upward over the picker, so the
+         stage owns a stacking context above every other prototype. */
+      z-index: 60;
+    }
+    .t-stack {
+      position: relative;
+      width: 195px;
+      height: 41px;
+    }
+    /* The Figma toast pill */
+    .t-stack-toast {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 195px;
+      height: 41px;
+      padding: 6px 12px 6px 10px;
+      background: var(--bg-modal);
+      border-radius: 82px;
+      box-shadow: var(--shadow-modal);
+      /* Centre origin so an arriving toast scales exactly like the
+         toast recipe; the push-back states switch to the bottom edge,
+         which is safe because the swap happens at identity. */
+      transform-origin: 50% 50%;
+      /* Explicit blur(0): blur to none does not interpolate reliably. */
+      filter: blur(0);
+      will-change: transform, opacity, filter;
+      transition:
+        transform var(--stack-open) var(--stack-ease),
+        opacity   var(--stack-open) var(--stack-ease),
+        filter    var(--stack-open) var(--stack-ease);
+    }
+    .t-stack-toast[data-depth="0"] { z-index: 3; transform: translateY(0) scale(1); opacity: 1; }
+    .t-stack-toast[data-depth="1"] {
+      z-index: 2;
+      transform-origin: 50% 100%;
+      transform: translateY(calc(var(--stack-peek) * -1)) scale(calc(1 - var(--stack-depth-scale)));
+      opacity: calc(1 - var(--stack-depth-fade));
+      filter: blur(var(--stack-depth1-blur));
+    }
+    .t-stack-toast[data-depth="2"] {
+      z-index: 1;
+      transform-origin: 50% 100%;
+      transform: translateY(calc(var(--stack-peek) * -2)) scale(calc(1 - var(--stack-depth-scale) * 2));
+      opacity: calc(1 - var(--stack-depth-fade) * 1.6);
+      filter: blur(var(--stack-depth2-blur));
+    }
+    /* Spread: newest stays, older ones climb one toast height each. */
+    .t-stack.is-spread .t-stack-toast[data-depth="1"],
+    .t-stack.is-spread .t-stack-toast[data-depth="2"] { opacity: 1; filter: blur(0); }
+    .t-stack.is-spread .t-stack-toast[data-depth="1"] { transform: translateY(calc((41px + var(--stack-spread-gap)) * -1)) scale(1); }
+    .t-stack.is-spread .t-stack-toast[data-depth="2"] { transform: translateY(calc((41px + var(--stack-spread-gap)) * -2)) scale(1); }
+    .t-stack-toast.is-enter {
+      transition: none;
+      transform: translateY(var(--stack-distance)) scale(var(--stack-scale-in));
+      opacity: 0;
+      filter: blur(var(--stack-blur));
+    }
+    .t-stack-toast.is-leaving {
+      z-index: 0;
+      transform-origin: 50% 100%;
+      transform: translateY(calc(var(--stack-peek) * -3)) scale(calc(1 - var(--stack-depth-scale) * 3));
+      opacity: 0;
+      filter: blur(var(--stack-blur));
+      transition:
+        transform var(--stack-close) var(--stack-ease),
+        opacity   var(--stack-close) var(--stack-ease),
+        filter    var(--stack-close) var(--stack-ease);
+    }
+    /* Figma 1537:43699 check box */
+    .toast-check {
+      display: grid; place-items: center;
+      width: 24px; height: 24px; flex: 0 0 24px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(161, 245, 129, 0.2) 0%, rgba(180, 227, 162, 0.2) 100%);
+      box-shadow:
+        0 1px 4px 0 rgba(64, 205, 15, 0.1),
+        inset 0 0 0 1px rgba(11, 109, 0, 0.05),
+        inset 0 -1px 0 0 rgba(65, 190, 51, 0.15);
+    }
+    .toast-check svg { display: block; }
+    .toast-text {
+      flex: 1;
+      font-size: 13px; line-height: 1.4; font-weight: 500;
+      color: var(--text-strong);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .toast-close {
+      display: grid; place-items: center;
+      width: 20px; height: 20px; flex: 0 0 20px;
+      padding: 0; border: 0; border-radius: 50%;
+      background: transparent; color: #8a8a8a; cursor: pointer;
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+    .toast-close:hover { background: var(--bg-ghost-hover); color: var(--text-strong); }
+    .toast-close svg { display: block; }
+
+    /* ══ 7 · Toggle (27), from demo-example-skill.html ══════════════ */
+    /* The switch stands alone: no label, so the row just centres it. */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: center;
+      height: 32px;
+    }
+    .t-toggle {
+      display: block;
+      width: 40px; height: 20px;
+      flex: 0 0 40px;
+      padding: 0;
+      border: 0;
+      border-radius: 122px;
+      background: var(--toggle-track-off);
+      position: relative;
+      cursor: pointer;
+      transition: background var(--toggle-track) var(--toggle-ease),
+                  background-color 200ms ease;
+    }
+    .t-toggle[data-on="true"] { background: var(--toggle-track-on); }
+    .t-toggle-thumb {
+      position: absolute;
+      left: 3.33px; top: 3.33px;
+      width: 20px; height: 13.34px;
+      border-radius: 122px;
+      background: var(--toggle-thumb-bg);
+      box-shadow:
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06),
+        0 1px 2px rgba(0, 0, 0, 0.18);
+      translate: 0 0;
+      will-change: translate;
+    }
+    .t-toggle[data-on="true"] .t-toggle-thumb { translate: var(--toggle-travel) 0; }
+    .t-toggle.is-init[data-on="true"] .t-toggle-thumb { animation: t-toggle-on var(--toggle-dur) var(--toggle-ease) both; }
+    .t-toggle.is-init[data-on="false"] .t-toggle-thumb { animation: t-toggle-off var(--toggle-dur) var(--toggle-ease) both; }
+    @keyframes t-toggle-on {
+      0% { translate: 0 0; }
+      55% { translate: calc(var(--toggle-travel) + var(--toggle-ov1)) 0; }
+      80% { translate: calc(var(--toggle-travel) - var(--toggle-ov2)) 0; }
+      100% { translate: var(--toggle-travel) 0; }
+    }
+    @keyframes t-toggle-off {
+      0% { translate: var(--toggle-travel) 0; }
+      55% { translate: calc(0px - var(--toggle-ov1)) 0; }
+      80% { translate: var(--toggle-ov2) 0; }
+      100% { translate: 0 0; }
+    }
+
+    /* ══ 8 · Notification badge (03), the homepage bell ═════════════ */
+    .bell {
+      position: relative;
+      width: 40px; height: 40px;
+      padding: 0; border: 0;
+      border-radius: 40px;
+      background: var(--bg-modal);
+      box-shadow:
+        0 1px 0 0 rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.04),
+        0 2px 3px 0 rgba(0, 0, 0, 0.04);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--text-strong);
+      cursor: pointer;
+    }
+    .bell > svg { width: 16px; height: 16px; display: block; }
+    /* Recipe 03, verbatim: the wrapper slides in diagonally, the dot
+       pops with the spring. */
+    @keyframes t-badge-slide-in {
+      from { transform: translate(var(--badge-offset-x), var(--badge-offset-y)); }
+      to   { transform: translate(0, 0); }
+    }
+    .t-badge {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      width: 20px; height: 20px;
+      pointer-events: none;
+      will-change: transform;
+    }
+    .t-badge[data-open="true"] { animation: t-badge-slide-in var(--badge-slide-dur) var(--badge-slide-ease); }
+    .t-badge-dot {
+      display: flex; width: 100%; height: 100%;
+      align-items: center; justify-content: center;
+      border-radius: 50%;
+      background-image: linear-gradient(-51.52deg, rgb(238, 41, 51) 13.929%, rgb(236, 2, 72) 112.7%);
+      color: #ffffff;
+      font-weight: 500;
+      font-size: 11.744px;
+      line-height: 1;
+      letter-spacing: -0.1174px;
+      box-shadow:
+        0 0.338px 1.351px 0 rgba(0, 0, 0, 0.17),
+        0 0.676px 2.703px 0 rgba(0, 0, 0, 0.04),
+        inset 0 -0.338px 0 0 rgba(0, 0, 0, 0.16);
+      transform-origin: center;
+      transform: scale(1);
+      opacity: 1;
+      filter: blur(0);
+      transition:
+        transform var(--badge-pop-dur)  var(--badge-pop-ease),
+        opacity   var(--badge-fade-dur) var(--badge-pop-ease),
+        filter    var(--badge-pop-dur)  var(--badge-pop-ease);
+      will-change: transform, opacity, filter;
+    }
+    .t-badge[data-open="false"] .t-badge-dot {
+      transform: scale(0);
+      opacity: 0;
+      filter: blur(var(--badge-blur));
+      transition:
+        transform var(--badge-pop-close-dur)  var(--badge-close-ease),
+        opacity   var(--badge-fade-close-dur) var(--badge-close-ease),
+        filter    var(--badge-pop-close-dur)  var(--badge-close-ease);
+    }
+
+    /* ── "Generic AI output" mode ─────────────────────────────────────
+       Every recipe is neutralised through its own variables (not by
+       overriding properties) so the hooks stay live and Refine can
+       raise them to the skill values on apply. */
+    @media (prefers-reduced-motion: no-preference) {
+      /* Picker: chunky page slide, no blur; labels cross-fade in place,
+         widths snap. */
+      body[data-style="generic"] .proto-root .dd-anchor {
+        --page-slide-distance: 30px;
+        --page-slide-dur: 300ms;
+        --page-fade-dur: 300ms;
+        --page-slide-ease: ease-in-out;
+        --page-fade-ease: ease-in-out;
+        --page-blur: 0px;
+        --resize-dur: 0ms;
+        --text-swap-blur: 0px;
+        --text-swap-translate-y: 0px;
+        --text-swap-ease: ease-in-out;
+      }
+      body[data-style="generic"] .proto-root .dd-body { transition: height 300ms ease-in-out; }
+      body[data-style="generic"] .proto-root .slider-thumb { transition: left 200ms linear; }
+      body[data-style="generic"] .proto-root .dd-row .row-check { transition: opacity 200ms ease-in-out; transform: none; filter: none; }
+
+      /* Image generation: the stock skeleton shimmer, a horizontal
+         highlight sweeping left to right on a linear clock. The organic
+         layers are dropped entirely; the label just fades between
+         states. */
+      body[data-style="generic"] .proto-root .imagegen {
+        --text-swap-blur: 0px;
+        --text-swap-translate-y: 0px;
+        --text-swap-ease: ease-in-out;
+      }
+      body[data-style="generic"] .proto-root .t-organic,
+      body[data-style="generic"] .proto-root .t-organic-edge { display: none; }
+      body[data-style="generic"] .proto-root .t-organic-tile {
+        /* a darker grey band, not a highlight */
+        background-image: linear-gradient(90deg, #eeeeee 0%, #eeeeee 38%, #e0e0e0 50%, #eeeeee 62%, #eeeeee 100%);
+        background-size: 200% 100%;
+        background-repeat: no-repeat;
+        animation: generic-shimmer 1800ms linear infinite;
+        filter: none;
+      }
+      @keyframes generic-shimmer {
+        from { background-position: 100% 0; }
+        to   { background-position: -100% 0; }
+      }
+      body[data-style="generic"] .proto-root .t-shimmer::before { animation: none; }
+
+      /* Publish: check and copy just fade, no rotate / bob / draw / stagger;
+         the confetti falls stiff with no sway or bounce. */
+      body[data-style="generic"] .proto-root .publish-anchor {
+        --check-rotate-from: 0deg;
+        --check-y-amount: 0px;
+        --check-blur-from: 0px;
+        --check-path-dur: 0ms;
+        --check-path-delay: 0ms;
+        --check-opacity-dur: 300ms;
+        --check-rotate-dur: 300ms;
+        --check-blur-dur: 300ms;
+        --check-bob-dur: 300ms;
+        --stagger-distance: 0px;
+        --stagger-blur: 0px;
+        --stagger-stagger: 0ms;
+        --stagger-dur: 300ms;
+        --stagger-ease: ease-in-out;
+        --confetti-sway: 0;
+        --confetti-bounce: 0;
+      }
+
+      /* Email: linear shake, half again as slow, no overshoot, message
+         snaps in. The keyframe stops are ratios, so scaling both legs
+         together keeps them in sync. */
+      body[data-style="generic"] .proto-root .t-input-wrap {
+        --shake-ease: linear;
+        --shake-overshoot: 0px;
+        --shake-dur-a: 120ms;
+        --shake-dur-b: 90ms;
+        --revert-dur: 0ms;
+      }
+
+      /* Team: only the hovered avatar lifts, no falloff, no spring.
+         The tooltip is not continuous either: it never tweens its width
+         or position between names, so moving along the row tears the
+         old one down and puts a new one up (see the JS below). */
+      body[data-style="generic"] .proto-root .t-avatar-group {
+        --avatar-falloff: 0;
+        --avatar-ease-in: ease-in-out;
+        --avatar-ease-out: ease-in-out;
+      }
+      body[data-style="generic"] .proto-root .avatar-tooltip {
+        transition:
+          opacity 120ms ease-in-out,
+          visibility 0s linear 120ms;
+      }
+      body[data-style="generic"] .proto-root .avatar-tooltip[data-show="true"] {
+        transition:
+          opacity 120ms ease-in-out,
+          visibility 0s linear 0s;
+      }
+
+      /* Toast: keeps the skill pane's depth scaling and fade, but no
+         blur anywhere, and the new toast arrives on a plain ease-out. */
+      body[data-style="generic"] .proto-root .toast-stage {
+        --stack-blur: 0px;
+        --stack-scale-in: 1;
+        --stack-depth1-blur: 0px;
+        --stack-depth2-blur: 0px;
+        --stack-open: 368ms;   /* 525ms, 30% faster */
+        --stack-ease: ease-out;
+      }
+
+      /* Toggle: plain slide, no overshoot spring. */
+      body[data-style="generic"] .proto-root .t-toggle-thumb {
+        animation: none !important;
+        transition: translate 263ms ease-in-out;   /* 375ms, 30% faster */
+      }
+
+      /* Badge: no diagonal slide, no spring, no blur. */
+      body[data-style="generic"] .proto-root .bell {
+        --badge-offset-x: 0px;
+        --badge-offset-y: 0px;
+        --badge-blur: 0px;
+        --badge-pop-ease: ease-in-out;
+        --badge-pop-dur: 250ms;
+        --badge-fade-dur: 250ms;
+      }
+    }
+
+    /* prefers-reduced-motion, required by every recipe */
+    @media (prefers-reduced-motion: reduce) {
+      .t-text-swap, .swap-slot, .t-dropdown, .dd-body, .t-page-slide .t-page,
+      .slider-thumb, .t-modal, .t-error-msg, .avatar-tooltip,
+      .t-stagger-line {
+        transition: none !important;
+      }
+      .t-avatar { transition: none !important; transform: none !important; }
+      .t-stack-toast { transition: none !important; transform: none !important; filter: none !important; }
+      .t-toggle-thumb { animation: none !important; }
+      .t-badge, .t-badge-dot { animation: none !important; transition: none !important; }
+      .t-input { animation: none !important; transform: none !important; }
+      .t-shimmer::before, .t-organic-band, .t-organic-edge,
+      .t-success-check, .t-success-check svg path { animation: none !important; }
+      .t-success-check[data-state="in"] { opacity: 1; }
+      .t-success-check[data-state="in"] svg path { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Once per page: the noise field that waves the organic band -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <filter id="t-organic-warp" x="-40%" y="-40%" width="180%" height="180%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.009 0.015" numOctaves="2" seed="7" result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="46" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+
+  <!-- ── Standalone compare stage (non-embed only) ────────────────── -->
+  <div class="compare-stage">
+    <div class="compare-pane">
+      <div class="compare-pane-heading">
+        <span class="compare-pane-badge compare-pane-badge--off" aria-hidden="true">
+          <svg viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <path d="M2.25 2.25L7.75 7.75M7.75 2.25L2.25 7.75" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="compare-pane-label">Generic AI output</span>
+      </div>
+      <iframe
+        id="compareIframeOff"
+        class="compare-pane-iframe"
+        src="demo-agent.html?embed=1&style=generic&v=20260913-19"
+        title="Agent workspace demo without Transitions.dev skill"
+        loading="lazy"
+      ></iframe>
+    </div>
+    <div class="compare-pane">
+      <div class="compare-pane-heading">
+        <span class="compare-pane-badge compare-pane-badge--on" aria-hidden="true">
+          <svg viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M8.55 2.27a.75.75 0 0 1 0 1.06L4.28 7.6a.75.75 0 0 1-1.06 0L1.45 5.83a.75.75 0 1 1 1.06-1.06l1.24 1.24 3.74-3.74a.75.75 0 0 1 1.06 0Z" fill="#ffffff"/>
+          </svg>
+        </span>
+        <span class="compare-pane-label">With Transitions.dev skill</span>
+      </div>
+      <iframe
+        id="compareIframeOn"
+        class="compare-pane-iframe"
+        src="demo-agent.html?embed=1&v=20260913-19"
+        title="Agent workspace demo with Transitions.dev skill"
+        loading="lazy"
+      ></iframe>
+    </div>
+  </div>
+
+  <main class="article proto-root">
+
+    <!-- ══ 1 · Model picker ═══════════════════════════════════════ -->
+    <div class="demo demo--picker">
+      <div class="dd-anchor">
+        <button class="pill pill--menu" id="pickerTrigger" type="button" aria-haspopup="menu" aria-expanded="false">
+          <span class="swap-slot" id="modelSlot">
+            <span class="swap-measure" id="modelMeasure">Fable 5.1</span>
+            <span class="t-text-swap" id="modelText">Fable 5.1</span>
+          </span>
+          <span class="dim swap-slot" id="effortSlot">
+            <span class="swap-measure" id="effortMeasure">High</span>
+            <span class="t-text-swap" id="effortText">High</span>
+          </span>
+          <span class="chev" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
+              <path transform="translate(4.25 6.25)" fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/>
+            </svg>
+          </span>
+        </button>
+
+        <div class="dd-shell">
+          <div class="t-dropdown dropdown" id="pickerMenu" role="menu" aria-label="Model">
+            <div class="dd-body t-page-slide" id="pickerBody" data-page="1">
+              <!-- Page 1: models + Effort -->
+              <div class="t-page" data-page-id="1">
+                <button class="dd-row" type="button" role="menuitemradio" aria-checked="true" data-model="Fable 5.1">
+                  <span>Fable 5.1</span>
+                  <span class="row-icon row-check" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3.25 8.5L6.5 11.75L12.75 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </button>
+                <button class="dd-row" type="button" role="menuitemradio" aria-checked="false" data-model="Opus 5">
+                  <span>Opus 5</span>
+                  <span class="row-icon row-check" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3.25 8.5L6.5 11.75L12.75 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </button>
+                <button class="dd-row" type="button" role="menuitemradio" aria-checked="false" data-model="GPT-6 Astra">
+                  <span>GPT-6 Astra</span>
+                  <span class="row-icon row-check" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3.25 8.5L6.5 11.75L12.75 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </button>
+                <div class="dd-divider" role="separator"></div>
+                <button class="dd-row" type="button" role="menuitem" id="effortRow">
+                  <span>Effort</span>
+                  <span class="row-icon" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </button>
+              </div>
+              <!-- Page 2: effort slider -->
+              <div class="t-page" data-page-id="2">
+                <div class="effort-head">
+                  <button class="effort-back" id="effortBack" type="button" aria-label="Back">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <span class="effort-label">Model effort</span>
+                  <span class="effort-value swap-slot" id="effortHeadSlot">
+                    <span class="swap-measure" id="effortHeadMeasure">High</span>
+                    <span class="t-text-swap" id="effortHeadText">High</span>
+                  </span>
+                </div>
+                <div class="slider-row">
+                  <div class="slider">
+                    <span class="slider-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                    <span class="slider-thumb" id="effortThumb" aria-hidden="true"></span>
+                    <input type="range" id="effortRange" min="0" max="3" step="1" value="2" aria-label="Model effort" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 6 · Toast (shown second; the whole stage is the trigger) ═ -->
+    <div class="demo">
+      <div class="toast-stage" id="toastStage" role="button" tabindex="0" aria-label="Add toast">
+        <div class="t-stack" id="toastStack" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- ══ 4 · Email (shown third)════════════════════════════════════════ -->
+    <div class="demo">
+      <form class="t-input-wrap" id="emailForm" novalidate>
+        <input class="t-input" id="emailInput" type="email" placeholder="Enter email" autocomplete="off" spellcheck="false" />
+        <span class="t-error-msg" id="emailError" role="alert">Please enter a valid email.</span>
+      </form>
+    </div>
+
+    <!-- ══ 2 · Image generation ═══════════════════════════════════ -->
+    <div class="demo imagegen">
+      <div class="imagegen-label">
+        <span class="swap-slot" id="genSlot">
+          <span class="swap-measure" id="genMeasure">Generating image</span>
+          <span class="t-shimmer t-text-swap" id="genText" data-text="Generating image">Generating image</span>
+        </span>
+      </div>
+      <div class="t-organic-tile" aria-hidden="true">
+        <span class="t-organic"><span class="t-organic-band"></span></span>
+        <span class="t-organic-edge">
+          <span class="t-organic-edge-bloom"></span>
+          <span class="t-organic-edge-glow"></span>
+          <span class="t-organic-edge-ring"></span>
+        </span>
+      </div>
+    </div>
+
+    <!-- ══ 3 · Publish ════════════════════════════════════════════ -->
+    <div class="demo">
+      <div class="publish-anchor">
+        <button class="pill" id="publishBtn" type="button">Publish</button>
+        <div class="t-modal" id="successModal" role="status" aria-labelledby="successTitle">
+      <canvas class="t-confetti-canvas" id="confettiCanvas" aria-hidden="true"></canvas>
+      <div class="success-body">
+        <span class="success-badge-slot" aria-hidden="true">
+          <!-- Recipe 10 wraps the whole badge: the disc fades, rotates,
+               bobs and un-blurs while the path strokes in. -->
+          <span class="t-success-check" id="successCheck" data-state="out">
+            <span class="success-disc" id="successBadge">
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" aria-hidden="true">
+                <path d="M2.9 7.3L5.3 9.8L11.1 3.7" stroke="#3aa93a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </span>
+        </span>
+        <div class="success-texts t-stagger" id="successTexts">
+          <p class="success-title t-stagger-line t-stagger-line--1" id="successTitle">Page published</p>
+          <p class="success-copy t-stagger-line t-stagger-line--2">When published to web, anyone with the link can view.</p>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+
+    <!-- ══ 5 · Team ═══════════════════════════════════════════════ -->
+    <div class="demo">
+      <div class="t-avatar-group" aria-label="Project members">
+        <div class="t-avatar" data-name="Sofia Nguyen"><img src="assets/avatars/avatar-1.webp" alt="Sofia Nguyen" width="32" height="32"></div>
+        <div class="t-avatar" data-name="Elena Fisher"><img src="assets/avatars/avatar-2.webp" alt="Elena Fisher" width="32" height="32"></div>
+        <div class="t-avatar" data-name="Marcus Bailey"><img src="assets/avatars/avatar-3.webp" alt="Marcus Bailey" width="32" height="32"></div>
+        <div class="t-avatar" data-name="Noah Hall"><img src="assets/avatars/avatar-4.webp" alt="Noah Hall" width="32" height="32"></div>
+        <div class="t-avatar" data-name="Daniel Osei"><img src="assets/avatars/avatar-5.webp" alt="Daniel Osei" width="32" height="32"></div>
+        <div class="t-avatar is-more" data-name="2 more">+2</div>
+      </div>
+    </div>
+
+    <!-- ══ 7 · Toggle ════════════════════════════════════════════ -->
+    <div class="demo">
+      <div class="toggle-row">
+        <button type="button" class="t-toggle" id="toggle1" role="switch" data-on="false" aria-checked="false" aria-label="Email notifications">
+          <span class="t-toggle-thumb"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ 8 · Notification badge ═══════════════════════════════ -->
+    <div class="demo">
+      <button type="button" class="bell" id="bell" aria-label="Notifications" aria-pressed="false">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6.23612 14C6.70621 14.4149 7.3237 14.6667 8 14.6667C8.6763 14.6667 9.29379 14.4149 9.76388 14M12 5.33333C12 4.27247 11.5786 3.25505 10.8284 2.50491C10.0783 1.75476 9.06087 1.33333 8 1.33333C6.93913 1.33333 5.92172 1.75476 5.17157 2.50491C4.42143 3.25505 4 4.27247 4 5.33333C4 7.39346 3.48031 8.80397 2.89978 9.73694C2.41008 10.5239 2.16524 10.9174 2.17422 11.0272C2.18416 11.1487 2.20991 11.1951 2.30785 11.2677C2.39631 11.3333 2.79506 11.3333 3.59257 11.3333H12.4074C13.2049 11.3333 13.6037 11.3333 13.6921 11.2677C13.7901 11.1951 13.8158 11.1487 13.8258 11.0272C13.8348 10.9174 13.5899 10.5239 13.1002 9.73694C12.5197 8.80397 12 7.39346 12 5.33333Z"/>
+        </svg>
+        <span class="t-badge" id="bellBadge" data-open="false" aria-hidden="true"><span class="t-badge-dot">1</span></span>
+      </button>
+    </div>
+  </main>
+
+  <!-- Dev panel: live controls for the organic shimmer -->
+  <aside class="devpanel" id="devpanel" data-open="true" aria-label="Shimmer dev controls">
+    <button class="devpanel-head" id="devpanelToggle" type="button" aria-expanded="true">
+      Shimmer colours
+      <span class="chev" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M4 10L8 6L12 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </button>
+    <div class="devpanel-body" id="devpanelBody"></div>
+  </aside>
+
+  <script>
+    (function () {
+      "use strict";
+      /* Embed init: the iframes flag themselves so the article renders
+         and the generic pane picks up its overrides. Runs before any
+         prototype reads its variables. */
+      (function initEmbed() {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get("embed") !== "1") return;
+        document.documentElement.dataset.embed = "true";
+        document.body.dataset.embed = "true";
+        if (params.get("style") === "generic") document.body.dataset.style = "generic";
+        /* Start collapsed inside the pane so it doesn't sit on the demos. */
+        var panel = document.getElementById("devpanel");
+        if (panel) {
+          panel.setAttribute("data-open", "false");
+          var head = document.getElementById("devpanelToggle");
+          if (head) head.setAttribute("aria-expanded", "false");
+        }
+      })();
+
+      var rootStyle = getComputedStyle(document.documentElement);
+      function cssNum(name, fb) {
+        var v = parseFloat(rootStyle.getPropertyValue(name));
+        return Number.isFinite(v) ? v : fb;
+      }
+
+      /* ── Text states swap (04) + width tween (01) helpers ───────── */
+      var textSwapAt = Math.max(0, cssNum("--text-swap-dur", 150) + cssNum("--text-swap-enter-delay", 0));
+      function swapText(el, next, alsoDataText) {
+        if (el.textContent === next) return;
+        el.classList.add("is-exit");
+        setTimeout(function () {
+          el.textContent = next;
+          if (alsoDataText) el.setAttribute("data-text", next);
+          el.classList.remove("is-exit");
+          el.classList.add("is-enter-start");
+          void el.offsetHeight;
+          el.classList.remove("is-enter-start");
+        }, textSwapAt);
+      }
+      function sizeSlot(slot, measure, label, animate) {
+        measure.textContent = label;
+        var next = Math.ceil(measure.getBoundingClientRect().width);
+        if (!animate) {
+          var prev = slot.style.transition;
+          slot.style.transition = "none";
+          slot.style.width = next + "px";
+          void slot.offsetWidth;
+          slot.style.transition = prev;
+        } else {
+          slot.style.width = next + "px";
+        }
+      }
+      function makeSwapSlot(slotId, measureId, textId, alsoDataText, noSize) {
+        var slot = document.getElementById(slotId);
+        var measure = document.getElementById(measureId);
+        var text = document.getElementById(textId);
+        if (!noSize) {
+          sizeSlot(slot, measure, text.textContent, false);
+          if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(function () { sizeSlot(slot, measure, text.textContent, false); });
+          }
+        }
+        return {
+          set: function (label) {
+            if (!noSize) sizeSlot(slot, measure, label, true);
+            swapText(text, label, alsoDataText);
+          },
+          resync: function () { if (!noSize) sizeSlot(slot, measure, text.textContent, false); }
+        };
+      }
+
+      /* ── 1 · Model picker ───────────────────────────────────────── */
+      (function () {
+        var trigger = document.getElementById("pickerTrigger");
+        var menu = document.getElementById("pickerMenu");
+        var body = document.getElementById("pickerBody");
+        var shell = menu.parentElement;
+        var pages = Array.prototype.slice.call(body.querySelectorAll(".t-page"));
+        var modelSlot = makeSwapSlot("modelSlot", "modelMeasure", "modelText");
+        var effortSlot = makeSwapSlot("effortSlot", "effortMeasure", "effortText");
+        var effortHead = makeSwapSlot("effortHeadSlot", "effortHeadMeasure", "effortHeadText", false, true);
+        var closeMs = cssNum("--dropdown-close-dur", 150);
+        var open = false, timer = null;
+        /* The pill is a summary, not a live readout: choices made
+           inside the panel are held here and written to the pill
+           only when the panel closes. */
+        var pendingModel = "Fable 5.1", pendingEffort = "High";
+        function commitToPill() {
+          modelSlot.set(pendingModel);
+          effortSlot.set(pendingEffort);
+        }
+
+        /* Card resize (01): body height follows the active page */
+        function pageEl(id) { return pages.find(function (p) { return p.dataset.pageId === id; }); }
+        function pageHeight(p) { return p.offsetHeight || p.scrollHeight; }
+        function sizeBody(animate, id) {
+          var next = pageHeight(pageEl(id || body.getAttribute("data-page")));
+          if (!animate) {
+            var prev = body.style.transition;
+            body.style.transition = "none";
+            body.style.height = next + "px";
+            void body.offsetHeight;
+            body.style.transition = prev;
+          } else {
+            body.style.height = next + "px";
+          }
+        }
+        function goPage(id) {
+          body.setAttribute("data-page", id);
+          sizeBody(true, id);
+        }
+
+        /* Menu dropdown (05), pinned open: the menu is shown in place
+           and never closes. It opens once on load with the transition
+           suppressed so the first paint is at rest, and the pill commits
+           the pending choices when the pointer leaves the panel. */
+        function openDD() {
+          if (open) return;
+          open = true;
+          body.setAttribute("data-page", "1");
+          sizeBody(false, "1");
+          var prev = menu.style.transition;
+          menu.style.transition = "none";
+          menu.classList.add("is-open");
+          void menu.offsetWidth;
+          menu.style.transition = prev;
+          trigger.setAttribute("aria-expanded", "true");
+          /* Reserve the tallest page in flow so the card resize never
+             moves the prototypes below the picker. */
+          var chrome = menu.offsetHeight - body.offsetHeight;
+          shell.style.height = (Math.max.apply(null, pages.map(pageHeight)) + chrome) + "px";
+        }
+        void closeMs; void timer;
+        trigger.addEventListener("click", function (e) { e.stopPropagation(); });
+        menu.addEventListener("pointerleave", commitToPill);
+        requestAnimationFrame(openDD);
+
+        /* Model rows: move the check; the pill catches up on close */
+        var rows = Array.prototype.slice.call(menu.querySelectorAll("[data-model]"));
+        rows.forEach(function (row) {
+          row.addEventListener("click", function () {
+            rows.forEach(function (r) { r.setAttribute("aria-checked", String(r === row)); });
+            pendingModel = row.dataset.model;
+          });
+        });
+
+        /* Effort page (08) */
+        document.getElementById("effortRow").addEventListener("click", function () { goPage("2"); });
+        document.getElementById("effortBack").addEventListener("click", function () { goPage("1"); });
+
+        /* Slider: 4 stops, header label swaps (04) live; pill on close */
+        var LEVELS = ["Low", "Medium", "High", "Extra high"];
+        var range = document.getElementById("effortRange");
+        var thumb = document.getElementById("effortThumb");
+        var track = range.parentElement;
+        function placeThumb(animate) {
+          var v = +range.value, max = +range.max;
+          var travel = track.clientWidth - 3 - 3 - 16;   /* inset 3px both ends */
+          var left = 3 + (travel * v) / max;
+          if (!animate) {
+            var prev = thumb.style.transition;
+            thumb.style.transition = "none";
+            thumb.style.left = left + "px";
+            void thumb.offsetWidth;
+            thumb.style.transition = prev;
+          } else {
+            thumb.style.left = left + "px";
+          }
+        }
+        var lastLevel = +range.value;
+        range.addEventListener("input", function () {
+          placeThumb(true);
+          var v = +range.value;
+          if (v === lastLevel) return;
+          lastLevel = v;
+          effortHead.set(LEVELS[v]);
+          pendingEffort = LEVELS[v];
+        });
+        requestAnimationFrame(function () { placeThumb(false); });
+        window.addEventListener("resize", function () {
+          placeThumb(false);
+          modelSlot.resync(); effortSlot.resync(); effortHead.resync();
+          if (open) sizeBody(false);
+        });
+      })();
+
+      /* ── 2 · Image generation: thinking texts (15 + 04) ─────────── */
+      (function () {
+        var genSlot = makeSwapSlot("genSlot", "genMeasure", "genText", true, true);
+        var STEPS = ["Generating image", "Thinking about composition", "Refining details", "Almost there"];
+        var i = 0;
+        setInterval(function () {
+          i = (i + 1) % STEPS.length;
+          genSlot.set(STEPS[i]);
+        }, 2400);
+      })();
+
+      /* ── 3 · Publish: the card stands, its contents animate ─────── */
+      (function () {
+        var modal = document.getElementById("successModal");
+        var btn = document.getElementById("publishBtn");
+        var check = document.getElementById("successCheck");
+        var checkPath = check.querySelector("path");
+        var texts = document.getElementById("successTexts");
+        var gapMs = cssNum("--request-gap", 50);
+        var playTimer = null;
+
+        /* Calibrate the draw to the real path length (recipe 10) */
+        var checkLen = Math.ceil(checkPath.getTotalLength()) + 1;
+        checkPath.style.strokeDasharray = String(checkLen);
+        checkPath.style.strokeDashoffset = String(checkLen);
+
+        function playCheck() {
+          check.setAttribute("data-state", "out");
+          checkPath.style.strokeDashoffset = String(checkLen);
+          void check.offsetWidth;
+          check.setAttribute("data-state", "in");
+        }
+        function showTexts() {
+          texts.classList.remove("is-hiding");
+          texts.classList.remove("is-shown");
+          void texts.offsetHeight;
+          texts.classList.add("is-shown");
+        }
+        function hideTexts() {
+          texts.classList.add("is-hiding");
+          texts.classList.remove("is-shown");
+          setTimeout(function () { texts.classList.remove("is-hiding"); }, 200);
+        }
+
+        var canvas = document.getElementById("confettiCanvas");
+        function fadeCheckOut() {
+          /* Freeze the current opacity, drop the keyframes, then ease
+             to 0 so the badge leaves with the copy instead of snapping. */
+          check.style.opacity = getComputedStyle(check).opacity;
+          check.setAttribute("data-state", "out");
+          void check.offsetWidth;
+          check.style.transition = "opacity 200ms ease";
+          check.style.opacity = "0";
+        }
+        function play() {
+          /* First run: the card is already there, so the content starts
+             after the 50ms beat alone. Replay: everything on the card,
+             check, copy and pile, fades out over 200ms first, then the
+             whole choreography restarts from the beat. */
+          clearTimeout(playTimer);
+          var wasShown = texts.classList.contains("is-shown");
+          if (wasShown) {
+            fadeCheckOut();
+            hideTexts();
+            canvas.style.opacity = "0";
+          } else {
+            check.setAttribute("data-state", "out");
+          }
+          playTimer = setTimeout(function () {
+            if (confettiBurst.reset) confettiBurst.reset();
+            canvas.style.opacity = "";
+            check.style.transition = "";
+            check.style.opacity = "";
+            playCheck();
+            showTexts();
+            confettiBurst();
+          }, gapMs + (wasShown ? 200 : 0));
+        }
+        btn.addEventListener("click", play);
+
+        /* Confetti burst (Pro): stage = the modal, collider = the badge */
+        var confettiBurst = (function initConfetti() {
+          var stage = modal;
+          var canvas = document.getElementById("confettiCanvas");
+          /* The badge slot is the only solid: a pill the flakes slide off.
+             Text is not physical. Measured once per burst, after the modal
+             has landed so the rect is 1:1. */
+          var badgeSlot = document.querySelector(".success-badge-slot");
+          var colliders = [];
+          /* Generic pane: no physics at all. Flakes drop straight through
+             the card with no collider, no floor, no tumble. */
+          var plain = document.body.dataset.style === "generic";
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return function () {};
+          var ctx = canvas.getContext("2d");
+          function readNum(name, fallback) {
+            var raw = getComputedStyle(stage).getPropertyValue(name).trim();
+            if (!raw) return fallback;
+            if (raw.endsWith("ms")) return parseFloat(raw);
+            if (raw.endsWith("s") && !raw.endsWith("ms")) return parseFloat(raw) * 1000;
+            var n = parseFloat(raw);
+            return isNaN(n) ? fallback : n;
+          }
+          var COLORS = ["#ff4d67", "#ffb020", "#3b82f6", "#22c55e", "#a855f7", "#f97316", "#06b6d4", "#f43f5e"];
+          var particles = [], running = false, lastT = 0, burstEnd = 0, fadeStart = null, stageW = 0, stageH = 0;
+          function sizeCanvas() {
+            var r = stage.getBoundingClientRect();
+            var dpr = window.devicePixelRatio || 1;
+            /* The stage is mid-scale while opening; measure the unscaled box. */
+            stageW = stage.offsetWidth; stageH = stage.offsetHeight;
+            canvas.width = Math.round(stageW * dpr);
+            canvas.height = Math.round(stageH * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            void r;
+          }
+          function measureColliders() {
+            var sr = stage.getBoundingClientRect();
+            var list = [];
+            var b = badgeSlot.getBoundingClientRect();
+            list.push({ pill: true, left: b.left - sr.left, top: b.top - sr.top, right: b.right - sr.left, bottom: b.bottom - sr.top });
+            return list;
+          }
+          function buttonSurface(x, b) {
+            if (x < b.left || x > b.right) return null;
+            if (!b.pill) return { y: b.top, slope: 0 };
+            var r = (b.bottom - b.top) / 2;
+            var lc = b.left + r, rc = b.right - r;
+            if (x >= lc && x <= rc) return { y: b.top, slope: 0 };
+            var cx = x < lc ? lc : rc;
+            var dx = x - cx;
+            var root = Math.sqrt(Math.max(r * r - dx * dx, 0));
+            return { y: b.top + (r - root), slope: dx / Math.max(root, 0.001) };
+          }
+          function burst() {
+            sizeCanvas();
+            colliders = plain ? [] : measureColliders();
+            var now = performance.now();
+            var count = Math.round(readNum("--confetti-count", 120));
+            var size = readNum("--confetti-size", 8);
+            var spawnWindow = 500;
+            particles = []; fadeStart = null;
+            for (var i = 0; i < count; i++) {
+              particles.push({
+                start: now + Math.random() * spawnWindow,
+                x: Math.random() * stageW, y: -12 - Math.random() * 30, py: -12,
+                vx: (Math.random() - 0.5) * 60, vy: 40 + Math.random() * 120,
+                w: size * (0.7 + Math.random() * 0.6), h: size * (0.5 + Math.random() * 0.5),
+                maxFall: 420 + Math.random() * 280,
+                rot: plain ? 0 : Math.random() * Math.PI, vr: plain ? 0 : (Math.random() - 0.5) * 7,
+                tumble: Math.random() * Math.PI * 2, tumbleSpeed: plain ? 0 : 4 + Math.random() * 8, squish: 1,
+                phase: Math.random() * Math.PI * 2, swayFreq: 2 + Math.random() * 3, swayScale: 0.5 + Math.random(),
+                color: COLORS[Math.floor(Math.random() * COLORS.length)],
+                bounces: 0, resting: false, dead: false
+              });
+            }
+            burstEnd = now + spawnWindow + 100;
+            if (!running) { running = true; lastT = now; requestAnimationFrame(frame); }
+          }
+          function step(dt, now) {
+            var g = readNum("--confetti-gravity", 1300);
+            var sway = readNum("--confetti-sway", 16);
+            var restitution = readNum("--confetti-bounce", 0.3);
+            for (var k = 0; k < particles.length; k++) {
+              var p = particles[k];
+              if (p.resting || p.dead || now < p.start) continue;
+              p.py = p.y;
+              p.vy += g * dt; if (p.vy > p.maxFall) p.vy = p.maxFall;
+              p.phase += p.swayFreq * dt;
+              p.x += (p.vx + Math.cos(p.phase) * sway * p.swayScale) * dt;
+              p.y += p.vy * dt;
+              p.rot += p.vr * dt;
+              p.tumble += p.tumbleSpeed * dt;
+              p.squish = plain ? 1 : 0.25 + 0.75 * Math.abs(Math.cos(p.tumble));
+              var half = p.h / 2;
+              if (p.vy > 0) {
+                var b = null, s = null;
+                for (var c = 0; c < colliders.length; c++) {
+                  var sc = buttonSurface(p.x, colliders[c]);
+                  if (sc && p.y + half >= sc.y && p.py + half <= sc.y + 2) { b = colliders[c]; s = sc; break; }
+                }
+                if (s) {
+                  if (Math.abs(s.slope) > 0.85) {
+                    var dir = p.x < (b.left + b.right) / 2 ? -1 : 1;
+                    p.vx = dir * Math.max(Math.abs(p.vx), 50 + Math.random() * 50);
+                    p.vy *= 0.35; p.y = s.y - half;
+                  } else if (p.vy > 150 && p.bounces < 2) {
+                    p.bounces++;
+                    p.vy = -p.vy * restitution * (0.6 + Math.random() * 0.5);
+                    p.vx = p.vx * 0.7 + s.slope * 40 + (Math.random() - 0.5) * 40;
+                    p.y = s.y - half;
+                  } else {
+                    p.resting = true; p.y = s.y - half - 0.5; p.vx = 0; p.vy = 0;
+                  }
+                }
+              }
+              if (!plain && !p.resting && p.y + half >= stageH - 1) {
+                if (p.vy > 170 && p.bounces < 2) {
+                  p.bounces++;
+                  p.vy = -p.vy * restitution * (0.5 + Math.random() * 0.4);
+                  p.vx *= 0.7; p.y = stageH - 1 - half;
+                } else {
+                  p.resting = true; p.y = stageH - 1 - half; p.vx = 0; p.vy = 0;
+                }
+              }
+              if (p.x < -30 || p.x > stageW + 30 || p.y > stageH + 30) p.dead = true;
+            }
+          }
+          function draw(alpha) {
+            ctx.clearRect(0, 0, stageW, stageH);
+            ctx.globalAlpha = alpha;
+            var now = performance.now();
+            for (var k = 0; k < particles.length; k++) {
+              var p = particles[k];
+              if (p.dead || now < p.start) continue;
+              ctx.save();
+              ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.scale(1, p.squish);
+              ctx.fillStyle = p.color;
+              ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+              ctx.restore();
+            }
+            ctx.globalAlpha = 1;
+          }
+          function frame(now) {
+            if (!running) return;
+            var remaining = Math.min((now - lastT) / 1000, 0.25);
+            lastT = now;
+            while (remaining > 0) { var dt = Math.min(remaining, 1 / 60); step(dt, now); remaining -= dt; }
+            var settled = now > burstEnd && particles.every(function (p) { return p.resting || p.dead; });
+            if (settled && fadeStart === null) fadeStart = now + readNum("--confetti-hold", 1600);
+            var alpha = 1;
+            if (fadeStart !== null && now >= fadeStart) {
+              var fade = Math.max(readNum("--confetti-fade", 600), 1);
+              alpha = 1 - (now - fadeStart) / fade;
+              if (alpha <= 0) { running = false; particles = []; ctx.clearRect(0, 0, stageW, stageH); return; }
+            }
+            draw(alpha);
+            requestAnimationFrame(frame);
+          }
+          function reset() {
+            running = false;
+            particles = [];
+            fadeStart = null;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+          window.addEventListener("resize", function () { if (running) sizeCanvas(); });
+          burst.reset = reset;
+          return burst;
+        })();
+      })();
+
+      /* ── 4 · Email: error state shake (12) ──────────────────────── */
+      (function () {
+        var wrap = document.getElementById("emailForm");
+        var input = document.getElementById("emailInput");
+        function ms(name, fb) {
+          var v = parseFloat(getComputedStyle(input).getPropertyValue(name));
+          return Number.isFinite(v) ? v : fb;
+        }
+        function showError() {
+          wrap.classList.add("is-error");
+          input.classList.add("is-error");
+          input.classList.remove("is-shaking");
+          void input.offsetWidth;
+          input.classList.add("is-shaking");
+          var shakeMs = ms("--shake-dur-a", 80) * 2 + ms("--shake-dur-b", 60) * 2;
+          setTimeout(function () { input.classList.remove("is-shaking"); }, shakeMs + 20);
+          if (wrap._revertTimer) clearTimeout(wrap._revertTimer);
+          var hold = ms("--revert-hold", 3000);
+          wrap._revertTimer = setTimeout(function () {
+            wrap._revertTimer = null;
+            wrap.classList.remove("is-error");
+            input.classList.remove("is-error");
+          }, shakeMs + hold);
+        }
+        wrap.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var v = input.value.trim();
+          var ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+          if (!ok) showError();
+        });
+        input.addEventListener("input", function () {
+          if (wrap._revertTimer) { clearTimeout(wrap._revertTimer); wrap._revertTimer = null; }
+          wrap.classList.remove("is-error");
+          input.classList.remove("is-error");
+        });
+      })();
+
+      /* ── Dev panel: writes --organic-* on :root, persists locally ── */
+      (function () {
+        var root = document.documentElement;
+        var body = document.getElementById("devpanelBody");
+        var panel = document.getElementById("devpanel");
+        var toggle = document.getElementById("devpanelToggle");
+        var STORE = "tdev:organic-dev";
+
+        var COLORS = [
+          ["--organic-blue", "Blue"], ["--organic-pink", "Pink"], ["--organic-green", "Green"],
+          ["--organic-purple", "Purple"], ["--organic-orange", "Orange"], ["--organic-teal", "Teal"],
+          ["--organic-violet", "Violet"], ["--organic-magenta", "Magenta"]
+        ];
+        var RANGES = [
+          ["--organic-dur", "Sweep", 1000, 6000, 100, "ms"],
+          ["--organic-band-span", "Band", 10, 50, 1, "%"],
+          ["--organic-opacity", "Band alpha", 0, 1, 0.05, ""],
+          ["--organic-glow-blur", "Glow blur", 0, 40, 1, "px"],
+          ["--organic-glow-strength", "Glow", 0, 1, 0.05, ""],
+          ["--organic-ring-strength", "Ring", 0, 1, 0.05, ""]
+        ];
+        var EFFECT = [
+          ["--organic-saturation", "Saturation", 0, 3, 0.05, ""],
+          ["--organic-shimmer-opacity", "Opacity", 0, 1, 0.05, ""],
+          ["--organic-tile-alpha", "Tile alpha", 0, 1, 0.05, ""]
+        ];
+        var ALL = COLORS.concat(RANGES, EFFECT);
+        var defaults = {};
+        function readVar(name) { return getComputedStyle(root).getPropertyValue(name).trim(); }
+        function tripletToHex(t) {
+          var p = t.split(",").map(function (n) { return parseInt(n, 10); });
+          return "#" + p.map(function (n) { return ("0" + n.toString(16)).slice(-2); }).join("");
+        }
+        function hexToTriplet(h) {
+          return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16); }).join(", ");
+        }
+        var saved = {};
+        try { saved = JSON.parse(localStorage.getItem(STORE) || "{}"); } catch (_) {}
+        function persist() {
+          var out = {};
+          ALL.forEach(function (d) {
+            var v = root.style.getPropertyValue(d[0]);
+            if (v) out[d[0]] = v;
+          });
+          try { localStorage.setItem(STORE, JSON.stringify(out)); } catch (_) {}
+        }
+        function group(label) {
+          var g = document.createElement("div");
+          g.className = "devpanel-group";
+          g.textContent = label;
+          body.appendChild(g);
+        }
+        function row(labelText, input, out) {
+          var r = document.createElement("div");
+          r.className = "devrow";
+          var l = document.createElement("label");
+          l.textContent = labelText;
+          r.appendChild(l); r.appendChild(input);
+          var o = document.createElement("output");
+          o.textContent = out || "";
+          r.appendChild(o);
+          body.appendChild(r);
+          return o;
+        }
+
+        /* Presets: eight triplets in COLORS order (blue, pink, green,
+           purple, orange, teal, violet, magenta). */
+        var PRESETS = {
+          "Default": null,   /* the recipe palette from :root */
+          "Blue":    ["40, 140, 255", "80, 170, 255", "30, 200, 230", "90, 110, 255", "120, 190, 255", "30, 185, 220", "60, 90, 255", "100, 150, 255"],
+          "Purple":  ["150, 80, 255", "200, 60, 220", "170, 110, 255", "180, 40, 240", "220, 90, 255", "130, 60, 230", "100, 70, 255", "240, 50, 180"],
+          "Mono":    ["60, 60, 70", "40, 40, 50", "80, 80, 90", "30, 30, 40", "70, 70, 80", "50, 50, 60", "30, 30, 40", "40, 40, 50"]
+        };
+        var colorCtl = {};
+        var presetBtns = [];
+        function markPreset(label) {
+          presetBtns.forEach(function (b) { b.setAttribute("aria-pressed", String(b.textContent === label)); });
+        }
+        function applyPreset(label) {
+          var vals = PRESETS[label];
+          COLORS.forEach(function (d, i) {
+            var name = d[0];
+            var triplet = vals ? vals[i] : defaults[name];
+            if (vals) root.style.setProperty(name, triplet);
+            else root.style.removeProperty(name);
+            var ctl = colorCtl[name];
+            ctl.input.value = tripletToHex(triplet);
+            ctl.out.textContent = ctl.input.value;
+          });
+          markPreset(label);
+          persist();
+        }
+
+        group("Presets");
+        var presetRow = document.createElement("div");
+        presetRow.className = "devpanel-presets";
+        Object.keys(PRESETS).forEach(function (label) {
+          var b = document.createElement("button");
+          b.type = "button"; b.className = "pill"; b.textContent = label;
+          b.setAttribute("aria-pressed", "false");
+          b.addEventListener("click", function () { applyPreset(label); });
+          presetRow.appendChild(b);
+          presetBtns.push(b);
+        });
+        body.appendChild(presetRow);
+
+        group("Colours");
+        COLORS.forEach(function (d) {
+          var name = d[0];
+          defaults[name] = readVar(name);
+          if (saved[name]) root.style.setProperty(name, saved[name]);
+          var input = document.createElement("input");
+          input.type = "color";
+          input.value = tripletToHex(readVar(name));
+          var out = row(d[1], input, input.value);
+          colorCtl[name] = { input: input, out: out };
+          input.addEventListener("input", function () {
+            root.style.setProperty(name, hexToTriplet(input.value));
+            out.textContent = input.value;
+            markPreset(null);   /* a manual tweak is no longer a preset */
+            persist();
+          });
+        });
+        /* Light up the matching preset on load, if any */
+        (function () {
+          var current = COLORS.map(function (d) { return readVar(d[0]); }).join("|");
+          var hit = null;
+          if (COLORS.map(function (d) { return defaults[d[0]]; }).join("|") === current) hit = "Default";
+          else Object.keys(PRESETS).forEach(function (label) {
+            if (PRESETS[label] && PRESETS[label].join("|") === current) hit = label;
+          });
+          markPreset(hit);
+        })();
+
+        function rangeRows(list) {
+          list.forEach(function (d) {
+            var name = d[0], unit = d[5];
+            defaults[name] = readVar(name);
+            if (saved[name]) root.style.setProperty(name, saved[name]);
+            var input = document.createElement("input");
+            input.type = "range"; input.min = d[2]; input.max = d[3]; input.step = d[4];
+            input.value = parseFloat(readVar(name));
+            var out = row(d[1], input, input.value + unit);
+            input.addEventListener("input", function () {
+              root.style.setProperty(name, input.value + unit);
+              out.textContent = input.value + unit;
+              persist();
+            });
+          });
+        }
+        group("Effect");
+        rangeRows(EFFECT);
+        group("Beam");
+        rangeRows(RANGES);
+
+        var actions = document.createElement("div");
+        actions.className = "devpanel-actions";
+        var copy = document.createElement("button");
+        copy.type = "button"; copy.className = "pill"; copy.textContent = "Copy CSS";
+        var reset = document.createElement("button");
+        reset.type = "button"; reset.className = "pill"; reset.textContent = "Reset";
+        actions.appendChild(copy); actions.appendChild(reset);
+        body.appendChild(actions);
+
+        copy.addEventListener("click", function () {
+          var lines = ALL.map(function (d) {
+            return "  " + d[0] + ": " + readVar(d[0]) + ";";
+          });
+          var css = ":root {\n" + lines.join("\n") + "\n}";
+          try { navigator.clipboard.writeText(css); } catch (_) {}
+          copy.textContent = "Copied";
+          setTimeout(function () { copy.textContent = "Copy CSS"; }, 1200);
+        });
+        reset.addEventListener("click", function () {
+          ALL.forEach(function (d) { root.style.removeProperty(d[0]); });
+          try { localStorage.removeItem(STORE); } catch (_) {}
+          body.textContent = "";
+          location.reload();
+        });
+        toggle.addEventListener("click", function () {
+          var isOpen = panel.getAttribute("data-open") === "true";
+          panel.setAttribute("data-open", String(!isOpen));
+          toggle.setAttribute("aria-expanded", String(!isOpen));
+        });
+      })();
+
+      /* ── 6 · Toast stacking (homepage P34) on the Figma toast ────── */
+      (function () {
+        var stack = document.getElementById("toastStack");
+        var stage = document.getElementById("toastStage");
+        var closeMs = cssNum("--stack-close", 250);
+        var toasts = [];   /* newest first */
+
+        var MESSAGES = ["Message sent", "Changes saved", "Link copied"];
+        /* Seeds show 0/1/2 top to bottom, so the first add continues the
+           rotation instead of repeating the toast already on top. */
+        var msgIndex = 1;
+        function toastMarkup(text) {
+          return '<span class="toast-check" aria-hidden="true">'
+            + '<svg viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M4.5 8.4L7 10.9L11.5 5.6" stroke="#3aa93a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            + '</span>'
+            + '<span class="toast-text">' + text + '</span>'
+            + '<button class="toast-close" type="button" aria-label="Dismiss">'
+            + '<svg viewBox="0 0 10 10" width="10" height="10" fill="none"><path d="M2.5 2.5L7.5 7.5M7.5 2.5L2.5 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'
+            + '</button>';
+        }
+        function relayer() {
+          toasts.forEach(function (t, i) {
+            if (i > 2) { leave(t); return; }
+            t.setAttribute("data-depth", String(i));
+          });
+          toasts = toasts.slice(0, 3);
+        }
+        function leave(t) {
+          if (t.classList.contains("is-leaving")) return;
+          t.classList.add("is-leaving");
+          setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, closeMs + 60);
+        }
+        function make(depth, enter, text) {
+          var el = document.createElement("div");
+          el.className = "t-stack-toast" + (enter ? " is-enter" : "");
+          el.setAttribute("data-depth", String(depth));
+          el.setAttribute("role", "status");
+          el.innerHTML = toastMarkup(text);
+          el.querySelector(".toast-close").addEventListener("click", function (e) {
+            e.stopPropagation();
+            var i = toasts.indexOf(el);
+            if (i > -1) toasts.splice(i, 1);
+            leave(el);
+            relayer();
+          });
+          return el;
+        }
+        function add() {
+          var el = make(0, true, MESSAGES[msgIndex++ % MESSAGES.length]);
+          toasts.unshift(el);
+          stack.appendChild(el);
+          relayer();
+          /* Flush the pre-open rest state, then release it in the same
+             task: a rAF hop is skipped whenever the frame clock is
+             throttled and the toast would land with no motion. */
+          void el.offsetWidth;
+          el.classList.remove("is-enter");
+        }
+        /* Seed three at rest so the stack reads at a glance */
+        for (var d = 2; d >= 0; d--) {
+          var seed = make(d, false, MESSAGES[d]);
+          stack.appendChild(seed);
+          toasts.unshift(seed);
+        }
+        stage.addEventListener("click", add);
+        stage.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); add(); }
+        });
+
+        /* Spread from pointer geometry, not :hover: the gaps between
+           spread toasts belong to no element. */
+        function spreadHeight() { return (stack.offsetHeight + cssNum("--stack-spread-gap", 8)) * 2; }
+        function within(e, above) {
+          var r = stack.getBoundingClientRect();
+          return e.clientX >= r.left && e.clientX <= r.right && e.clientY <= r.bottom && e.clientY >= r.top - above;
+        }
+        document.addEventListener("pointermove", function (e) {
+          if (stack.classList.contains("is-spread")) {
+            if (!within(e, spreadHeight())) stack.classList.remove("is-spread");
+          } else if (within(e, 0)) {
+            stack.classList.add("is-spread");
+          }
+        });
+        document.documentElement.addEventListener("pointerleave", function () { stack.classList.remove("is-spread"); });
+      })();
+
+      /* ── 7 · Toggle (27) ─────────────────────────────────────────── */
+      (function () {
+        var toggle = document.getElementById("toggle1");
+        toggle.addEventListener("click", function () {
+          /* .is-init on first interaction so the off keyframes don't
+             play once at page load. */
+          toggle.classList.add("is-init");
+          var on = toggle.getAttribute("data-on") === "true";
+          toggle.setAttribute("data-on", String(!on));
+          toggle.setAttribute("aria-checked", String(!on));
+        });
+      })();
+
+      /* ── 8 · Notification badge (03) ─────────────────────────────── */
+      (function () {
+        var bell = document.getElementById("bell");
+        var badge = document.getElementById("bellBadge");
+        bell.addEventListener("click", function () {
+          var open = badge.getAttribute("data-open") === "true";
+          badge.setAttribute("data-open", String(!open));
+          bell.setAttribute("aria-pressed", String(!open));
+        });
+      })();
+
+      /* ── 5 · Team: avatar group hover (11) ───────────────────────── */
+      (function () {
+        var root = document.querySelector(".t-avatar-group");
+        var avatars = Array.prototype.slice.call(root.querySelectorAll(".t-avatar"));
+        function setShifts(activeIdx, phase) {
+          var gs = getComputedStyle(root);
+          var num = function (n, fb) { var v = parseFloat(gs.getPropertyValue(n)); return Number.isFinite(v) ? v : fb; };
+          var lift = num("--avatar-lift", -4);
+          var falloff = num("--avatar-falloff", 0.45);
+          var scale = num("--avatar-scale", 1.05);
+          var tf = phase === "out"
+            ? gs.getPropertyValue("--avatar-ease-out").trim() || "cubic-bezier(0.34, 3.85, 0.64, 1)"
+            : gs.getPropertyValue("--avatar-ease-in").trim() || "cubic-bezier(0.22, 1, 0.36, 1)";
+          avatars.forEach(function (el, i) {
+            el.style.transitionTimingFunction = tf;
+            if (activeIdx == null) {
+              el.style.setProperty("--shift", "0px");
+              el.style.setProperty("--scale-active", "1");
+              return;
+            }
+            var d = Math.abs(i - activeIdx);
+            el.style.setProperty("--shift", (lift * Math.pow(falloff, d)).toFixed(3) + "px");
+            el.style.setProperty("--scale-active", i === activeIdx ? String(scale) : "1");
+          });
+        }
+        avatars.forEach(function (el, i) { el.addEventListener("mouseenter", function () { setShifts(i, "in"); }); });
+        root.addEventListener("mouseleave", function () { setShifts(null, "out"); });
+
+        var canHover = window.matchMedia && window.matchMedia("(hover: hover)").matches;
+        if (!canHover) return;
+        var tip = document.createElement("span");
+        tip.className = "avatar-tooltip";
+        tip.setAttribute("role", "tooltip");
+        tip.setAttribute("aria-hidden", "true");
+        tip.setAttribute("data-show", "false");
+        var tipText = document.createElement("span");
+        tipText.className = "avatar-tooltip-text";
+        tip.appendChild(tipText);
+        root.appendChild(tip);
+        var hideTimer = null;
+        function cancelHide() { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } }
+        function hideSoon() {
+          cancelHide();
+          hideTimer = setTimeout(function () { tip.setAttribute("data-show", "false"); tip.setAttribute("aria-hidden", "true"); }, 50);
+        }
+        var plainTip = document.body.dataset.style === "generic";
+        function place(wrap, text) {
+          cancelHide();
+          /* Generic: every avatar gets its own tooltip instance rather
+             than one that travels. Drop the current one first, flush it,
+             then build the next from scratch so the fade replays. */
+          if (plainTip && tip.getAttribute("data-show") === "true") {
+            /* Suppress the transition while tearing the old one down:
+               without it the hide only starts a fade the show below
+               would immediately reverse, and nothing reads as new. */
+            tip.style.transition = "none";
+            tip.setAttribute("data-show", "false");
+            tip.setAttribute("aria-hidden", "true");
+            void tip.offsetWidth;
+            tip.style.transition = "";
+          }
+          tipText.textContent = text;
+          var nextWidth = Math.ceil(tipText.scrollWidth + 24);
+          var stackRect = root.getBoundingClientRect();
+          var wrapRect = wrap.getBoundingClientRect();
+          var center = (wrapRect.left - stackRect.left) + wrapRect.width / 2;
+          var nextX = center - nextWidth / 2;
+          var maxX = Math.max(0, stackRect.width - nextWidth);
+          if (nextX < 0) nextX = 0;
+          if (nextX > maxX) nextX = maxX;
+          tip.style.width = nextWidth + "px";
+          tip.style.transform = "translateX(" + nextX + "px)";
+          tip.setAttribute("data-show", "true");
+          tip.setAttribute("aria-hidden", "false");
+        }
+        avatars.forEach(function (el) { el.addEventListener("mouseenter", function () { place(el, el.getAttribute("data-name") || ""); }); });
+        root.addEventListener("mouseenter", cancelHide);
+        root.addEventListener("mouseleave", hideSoon);
+      })();
+    })();
+  </script>
+</body>
+</html>

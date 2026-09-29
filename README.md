@@ -28,18 +28,19 @@ Each card has a copy button that emits a self-contained CSS snippet: semantic CS
 Pull any transition into your project from the terminal — no manual copy:
 
 ```bash
-npx transitions-pro add card-resize      # free — no account needed
-npx transitions-pro list                 # see everything available
+npx transitions-dev add card-resize      # free, no account needed
+npx transitions-dev add --free           # every free transition at once
+npx transitions-dev list                 # see everything available
 ```
 
 Pro transitions unlock after a passwordless browser sign-in (device flow — no API key in your terminal):
 
 ```bash
-npx transitions-pro login                # opens the browser to confirm a code
-npx transitions-pro add confetti-burst    # pulls the Pro CSS + React
+npx transitions-dev login                # opens the browser to confirm a code
+npx transitions-dev add confetti-burst    # pulls the Pro CSS + React
 ```
 
-CLI source: [`cli/`](./cli) (published as the public `transitions-pro` package — it holds no premium source; Pro recipes are fetched from the authenticated API).
+CLI source: [`cli/`](./cli) (published as the public `transitions-dev` package; `transitions-pro` is the old name and forwards to it — it holds no premium source; Pro recipes are fetched from the authenticated API).
 
 ## Use as an agent skill
 

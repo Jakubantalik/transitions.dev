@@ -40,8 +40,8 @@
   <meta property="og:locale" content="en_US" />
   <meta property="og:title" content="Transitions.dev Skill — Teach your AI about product motion" />
   <meta property="og:description" content="Transitions.dev Skill teaches your AI about product motion. Works with Claude Code, Cursor, GitHub Copilot, Codex, and Gemini CLI." />
-  <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
-  <meta property="og:image:secure_url" content="https://transitions.dev/assets/og-main.jpg" />
+  <meta property="og:image" content="https://transitions.dev/assets/og-skill.jpg?v=1" />
+  <meta property="og:image:secure_url" content="https://transitions.dev/assets/og-skill.jpg?v=1" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -50,7 +50,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Transitions.dev Skill — Teach your AI about product motion" />
   <meta name="twitter:description" content="Transitions.dev Skill teaches your AI about product motion. Works with Claude Code, Cursor, GitHub Copilot, Codex, and Gemini CLI." />
-  <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-skill.jpg?v=1" />
   <meta name="twitter:image:alt" content="Transitions.dev Skill — Teach your AI about product motion" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -96,7 +96,7 @@
           "inLanguage": "en",
           "primaryImageOfPage": {
             "@type": "ImageObject",
-            "url": "https://transitions.dev/assets/og-main.jpg",
+            "url": "https://transitions.dev/assets/og-skill.jpg?v=1",
             "width": 1200,
             "height": 630
           }
@@ -119,6 +119,28 @@
     })();
   </script>
   <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
     /* Saans - used for the hero eyebrow + title (Medium / 500). */
     @font-face {
       font-family: "Saans";
@@ -3450,6 +3472,20 @@
       color: var(--text-muted);
       margin: 0;
     }
+    /* Inline prose links — jakubantalik.com .inline-link style. */
+    .skill-section-note a,
+    .t-acc-panel-inner a {
+      color: inherit;
+      display: inline-block;
+      text-decoration: underline;
+      text-decoration-thickness: from-font;
+      text-underline-position: from-font;
+      text-decoration-skip-ink: auto;
+      text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+      transition: none;
+    }
+    .skill-section-note a:hover,
+    .t-acc-panel-inner a:hover { text-decoration-color: currentColor; }
     /* Inline code chip inside notes — used to highlight the literal
        verb when it shows up inside running prose (e.g. the
        `transitions apply menu-dropdown` example under Commands).
@@ -4161,7 +4197,7 @@
           </div>
           <div class="skill-command">
             <div class="skill-code-row">
-              <code id="install-cmd-pro-skill">npx transitions-pro skill</code>
+              <code id="install-cmd-pro-skill">npx transitions-dev skill</code>
               <button
                 type="button"
                 class="card-copy"
@@ -4183,7 +4219,7 @@
           </div>
           <div class="skill-command">
             <div class="skill-code-row">
-              <code id="install-cmd-pro-recipes">npx transitions-pro add --pro</code>
+              <code id="install-cmd-pro-recipes">npx transitions-dev add --pro</code>
               <button
                 type="button"
                 class="card-copy"
@@ -4200,7 +4236,7 @@
               </button>
             </div>
             <p class="skill-section-note">
-              Copies every <strong>Pro</strong> transition recipe straight into your project (<code>./transitions/</code>). Signs you in via the browser the first time. Prefer just the free set? Use <code>npx transitions-pro add --all</code>.
+              Copies every <strong>Pro</strong> transition recipe straight into your project (<code>./transitions/</code>). Signs you in via the browser the first time. Prefer just the free set? Use <code>npx transitions-dev add --free</code>.
             </p>
           </div>
         </div>
@@ -5072,6 +5108,6 @@
       });
     })();
   </script>
-  <script src="assets/pro-client.js?v=29" defer></script>
+  <script src="assets/pro-client.js?v=36" defer></script>
 </body>
 </html>
