@@ -4,6 +4,12 @@ name: Transitions Agent
 
 on:
   pull_request:
+  # Manual runs from the Actions tab scan the chosen branch on demand.
+  workflow_dispatch:
+  # Narrow when it runs, e.g.:
+  #   pull_request:
+  #     branches: [main]
+  #     paths: ["**.css", "**.tsx", "**.jsx", "**.vue", "**.svelte"]
 
 permissions:
   contents: read
