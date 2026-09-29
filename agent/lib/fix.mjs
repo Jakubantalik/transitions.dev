@@ -84,6 +84,11 @@ export async function runFix(root, result, opts) {
     }
     return 1;
   }
+  if (res.status === 503) {
+    const err = await res.json().catch(() => ({}));
+    console.error(c.yellow("The fix service is down on our side.") + " " + (err.detail || "Please try again later."));
+    return 1;
+  }
   if (res.status === 502) {
     const err = await res.json().catch(() => ({}));
     console.error(c.yellow("The fix service could not reach the AI backend.") + " " + (err.detail || "Try again in a minute."));
