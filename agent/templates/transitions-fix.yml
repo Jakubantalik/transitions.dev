@@ -13,8 +13,12 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "polish (safe token-level) or revamp (recipe rewrites)"
-        default: "polish"
+        description: "Fix mode"
+        type: choice
+        default: polish
+        options:
+          - polish
+          - revamp
 
 permissions:
   contents: write
