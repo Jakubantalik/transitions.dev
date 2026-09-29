@@ -2,7 +2,7 @@
 // the service holds the AI key), show proposed diffs, apply only after an
 // explicit yes, optionally open a pull request after a second explicit yes.
 // Keyless runs point to signup - the hosted service is the only fix path.
-import { readFileSync, writeFileSync, mkdtempSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, appendFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -73,20 +73,29 @@ export async function runFix(root, result, opts) {
     console.error(c.red("✗ ") + "Could not reach the fix service: " + e.message);
     return 1;
   }
-  if (res.status === 401) { console.error(c.red("✗ ") + "License key not valid. Check TRANSITIONS_AGENT_LICENSE."); return 1; }
+  if (res.status === 401) {
+    console.error(c.red("✗ ") + "License key not valid. Check TRANSITIONS_AGENT_LICENSE.");
+    ciSummary("License key not valid. Check the `TRANSITIONS_AGENT_LICENSE` repo secret.");
+    return 1;
+  }
   if (res.status === 403 || res.status === 429) {
     const err = await res.json().catch(() => ({}));
     if (err.error === "revamp requires team") {
       console.error(c.yellow("Revamp mode is a Business plan feature") + " (full recipe rewrites, Pro library).");
       console.error("Your free plan includes polish mode. Upgrade at " + c.bold("transitions.dev/pro.html") + " or run without --mode revamp.");
+      ciSummary("Revamp mode needs a Business license. This key covers polish mode; upgrade at https://transitions.dev/pro.html.");
     } else {
-      console.error(c.red("✗ ") + (err.detail || "Monthly fix quota reached. Upgrade at transitions.dev/pro."));
+      const msg = (err.detail || "Monthly fix quota reached. Upgrade at transitions.dev/pro.") +
+        (err.error === "daily limit" ? " Business has no daily cap: transitions.dev/pro.html" : "");
+      console.error(c.red("✗ ") + msg);
+      ciSummary("No fixes this run: " + msg);
     }
     return 1;
   }
   if (res.status === 503) {
     const err = await res.json().catch(() => ({}));
     console.error(c.yellow("The fix service is down on our side.") + " " + (err.detail || "Please try again later."));
+    ciSummary("The fix service is down on our side. Re-run this workflow later.");
     return 1;
   }
   if (res.status === 502) {
@@ -190,4 +199,12 @@ function ask(question) {
 
 async function confirm(question) {
   return /^y(es)?$/i.test((await ask(question)).trim());
+}
+
+// In GitHub Actions a failed fix run is easy to miss: surface the reason on
+// the run's summary page, not only in the log.
+function ciSummary(text) {
+  const file = process.env.GITHUB_STEP_SUMMARY;
+  if (!file) return;
+  try { appendFileSync(file, "### Transitions Agent fix\n\n" + text + "\n"); } catch { /* log already has it */ }
 }

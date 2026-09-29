@@ -53,6 +53,19 @@ async function handleFix(request, env) {
   if (!record || record.active === false) return json({ error: "invalid license" }, 401);
   const isFree = record.plan === "free";
 
+  // Plan gates before quota checks, so a free key asking for revamp hears
+  // about revamp, not about today's limit.
+  const raw = await request.text();
+  if (raw.length > MAX_BODY_BYTES) return json({ error: "payload too large" }, 413);
+  let body;
+  try { body = JSON.parse(raw); } catch { return json({ error: "bad json" }, 400); }
+  const { findings = [], files = [], mode = "polish" } = body;
+  if (!files.length) return json({ error: "no files" }, 400);
+  if (mode !== "polish" && mode !== "revamp") return json({ error: "bad mode" }, 400);
+  if (mode === "revamp" && isFree) {
+    return json({ error: "revamp requires team", detail: "Revamp mode (full recipe rewrites, Pro library) is part of the Business plan." }, 403);
+  }
+
   const month = new Date().toISOString().slice(0, 7);
   const usageKey = `${license}:${month}`;
   const used = parseInt((await env.USAGE.get(usageKey)) || "0", 10);
@@ -76,16 +89,6 @@ async function handleFix(request, env) {
     }
   }
 
-  const raw = await request.text();
-  if (raw.length > MAX_BODY_BYTES) return json({ error: "payload too large" }, 413);
-  let body;
-  try { body = JSON.parse(raw); } catch { return json({ error: "bad json" }, 400); }
-  const { findings = [], files = [], mode = "polish" } = body;
-  if (!files.length) return json({ error: "no files" }, 400);
-  if (mode !== "polish" && mode !== "revamp") return json({ error: "bad mode" }, 400);
-  if (mode === "revamp" && isFree) {
-    return json({ error: "revamp requires team", detail: "Revamp mode (full recipe rewrites, Pro library) is part of the Team plan." }, 403);
-  }
 
   // Revamp rewrites against the real library source, Pro recipes included:
   // the license already paid for the fix, so tier does not gate the source here.

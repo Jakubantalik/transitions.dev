@@ -421,7 +421,7 @@ if (command === "fix") {
     console.error(`Unknown mode "${mode}". Use --mode polish or --mode revamp.`);
     process.exit(1);
   }
-  console.log(renderTerminal(result));
+  console.log(renderTerminal(result, { footer: false }));
   // No explicit mode + a human at the keyboard + a license that could use
   // either: ask. Agents and CI pass --mode (or get the polish default).
   const license = flags.license || process.env.TRANSITIONS_AGENT_LICENSE || (loadCreds() || {}).license || "";

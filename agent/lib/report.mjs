@@ -21,7 +21,8 @@ const RULE_TITLES = {
 
 const SEV_ICON = { major: c.red("●"), warn: c.yellow("●"), minor: c.dim("●"), info: c.cyan("●") };
 
-export function renderTerminal(result) {
+export function renderTerminal(result, opts = {}) {
+  const { footer = true } = opts;
   const lines = [];
   const scoreColor = result.score >= 90 ? c.green : result.score >= 75 ? c.cyan : result.score >= 50 ? c.yellow : c.red;
   lines.push("");
@@ -48,6 +49,7 @@ export function renderTerminal(result) {
     if (list.length > 5) lines.push(c.dim(`      ... and ${list.length - 5} more`));
     lines.push("");
   }
+  if (!footer) return lines.join("\n");
   lines.push(c.bold("  Fix these?") + c.dim("  pick a mode"));
   lines.push("  polish   small safe fixes, free plan    npx transitions-agent fix --yes");
   lines.push("  revamp   polish + recipe rewrites       npx transitions-agent fix --mode revamp --yes");

@@ -32,6 +32,8 @@ runs:
     - name: Scan
       id: scan
       shell: bash
+      env:
+        TA_HAS_LICENSE: ${{ inputs.license != '' && '1' || '0' }}
       run: |
         node "${{ github.action_path }}/bin/transitions-agent.mjs" --json --dir "${{ inputs.working-directory }}" > "$RUNNER_TEMP/tagent.json"
         node "${{ github.action_path }}/action/comment.mjs" "$RUNNER_TEMP/tagent.json" > "$RUNNER_TEMP/tagent-comment.md"
