@@ -14,7 +14,7 @@ npx transitions-agent fix --pr            # after applying: branch, commit, push
 
 `skill` installs a Claude Code skill (`~/.claude/skills/transitions-agent/`, `--dir` for other agents): from then on "check this app's motion" makes your agent scan, present the fix options, run your choice, and verify the score - the trusted-context version of the CLI's next-steps menu.
 
-The `fix` command sends the affected files to the hosted fix service (your license key, our AI). Without a license key it writes `transitions-agent-fixes.md`, a ready-made task for your own Claude Code, Cursor or Codex.
+The `fix` command sends the affected files to the hosted fix service (your license key, our AI). Without a license key it points you to the free signup - hosted fixes are the fix path.
 
 ### Fix modes
 
