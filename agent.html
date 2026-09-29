@@ -3765,13 +3765,9 @@
     #get-started li a:hover { text-decoration: underline; text-underline-offset: 2px; }
 
     /* GitHub Action setup guide (react.doctor-style progression). */
-    .gs-h3 {
-      margin: 18px 0 2px;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: var(--text);
-    }
+    /* Sub-sections inside the get-started panels reuse the doc pages'
+       section titles (detail.html?doc=installation) with breathing room. */
+    .skill-section-title.gs-sub { margin: 20px 0 2px; }
     /* Multiline variant of .skill-code-row: same surface and copy-button
        treatment, pre content instead of a single line. */
     .gs-code-block {
@@ -4642,7 +4638,7 @@
       <h2 class="agent-bento-heading" id="agent-bento-title">What the Agent does</h2>
       <div class="agent-bento">
         <div class="agent-bento-card agent-bento-card--tall">
-          <h3 class="agent-bento-title">A motion score for every codebase</h3>
+          <h3 class="agent-bento-title">A motion score for every codebase</h2>
           <p class="agent-bento-desc">One command scores your motion 0 to 100, <span class="dim">every finding mapped to the recipe that fixes it. Local and deterministic: no AI, no account.</span></p>
           <div class="ab-frame ab-frame--tall" aria-hidden="true">
             <div class="ab-term">
@@ -4669,7 +4665,7 @@
         </div>
 
         <div class="agent-bento-card agent-bento-card--sm">
-          <h3 class="agent-bento-title">Fixes as diffs, then a pull request</h3>
+          <h3 class="agent-bento-title">Fixes as diffs, then a pull request</h2>
           <p class="agent-bento-desc">Polish keeps diffs small. Revamp rewrites motion with the real recipe. <span class="dim">Nothing lands without your yes.</span></p>
           <div class="ab-frame ab-frame--diff" aria-hidden="true">
             <div class="ab-diff">
@@ -4689,7 +4685,7 @@
         </div>
 
         <div class="agent-bento-card agent-bento-card--sm">
-          <h3 class="agent-bento-title">A score gate on every pull request</h3>
+          <h3 class="agent-bento-title">A score gate on every pull request</h2>
           <p class="agent-bento-desc">The Action scores every pull request <span class="dim">and can block merges when motion quality drops.</span></p>
           <div class="ab-frame ab-frame--pr" aria-hidden="true">
             <div class="ab-pr">
@@ -4767,14 +4763,14 @@
         <div class="gs-panel" id="gs-panel-gha" role="tabpanel" aria-labelledby="gs-tab-gha" hidden>
           <p class="skill-section-note" style="font-size: 14px; line-height: 22px;">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews. Scanning needs no account, no secrets, no AI key.</p>
 
-          <h3 class="gs-h3">Install with your coding agent</h3>
+          <h2 class="skill-section-title gs-sub">Install with your coding agent</h2>
           <div class="skill-code-row">
             <code id="cmd-action">npx transitions-agent init-ci</code>
             <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
           </div>
           <p class="skill-section-note">Tell your coding agent <em>"set up Transitions Agent for CI"</em> and it runs this command for you - or run it yourself. It writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code>. Commit and push - done.</p>
 
-          <h3 class="gs-h3">Or add the workflow manually</h3>
+          <h2 class="skill-section-title gs-sub">Or add the workflow manually</h2>
           <div class="gs-code-block"><pre id="yml-action">name: Transitions Agent
 on: pull_request
 permissions:
@@ -4791,21 +4787,21 @@ jobs:
           license: &#36;{{ secrets.TRANSITIONS_AGENT_LICENSE }}</pre><button type="button" class="card-copy" aria-label="Copy" data-copy-target="#yml-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button></div>
           <p class="skill-section-note">Both permissions matter: <code>pull-requests: write</code> lets the Action post its score comment.</p>
 
-          <h3 class="gs-h3">Fix pull requests from CI</h3>
+          <h2 class="skill-section-title gs-sub">Fix pull requests from CI</h2>
           <div class="skill-code-row">
             <code id="cmd-fix-workflow">npx transitions-agent init-ci --fix</code>
             <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-fix-workflow"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
           </div>
           <p class="skill-section-note">Also writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a>. Add one repo secret - <code>TRANSITIONS_AGENT_LICENSE</code>, the key from your <a href="/pro.html">Business plan</a> email - then run "Transitions Agent fix" from the Actions tab: a fix pull request opens with the diffs for your team to review. Our hosted service does the fixing; no AI key ever enters your repo. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</p>
 
-          <h3 class="gs-h3">What happens on a pull request</h3>
+          <h2 class="skill-section-title gs-sub">What happens on a pull request</h2>
           <ul class="gs-bullets">
             <li>One sticky comment per pull request with the motion score and a findings table - it updates in place on every push, never stacking.</li>
             <li>Findings name the file, line, and the transitions.dev recipe that fixes them.</li>
             <li>With <code>min-score</code> set, the check fails when the score drops below it; otherwise it always passes and just informs.</li>
           </ul>
 
-          <h3 class="gs-h3">Troubleshooting</h3>
+          <h2 class="skill-section-title gs-sub">Troubleshooting</h2>
           <div class="gs-qa">
             <p class="gs-q">No comment showed up.</p>
             <p class="skill-section-note">The workflow needs <code>pull-requests: write</code> under <code>permissions:</code> (the template includes it). On forks, GitHub restricts write tokens - the score still appears in the job log.</p>
