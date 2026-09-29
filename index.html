@@ -1384,9 +1384,9 @@
     .title {
       margin-top: 8px;
       font-family: "Saans", var(--font-sans);
-      font-size: 36px;
+      font-size: 46px;
       font-weight: 500;
-      line-height: 42px;
+      line-height: 52px;
       color: var(--text);
       letter-spacing: -0.005em;
       text-align: center;
@@ -1483,6 +1483,211 @@
     .skill-btn:focus-visible {
       outline: 2px solid var(--text);
       outline-offset: 3px;
+    }
+
+    /* ─── Homepage sections: a left-aligned Saans lead per block ─── */
+    .home-section-head {
+      width: 100%;
+      max-width: 1008px;
+      margin: 0 auto 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .home-section-head--agent { margin-bottom: 32px; }
+    .home-section-title {
+      font-family: "Saans", var(--font-sans);
+      font-size: 22px;
+      line-height: 29px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      color: var(--text);
+      max-width: 400px;
+      margin: 0;
+      text-wrap: pretty;
+    }
+    .home-section-title .dim { color: #6a6a6a; }
+    html[data-theme="dark"] .home-section-title .dim { color: var(--text-muted); }
+    .home-browse-all {
+      display: flex;
+      justify-content: center;
+      margin: 32px 0 96px;
+    }
+    .home-agent {
+      width: 100%;
+      margin-bottom: 96px;
+    }
+    /* The bento keeps the cards grid's 1008px measure on this page. */
+    .home-agent .agent-bento-wrap { max-width: 1008px; padding: 0; margin: 0 auto; }
+    @media (max-width: 720px) {
+      .home-browse-all { margin: 24px 0 64px; }
+      .home-agent { margin-bottom: 64px; }
+    }
+
+    /* ─── What the Agent does: bento, same frame as the Pro page ─── */
+    .agent-bento-wrap {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto 96px;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    .agent-bento-heading {
+      text-align: center;
+      font-family: "Saans", var(--font-sans);
+      font-size: 30px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 0 0 40px;
+    }
+    .agent-bento {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      grid-auto-rows: 1fr;
+      gap: 16px;
+    }
+    .agent-bento-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #f6f6f6;
+      border-radius: 24px;
+      padding: 28px 32px;
+    }
+    html[data-theme="dark"] .agent-bento-card { background: #141414; }
+    /* Inset hairline drawn above the bleeding mockups so the frame stays
+       crisp on every edge. */
+    .agent-bento-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.03) inset;
+    }
+    html[data-theme="dark"] .agent-bento-card::after {
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.03) inset;
+    }
+    .agent-bento-card--tall { grid-row: span 2; min-height: 512px; }
+    .agent-bento-card--sm { min-height: 248px; }
+    .agent-bento-title {
+      font-family: "Saans", var(--font-sans);
+      font-weight: 500; font-size: 22px; line-height: 28px;
+      letter-spacing: -0.01em; color: var(--text); margin: 0 0 10px;
+    }
+    .agent-bento-desc { font-size: 15px; line-height: 22px; color: var(--text); margin: 0; max-width: 42ch; position: relative; z-index: 2; }
+    .agent-bento-desc .dim { color: var(--text-muted); }
+
+    /* The mockups sit in flow below the copy (titles and descriptions
+       wrap to different line counts per card) and fill the leftover
+       height, bleeding off the card's right and bottom edges, which the
+       card clips. */
+    .ab-frame {
+      position: relative;
+      flex: 1 1 0;
+      min-height: 120px;
+      /* Bleed 1px past the card's 28px padding so the frame's own 1px
+         border slips under the card's clip - flush frames otherwise stack
+         two hairlines into a darker seam on the card's bottom edge. */
+      margin: 20px -42px -30px 0;
+      background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 10px 0 0 0; box-shadow: var(--card-shadow); overflow: hidden;
+      font-family: var(--font-sans);
+    }
+    html[data-theme="dark"] .ab-frame { background: #191919; border-color: rgba(255, 255, 255, 0.07); }
+    .ab-frame--tall { padding: 14px 16px; }
+    .ab-frame--diff { margin-right: -60px; }
+    .ab-frame--pr { margin-right: -60px; }
+    .ab-term { font-family: var(--font-mono); font-size: 11px; line-height: 2; color: #3c3c3c; white-space: nowrap; }
+    html[data-theme="dark"] .ab-term { color: #cfcfcf; }
+    .ab-term .ag-line strong { font-weight: 600; color: #111; }
+    html[data-theme="dark"] .ab-term .ag-line strong { color: #fff; }
+    .ag-cmd { color: #111; font-weight: 500; }
+    html[data-theme="dark"] .ag-cmd { color: #fff; }
+    .ag-dim { color: #979797; }
+    .ag-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+    .ag-dot--major { background: #e5484d; }
+    .ag-dot--warn { background: #f5a623; }
+    .ag-check { color: #30a46c; font-weight: 600; margin-right: 7px; }
+    .ab-gap { height: 10px; }
+    .ab-recipe { padding-left: 13px; color: #979797; }
+    .ab-recipe::before { content: "\2514\00a0"; color: #c8c8c8; }
+
+    /* Diff mockup */
+    .ab-diff { font-family: var(--font-mono); font-size: 11px; line-height: 20px; white-space: nowrap; }
+    .ab-diff-file {
+      padding: 8px 14px; font-size: 10.5px; color: #6c6c6c;
+      border-bottom: 1px solid var(--card-border); background: #fafafa;
+    }
+    html[data-theme="dark"] .ab-diff-file { background: #1f1f1f; color: #9a9a9a; border-color: rgba(255, 255, 255, 0.07); }
+    .ab-diff-line { padding: 0 14px; color: #3c3c3c; }
+    html[data-theme="dark"] .ab-diff-line { color: #cfcfcf; }
+    .ab-diff-ctx { color: #8a8a8a; }
+    .ab-diff-del { background: #fff1f0; color: #b42318; }
+    .ab-diff-add { background: #ecfdf3; color: #067647; }
+    html[data-theme="dark"] .ab-diff-del { background: rgba(229, 72, 77, 0.12); color: #f28b8f; }
+    html[data-theme="dark"] .ab-diff-add { background: rgba(48, 164, 108, 0.14); color: #6fd39a; }
+    .ab-diff-prompt { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--card-border); color: #111; font-weight: 500; }
+    html[data-theme="dark"] .ab-diff-prompt { color: #fff; border-color: rgba(255, 255, 255, 0.07); }
+    .ab-caret {
+      display: inline-block; width: 6px; height: 12px; margin-left: 2px; vertical-align: -2px;
+      background: currentColor; animation: ab-blink 1s steps(2, start) infinite;
+    }
+    @keyframes ab-blink { to { visibility: hidden; } }
+
+    /* Pull request comment mockup */
+    .ab-pr { font-size: 11px; line-height: 18px; color: #3c3c3c; }
+    html[data-theme="dark"] .ab-pr { color: #cfcfcf; }
+    /* Same strip as the diff card's file header: padded, tinted, ruled. */
+    .ab-pr-head {
+      display: flex; align-items: center; gap: 6px; white-space: nowrap;
+      padding: 8px 14px; font-size: 10.5px; line-height: 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08); background: #fafafa;
+    }
+    html[data-theme="dark"] .ab-pr-head { background: #1f1f1f; border-color: rgba(255, 255, 255, 0.07); }
+    /* The transitions.dev mark, same path as the nav brand, in a
+       GitHub-style round avatar. */
+    .ab-pr-avatar {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      background: #ffffff; color: #111;
+      box-shadow: 0 0 0 1px var(--card-border) inset;
+    }
+    .ab-pr-avatar svg { width: 11px; height: 12.4px; display: block; }
+    html[data-theme="dark"] .ab-pr-avatar { background: #262626; color: #fff; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset; }
+    .ab-pr-name { font-weight: 600; color: #111; }
+    html[data-theme="dark"] .ab-pr-name { color: #fff; }
+    .ab-pr-bot { padding: 0 5px; border: 1px solid var(--card-border); border-radius: 10px; font-size: 9.5px; line-height: 14px; color: #6c6c6c; }
+    .ab-pr-time { color: #979797; }
+    .ab-pr-body { padding: 10px 14px 12px; }
+    .ab-pr-score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+    .ab-pr-score-label { color: #6c6c6c; }
+    .ab-pr-score-val { font-family: "Saans", var(--font-sans); font-size: 22px; line-height: 26px; font-weight: 500; color: #979797; letter-spacing: -0.01em; }
+    .ab-pr-score-val--up { color: #111; }
+    html[data-theme="dark"] .ab-pr-score-val--up { color: #fff; }
+    .ab-pr-arrow { color: #b0b0b0; }
+    .ab-pr-row { white-space: nowrap; }
+    .ab-pr-row code { font-family: var(--font-mono); font-size: 10.5px; }
+    .ab-pr-muted { color: #979797; }
+
+    @media (max-width: 720px) {
+      .agent-bento-wrap { padding: 0 16px; }
+      .agent-bento-heading { font-size: 23px; margin-bottom: 28px; }
+      /* Single column, every card the same height (the tallest row sets
+         it), so the score card matches its neighbours; its terminal is
+         simply clipped lower down. */
+      .agent-bento { grid-template-columns: 1fr; grid-auto-rows: 1fr; }
+      .agent-bento-card--tall { grid-row: auto; min-height: 300px; }
+      .agent-bento-card--sm { min-height: 300px; }
+      .agent-bento-title { font-size: 18px; }
+      .ab-frame { min-height: 140px; margin: 16px -32px -28px 0; }
+      .agent-bento-wrap { margin-bottom: 64px; }
+      .gs-tabs { align-self: stretch; }
+      .gs-tabs .t-tab { flex: 1; padding: 4px 8px; font-size: 12px; }
     }
 
     /* ─── Cards grid ──────────────────────────────────────────── */
@@ -5957,15 +6162,14 @@
           decoding="async"
         />
       </div>
-      <h1 class="title">UI transitions for AI agents</h1>
+      <h1 class="title">UI motion agent,<br />backed by a library</h1>
       <p class="subtitle">
-        Collection of the most essential UI transitions for web apps. Copy
-        and paste them, or use them with your coding agent via the
-        <a class="subtitle-skill" href="skill.html">skill</a>.
+        Better UI motion starts here. An AI agent, a library of 38 transitions,
+        a skill that fits your workflow.
       </p>
       <div class="skill-cta-row">
-        <a class="skill-btn skill-btn--primary" href="#components">Browse</a>
-        <a class="skill-btn skill-btn--secondary" href="/pro.html">Get Pro</a>
+        <a class="skill-btn skill-btn--primary" href="/detail.html?doc=introduction">Get started</a>
+        <a class="skill-btn skill-btn--secondary" href="/library.html">Browse</a>
       </div>
     </header>
 
@@ -5974,6 +6178,10 @@
          the icon button opens a Newest/Oldest sort menu. Reordering is
          done with CSS `order`, so card prototypes never move in the DOM
          and their JS keeps working. -->
+    <div class="home-section-head">
+      <h2 class="home-section-title">Library <span class="dim">includes 38+ crafted transitions, ready to drop into your project.</span></h2>
+    </div>
+
     <div class="cards-toolbar" id="cards-toolbar">
       <div class="cards-filters" role="tablist" aria-label="Filter transitions by category">
         <button type="button" class="cards-filter" data-filter="all" data-active="true" role="tab" aria-selected="true"><span class="cards-filter-label">All</span></button>
@@ -7436,6 +7644,87 @@
       
 
 
+    </section>
+    <div class="home-browse-all">
+      <a class="skill-btn skill-btn--secondary" href="/library.html">Browse all</a>
+    </div>
+
+    <!-- ─── Transitions Agent: the bento from agent.html ─── -->
+    <section class="home-agent" aria-labelledby="home-agent-title">
+      <div class="home-section-head home-section-head--agent">
+        <h2 class="home-section-title" id="home-agent-title">Transitions Agent <span class="dim">scans your codebase, scores its motion and fixes it as pull requests.</span></h2>
+        <a class="skill-btn skill-btn--secondary" href="/agent.html">Learn more</a>
+      </div>
+    <div class="agent-bento-wrap">
+      <div class="agent-bento">
+        <div class="agent-bento-card agent-bento-card--tall">
+          <h3 class="agent-bento-title">A motion score for every codebase</h2>
+          <p class="agent-bento-desc">One command scores your motion 0 to 100, <span class="dim">every finding mapped to the recipe that fixes it. Local and deterministic: no AI, no account.</span></p>
+          <div class="ab-frame ab-frame--tall" aria-hidden="true">
+            <div class="ab-term">
+              <div class="ag-line ag-cmd">$ npx transitions-agent</div>
+              <div class="ag-line ag-dim">Scanning 142 files in ./src</div>
+              <div class="ag-line">Motion score <strong>64 / 100</strong> <span class="ag-dim">(needs work)</span></div>
+              <div class="ag-line ab-gap"></div>
+              <div class="ag-line"><span class="ag-dot ag-dot--major"></span>Modal.tsx:24 <span class="ag-dim">modal pops in with no transition</span></div>
+              <div class="ag-line ab-recipe">recipe: modal open/close</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--major"></span>Tooltip.tsx:41 <span class="ag-dim">tooltip appears with no transition</span></div>
+              <div class="ag-line ab-recipe">recipe: tooltip open/close</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>nav.css:118 <span class="ag-dim">hover snaps, no transition on base</span></div>
+              <div class="ag-line ab-recipe">recipe: learn more hover</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>app.css:203 <span class="ag-dim">transition: all animates layout</span></div>
+              <div class="ag-line ab-recipe">fix: name the properties</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>Toast.tsx:12 <span class="ag-dim">hardcoded 0.3s, no motion token</span></div>
+              <div class="ag-line ab-recipe">fix: --duration-quick</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>global.css:9 <span class="ag-dim">no prefers-reduced-motion guard</span></div>
+              <div class="ag-line ab-recipe">fix: reduced-motion guard</div>
+              <div class="ag-line ab-gap"></div>
+              <div class="ag-line ag-dim">6 findings, 2 major. Run <span class="ag-cmd">fix</span> to see the diffs.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="agent-bento-card agent-bento-card--sm">
+          <h3 class="agent-bento-title">Fixes as diffs, then a pull request</h2>
+          <p class="agent-bento-desc">Polish keeps diffs small. Revamp rewrites motion with the real recipe. <span class="dim">Nothing lands without your yes.</span></p>
+          <div class="ab-frame ab-frame--diff" aria-hidden="true">
+            <div class="ab-diff">
+              <div class="ab-diff-file">src/components/Modal.tsx</div>
+              <div class="ab-diff-line ab-diff-ctx">.modal {</div>
+              <div class="ab-diff-line ab-diff-del">-  transition: all 0.3s;</div>
+              <div class="ab-diff-line ab-diff-add">+  transition:</div>
+              <div class="ab-diff-line ab-diff-add">+    opacity var(--duration-quick) var(--ease-out),</div>
+              <div class="ab-diff-line ab-diff-add">+    transform var(--duration-quick) var(--ease-out);</div>
+              <div class="ab-diff-line ab-diff-ctx">}</div>
+              <div class="ab-diff-line ab-diff-add">+@media (prefers-reduced-motion: reduce) {</div>
+              <div class="ab-diff-line ab-diff-add">+  .modal { transition: none; }</div>
+              <div class="ab-diff-line ab-diff-add">+}</div>
+              <div class="ab-diff-line ab-diff-prompt">Apply 3 fixes? (y/n) <span class="ab-caret"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="agent-bento-card agent-bento-card--sm">
+          <h3 class="agent-bento-title">A score gate on every pull request</h2>
+          <p class="agent-bento-desc">The Action scores every pull request <span class="dim">and can block merges when motion quality drops.</span></p>
+          <div class="ab-frame ab-frame--pr" aria-hidden="true">
+            <div class="ab-pr">
+              <div class="ab-pr-head">
+                <span class="ab-pr-avatar" aria-hidden="true"><svg viewBox="0 0 18 20.2947" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 0L12.5409 1.99176L11.5604 3.73491L10 2.8572V5.14735H8V2.8572L6.43962 3.73491L5.45909 1.99176L9 0ZM14.3613 3.01571L18 5.0625V9.14735H16V7.3794L14.0359 8.51337L13.0359 6.78132L14.9804 5.65867L13.3807 4.75886L14.3613 3.01571ZM4.61925 4.75887L3.01961 5.65867L4.9641 6.78132L3.9641 8.51337L2 7.3794L2 9.14735H0L1.54972e-06 5.0625L3.63873 3.01572L4.61925 4.75887ZM2 11.1473V12.9153L3.9641 11.7813L4.9641 13.5134L3.01961 14.636L4.61925 15.5358L3.63873 17.279L3.57628e-07 15.2322V11.1473H2ZM18 11.1473V15.2322L14.3613 17.279L13.3807 15.5358L14.9804 14.636L13.0359 13.5134L14.0359 11.7813L16 12.9153V11.1473H18ZM10 15.1473V17.4375L11.5604 16.5598L12.5409 18.3029L9 20.2947L5.45908 18.3029L6.43961 16.5598L8 17.4375V15.1473H10Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0981 9.51337L10 10.7247V13.1474H8V10.7247L5.90192 9.51337L6.90192 7.78132L9 8.99265L11.0981 7.78132L12.0981 9.51337Z" fill="currentColor"/></svg></span>
+                <span class="ab-pr-name">transitions-agent</span>
+                <span class="ab-pr-bot">bot</span>
+                <span class="ab-pr-time">commented 2 minutes ago</span>
+              </div>
+              <div class="ab-pr-body">
+                <div class="ab-pr-score"><span class="ab-pr-score-label">Motion score</span><span class="ab-pr-score-val">64</span><span class="ab-pr-arrow">&rarr;</span><span class="ab-pr-score-val ab-pr-score-val--up">91</span></div>
+                <div class="ab-pr-row"><span class="ag-check">&#10003;</span>Passes <code>min-score: "75"</code></div>
+                <div class="ab-pr-row ab-pr-muted">3 elements fixed, 0 ship without transitions</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     </section>
 
     <!-- ─── Sponsors (Figma 2332:82735) — homepage only. Card 1 keeps
@@ -14052,7 +14341,30 @@ var grid = document.getElementById("components");
 if (!toolbar || !grid) return;
 var cards = Array.prototype.slice.call(grid.querySelectorAll(".card[data-seq]"));
 var tabs = Array.prototype.slice.call(toolbar.querySelectorAll(".cards-filter"));
+var PEEK = 3;
+var curKey = "all", curMode = "default";
+function matches(c, key) {
+return key === "all" ||
+(key === "pro"
+? c.getAttribute("data-pro") === "true"
+: (c.getAttribute("data-cat") || "").split(" ").indexOf(key) !== -1);
+}
+/* Sneak peek: the homepage shows the first three cards of the current
+   filter and sort; the Library page shows them all. */
+function applyPeek() {
+var shown = cards.filter(function (c) { return matches(c, curKey); });
+if (curMode !== "default") {
+shown.sort(function (a, b) {
+var sa = parseInt(a.getAttribute("data-seq"), 10) || 0, sb = parseInt(b.getAttribute("data-seq"), 10) || 0;
+return curMode === "newest" ? sb - sa : sa - sb;
+});
+}
+shown.forEach(function (c, i) {
+if (i < PEEK) c.removeAttribute("hidden"); else c.setAttribute("hidden", "");
+});
+}
 function applyFilter(key) {
+curKey = key;
 tabs.forEach(function (t) {
 var on = t.getAttribute("data-filter") === key;
 t.setAttribute("data-active", String(on));
@@ -14067,11 +14379,13 @@ key === "all" ||
 if (show) c.removeAttribute("hidden");
 else c.setAttribute("hidden", "");
 });
+applyPeek();
 }
 tabs.forEach(function (t) {
 t.addEventListener("click", function () { applyFilter(t.getAttribute("data-filter")); });
 });
 function applySort(mode) {
+curMode = mode;
 cards.forEach(function (c) {
 if (mode === "default") { c.style.removeProperty("order"); return; }
 var seq = parseInt(c.getAttribute("data-seq"), 10) || 0;
@@ -14080,6 +14394,7 @@ c.style.order = mode === "newest" ? String(-seq) : String(seq);
 Array.prototype.forEach.call(toolbar.querySelectorAll(".cards-sort-opt"), function (o) {
 o.setAttribute("aria-checked", String(o.getAttribute("data-sort") === mode));
 });
+applyPeek();
 }
 applySort("default");
 var sortBtn = document.getElementById("cards-sort-btn");
