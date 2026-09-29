@@ -38,12 +38,28 @@ export default {
     if (request.method === "POST" && url.pathname === "/v1/agent/mcp") {
       return handleMcp(request, env);
     }
+    if (request.method === "GET" && url.pathname === "/v1/agent/license") {
+      return handleLicense(request, env);
+    }
     if (request.method === "GET" && url.pathname === "/v1/agent/mcp") {
       return new Response(null, { status: 405 }); // JSON-only transport, no SSE stream
     }
     return json({ error: "not found" }, 404);
   },
 };
+
+// What a key can do, so setup tools can say whether revamp is available.
+async function handleLicense(request, env) {
+  const license = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  if (!license) return json({ error: "missing license" }, 401);
+  const record = await env.LICENSES.get(license, { type: "json" });
+  if (!record || record.active === false) return json({ error: "invalid license" }, 401);
+  const isFree = record.plan === "free";
+  const month = new Date().toISOString().slice(0, 7);
+  const used = parseInt((await env.USAGE.get(`${license}:${month}`)) || "0", 10);
+  const quota = record.quota || (isFree ? QUOTAS.free : QUOTAS.paid);
+  return json({ plan: record.plan, modes: isFree ? ["polish"] : ["polish", "revamp"], used, quota });
+}
 
 async function handleFix(request, env) {
   const license = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
