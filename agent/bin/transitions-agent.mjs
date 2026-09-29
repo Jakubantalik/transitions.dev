@@ -2,7 +2,7 @@
 // transitions-agent: scan a codebase for missing or janky UI transitions.
 //
 //   npx transitions-agent                 scan + motion score + findings
-//   npx transitions-agent init-ci         write the GitHub Actions workflow(s)
+//   npx transitions-agent init-ci         set up GitHub Actions (workflows, secret, PR permission)
 //   npx transitions-agent skill           install the agent skill (Claude Code)
 //   npx transitions-agent signup          free plan: sign up in the browser
 //   npx transitions-agent signup you@x.co  free plan: license key by email
@@ -33,7 +33,7 @@ import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from "node:fs";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 const CREDS_PATH = join(homedir(), ".transitions-agent.json");
 const PKG_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -115,38 +115,167 @@ function maybeInstallSkill() {
 }
 
 if (command === "init-ci") {
-  // Seamless CI setup (react.doctor pattern): one command writes the
-  // workflow files; committing them is the whole install.
-  const wfDir = resolve(".github", "workflows");
-  mkdirSync(wfDir, { recursive: true });
-  const minScore = Number.isFinite(flags.minScore) ? String(flags.minScore) : "0";
-  const wrote = [];
-  const put = (name, transform) => {
-    const dest = join(wfDir, name);
-    if (existsSync(dest) && !flags.force) {
-      console.log("  \u2022 " + name + " already exists - skipped (use --force to overwrite)");
-      return;
-    }
-    let body = readFileSync(join(PKG_DIR, "templates", name), "utf8");
-    if (transform) body = transform(body);
-    writeFileSync(dest, body);
-    wrote.push(name);
-    console.log("  \u2713 .github/workflows/" + name);
+  await initCi();
+}
+
+// Full CI setup, not just files: writes both workflows, then checks (and,
+// with consent, finishes) the GitHub side - the license secret and the repo
+// setting that lets Actions open pull requests - and ends with a checklist
+// of whatever is still left.
+async function initCi() {
+  const run = (cmd, argv, input) => {
+    try {
+      const r = spawnSync(cmd, argv, { cwd: root, encoding: "utf8", input, stdio: [input === undefined ? "ignore" : "pipe", "pipe", "pipe"] });
+      return { ok: r.status === 0, out: (r.stdout || "").trim(), err: (r.stderr || "").trim() };
+    } catch { return { ok: false, out: "", err: "" }; }
   };
-  console.log("Setting up Transitions Agent for GitHub Actions:");
-  put("transitions-agent.yml", (b) => b.replace('min-score: "0"', 'min-score: "' + minScore + '"'));
-  if (flags.fix) put("transitions-fix.yml");
+  const OK = "\u2713", TODO = "\u2022";
+  const todo = [];
+
+  // 1. Workflow files. The fix workflow only runs when triggered from the
+  // Actions tab, so writing it by default costs nothing.
+  const wfDir = join(root, ".github", "workflows");
+  mkdirSync(wfDir, { recursive: true });
+  const minScore = Number.isFinite(flags.minScore) ? String(flags.minScore) : null;
+  const files = [
+    { name: "transitions-agent.yml", what: "motion score on every pull request",
+      transform: (b) => b.replace('min-score: "0"', 'min-score: "' + (minScore || "0") + '"') },
+    ...(flags["score-only"] ? [] : [{ name: "transitions-fix.yml", what: "fix pull requests from the Actions tab" }]),
+  ];
+  console.log("Transitions Agent CI setup");
   console.log("");
-  console.log("Next steps:");
-  console.log("  1. Commit and push - every pull request then gets a motion score comment" + (minScore !== "0" ? " and a merge gate at " + minScore : "") + ".");
-  if (flags.fix) {
-    console.log("  2. Add a repo secret TRANSITIONS_AGENT_LICENSE (Business key), then run the");
-    console.log("     \"Transitions Agent fix\" workflow from the Actions tab to get fix PRs.");
-  } else {
-    console.log("  2. Optional: add a repo secret TRANSITIONS_AGENT_LICENSE and re-run with --fix");
-    console.log("     for fix pull requests from CI (Business plan).");
+  for (const f of files) {
+    const dest = join(wfDir, f.name);
+    const rel = ".github/workflows/" + f.name;
+    let body = readFileSync(join(PKG_DIR, "templates", f.name), "utf8");
+    if (f.transform) body = f.transform(body);
+    if (!existsSync(dest) || flags.force) {
+      writeFileSync(dest, body);
+      console.log("  " + OK + " " + rel + " written (" + f.what + ")");
+      continue;
+    }
+    const current = readFileSync(dest, "utf8");
+    if (minScore && f.name === "transitions-agent.yml" && /min-score: "\d+"/.test(current)) {
+      const updated = current.replace(/min-score: "\d+"/, 'min-score: "' + minScore + '"');
+      if (updated !== current) {
+        writeFileSync(dest, updated);
+        console.log("  " + OK + " " + rel + " merge gate set to " + minScore);
+        continue;
+      }
+    }
+    console.log("  " + OK + " " + rel + (current === body ? " already set up" : " already set up (your edits kept; --force replaces it)"));
   }
-  console.log("  Docs: https://transitions.dev/agent.html");
+
+  // 2. Git: workflows only run once GitHub has them.
+  const inGit = run("git", ["rev-parse", "--is-inside-work-tree"]).ok;
+  if (inGit) {
+    const paths = files.map((f) => ".github/workflows/" + f.name);
+    const dirty = run("git", ["status", "--porcelain", "--", ...paths]).out;
+    const originHead = run("git", ["rev-parse", "--abbrev-ref", "origin/HEAD"]);
+    const head = originHead.ok && originHead.out.startsWith("origin/") ? originHead.out
+      : run("git", ["rev-parse", "--verify", "-q", "origin/master"]).ok ? "origin/master" : "origin/main";
+    const onDefault = paths.every((p) => run("git", ["cat-file", "-e", head + ":" + p]).ok);
+    if (dirty) {
+      console.log("  " + TODO + " Workflow files not committed yet");
+      todo.push("Commit and push the workflow files. The fix workflow appears in the Actions tab once it is on " + head.replace(/^origin\//, "") + ".");
+    } else if (!onDefault) {
+      console.log("  " + TODO + " Workflow files committed, not on " + head + " yet");
+      todo.push("Push and merge the workflow files into " + head.replace(/^origin\//, "") + ".");
+    } else {
+      console.log("  " + OK + " Workflow files are on " + head);
+    }
+  } else {
+    todo.push("Commit the workflow files to your GitHub repository.");
+  }
+
+  // 3. GitHub side, through the gh CLI when it is installed and signed in.
+  const wantsFix = files.some((f) => f.name === "transitions-fix.yml");
+  const repo = run("gh", ["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"]);
+  const license = flags.license || process.env.TRANSITIONS_AGENT_LICENSE || (loadCreds() || {}).license || "";
+  const MANUAL_SECRET = "Add a repository secret named TRANSITIONS_AGENT_LICENSE with your license key (GitHub repo > Settings > Secrets and variables > Actions), or run: gh secret set TRANSITIONS_AGENT_LICENSE";
+  const MANUAL_PRS = "Allow Actions to open pull requests: GitHub repo > Settings > Actions > General > Workflow permissions > check \"Allow GitHub Actions to create and approve pull requests\".";
+  if (!repo.ok) {
+    console.log("  " + TODO + " GitHub settings not checked (gh CLI not installed, not signed in, or no GitHub remote)");
+    todo.push(license ? MANUAL_SECRET : "Get a license key (npx transitions-agent signup), then: " + MANUAL_SECRET);
+    if (wantsFix) todo.push(MANUAL_PRS);
+  } else {
+    const slug = repo.out;
+    const secrets = run("gh", ["secret", "list", "--json", "name", "-q", ".[].name"]);
+    const hasSecret = secrets.ok && secrets.out.split("\n").includes("TRANSITIONS_AGENT_LICENSE");
+    const perms = run("gh", ["api", "repos/" + slug + "/actions/permissions/workflow"]);
+    let permState = null;
+    try { permState = JSON.parse(perms.out); } catch { /* unknown */ }
+    const prsAllowed = !wantsFix || (permState && permState.can_approve_pull_request_reviews === true);
+
+    const pending = [];
+    if (!hasSecret && license) pending.push("secret");
+    if (!prsAllowed && permState) pending.push("prs");
+
+    let apply = !!flags.yes;
+    if (pending.length && !apply && isInteractive()) {
+      const what = pending.map((p) => p === "secret" ? "add your license key as the TRANSITIONS_AGENT_LICENSE secret" : "allow Actions to open pull requests").join(" and ");
+      const readline = await import("node:readline");
+      const answer = await new Promise((res) => {
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+        rl.question("  On " + slug + ": " + what + "? [Y/n] ", (a) => { rl.close(); res(a.trim()); });
+      });
+      apply = answer === "" || /^y/i.test(answer);
+    }
+
+    if (hasSecret) {
+      console.log("  " + OK + " Secret TRANSITIONS_AGENT_LICENSE is set on " + slug);
+    } else if (!license) {
+      console.log("  " + TODO + " No license key on this machine for the TRANSITIONS_AGENT_LICENSE secret");
+      todo.push("Get a license key: npx transitions-agent signup (free covers polish, Business adds revamp). Then re-run npx transitions-agent init-ci --yes to add it as the secret.");
+    } else if (apply) {
+      const set = run("gh", ["secret", "set", "TRANSITIONS_AGENT_LICENSE", "--repo", slug], license);
+      if (set.ok) console.log("  " + OK + " Secret TRANSITIONS_AGENT_LICENSE added to " + slug);
+      else {
+        console.log("  " + TODO + " Could not add the secret (" + (set.err.split("\n")[0] || "gh failed") + ")");
+        todo.push(MANUAL_SECRET);
+      }
+    } else {
+      console.log("  " + TODO + " Secret TRANSITIONS_AGENT_LICENSE not set on " + slug);
+    }
+
+    if (wantsFix) {
+      if (prsAllowed) {
+        console.log("  " + OK + " Actions may open pull requests on " + slug);
+      } else if (!permState) {
+        console.log("  " + TODO + " Could not read the Actions permissions (admin access needed)");
+        todo.push(MANUAL_PRS);
+      } else if (apply) {
+        const put = run("gh", ["api", "-X", "PUT", "repos/" + slug + "/actions/permissions/workflow",
+          "-f", "default_workflow_permissions=" + (permState.default_workflow_permissions || "read"),
+          "-F", "can_approve_pull_request_reviews=true"]);
+        if (put.ok) console.log("  " + OK + " Actions may now open pull requests on " + slug);
+        else {
+          console.log("  " + TODO + " Could not change the Actions permissions (an organization policy may block it)");
+          todo.push(MANUAL_PRS);
+        }
+      } else {
+        console.log("  " + TODO + " Actions may not open pull requests on " + slug + " yet");
+      }
+    }
+
+    if (!apply && pending.length) {
+      todo.push("Finish the GitHub side in one step: npx transitions-agent init-ci --yes (" +
+        pending.map((p) => p === "secret" ? "adds the license secret" : "allows Actions to open pull requests").join(", ") + ")");
+    }
+  }
+
+  console.log("");
+  if (!todo.length) {
+    console.log("CI is fully set up. Every pull request gets a motion score; run \"Transitions Agent fix\" from the Actions tab for a fix pull request.");
+  } else {
+    console.log("Left to do:");
+    todo.forEach((t, i) => console.log("  " + (i + 1) + ". " + t));
+    if (runByAgent() && todo.some((t) => t.includes("init-ci --yes"))) {
+      console.log("");
+      console.log("\x1b[1mQuestion for the user: finish the GitHub setup now (license secret and pull request permission)?\x1b[0m");
+    }
+  }
+  console.log("Docs: https://transitions.dev/agent.html#get-started");
   process.exit(0);
 }
 
