@@ -35,13 +35,19 @@ When the user's message is just the command (`npx transitions-agent` or a varian
 
 ## CI setup
 
-When the user asks to add the Agent to GitHub Actions / CI, run:
+When the user asks to add the Agent to GitHub Actions / CI (or just runs `npx transitions-agent init-ci`), that IS the request for the whole setup - never stop at "nothing changed". Run:
 
 ```bash
 npx transitions-agent@latest init-ci
 ```
 
-Add `--fix` for the fix-PR workflow and `--min-score <n>` for a merge gate. Then tell the user to commit the new workflow files; for hosted fix PRs they add one repo secret, `TRANSITIONS_AGENT_LICENSE`.
+It writes both workflows (score on every pull request, fix pull requests from the Actions tab), keeps existing ones, and prints a checklist: workflow files committed and on the default branch, the `TRANSITIONS_AGENT_LICENSE` repo secret, and the repo setting that lets Actions open pull requests. Relay the checklist, then work through whatever is left:
+
+- **GitHub side** (secret + pull request permission): ask the user, and on a yes run `npx transitions-agent@latest init-ci --yes`. It uses the gh CLI and the license key already on this machine; the key never appears in output. If there is no key, run `signup` first. If gh is missing or blocked by a sandbox, give the user the manual steps it printed.
+- **Workflow files**: offer to commit them. On the default branch, put them on a new branch and open a pull request instead of pushing to main.
+- `--min-score <n>` sets a merge gate (updates an existing workflow in place); `--score-only` skips the fix workflow.
+
+Finish when the checklist says "CI is fully set up", or tell the user exactly which step is theirs.
 
 ## Rules
 
