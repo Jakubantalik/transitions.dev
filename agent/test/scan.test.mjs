@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { runRules } from "../lib/rules.mjs";
+import { analyzeComponents } from "../lib/components.mjs";
 import { collectFiles } from "../lib/walk.mjs";
 import { scan } from "../lib/scan.mjs";
 import { findingsForMode } from "../lib/fix.mjs";
@@ -10,9 +11,10 @@ import { readFileSync } from "node:fs";
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 const load = (name, ext) => ({ path: name, ext, content: readFileSync(join(FIXTURES, name), "utf8") });
+const allFindings = (files) => [...runRules(files), ...analyzeComponents(files).findings];
 
 test("bad.css triggers duration, transition-all, hover, and reduced-motion rules", () => {
-  const findings = runRules([load("bad.css", ".css")]);
+  const findings = allFindings([load("bad.css", ".css")]);
   const rules = new Set(findings.map((f) => f.rule));
   assert.ok(rules.has("hardcoded-duration"));
   assert.ok(rules.has("transition-all"));
@@ -26,7 +28,7 @@ test("BadModal.jsx triggers untransitioned-overlay", () => {
 });
 
 test("good.css is clean", () => {
-  const findings = runRules([load("good.css", ".css")]);
+  const findings = allFindings([load("good.css", ".css")]);
   assert.equal(findings.length, 0, JSON.stringify(findings, null, 2));
 });
 

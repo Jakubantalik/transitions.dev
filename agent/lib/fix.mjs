@@ -21,10 +21,12 @@ const c = {
   yellow: (s) => `\x1b[33m${s}\x1b[0m`,
 };
 
-// polish: token-level adjustments only. revamp: adds structural recipe rewrites.
+// polish (the transitions-polish skill): values onto the motion scale by usage,
+// hover coverage, reduced motion. revamp (the transitions.dev skill): polish
+// plus installing the library recipe on every recognized component.
 const POLISH_RULES = new Set([
-  "hardcoded-duration", "transition-all", "no-reduced-motion",
-  "inconsistent-durations", "hover-without-transition", "slow-duration",
+  "hardcoded-duration", "transition-all", "no-reduced-motion", "inconsistent-durations",
+  "hover-without-transition", "slow-duration", "off-scale", "layout-animation",
 ]);
 
 export function findingsForMode(findings, mode) {
@@ -37,7 +39,7 @@ export async function runFix(root, result, opts) {
   const findings = findingsForMode(result.findings, mode);
   const skipped = result.findings.length - findings.length;
   if (skipped > 0) {
-    console.log(c.dim(`${skipped} structural findings need --mode revamp and are skipped in polish mode.`));
+    console.log(c.dim(`${skipped} findings need the library recipe (--mode revamp) and are skipped in polish mode.`));
   }
   const fixable = findings.filter((f) => f.path !== "(project)");
   if (!fixable.length && !findings.length) {
@@ -45,8 +47,14 @@ export async function runFix(root, result, opts) {
     return 0;
   }
 
-  const paths = [...new Set(fixable.map((f) => f.path))].slice(0, MAX_FILES);
-  const dropped = [...new Set(fixable.map((f) => f.path))].length - paths.length;
+  // Revamp also needs the markup/JS that drives a component (open and close
+  // classes, unmount timing), not only its stylesheet.
+  const wanted = [...new Set([
+    ...fixable.map((f) => f.path),
+    ...(mode === "revamp" ? fixable.flatMap((f) => f.related || []) : []),
+  ])];
+  const paths = wanted.slice(0, MAX_FILES);
+  const dropped = wanted.length - paths.length;
   const files = [];
   for (const p of paths) {
     try {
@@ -68,7 +76,10 @@ export async function runFix(root, result, opts) {
     res = await fetch(api + "/v1/agent/fix", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: "Bearer " + license },
-      body: JSON.stringify({ mode, findings, files, score: result.score }),
+      body: JSON.stringify({
+        mode, findings, files, score: result.score,
+        components: (result.components || []).filter((x) => x.status !== "matches" && paths.includes(x.path)),
+      }),
     });
   } catch (e) {
     console.error(c.red("✗ ") + "Could not reach the fix service: " + e.message);

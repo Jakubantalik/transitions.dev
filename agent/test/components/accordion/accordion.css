@@ -1,0 +1,7 @@
+.accordion-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 400ms ease;
+}
+.accordion.open .accordion-panel { max-height: 500px; }
+@media (prefers-reduced-motion: reduce) { .accordion-panel { transition: none; } }

@@ -1,0 +1,601 @@
+{
+  "tokens": [
+    {
+      "name": "--duration-stagger",
+      "value": "40ms",
+      "usage": "per-item stagger offset"
+    },
+    {
+      "name": "--duration-micro",
+      "value": "80ms",
+      "usage": "tooltip/path delay, shake segment, large stagger"
+    },
+    {
+      "name": "--duration-quick",
+      "value": "150ms",
+      "usage": "modal/dropdown close, text swap, tooltip appear"
+    },
+    {
+      "name": "--duration-fast",
+      "value": "250ms",
+      "usage": "icon swap, dropdown/modal open, tabs sliding, page slide"
+    },
+    {
+      "name": "--duration-medium",
+      "value": "350ms",
+      "usage": "panel close, toast close"
+    },
+    {
+      "name": "--duration-slow",
+      "value": "400ms",
+      "usage": "panel open, skeleton content reveal, input clear"
+    },
+    {
+      "name": "--duration-very-slow",
+      "value": "500ms",
+      "usage": "emphasis moments, badge appear, text reveal, success check"
+    },
+    {
+      "name": "--ease-smooth-out",
+      "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+      "usage": "modal/dropdown/panel open + close, page slide, resize, position change"
+    },
+    {
+      "name": "--ease-in-out",
+      "value": "ease-in-out",
+      "usage": "icon swap, text swap, text reveal, skeleton reveal"
+    },
+    {
+      "name": "--ease-out",
+      "value": "ease-out",
+      "usage": "tooltip open / close"
+    },
+    {
+      "name": "--ease-linear",
+      "value": "linear",
+      "usage": "shimmer, skeleton pulse, spinner"
+    },
+    {
+      "name": "--ease-bounce",
+      "value": "cubic-bezier(0.34, 1.36, 0.64, 1)",
+      "usage": "badge pop open"
+    },
+    {
+      "name": "--ease-bounce-strong",
+      "value": "cubic-bezier(0.34, 3.85, 0.64, 1)",
+      "usage": "bouncy hover-out (avatar return)"
+    },
+    {
+      "name": "--distance-micro",
+      "value": "4px",
+      "usage": "text swap"
+    },
+    {
+      "name": "--distance-small",
+      "value": "6px",
+      "usage": "error shake (small segment)"
+    },
+    {
+      "name": "--distance-base",
+      "value": "8px",
+      "usage": "badge diagonal reveal, page slide, error shake (large segment)"
+    },
+    {
+      "name": "--distance-medium",
+      "value": "12px",
+      "usage": "text reveal"
+    },
+    {
+      "name": "--distance-large",
+      "value": "30px",
+      "usage": "check badge appear"
+    },
+    {
+      "name": "--scale-large",
+      "value": "0.96",
+      "usage": "modal open / close"
+    },
+    {
+      "name": "--scale-medium",
+      "value": "0.97",
+      "usage": "dropdown open"
+    },
+    {
+      "name": "--scale-small",
+      "value": "0.98",
+      "usage": "tooltip open"
+    },
+    {
+      "name": "--scale-tiny",
+      "value": "0.99",
+      "usage": "dropdown close"
+    },
+    {
+      "name": "--blur-small",
+      "value": "2px",
+      "usage": "panel reveal, icon swap, text swap, skeleton reveal, number pop-in"
+    },
+    {
+      "name": "--blur-medium",
+      "value": "3px",
+      "usage": "page slide, text reveal"
+    },
+    {
+      "name": "--blur-large",
+      "value": "8px",
+      "usage": "success check open"
+    }
+  ],
+  "recipes": {
+    "card-resize": {
+      "name": "Card resize",
+      "when": "Tweening a container's width or height when its layout state changes (compact ↔ expanded card, collapsing panel, list row toggling extra detail).",
+      "hook": "t-resize",
+      "vars": {
+        "---": "---",
+        "--resize-dur": "300ms",
+        "--resize-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "number-pop-in": {
+      "name": "Number pop-in",
+      "when": "Counters, prices, balances, or any number that updates and should re-enter from a direction with blur.",
+      "hook": "t-digit-group",
+      "vars": {
+        "---": "---",
+        "--digit-dur": "500ms",
+        "--digit-distance": "8px",
+        "--digit-stagger": "70ms",
+        "--digit-blur": "2px",
+        "--digit-ease": "cubic-bezier(0.34, 1.45, 0.64, 1)",
+        "--digit-dir-x": "0",
+        "--digit-dir-y": "1"
+      }
+    },
+    "notification-badge": {
+      "name": "Notification badge",
+      "when": "A small badge appearing on top of a trigger (bell, inbox, button).",
+      "hook": "t-badge",
+      "vars": {
+        "---": "---",
+        "--badge-slide-dur": "260ms",
+        "--badge-pop-dur": "500ms",
+        "--badge-pop-close-dur": "180ms",
+        "--badge-fade-dur": "400ms",
+        "--badge-fade-close-dur": "180ms",
+        "--badge-blur": "2px",
+        "--badge-offset-x": "-8.2px",
+        "--badge-offset-y": "12.4px",
+        "--badge-slide-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--badge-pop-ease": "cubic-bezier(0.34, 1.36, 0.64, 1)",
+        "--badge-close-ease": "cubic-bezier(0.4, 0, 0.2, 1)"
+      }
+    },
+    "text-states-swap": {
+      "name": "Text states swap",
+      "when": "Swapping the text of a status indicator in place: \"Processing…\" → \"Done\", \"Save\" → \"Saved\".",
+      "hook": "t-text-swap",
+      "vars": {
+        "---": "---",
+        "--text-swap-dur": "150ms",
+        "--text-swap-translate-y": "4px",
+        "--text-swap-blur": "2px",
+        "--text-swap-ease": "ease-in-out"
+      }
+    },
+    "menu-dropdown": {
+      "name": "Menu dropdown",
+      "when": "Contextual menus, dropdowns, popovers: anything that opens from a trigger and should visually grow from that trigger's position.",
+      "hook": "t-dropdown",
+      "vars": {
+        "---": "---",
+        "--dropdown-open-dur": "250ms",
+        "--dropdown-close-dur": "150ms",
+        "--dropdown-pre-scale": "0.97",
+        "--dropdown-closing-scale": "0.99",
+        "--dropdown-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "modal": {
+      "name": "Modal open / close",
+      "when": "Modal dialogs and full-overlay surfaces that scale up from center.",
+      "hook": "t-modal",
+      "vars": {
+        "---": "---",
+        "--modal-open-dur": "250ms",
+        "--modal-close-dur": "150ms",
+        "--modal-scale": "0.96",
+        "--modal-scale-close": "0.96",
+        "--modal-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "panel-reveal": {
+      "name": "Panel reveal",
+      "when": "A panel that slides into view inside an existing container: e.g.",
+      "hook": "t-panel-slide",
+      "vars": {
+        "---": "---",
+        "--panel-open-dur": "400ms",
+        "--panel-close-dur": "350ms",
+        "--panel-translate-y": "100px",
+        "--panel-blur": "2px",
+        "--panel-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "page-side-by-side": {
+      "name": "Page side-by-side",
+      "when": "Sliding between two full pages or screens that live side-by-side: list ↔ detail, step 1 ↔ step 2 in a wizard.",
+      "hook": "t-page-slide",
+      "vars": {
+        "---": "---",
+        "--page-slide-dur": "250ms",
+        "--page-fade-dur": "250ms",
+        "--page-slide-distance": "8px",
+        "--page-blur": "3px",
+        "--page-stagger": "0ms",
+        "--page-exit-enabled": "1",
+        "--page-slide-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--page-fade-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "icon-swap": {
+      "name": "Icon swap",
+      "when": "Cross-fading two icons in the same slot: hamburger ↔ close, sun ↔ moon, play ↔ pause, expand ↔ collapse.",
+      "hook": "t-icon-swap",
+      "vars": {
+        "---": "---",
+        "--icon-swap-dur": "250ms",
+        "--icon-swap-blur": "2px",
+        "--icon-swap-start-scale": "0.25",
+        "--icon-swap-ease": "ease-in-out"
+      }
+    },
+    "success-check": {
+      "name": "Success check",
+      "when": "Confirming a completed action: payment processed, file uploaded, message sent, form saved.",
+      "hook": "t-success-check",
+      "vars": {
+        "---": "---",
+        "--check-opacity-dur": "500ms",
+        "--check-rotate-dur": "500ms",
+        "--check-rotate-from": "80deg",
+        "--check-bob-dur": "500ms",
+        "--check-y-amount": "40px",
+        "--check-blur-dur": "500ms",
+        "--check-blur-from": "10px",
+        "--check-path-dur": "500ms",
+        "--check-path-delay": "80ms",
+        "--check-ease-out": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--check-ease-opacity": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--check-ease-rotate": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--check-ease-bob": "cubic-bezier(0.34, 1.35, 0.64, 1)",
+        "--check-ease-path": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "avatar-group-hover": {
+      "name": "Avatar group hover",
+      "when": "Hovering an item in a horizontal stack (avatar row, chip group, badge cluster, segmented button) should lift the hovered item, gently lift its neighbors with a power-falloff, then snap everything back with an overshoot spring on `mouseleave`.",
+      "hook": "t-avatar-group",
+      "vars": {
+        "---": "---",
+        "--avatar-lift": "-4px",
+        "--avatar-dur": "320ms",
+        "--avatar-scale": "1.05",
+        "--avatar-falloff": "0.45",
+        "--avatar-ease-in": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--avatar-ease-out": "cubic-bezier(0.34, 3.85, 0.64, 1)"
+      }
+    },
+    "error-state-shake": {
+      "name": "Error state shake",
+      "when": "Form validation feedback: invalid email, wrong password, missing required field, mismatched confirmation.",
+      "hook": "t-input-wrap",
+      "vars": {
+        "---": "---",
+        "--shake-distance": "6px",
+        "--shake-overshoot": "4px",
+        "--shake-dur-a": "80ms",
+        "--shake-dur-b": "60ms",
+        "--shake-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--revert-hold": "3000ms",
+        "--revert-dur": "280ms"
+      }
+    },
+    "input-clear-dissolve": {
+      "name": "Input clear with dissolve",
+      "when": "Clearing a text field: search box, filter input, any field with a clear (×) button.",
+      "hook": "t-clear",
+      "vars": {
+        "---": "---",
+        "--clear-dur": "1000ms",
+        "--clear-out-dur": "400ms",
+        "--clear-in-dur": "400ms",
+        "--clear-out-fly": "12px",
+        "--clear-in-fly": "12px",
+        "--clear-out-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--clear-in-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--clear-blur": "2px",
+        "--glow-delay": "50ms",
+        "--glow-peak-at": "0.15",
+        "--glow-opacity": "0.42",
+        "--glow-spread": "1.5"
+      }
+    },
+    "skeleton-reveal": {
+      "name": "Skeleton loader and reveal",
+      "when": "A placeholder that loads then reveals real content: list rows, cards, profile headers.",
+      "hook": "t-skel",
+      "vars": {
+        "---": "---",
+        "--pulse-dur": "1000ms",
+        "--pulse-count": "1",
+        "--pulse-min": "0.5",
+        "--reveal-dur": "400ms",
+        "--reveal-blur": "2px",
+        "--reveal-ease": "ease-in-out"
+      }
+    },
+    "shimmer-text": {
+      "name": "Shimmer text",
+      "when": "A loading / \"thinking\" label that shimmers: streaming status, \"Generating…\", any in-progress copy that should feel alive without a spinner.",
+      "hook": "t-shimmer",
+      "vars": {
+        "---": "---",
+        "--shimmer-dur": "2000ms",
+        "--shimmer-base": "#7c7c7c",
+        "--shimmer-highlight": "#0d0d0d",
+        "--shimmer-band": "400%",
+        "--shimmer-ease": "linear"
+      }
+    },
+    "tabs-sliding": {
+      "name": "Tabs sliding",
+      "when": "A segmented control / tab bar where the active pill slides between options: view switchers, filter segments, small mutually-exclusive button sets.",
+      "hook": "t-tabs",
+      "vars": {
+        "---": "---",
+        "--tabs-dur": "250ms",
+        "--tabs-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--tabs-text-muted": "rgba(15, 15, 15, 0.8)",
+        "--tabs-text-active": "#0f0f0f",
+        "--tabs-bar-bg": "#f1f1f1",
+        "--tabs-pill-bg": "#ffffff"
+      }
+    },
+    "tooltip": {
+      "name": "Tooltip open/close",
+      "when": "A hover/focus tooltip shared by a group of triggers (toolbar buttons, icon rows, avatar stacks).",
+      "hook": "t-tt-group",
+      "vars": {
+        "---": "---",
+        "--tt-in-dur": "150ms",
+        "--tt-out-dur": "50ms",
+        "--tt-scale": "0.98",
+        "--tt-delay": "80ms",
+        "--tt-in-ease": "ease-out",
+        "--tt-out-ease": "ease-out",
+        "--tt-move-dur": "160ms",
+        "--tt-move-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--tt-bg": "#ffffff",
+        "--tt-fg": "#2f2f2f"
+      }
+    },
+    "texts-reveal": {
+      "name": "Texts reveal",
+      "when": "A headline + supporting line that rise into view with staggered blur: hero copy, empty states, onboarding steps.",
+      "hook": "t-stagger",
+      "vars": {
+        "---": "---",
+        "--stagger-dur": "500ms",
+        "--stagger-distance": "12px",
+        "--stagger-stagger": "40ms",
+        "--stagger-blur": "3px",
+        "--stagger-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "card-tilt": {
+      "name": "Card hover tilt",
+      "when": "A card / tile / media surface that tilts in 3D toward the pointer while hovered, with a soft light \"glare\" tracking the cursor across it.",
+      "hook": "t-tilt",
+      "vars": {
+        "---": "---",
+        "--tilt-perspective": "1000px",
+        "--tilt-return": "1000ms",
+        "--tilt-return-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--tilt-follow": "400ms",
+        "--tilt-follow-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--tilt-glare-opacity": "0.32",
+        "--tilt-glare-fade": "300ms",
+        "--tilt-glare-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "plus-menu-morph": {
+      "name": "Plus to menu morph",
+      "when": "A small circular trigger (a \"+\" FAB, a compose button, an add-action affordance) that morphs into the menu / panel it opens instead of popping a separate surface next to it.",
+      "hook": "t-morph",
+      "vars": {
+        "---": "---",
+        "--morph-open-dur": "350ms",
+        "--morph-close-dur": "250ms",
+        "--morph-ease": "cubic-bezier(0.34, 1.25, 0.64, 1)",
+        "--morph-close-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--morph-r-closed": "40px",
+        "--morph-r-open": "20px",
+        "--morph-fade-dur": "200ms",
+        "--morph-slide": "40px",
+        "--morph-rotate": "45deg",
+        "--morph-scale": "0.97",
+        "--morph-blur": "2px"
+      }
+    },
+    "accordion": {
+      "name": "Accordion expand",
+      "when": "A disclosure / accordion / collapsible section whose panel grows and shrinks in height when toggled, with the header chevron flipping between a downward \"v\" and an upward \"^\".",
+      "hook": "t-acc",
+      "vars": {
+        "---": "---",
+        "--acc-expand": "250ms",
+        "--acc-collapse": "250ms",
+        "--acc-chevron": "250ms",
+        "--acc-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "toast": {
+      "name": "Toast open / close",
+      "when": "Toasts, snackbars, and transient confirmations that rise into view from the bottom edge: \"Saved\", \"Copied\", \"Message sent\".",
+      "hook": "t-toast",
+      "vars": {
+        "---": "---",
+        "--toast-open": "350ms",
+        "--toast-close": "250ms",
+        "--toast-distance": "16px",
+        "--toast-blur": "2px",
+        "--toast-scale": "0.97",
+        "--toast-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "like-button": {
+      "name": "Like button",
+      "when": "Like / favorite / heart buttons: anywhere a single tap flips a boolean and deserves a tiny celebration.",
+      "hook": "t-like",
+      "vars": {
+        "---": "---",
+        "--like-color": "#f40051",
+        "--like-fill": "150ms",
+        "--like-pop": "350ms",
+        "--like-pop-ease": "cubic-bezier(0.34, 1.96, 0.64, 1)",
+        "--like-particle-dur": "600ms",
+        "--like-particle-dist": "20px",
+        "--like-particle-size": "2.5px",
+        "--like-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "learn-more-hover": {
+      "name": "Learn more hover",
+      "when": "\"Learn more\", \"See all\", \"Continue\": inline links or buttons with a trailing chevron that should acknowledge hover.",
+      "hook": "t-learn",
+      "vars": {
+        "---": "---",
+        "--learn-shift": "2px",
+        "--learn-spread": "8deg",
+        "--learn-in": "350ms",
+        "--learn-out": "350ms",
+        "--learn-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "checkbox-check": {
+      "name": "Checkbox check",
+      "when": "Checkboxes, to-do completion, multi-select rows: any boolean control where the checked state should feel earned.",
+      "hook": "t-check",
+      "vars": {
+        "---": "---",
+        "--check-box": "150ms",
+        "--check-draw": "350ms",
+        "--check-delay": "0ms",
+        "--check-uncheck": "150ms",
+        "--check-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "spinning-counter": {
+      "name": "Spinning counter",
+      "when": "Numbers that change with fanfare: points, prices, follower counts, dashboards KPIs.",
+      "hook": "t-reel",
+      "vars": {
+        "---": "---",
+        "--reel-dur": "1400ms",
+        "--reel-cell": "30px",
+        "--reel-spin-blur": "3px",
+        "--reel-stagger": "90ms",
+        "--reel-ease": "cubic-bezier(0.16, 1, 0.3, 1)"
+      }
+    },
+    "toggle": {
+      "name": "Toggle",
+      "when": "On/off switches: settings rows, theme toggles, feature flags.",
+      "hook": "t-toggle",
+      "vars": {
+        "---": "---",
+        "--toggle-dur": "350ms",
+        "--toggle-travel": "14.66px",
+        "--toggle-ov1": "1px",
+        "--toggle-ov2": "0px",
+        "--toggle-track": "0ms",
+        "--toggle-ease": "cubic-bezier(0.34, 1.35, 0.64, 1)"
+      }
+    },
+    "thinking-states": {
+      "name": "Thinking states",
+      "when": "An AI status line that narrates what the agent is doing: \"Setting up a workplace\", \"Running a command\", \"Browsing files\".",
+      "hook": "t-think",
+      "vars": {
+        "---": "---",
+        "--think-hold": "2000ms",
+        "--think-swap": "150ms",
+        "--think-gap": "50ms",
+        "--think-distance": "8px",
+        "--think-blur": "2px",
+        "--think-shimmer": "2000ms",
+        "--think-base": "#7c7c7c",
+        "--think-highlight": "#0d0d0d",
+        "--think-ease": "ease-in-out"
+      }
+    },
+    "reasoning-stream": {
+      "name": "Reasoning stream",
+      "when": "An agent \"thinking out loud\": a small card plays back a stream of reasoning by stepping the transcript up two lines at a time, holding between steps.",
+      "hook": "t-reason",
+      "vars": {
+        "---": "---",
+        "--reason-hold": "840ms",
+        "--reason-step": "500ms",
+        "--reason-lines": "2",
+        "--reason-fade": "28px",
+        "--reason-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "streaming-text": {
+      "name": "Streaming text",
+      "when": "Model output arriving word by word: chat responses, AI completions, any streamed paragraph.",
+      "hook": "t-stream",
+      "vars": {
+        "---": "---",
+        "--stream-gap": "60ms",
+        "--stream-fade": "350ms",
+        "--stream-blur": "1px",
+        "--stream-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "matrix-loader": {
+      "name": "Matrix dot loader",
+      "when": "Tiny inline loaders built from a 4×4 matrix of 2px dots.",
+      "hook": "t-matrix",
+      "vars": {
+        "---": "---",
+        "--matrix-cycle": "1200ms",
+        "--matrix-base": "#d9d9d9",
+        "--matrix-active": "#85858f",
+        "--matrix-ease": "ease-in-out"
+      }
+    },
+    "banner-stacking": {
+      "name": "Banner stacking",
+      "when": "Sonner-style banner / toast stacking.",
+      "hook": "t-stack",
+      "vars": {
+        "---": "---",
+        "--stack-open": "350ms",
+        "--stack-close": "250ms",
+        "--stack-rise": "60px",
+        "--stack-blur": "2px",
+        "--stack-scale": "0.97",
+        "--stack-peek": "12px",
+        "--stack-spread-gap": "8px",
+        "--stack-depth-scale": "0.06",
+        "--stack-depth-fade": "0.4",
+        "--stack-depth1-blur": "1px",
+        "--stack-depth2-blur": "2px",
+        "--stack-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    }
+  }
+}

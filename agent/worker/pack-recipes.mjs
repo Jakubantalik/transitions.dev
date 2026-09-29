@@ -25,7 +25,11 @@ const FREE_DIR = "cli/free";
 const MAX_VARIANT_BYTES = 14_000;
 
 // Findings reference site slugs; some free files use a shorter name.
-const SITE_ALIASES = { "modal-open-close": "modal", "dropdown-menu-morph": "menu-dropdown" };
+const SITE_ALIASES = {
+  "modal-open-close": "modal", "dropdown-menu-morph": "plus-menu-morph", "tooltip-open-close": "tooltip",
+  "toast-open-close": "toast", "3d-tilt": "card-tilt", "input-clear-with-dissolve": "input-clear-dissolve",
+  "skeleton-loader-and-reveal": "skeleton-reveal", "matrix-dot-loader": "matrix-loader",
+};
 
 const entries = [];
 const seen = new Set();

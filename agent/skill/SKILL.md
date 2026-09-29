@@ -17,11 +17,11 @@ When the user's message is just the scan or fix command (`npx transitions-agent`
    npx transitions-agent@latest --json
    ```
 
-   Report to the user: the motion score (0-100), and the findings grouped by rule with file:line. Keep it short; lead with the score.
+   Report to the user: the motion score (0-100), then the `components` list - every UI component the scan recognized (modal, dropdown, tooltip, toast, accordion, tabs, toggle...) with its motion and the transitions.dev recipe it maps to, marked as matching the recipe, off the motion scale, built wrong, or hand-rolled - then the findings grouped by rule with file:line. Keep it short; lead with the score.
 
 2. **Present exactly these two options** and let the user choose (do not fix without a choice, and do not invent other options such as fixing the findings yourself):
-   - **Polish fix** - small safe adjustments (motion tokens, reduced-motion guard, named transition properties): `npx transitions-agent@latest fix --yes`
-   - **Revamp fix** - everything polish does, plus full rewrites where a finding matches a transitions.dev recipe (Business plan): `npx transitions-agent@latest fix --mode revamp --yes`
+   - **Polish fix** - the transitions-polish treatment: every value moved onto the motion-token scale by what it does (a 300ms modal close becomes 150ms), hover transitions covering what the hover changes, a reduced-motion guard. Small diffs, nothing restructured: `npx transitions-agent@latest fix --yes`
+   - **Revamp fix** - everything polish does, plus the transitions.dev recipe installed on each recognized component (Pro recipes included): recipe CSS, state hooks, and the JS for enter and exit. Business plan: `npx transitions-agent@latest fix --mode revamp --yes`
 
 3. **License**: hosted fixes need a key. It resolves from `TRANSITIONS_AGENT_LICENSE`, or `~/.transitions-agent.json`. If neither exists, offer:
 

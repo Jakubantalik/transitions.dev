@@ -1,0 +1,65 @@
+:root {
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #282d28;
+  background: #f7f6f2;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  --transition-fast: 150ms;
+  --modal-open-dur: 500ms;
+  --modal-close-dur: 300ms;
+  --modal-scale: 0.8;
+  --modal-scale-close: 0.8;
+  --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 280px; }
+main { min-height: 100svh; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 32px 24px; text-align: center; }
+.eyebrow { color: #777e70; font-size: 10px; font-weight: 600; letter-spacing: 0.19em; }
+h1 { margin: 22px 0 12px; font-family: Georgia, serif; font-size: clamp(42px, 8vw, 64px); font-weight: 400; letter-spacing: -0.055em; line-height: 1.1; text-wrap: balance; }
+p { margin: 0; color: #777a72; font-size: 15px; line-height: 1.7; text-wrap: pretty; }
+button { cursor: pointer; font: inherit; border: 0; }
+.primary { display: inline-flex; align-items: center; justify-content: center; gap: 24px; min-height: 46px; margin-top: 30px; padding: 0 22px; border-radius: 12px; background: #303d32; color: #fff; font-size: 13px; font-weight: 500; box-shadow: 0 1px 2px #17261918, 0 4px 8px #17261908; transition: background-color var(--transition-fast) ease, transform var(--transition-fast) ease; }
+@media (hover: hover) { .primary:hover { background: #405143; } .close:hover { background: #eeeee8; } }
+button:active { transform: scale(0.96); }
+button:focus-visible { outline: 3px solid #8ea88c; outline-offset: 4px; }
+dialog { width: min(380px, calc(100vw - 40px)); max-height: calc(100svh - 40px); padding: 0; border: 0; border-radius: 22px; color: inherit; background: #fffefa; box-shadow: 0 0 0 1px #242e2410, 0 24px 80px #1e2a2426, 0 4px 12px #1e2a240a; }
+.modal-content { position: relative; padding: 36px 30px 28px; }
+.close { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: #73786f; background: transparent; transition: background-color var(--transition-fast) ease, transform var(--transition-fast) ease; }
+.symbol { display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 24px; border-radius: 14px; background: #edf0e7; color: #5d7153; font-size: 31px; }
+h2 { margin: 0 0 12px; font-family: Georgia, serif; font-size: 28px; font-weight: 400; letter-spacing: -0.045em; text-wrap: balance; }
+.modal-content p { font-size: 14px; }
+.modal-action { width: 100%; margin-top: 26px; }
+dialog::backdrop { background: rgb(31 39 31 / 0); transition: background-color var(--modal-open-dur) var(--modal-ease); }
+dialog.is-open::backdrop { background: rgb(31 39 31 / 0.2); }
+dialog.is-closing::backdrop { transition-duration: var(--modal-close-dur); }
+
+.t-modal {
+  transform-origin: center;
+  transform: scale(var(--modal-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--modal-open-dur) var(--modal-ease),
+    opacity   var(--modal-open-dur) var(--modal-ease);
+  will-change: transform, opacity;
+}
+.t-modal.is-open {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.t-modal.is-closing {
+  transform: scale(var(--modal-scale-close));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--modal-close-dur) var(--modal-ease),
+    opacity   var(--modal-close-dur) var(--modal-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-modal { transition: none !important; }
+  button, dialog::backdrop { transition: none !important; }
+  button:active { transform: none; }
+}
