@@ -57,7 +57,7 @@
   var T_GROW = 1600 * K; // turn and scale settle
   var T_FADE = 450 * K;  // symbol fade-in
   var T_END = T_GROW;
-  var W_FOLD = 0.4;      // fold back 60% of the wavefront's reach
+  var W_FOLD = 0.6;      // fold back 40% of the wavefront's reach
   var FOLD_MS = 320;     // the fold, soft landing at the turnaround
   var SPIN_DEG = 180;    // a half turn across fold + regrowth
 
