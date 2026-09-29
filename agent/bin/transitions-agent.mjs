@@ -83,32 +83,64 @@ async function maybeOfferSignup() {
 }
 
 function maybeInstallSkill() {
+  // Notices go to stderr so --json / piped stdout stays clean.
+  const note = (line) => console.error(line);
   try {
+    const packaged = readFileSync(join(PKG_DIR, "skill", "SKILL.md"), "utf8");
     const skillsDir = join(homedir(), ".claude", "skills");
     const dest = join(skillsDir, "transitions-agent");
-    if (existsSync(skillsDir) && !existsSync(join(dest, "SKILL.md"))) {
-      mkdirSync(dest, { recursive: true });
-      copyFileSync(join(PKG_DIR, "skill", "SKILL.md"), join(dest, "SKILL.md"));
-      console.log("  \u2713 Claude Code skill installed (" + dest + ")");
-      console.log("    Remove anytime by deleting that folder.");
+    const destFile = join(dest, "SKILL.md");
+    if (existsSync(skillsDir)) {
+      let installed = null;
+      try { installed = readFileSync(destFile, "utf8"); } catch { /* not installed yet */ }
+      // A stale copy keeps steering agents with outdated instructions, so
+      // refresh it whenever it differs from this version's SKILL.md.
+      if (installed !== packaged) {
+        mkdirSync(dest, { recursive: true });
+        writeFileSync(destFile, packaged);
+        if (installed === null) {
+          note("  ✓ Claude Code skill installed (" + dest + ")");
+          note("    Remove anytime by deleting that folder.");
+        } else {
+          note("  ✓ Claude Code skill refreshed to this version (" + dest + ")");
+        }
+      }
     }
     const codexDir = join(homedir(), ".codex");
     const agentsFile = join(codexDir, "AGENTS.md");
     const START = "<!-- transitions-agent:start -->";
+    const END = "<!-- transitions-agent:end -->";
     let existing = "";
     try { existing = readFileSync(agentsFile, "utf8"); } catch { /* none yet */ }
-    if (existsSync(codexDir) && !existing.includes(START)) {
-      const body = readFileSync(join(PKG_DIR, "skill", "SKILL.md"), "utf8").replace(/^---[\s\S]*?---\n/, "").trim();
-      const block = START + "\n" + body + "\n<!-- transitions-agent:end -->";
-      try {
-        writeFileSync(agentsFile, (existing ? existing.trimEnd() + "\n\n" : "") + block + "\n");
-        console.log("  \u2713 Codex instructions added (" + agentsFile + ", managed block)");
-        console.log("    Remove anytime by deleting the transitions-agent block.");
-      } catch {
-        // Codex's sandbox only allows writes inside the project, so this is
-        // the expected path when Codex itself ran the scan.
-        console.log("  Codex setup needs one step outside Codex's sandbox. In your own terminal:");
-        console.log("    npx transitions-agent skill --codex");
+    if (existsSync(codexDir)) {
+      const body = packaged.replace(/^---[\s\S]*?---\n/, "").trim();
+      const block = START + "\n" + body + "\n" + END;
+      const fresh = !existing.includes(START);
+      let next = null;
+      if (fresh) {
+        next = (existing ? existing.trimEnd() + "\n\n" : "") + block + "\n";
+      } else {
+        const s = existing.indexOf(START);
+        const e = existing.indexOf(END);
+        if (e > s && existing.slice(s, e + END.length) !== block) {
+          next = existing.slice(0, s) + block + existing.slice(e + END.length);
+        }
+      }
+      if (next !== null) {
+        try {
+          writeFileSync(agentsFile, next);
+          if (fresh) {
+            note("  ✓ Codex instructions added (" + agentsFile + ", managed block)");
+            note("    Remove anytime by deleting the transitions-agent block.");
+          } else {
+            note("  ✓ Codex instructions refreshed to this version (" + agentsFile + ")");
+          }
+        } catch {
+          // Codex's sandbox only allows writes inside the project, so this is
+          // the expected path when Codex itself ran the scan.
+          note("  Codex setup needs one step outside Codex's sandbox. In your own terminal:");
+          note("    npx transitions-agent skill --codex");
+        }
       }
     }
   } catch { /* never let convenience break the scan */ }

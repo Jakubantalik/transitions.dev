@@ -7,7 +7,7 @@ description: Scan a codebase for missing, janky, or inconsistent UI motion and f
 
 You drive the `transitions-agent` CLI for the user: scan, present choices, run the choice they pick, verify. The scan is deterministic and free; fixes change files, so every fix step needs the user's go-ahead first.
 
-When the user's message is just the command (`npx transitions-agent` or a variant), that IS the request for this whole workflow: run the scan, then ALWAYS continue to the options step below - never stop at reporting the scan output.
+When the user's message is just the command (`npx transitions-agent` or a variant), that IS the request for this whole workflow: run the scan, then ALWAYS continue to the options step below - never stop at reporting the scan output. The options step is where you stop: present the options as a question, end your turn, and wait for the user's reply. The command itself is never consent to fix, and that holds in autonomous or long-running sessions too - if nobody can answer, stop at the question rather than choosing for the user.
 
 ## Workflow
 
@@ -19,9 +19,12 @@ When the user's message is just the command (`npx transitions-agent` or a varian
 
    Report to the user: the motion score (0-100), and the findings grouped by rule with file:line. Keep it short; lead with the score.
 
-2. **Present exactly these two options** and let the user choose (do not fix without a choice, and do not invent other options such as fixing the findings yourself):
+2. **Present exactly these three options**, then end your turn and wait for the user's answer (never fix without their reply, and do not invent other options such as fixing the findings yourself):
    - **Polish fix** - small safe adjustments (motion tokens, reduced-motion guard, named transition properties): `npx transitions-agent@latest fix --yes`
-   - **Revamp fix** - everything polish does, plus full rewrites where a finding matches a transitions.dev recipe (Business plan): `npx transitions-agent@latest fix --mode revamp --yes`
+   - **Revamp fix** - everything polish does, plus full rewrites where a finding matches a transitions.dev recipe (Business plan only; free and Pro plans are polish-only): `npx transitions-agent@latest fix --mode revamp --yes`
+   - **Sign up / sign in** - get a free license key, or switch to another account: `npx transitions-agent@latest signup`
+
+   Always include the sign-in option, even when a license key already exists on the machine.
 
 3. **License**: hosted fixes need a key. It resolves from `TRANSITIONS_AGENT_LICENSE`, or `~/.transitions-agent.json`. If neither exists, offer:
 
@@ -52,6 +55,7 @@ Finish when the checklist says "CI is fully set up", or tell the user exactly wh
 ## Rules
 
 - Never run `fix` without the user choosing to, and never apply motion fixes yourself instead of the service - fixing is the product.
+- The scan command is never consent to fix. After presenting the options, end the turn and wait; only a later user message choosing a mode starts a fix. In autonomous sessions, stop at the question rather than choosing for the user.
 - Never push to the main branch; `--pr` flows are review-first by design.
-- Free plan is polish-only; if revamp is refused by the service, relay the upgrade path (transitions.dev/pro.html) without pushing.
+- Free and Pro plans are polish-only; revamp needs the Business plan. If revamp is refused by the service, relay the upgrade path (transitions.dev/pro.html) without pushing.
 - Motion-only changes: if a proposed fix would touch component logic, stop and tell the user.

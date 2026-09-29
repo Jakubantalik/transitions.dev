@@ -5,8 +5,11 @@ import { dirname, join } from "node:path";
 import { runRules } from "../lib/rules.mjs";
 import { collectFiles } from "../lib/walk.mjs";
 import { scan } from "../lib/scan.mjs";
+import { renderTerminal } from "../lib/report.mjs";
 import { findingsForMode } from "../lib/fix.mjs";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { spawnSync } from "node:child_process";
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 const load = (name, ext) => ({ path: name, ext, content: readFileSync(join(FIXTURES, name), "utf8") });
@@ -79,6 +82,29 @@ test("slow durations resolve through CSS custom properties", () => {
   assert.ok(msgs.includes("Transition runs 2s"), msgs);
   // ...and fast tokens are not flagged.
   assert.ok(!msgs.includes("--dd-open"), msgs);
+});
+
+test("scan footer offers sign-in and tells agents to wait for the user", () => {
+  const out = renderTerminal(scan(FIXTURES));
+  assert.match(out, /switching accounts: npx transitions-agent signup/);
+  assert.match(out, /fix these now with polish or revamp, sign in first, or leave them\?/);
+  assert.match(out, /end your turn, and wait for the user's answer/);
+});
+
+test("plain scan refreshes a stale installed Claude Code skill", () => {
+  const home = mkdtempSync(join(tmpdir(), "ta-home-"));
+  const dest = join(home, ".claude", "skills", "transitions-agent");
+  mkdirSync(dest, { recursive: true });
+  writeFileSync(join(dest, "SKILL.md"), "stale instructions from an old version\n");
+  const pkgDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+  const r = spawnSync(process.execPath, [join(pkgDir, "bin", "transitions-agent.mjs"), "--dir", FIXTURES], {
+    env: { ...process.env, HOME: home },
+    encoding: "utf8",
+  });
+  assert.equal(r.status, 0, r.stderr);
+  const packaged = readFileSync(join(pkgDir, "skill", "SKILL.md"), "utf8");
+  assert.equal(readFileSync(join(dest, "SKILL.md"), "utf8"), packaged);
+  assert.match(r.stderr, /skill refreshed/);
 });
 
 test("reduced-motion guard anywhere in project silences the project rule", () => {

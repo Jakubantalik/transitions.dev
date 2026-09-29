@@ -53,9 +53,10 @@ export function renderTerminal(result, opts = {}) {
   lines.push(c.bold("  Fix these?") + c.dim("  pick a mode"));
   lines.push("  polish   small safe fixes, free plan    npx transitions-agent fix --yes");
   lines.push("  revamp   polish + recipe rewrites       npx transitions-agent fix --mode revamp --yes");
-  lines.push(c.dim("  No account yet: npx transitions-agent signup (opens the browser, free)"));
+  lines.push(c.dim("  No account yet, or switching accounts: npx transitions-agent signup (opens the browser, free)"));
   lines.push("");
-  lines.push(c.bold("  Question for the user: fix these now with polish or revamp, or leave them?"));
+  lines.push(c.bold("  Question for the user: fix these now with polish or revamp, sign in first, or leave them?"));
+  lines.push(c.dim("  Agents: present these options, end your turn, and wait for the user's answer. Do not run fix on your own."));
   lines.push("");
   return lines.join("\n");
 }
