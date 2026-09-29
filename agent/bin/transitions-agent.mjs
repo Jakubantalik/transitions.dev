@@ -30,7 +30,7 @@ import { runFix } from "../lib/fix.mjs";
 import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 
 const CREDS_PATH = join(homedir(), ".transitions-agent.json");
@@ -62,11 +62,28 @@ const root = resolve(flags.dir || ".");
 const command = positional[0] || "scan";
 const api = (flags.api || process.env.TRANSITIONS_AGENT_API || "https://api.transitions.dev").replace(/\/$/, "");
 
+// One-command experience: a plain scan on a machine that uses Claude Code
+// (~/.claude/skills exists) quietly installs the agent skill, so from the
+// second conversation on, "check this app's motion" does everything.
+function maybeInstallSkill() {
+  try {
+    const skillsDir = join(homedir(), ".claude", "skills");
+    if (!existsSync(skillsDir)) return;
+    const dest = join(skillsDir, "transitions-agent");
+    if (existsSync(join(dest, "SKILL.md"))) return;
+    mkdirSync(dest, { recursive: true });
+    copyFileSync(join(PKG_DIR, "skill", "SKILL.md"), join(dest, "SKILL.md"));
+    console.log("  \u2713 Claude Code skill installed (" + dest + ")");
+    console.log("    From your next conversation, \"check this app's motion\" runs this whole flow.");
+    console.log("    Remove anytime by deleting that folder.");
+    console.log("");
+  } catch { /* never let convenience break the scan */ }
+}
+
 if (command === "skill") {
   // Install the agent skill: the react.doctor move. Instructions live in the
   // agent's TRUSTED context (user-installed config), so Claude Code follows
   // the scan-present-fix workflow instead of ignoring CLI output.
-  const { mkdirSync, copyFileSync } = await import("node:fs");
   const dest = resolve(flags.dir || join(homedir(), ".claude", "skills", "transitions-agent"));
   mkdirSync(dest, { recursive: true });
   copyFileSync(join(PKG_DIR, "skill", "SKILL.md"), join(dest, "SKILL.md"));
@@ -144,7 +161,10 @@ const result = scan(root);
 if (command === "scan") {
   if (flags.json) console.log(JSON.stringify(result, null, 2));
   else if (flags.md) console.log(renderMarkdown(result));
-  else console.log(renderTerminal(result));
+  else {
+    console.log(renderTerminal(result));
+    maybeInstallSkill();
+  }
   if (Number.isFinite(flags.minScore) && result.score < flags.minScore) {
     console.error(`Motion score ${result.score} is below the required minimum ${flags.minScore}.`);
     process.exit(2);
