@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
 import readline from "node:readline";
+import { isInteractive } from "./env.mjs";
 
 const MAX_FILES = 12;
 const MAX_FILE_BYTES = 40_000;
@@ -157,7 +158,7 @@ async function openPr(root, result, proposed, { yes, mode }) {
 // No key + a human at the keyboard: offer the free signup right here.
 async function offerSignup(api) {
   console.log(c.yellow("No license key found.") + " The free plan includes 10 hosted fixes/month.");
-  if (!process.stdin.isTTY) return;
+  if (!isInteractive()) return;
   const email = (await ask("Email for a free license key? (enter to skip) ")).trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
   try {
