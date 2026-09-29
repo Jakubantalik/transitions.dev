@@ -96,15 +96,41 @@ function maybeInstallSkill() {
 }
 
 if (command === "skill") {
-  // Install the agent skill: the react.doctor move. Instructions live in the
-  // agent's TRUSTED context (user-installed config), so Claude Code follows
-  // the scan-present-fix workflow instead of ignoring CLI output.
+  // Install the agent workflow into the agent's TRUSTED context (the
+  // react.doctor move), in each tool's native format:
+  //   default        Claude Code skill (~/.claude/skills/transitions-agent)
+  //   --codex        managed block in ~/.codex/AGENTS.md
+  //   --cursor       .cursor/rules/transitions-agent.mdc in this project
+  const skillSrc = readFileSync(join(PKG_DIR, "skill", "SKILL.md"), "utf8");
+  const body = skillSrc.replace(/^---[\s\S]*?---\n/, ""); // frontmatter is Claude-specific
+
+  if (flags.codex) {
+    const file = join(homedir(), ".codex", "AGENTS.md");
+    mkdirSync(dirname(file), { recursive: true });
+    const START = "<!-- transitions-agent:start -->", END = "<!-- transitions-agent:end -->";
+    let existing = "";
+    try { existing = readFileSync(file, "utf8"); } catch { /* new file */ }
+    const block = START + "\n" + body.trim() + "\n" + END;
+    const next = existing.includes(START)
+      ? existing.replace(new RegExp(START + "[\\s\\S]*?" + END), block)
+      : (existing ? existing.trimEnd() + "\n\n" : "") + block + "\n";
+    writeFileSync(file, next);
+    console.log("\u2713 Installed for Codex: " + file + " (managed block, re-run to update)");
+    process.exit(0);
+  }
+  if (flags.cursor) {
+    const dir = resolve(".cursor", "rules");
+    mkdirSync(dir, { recursive: true });
+    const rule = "---\ndescription: UI motion scanning and fixing with transitions-agent. Apply when the user asks about UI transitions, animations, motion quality, a motion score, or runs npx transitions-agent.\nalwaysApply: false\n---\n\n" + body.trim() + "\n";
+    writeFileSync(join(dir, "transitions-agent.mdc"), rule);
+    console.log("\u2713 Installed for Cursor: .cursor/rules/transitions-agent.mdc (this project)");
+    process.exit(0);
+  }
   const dest = resolve(flags.dir || join(homedir(), ".claude", "skills", "transitions-agent"));
   mkdirSync(dest, { recursive: true });
   copyFileSync(join(PKG_DIR, "skill", "SKILL.md"), join(dest, "SKILL.md"));
-  console.log("\u2713 Skill installed to " + dest);
-  console.log("Claude Code picks it up automatically. Ask it: \"check this app's motion\".");
-  console.log("Other agents (Cursor, Codex): point them at " + join(dest, "SKILL.md") + " or re-run with --dir <their skills folder>.");
+  console.log("\u2713 Skill installed to " + dest + " (Claude Code)");
+  console.log("Codex: npx transitions-agent skill --codex    Cursor: npx transitions-agent skill --cursor");
   process.exit(0);
 }
 
