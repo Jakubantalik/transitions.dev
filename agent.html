@@ -3764,6 +3764,36 @@
     #get-started .skill-section-note a:hover,
     #get-started li a:hover { text-decoration: underline; text-underline-offset: 2px; }
 
+    /* GitHub Action setup guide (react.doctor-style progression). */
+    .gs-h3 {
+      margin: 18px 0 2px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    .gs-code-block {
+      position: relative;
+      border-radius: 14px;
+      background: var(--card-bg);
+      box-shadow: inset 0 0 0 1px var(--card-border);
+      padding: 14px 16px;
+      overflow-x: auto;
+    }
+    .gs-code-block pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 20px;
+      color: var(--text);
+      white-space: pre;
+    }
+    .gs-code-block .card-copy { position: absolute; top: 10px; right: 10px; }
+    .gs-bullets { margin: 4px 0 0; padding-left: 20px; }
+    .gs-bullets li { font-size: 13px; line-height: 21px; margin-bottom: 6px; }
+    .gs-qa .gs-q { margin: 12px 0 2px; font-size: 13px; font-weight: 600; color: var(--text); }
+    .gs-qa .skill-section-note { margin-top: 0; }
+
     /* ─── Get started tabs (transitions-dev 16, tabs sliding) ─────
        The bar is a flex container; the pill's width and transform are
        written inline by JS so the tween runs between measured
@@ -4717,64 +4747,63 @@
         </div>
 
         <div class="gs-panel" id="gs-panel-gha" role="tabpanel" aria-labelledby="gs-tab-gha" hidden>
-          <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews.</p>
-          <div class="get-started-grid">
-          <div class="gs-step">
-            <div class="gs-step-block">
-              <div class="gs-step-head">
-                <span class="gs-step-label">Install</span>
-              </div>
-              <div class="skill-code-row">
-                <code id="cmd-action">npx transitions-agent init-ci</code>
-                <button type="button" class="card-copy" aria-label="Copy workflow install command" data-copy-target="#cmd-action">
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                </button>
-              </div>
-            </div>
-            <p class="skill-section-note">
-              Writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code> - run it yourself or let your coding agent run it. Commit and every pull request gets a motion score comment: what the change did to your app's motion and which elements ship without transitions. Runs on GitHub's machines, scan only. No account, no secrets, no AI key.
-            </p>
-          </div>
+          <p class="skill-section-note" style="font-size: 14px; line-height: 22px;">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews. Scanning needs no account, no secrets, no AI key.</p>
 
-          <div class="gs-step">
-            <div class="gs-step-block">
-              <div class="gs-step-head">
-                <span class="gs-step-label">Setup</span>
-              </div>
-              <div class="skill-code-row">
-                <code id="cmd-min-score">min-score: "75"</code>
-                <button type="button" class="card-copy" aria-label="Copy min-score setting" data-copy-target="#cmd-min-score">
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                </button>
-              </div>
-              <div class="skill-code-row">
-                <code id="cmd-license-with">license: ${{ secrets.TRANSITIONS_AGENT_LICENSE }}</code>
-                <button type="button" class="card-copy" aria-label="Copy license setting" data-copy-target="#cmd-license-with">
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                </button>
-              </div>
-            </div>
-            <p class="skill-section-note">
-              Both live under <code>with:</code> in the workflow file (or pass <code>--min-score 75</code> to <code>init-ci</code> and it is templated in). <code>min-score</code> is the optional merge gate: pull requests that drop the score below it fail the check, and <code>"0"</code> reports only. <code>license</code> is optional too: add a repo secret named <code>TRANSITIONS_AGENT_LICENSE</code> with the key from your <a href="/pro.html">Business plan</a> email and the comment drops its setup hint.
-            </p>
+          <h3 class="gs-h3">Install with the CLI</h3>
+          <div class="skill-code-row">
+            <code id="cmd-action">npx transitions-agent init-ci</code>
+            <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
           </div>
+          <p class="skill-section-note">Writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code>. Commit and push - done. Even simpler: tell your coding agent <em>"set up Transitions Agent for CI"</em> and it runs this for you.</p>
 
-          <div class="gs-step">
-            <div class="gs-step-block">
-              <div class="gs-step-head">
-                <span class="gs-step-label">Fix from CI</span>
-              </div>
-              <div class="skill-code-row">
-                <code id="cmd-fix-workflow">npx transitions-agent init-ci --fix</code>
-                <button type="button" class="card-copy" aria-label="Copy fix workflow install command" data-copy-target="#cmd-fix-workflow">
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                </button>
-              </div>
-            </div>
-            <p class="skill-section-note">
-              Business plan, and it needs the license secret from Setup. Run the workflow from the Actions tab: fixes go through the hosted service and land as a pull request with the diffs, which your team reviews and merges. Canceling a plan later needs no CI change.
-            </p>
+          <h3 class="gs-h3">Or add the workflow manually</h3>
+          <div class="gs-code-block"><pre id="yml-action">name: Transitions Agent
+on: pull_request
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  motion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Jakubantalik/transitions.dev/agent@main
+        with:
+          min-score: "0"
+          license: &#36;{{ secrets.TRANSITIONS_AGENT_LICENSE }}</pre><button type="button" class="card-copy" aria-label="Copy" data-copy-target="#yml-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button></div>
+          <p class="skill-section-note">Both permissions matter: <code>pull-requests: write</code> lets the Action post its score comment.</p>
+
+          <h3 class="gs-h3">Configure</h3>
+          <div class="skill-code-row">
+            <code id="cmd-min-score">min-score: "75"</code>
+            <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-min-score"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
           </div>
+          <p class="skill-section-note">The optional merge gate, under <code>with:</code>. Start advisory - <code>"0"</code> reports without blocking - and raise it once the team trusts the score. Or pass <code>--min-score 75</code> to <code>init-ci</code> and it is templated in. With a <code>TRANSITIONS_AGENT_LICENSE</code> secret configured, the comment also drops its setup hint.</p>
+
+          <h3 class="gs-h3">Fix pull requests from CI</h3>
+          <div class="skill-code-row">
+            <code id="cmd-fix-workflow">npx transitions-agent init-ci --fix</code>
+            <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-fix-workflow"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+          </div>
+          <p class="skill-section-note">Also writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a>. Add one repo secret - <code>TRANSITIONS_AGENT_LICENSE</code>, the key from your <a href="/pro.html">Business plan</a> email - then run "Transitions Agent fix" from the Actions tab: a fix pull request opens with the diffs for your team to review. Our hosted service does the fixing; no AI key ever enters your repo. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</p>
+
+          <h3 class="gs-h3">What happens on a pull request</h3>
+          <ul class="gs-bullets">
+            <li>One sticky comment per pull request with the motion score and a findings table - it updates in place on every push, never stacking.</li>
+            <li>Findings name the file, line, and the transitions.dev recipe that fixes them.</li>
+            <li>With <code>min-score</code> set, the check fails when the score drops below it; otherwise it always passes and just informs.</li>
+          </ul>
+
+          <h3 class="gs-h3">Troubleshooting</h3>
+          <div class="gs-qa">
+            <p class="gs-q">No comment showed up.</p>
+            <p class="skill-section-note">The workflow needs <code>pull-requests: write</code> under <code>permissions:</code> (the template includes it). On forks, GitHub restricts write tokens - the score still appears in the job log.</p>
+            <p class="gs-q">The score looks wrong or scans 0 files.</p>
+            <p class="skill-section-note">The Action scans the repository root. In a monorepo, point it at your app with the <code>working-directory</code> input.</p>
+            <p class="gs-q">The check is blocking merges before the team is ready.</p>
+            <p class="skill-section-note">Set <code>min-score: "0"</code> - the comment keeps reporting, nothing blocks.</p>
+            <p class="gs-q">The fix workflow fails with a license error.</p>
+            <p class="skill-section-note">The secret must be named exactly <code>TRANSITIONS_AGENT_LICENSE</code>, and revamp mode needs a Business key - free keys cover polish.</p>
           </div>
         </div>
       </div>
