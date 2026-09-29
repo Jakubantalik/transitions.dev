@@ -148,6 +148,8 @@ async function proposeFixes(env, findings, files, mode, recipes, model) {
       "content-type": "application/json",
       "x-api-key": env.ANTHROPIC_API_KEY,
       "anthropic-version": "2023-06-01",
+      // Org-level keys (not scoped to a workspace) must name one.
+      ...(env.ANTHROPIC_WORKSPACE_ID ? { "anthropic-workspace-id": env.ANTHROPIC_WORKSPACE_ID } : {}),
     },
     body: JSON.stringify({
       model,
