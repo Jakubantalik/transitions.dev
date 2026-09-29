@@ -612,6 +612,72 @@
       color: var(--text);
       letter-spacing: -0.01em;
     }
+    /* "Agent" carries the Pro page's animated colour wash: the same
+       layer stack and orbit as pro.html's .title-pro. */
+    .title-pro {
+      background-image:
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.88'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.34726 -1.3118e-7 8.6482e-7 0.89585 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.5'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-1.3 0.25 -1.2633 -2.7471 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.4'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.05 -0.8 0.46018 3.6184 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='0.71709'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.51067 -3.3275e-16 -4.3352e-14 -1.1396 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.45 -0.75 1.9052 -0.7091 33.5 21)'><stop stop-color='rgba(255,173,85,1)' offset='0'/><stop stop-color='rgba(255,173,85,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.25 -0.35 -0.4013 3.5959 33.5 21)'><stop stop-color='rgba(0,204,68,1)' offset='0'/><stop stop-color='rgba(0,196,102,0.75)' offset='0.25'/><stop stop-color='rgba(0,187,136,0.5)' offset='0.5'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87391 0.73043 -4.1482 -1.9503 33.5 21)'><stop stop-color='rgba(0,170,204,1)' offset='0'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        linear-gradient(rgb(108, 108, 108) 0%, rgb(216, 216, 216) 100%);
+      /* Each colour layer is blown up to 230% and swings around the
+         glyph box (the grey base ramp stays put at 100%), so the
+         enlarged blobs sweep corner-to-corner through the letters.
+         The repaint area is one ~55×47px word — negligible. */
+      background-size: 180% 180%, 180% 180%, 180% 180%, 180% 180%,
+                       180% 180%, 180% 180%, 180% 180%, 100% 100%;
+      background-repeat: no-repeat;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation:
+        title-pro-hue 4s linear infinite,
+        title-pro-drift 5s ease-in-out infinite;
+    }
+    /* Full hue cycle — ends where it starts, so the loop is seamless
+       and the colour travel is unmistakable. Compositor-only. The
+       saturate boost keeps the washes punchy at 180% blow-up. */
+    @keyframes title-pro-hue {
+      from { filter: hue-rotate(0deg) saturate(1.3); }
+      to   { filter: hue-rotate(-360deg) saturate(1.3); }
+    }
+    /* Blob travel — perimeter orbit. Each blob is re-centred inside
+       its own SVG tile (translation 33.5 21 above) and pinned to the
+       ring of edge stops TL,T,TR,R,BR,B,BL,L (in position space:
+       corners/edge-midpoints of the 0–100% range). Every blob starts
+       on the stop nearest its Figma quadrant and advances two ring
+       stops per keyframe — a full lap around the text outline per
+       cycle, so colour hugs and travels the edges while the middle
+       keeps the grey ramp. Last layer (grey ramp) never moves. */
+    @keyframes title-pro-drift {
+      0%, 100% {
+        background-position:
+          100% 0%, 0% 50%, 100% 50%, 0% 100%,
+          0% 0%, 50% 0%, 50% 100%, 0 0;
+      }
+      25% {
+        background-position:
+          100% 100%, 50% 0%, 50% 100%, 0% 0%,
+          100% 0%, 100% 50%, 0% 50%, 0 0;
+      }
+      50% {
+        background-position:
+          0% 100%, 100% 50%, 0% 50%, 100% 0%,
+          100% 100%, 50% 100%, 50% 0%, 0 0;
+      }
+      75% {
+        background-position:
+          0% 0%, 50% 100%, 50% 0%, 100% 100%,
+          0% 100%, 0% 50%, 100% 50%, 0 0;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .title-pro { animation: none; }
+    }
 
     .subtitle {
       margin-top: 16px;
@@ -3900,6 +3966,75 @@
       .gs-tabs .t-tabs-pill, .gs-tabs .t-tab { transition: none !important; }
     }
 
+    /* ─── Features (Figma 1673:35752) ─────────────────────────────
+       Three 272px columns on a 97px gutter (1010px), each an icon, a
+       16px title and a 14px two-line description, all centred. */
+    .agent-features {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto 96px;
+      padding: 0 24px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Same size as the bento heading below it; the Figma rhythm to the
+       columns (70px from the text box) is kept. */
+    .agent-features-heading {
+      text-align: center;
+      font-family: "Saans", var(--font-sans);
+      font-size: 30px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 0 0 70px;
+    }
+    .agent-features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 272px);
+      justify-content: center;
+      column-gap: 97px;
+      row-gap: 40px;
+    }
+    /* Figma: icon, 16px, then title and description as one text block
+       (the title sits in a 28px box on a 24.2px line, so ~4px between). */
+    .agent-feature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .agent-feature-icon {
+      display: block;
+      width: 24px;
+      height: 24px;
+      margin-bottom: 16px;
+    }
+    .agent-feature-icon img { display: block; width: 24px; height: 24px; }
+    html[data-theme="dark"] .agent-feature-icon img { filter: invert(1); }
+    .agent-feature-title {
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 24.2px;
+      color: var(--text);
+      margin: 0 0 4px;
+    }
+    .agent-feature-desc {
+      font-size: 14px;
+      line-height: 21.2px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    @media (max-width: 960px) {
+      .agent-features-grid { grid-template-columns: repeat(3, minmax(0, 272px)); column-gap: 40px; }
+    }
+    @media (max-width: 720px) {
+      .agent-features { padding: 0 16px; margin-bottom: 64px; }
+      .agent-features-heading { font-size: 23px; margin-bottom: 36px; }
+      .agent-features-grid { grid-template-columns: minmax(0, 320px); row-gap: 32px; }
+    }
+
     /* ─── What the Agent does: bento, same frame as the Pro page ─── */
     .agent-bento-wrap {
       width: 100%;
@@ -4067,6 +4202,7 @@
        numbers that read as data sit on tabular figures, pressable
        controls give a 0.96 press and a 40px hit area. */
     .title,
+    .agent-features-heading,
     .agent-bento-heading,
     .agent-bento-title,
     .skill-section-title,
@@ -4074,9 +4210,9 @@
       text-wrap: balance;
     }
     .agent-bento-desc,
+    .agent-feature-desc,
     .skill-section-note,
     .hero-caption,
-    .feature-list li,
     .t-acc-panel-inner p {
       text-wrap: pretty;
     }
@@ -4115,27 +4251,6 @@
     }
     @media (prefers-reduced-motion: reduce) {
       .gs-tabs .t-tab, .skill-code-row .card-copy { scale: none !important; }
-    }
-
-    /* ─── Features ─────────────────────────────────────────────── */
-    .feature-list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .feature-list li {
-      font-size: 14px;
-      line-height: 26px;
-      color: var(--text);
-    }
-    .feature-name {
-      font-weight: 600;
-      color: var(--text);
-      margin-right: 6px;
-    }
-    .feature-desc {
-      font-weight: 400;
-      color: var(--text-muted);
     }
 
     /* ─── FAQ accordion (transitions-dev P21) ──────────────────── */
@@ -4600,12 +4715,11 @@
 
   <main id="main" class="app">
     <header class="header">
-      <p class="hero-eyebrow">Agent<span class="beta-badge">Beta</span></p>
-      <h1 class="title">Your UI motion, fixed by an agent</h1>
+      <p class="hero-eyebrow"><span class="beta-badge">Beta</span></p>
+      <h1 class="title">Transitions <span class="title-pro">Agent</span></h1>
       <p class="subtitle">
-        Scan your codebase for missing and janky transitions, get a motion score,<br />
-        and let the agent fix it with transitions.dev recipes -
-        as diffs you confirm, or a pull request.
+        Finds the janky motion in your app, scores it,
+        and fixes it with real recipes. You approve every diff.
       </p>
       <div class="skill-cta-row">
         <a class="skill-btn skill-btn--primary" href="#get-started">Get started</a>
@@ -4631,6 +4745,28 @@
         </video>
       </div>
       <p class="hero-caption">Runs in your terminal and on GitHub pull requests</p>
+    </section>
+
+    <!-- ─── Features (Figma Portfolio 1673:35752): three centred columns ─── -->
+    <section class="agent-features" aria-labelledby="agent-features-title">
+      <h2 class="agent-features-heading" id="agent-features-title">Features</h2>
+      <div class="agent-features-grid">
+        <div class="agent-feature">
+          <span class="agent-feature-icon" aria-hidden="true"><img src="assets/agent/check-verified.svg" alt="" width="24" height="24" /></span>
+          <h3 class="agent-feature-title">Scans your project</h3>
+          <p class="agent-feature-desc">Scores your motion 0 to 100 and lists every finding, on your machine.</p>
+        </div>
+        <div class="agent-feature">
+          <span class="agent-feature-icon" aria-hidden="true"><img src="assets/agent/settings.svg" alt="" width="24" height="24" /></span>
+          <h3 class="agent-feature-title">Polish &amp; Revamp mode</h3>
+          <p class="agent-feature-desc">Safe token-level tweaks, or rewrites with the real recipe source.</p>
+        </div>
+        <div class="agent-feature">
+          <span class="agent-feature-icon" aria-hidden="true"><img src="assets/agent/settings.svg" alt="" width="24" height="24" /></span>
+          <h3 class="agent-feature-title">GitHub Actions</h3>
+          <p class="agent-feature-desc">A motion score on every pull request, with a gate when it drops.</p>
+        </div>
+      </div>
     </section>
 
     <!-- ─── What the Agent does (bento, same frame as the Pro page) ─── -->
@@ -4813,17 +4949,6 @@ jobs:
             <p class="skill-section-note">The secret must be named exactly <code>TRANSITIONS_AGENT_LICENSE</code>, and revamp mode needs a Business key - free keys cover polish.</p>
           </div>
         </div>
-      </div>
-
-      <div class="skill-section" id="features">
-        <h2 class="skill-section-title">Features</h2>
-        <ul class="feature-list">
-          <li><span class="feature-name">Motion score</span><span class="feature-desc">One number (0 to 100) for how polished your app's motion is - track it per project or per pull request.</span></li>
-          <li><span class="feature-name">Deterministic scanner</span><span class="feature-desc">Six rule families catch untransitioned overlays, snapping hovers, transition: all, hardcoded durations, missing reduced-motion guards and inconsistent duration scales.</span></li>
-          <li><span class="feature-name">Polish mode</span><span class="feature-desc">Small, safe adjustments aligned to the transitions.dev motion tokens. Few-line diffs, nothing restructured.</span></li>
-          <li><span class="feature-name">Revamp mode</span><span class="feature-desc">Rewrites motion with the real recipe source from the library, Pro recipes included, adapted to your selectors and class names.</span></li>
-          <li><span class="feature-name">Diffs, then a PR</span><span class="feature-desc">Changes are proposed as diffs, applied after an explicit yes, and can land as a pull request your team reviews. Never a push to main.</span></li>
-        </ul>
       </div>
 
       <div class="skill-section" id="faq">
