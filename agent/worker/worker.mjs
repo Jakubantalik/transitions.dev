@@ -20,7 +20,7 @@
 
 const MODELS = { free: "claude-haiku-4-5-20251001", paid: "claude-sonnet-5" };
 const QUOTAS = { free: 10, paid: 200 };
-const FREE_DAILY_LIMIT = 2;
+const FREE_DAILY_LIMIT = 5;
 const DEFAULT_FREE_GLOBAL_MONTHLY = 2000;
 const MAX_BODY_BYTES = 600_000;
 
