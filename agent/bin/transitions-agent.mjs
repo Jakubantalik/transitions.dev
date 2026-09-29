@@ -275,11 +275,15 @@ if (command === "scan") {
     maybeInstallSkill();
     await maybeOfferSignup();
   }
+  let code = 0;
   if (Number.isFinite(flags.minScore) && result.score < flags.minScore) {
     console.error(`Motion score ${result.score} is below the required minimum ${flags.minScore}.`);
-    process.exit(2);
+    code = 2;
   }
-  process.exit(0);
+  // Exit only after stdout drains: a bare process.exit() truncated large
+  // --json output at the pipe buffer (~64KB) when an agent piped it.
+  process.stdout.write("", () => process.exit(code));
+  await new Promise(() => {});
 }
 
 if (command === "fix") {

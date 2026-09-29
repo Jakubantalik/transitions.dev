@@ -1,0 +1,26 @@
+:root {
+  --dd-open: 300ms;
+  --dd-close: 3s;
+  --dd-fade: var(--dd-close);
+  --dd-stagger: 3475ms;
+}
+
+.dropdown {
+  transition: opacity var(--dd-open) ease;
+}
+
+.dropdown.is-closing {
+  transition: opacity var(--dd-fade) ease, transform var(--dd-stagger) ease;
+}
+
+.menu {
+  transition-duration: var(--missing-token, 2s);
+}
+
+.fine {
+  transition: opacity var(--dd-open) ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; }
+}

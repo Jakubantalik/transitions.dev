@@ -23,7 +23,7 @@ const c = {
 // polish: token-level adjustments only. revamp: adds structural recipe rewrites.
 const POLISH_RULES = new Set([
   "hardcoded-duration", "transition-all", "no-reduced-motion",
-  "inconsistent-durations", "hover-without-transition",
+  "inconsistent-durations", "hover-without-transition", "slow-duration",
 ]);
 
 export function findingsForMode(findings, mode) {

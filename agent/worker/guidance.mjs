@@ -13,7 +13,9 @@ export const MODE_RULES = {
     "Mode: POLISH. Make only small, safe adjustments: move literal durations to a",
     "motion token scale (define :root tokens once if missing), add one",
     "prefers-reduced-motion guard, replace transition: all with named properties,",
-    "add missing transition declarations to hover bases. Never restructure markup,",
+    "add missing transition declarations to hover bases, and shorten transitions or",
+    "motion tokens that run over 1s onto the 150-400ms scale (fix the token's",
+    "definition when a var() is slow). Never restructure markup,",
     "components, keyframes, or selectors. Every diff must be a few lines.",
   ],
   revamp: [

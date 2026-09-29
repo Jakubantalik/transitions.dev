@@ -79,9 +79,58 @@ function inNonCssLiteral(lits, index, { needsDuration = false } = {}) {
   return false;
 }
 
+
+// ── CSS custom properties ────────────────────────────────────────────────
+// Durations are usually tokenized: `transition: opacity var(--menu-close)`.
+// Resolving the token is the only way to see that --menu-close is 3s.
+const CUSTOM_PROP_RE = /(--[A-Za-z0-9_-]+)\s*:\s*([^;}]+)/g;
+const SLOW_MS = 1000;
+
+function toMs(num, unit) {
+  return unit === "s" ? parseFloat(num) * 1000 : parseFloat(num);
+}
+
+// First pass over all files: every `--name: value` declaration.
+function collectCustomProps(files) {
+  const props = new Map(); // name -> { value, path, line }
+  for (const f of files) {
+    if (!CSSISH.has(f.ext)) continue;
+    CUSTOM_PROP_RE.lastIndex = 0;
+    let m;
+    while ((m = CUSTOM_PROP_RE.exec(f.content))) {
+      // Skip usages like var(--x) - a declaration's name is not preceded by "(".
+      if (f.content[m.index - 1] === "(") continue;
+      if (!props.has(m[1])) props.set(m[1], { value: m[2].trim(), path: f.path, line: lineOf(f.content, m.index) });
+    }
+  }
+  return props;
+}
+
+// Times in a declaration value, literal or via var() chains (with fallbacks).
+// Returns [{ ms, via?: { name, path, line } }].
+function resolveTimes(value, props, depth = 0) {
+  const out = [];
+  if (depth > 8) return out;
+  const varRe = /var\(\s*(--[A-Za-z0-9_-]+)\s*(?:,\s*([^()]*(?:\([^()]*\)[^()]*)*))?\)/g;
+  let rest = value;
+  let v;
+  while ((v = varRe.exec(value))) {
+    const def = props.get(v[1]);
+    const inner = def ? resolveTimes(def.value, props, depth + 1) : (v[2] ? resolveTimes(v[2], props, depth + 1) : []);
+    for (const t of inner) out.push({ ms: t.ms, via: t.via || (def ? { name: v[1], path: def.path, line: def.line } : null) });
+    rest = rest.replace(v[0], " ");
+  }
+  const timeRe = /(\d*\.?\d+)(ms|s)\b/g;
+  let t;
+  while ((t = timeRe.exec(rest))) out.push({ ms: toMs(t[1], t[2]) });
+  return out;
+}
+
 export function runRules(files) {
   const findings = [];
   const durations = []; // { value(ms), path, line }
+  const props = collectCustomProps(files);
+  const slowTokens = new Set(); // token names already reported at definition
   let hasAnimation = false;
   let hasReducedMotion = false;
 
@@ -117,6 +166,44 @@ export function runRules(files) {
           path: f.path,
           line: lineOf(src, m.index),
           message: `Literal duration in "${m[0].trim().slice(0, 60)}". Use a motion token (var(--transition-fast) etc.) so the whole app moves consistently.`,
+          recipe: "motion-tokens",
+        });
+      }
+    }
+
+    // slow-duration: transitions resolving above SLOW_MS, literal or tokenized.
+    const transDeclRe = /\btransition(?:-duration)?\s*:\s*([^;}"']+)/g;
+    while ((m = transDeclRe.exec(src))) {
+      if (lits && inNonCssLiteral(lits, m.index)) continue;
+      const times = resolveTimes(m[1], props);
+      for (const t of times) {
+        if (t.via && t.ms > 20) durations.push({ ms: t.ms, path: f.path, line: lineOf(src, m.index) });
+      }
+      // The first time in each comma-separated transition is its duration;
+      // later ones may be delays. Flag the slowest duration-like value.
+      const slow = times.filter((t) => t.ms > SLOW_MS).sort((a, b) => b.ms - a.ms)[0];
+      if (!slow) continue;
+      const secs = (slow.ms / 1000).toFixed(slow.ms % 1000 ? 3 : 0).replace(/\.?0+$/, "");
+      findings.push({
+        rule: "slow-duration",
+        severity: "warn",
+        path: f.path,
+        line: lineOf(src, m.index),
+        message: slow.via
+          ? `Transition runs ${secs}s via ${slow.via.name} (defined at ${slow.via.path}:${slow.via.line}). UI transitions should stay well under a second.`
+          : `Transition runs ${secs}s. UI transitions should stay well under a second.`,
+        recipe: "motion-tokens",
+      });
+      for (const t of times) {
+        if (!(t.ms > SLOW_MS && t.via) || slowTokens.has(t.via.name)) continue;
+        slowTokens.add(t.via.name);
+        const tsecs = (t.ms / 1000).toFixed(t.ms % 1000 ? 3 : 0).replace(/\.?0+$/, "");
+        findings.push({
+          rule: "slow-duration",
+          severity: "warn",
+          path: t.via.path,
+          line: t.via.line,
+          message: `Motion token ${t.via.name} is ${tsecs}s - every transition using it drags. Bring it onto the duration scale (150-400ms).`,
           recipe: "motion-tokens",
         });
       }
