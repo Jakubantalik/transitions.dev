@@ -6,6 +6,12 @@ export const BASE_RULES = [
   "Rules: animate transform and opacity, never layout properties. Keep durations on",
   "a small token scale. Always respect prefers-reduced-motion. Change as little as",
   "possible; never touch logic, only motion. Style guidance: https://transitions.dev.",
+  "When replacing transition: all, list exactly the properties the element's states",
+  "(hover, focus, active, open) actually change, such as background-color,",
+  "border-color, color, box-shadow, opacity, transform. Never drop a transition a",
+  "state relies on: a hover that used to fade its color must still fade. If a state",
+  "changes a layout property (padding, margin, width, height), leave that property",
+  "out of the list rather than animating layout.",
 ];
 
 export const MODE_RULES = {
