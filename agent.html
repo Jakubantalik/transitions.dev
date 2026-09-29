@@ -3747,15 +3747,38 @@
       color: var(--text);
     }
 
-    /* Get-started copy uses the docs pages' text treatment
-       (detail.html?doc=installation): higher-contrast body text and
-       text-colored links that underline on hover. */
+    /* Get-started copy matches the live docs typography
+       (detail.html?doc=installation, measured): 14/22 body in #3f3f3f,
+       12/18 code chips padded 1px 4px, and text-colored hover links. */
     #get-started .skill-section-note,
-    #get-started .gs-step-label,
-    #get-started li { color: #0d0d0d; }
+    #get-started .gs-bullets li,
+    #get-started .gs-qa .skill-section-note {
+      font-size: 14px;
+      line-height: 22px;
+      color: #3f3f3f;
+    }
     html[data-theme="dark"] #get-started .skill-section-note,
-    html[data-theme="dark"] #get-started .gs-step-label,
-    html[data-theme="dark"] #get-started li { color: #ededed; }
+    html[data-theme="dark"] #get-started .gs-bullets li,
+    html[data-theme="dark"] #get-started .gs-qa .skill-section-note { color: #cfcfcf; }
+    #get-started .gs-step-label { color: #0d0d0d; }
+    html[data-theme="dark"] #get-started .gs-step-label { color: #ededed; }
+    #get-started .skill-section-note code,
+    #get-started .gs-bullets li code,
+    #get-started .gs-qa code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 18px;
+      padding: 1px 4px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.04);
+      color: #0d0d0d;
+    }
+    html[data-theme="dark"] #get-started .skill-section-note code,
+    html[data-theme="dark"] #get-started .gs-bullets li code,
+    html[data-theme="dark"] #get-started .gs-qa code {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ededed;
+    }
     #get-started .skill-section-note a,
     #get-started li a {
       color: var(--text);
@@ -3767,7 +3790,7 @@
     /* GitHub Action setup guide (react.doctor-style progression). */
     /* Sub-sections inside the get-started panels reuse the doc pages'
        section titles (detail.html?doc=installation) with breathing room. */
-    .skill-section-title.gs-sub { margin: 20px 0 2px; }
+    .skill-section-title.gs-sub { margin: 24px 0 4px; }
     /* Multiline variant of .skill-code-row: same surface and copy-button
        treatment, pre content instead of a single line. */
     .gs-code-block {
@@ -3809,20 +3832,8 @@
     .gs-code-block .card-copy:active { background-image: none; background: rgba(0, 0, 0, 0.06); }
     html[data-theme="dark"] .gs-code-block .card-copy:active { background: rgba(255, 255, 255, 0.08); }
     .gs-bullets { margin: 4px 0 0; padding-left: 20px; }
-    .gs-bullets li { font-size: 13px; line-height: 21px; margin-bottom: 6px; }
-    .gs-bullets li code,
-    .gs-qa .gs-q code {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      line-height: 18px;
-      padding: 1px 6px;
-      border-radius: 6px;
-      background: rgba(0, 0, 0, 0.04);
-      color: var(--text);
-    }
-    html[data-theme="dark"] .gs-bullets li code,
-    html[data-theme="dark"] .gs-qa .gs-q code { background: rgba(255, 255, 255, 0.06); }
-    .gs-qa .gs-q { margin: 12px 0 2px; font-size: 13px; font-weight: 600; color: var(--text); }
+    .gs-bullets li { margin-bottom: 6px; }
+    .gs-qa .gs-q { margin: 14px 0 2px; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--text); }
     .gs-qa .skill-section-note { margin-top: 0; }
 
     /* ─── Get started tabs (transitions-dev 16, tabs sliding) ─────
@@ -4716,7 +4727,7 @@
         </div>
 
         <div class="gs-panel" id="gs-panel-cli" role="tabpanel" aria-labelledby="gs-tab-cli">
-          <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">Run these in a terminal at your project's root folder, or paste them to your coding agent (Claude Code, Cursor, Codex) and it runs them for you.</p>
+          <p class="skill-section-note">Run these in a terminal at your project's root folder, or paste them to your coding agent (Claude Code, Cursor, Codex) and it runs them for you.</p>
           <div class="get-started-grid">
           <div class="gs-step">
             <div class="gs-step-block">
@@ -4761,7 +4772,7 @@
         </div>
 
         <div class="gs-panel" id="gs-panel-gha" role="tabpanel" aria-labelledby="gs-tab-gha" hidden>
-          <p class="skill-section-note" style="font-size: 14px; line-height: 22px;">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews. Scanning needs no account, no secrets, no AI key.</p>
+          <p class="skill-section-note">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews. Scanning needs no account, no secrets, no AI key.</p>
 
           <h2 class="skill-section-title gs-sub">Install with your coding agent</h2>
           <div class="skill-code-row">
