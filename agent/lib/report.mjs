@@ -14,6 +14,7 @@ const RULE_TITLES = {
   "hover-without-transition": "Hover states that snap",
   "transition-all": "transition: all",
   "hardcoded-duration": "Hardcoded durations (no motion tokens)",
+  "slow-duration": "Slow transitions (over 1s, incl. via tokens)",
   "no-reduced-motion": "No prefers-reduced-motion guard",
   "inconsistent-durations": "Inconsistent duration scale",
 };

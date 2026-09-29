@@ -67,6 +67,20 @@ test("walker skips fixture dirs, test files, and a vendored scanner package", ()
   assert.ok(!paths.some((p) => p.includes("deep-bad")), paths.join(", "));
 });
 
+test("slow durations resolve through CSS custom properties", () => {
+  const findings = runRules([load("slow-tokens.css", ".css")]).filter((f) => f.rule === "slow-duration");
+  const msgs = findings.map((f) => f.message).join("\n");
+  // Usage via a var() chain (--dd-fade -> --dd-close) and the 3.475s token are caught...
+  assert.ok(msgs.includes("3.475s"), msgs);
+  assert.ok(findings.some((f) => /--dd-stagger|--dd-close|--dd-fade/.test(f.message)), msgs);
+  // ...the token definition itself is reported once...
+  assert.ok(findings.some((f) => f.message.startsWith("Motion token")), msgs);
+  // ...var() fallbacks are resolved when the token is undefined...
+  assert.ok(msgs.includes("Transition runs 2s"), msgs);
+  // ...and fast tokens are not flagged.
+  assert.ok(!msgs.includes("--dd-open"), msgs);
+});
+
 test("reduced-motion guard anywhere in project silences the project rule", () => {
   const findings = runRules([load("bad.css", ".css"), load("good.css", ".css")]);
   assert.ok(!findings.some((f) => f.rule === "no-reduced-motion"));

@@ -100,6 +100,10 @@ async function handleFix(request, env) {
   } catch (e) {
     const detail = e?.detail || e?.message || "model error";
     console.error("[fix] model call failed:", detail);
+    // Auth failures are our misconfiguration, not a blip: retrying cannot help.
+    if (e?.status === 401 || e?.status === 403 || /credential|authentication|api.key/i.test(detail)) {
+      return json({ error: "service_unavailable", detail: "The fix service is temporarily unavailable on our side. Nothing was counted against your quota; please try again later." }, 503);
+    }
     return json({ error: "model_unavailable", detail: "The AI backend had a hiccup. Nothing was counted against your quota; try again in a minute." }, 502);
   }
   const ttl = { expirationTtl: 60 * 60 * 24 * 62 };
@@ -155,6 +159,7 @@ async function proposeFixes(env, findings, files, mode, recipes, model) {
   if (!res.ok) {
     const detail = await res.text();
     const err = new Error("anthropic " + res.status);
+    err.status = res.status;
     err.detail = detail;
     throw err;
   }

@@ -23,7 +23,7 @@ const c = {
 // polish: token-level adjustments only. revamp: adds structural recipe rewrites.
 const POLISH_RULES = new Set([
   "hardcoded-duration", "transition-all", "no-reduced-motion",
-  "inconsistent-durations", "hover-without-transition",
+  "inconsistent-durations", "hover-without-transition", "slow-duration",
 ]);
 
 export function findingsForMode(findings, mode) {
@@ -82,6 +82,11 @@ export async function runFix(root, result, opts) {
     } else {
       console.error(c.red("✗ ") + (err.detail || "Monthly fix quota reached. Upgrade at transitions.dev/pro."));
     }
+    return 1;
+  }
+  if (res.status === 503) {
+    const err = await res.json().catch(() => ({}));
+    console.error(c.yellow("The fix service is down on our side.") + " " + (err.detail || "Please try again later."));
     return 1;
   }
   if (res.status === 502) {

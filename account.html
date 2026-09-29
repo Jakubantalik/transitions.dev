@@ -5070,6 +5070,18 @@
               </div>
             </div>
           </div>
+          <div class="account-agent" id="acc-agent-key-block" hidden>
+            <p class="account-agent-title">Transitions Agent</p>
+            <p class="account-agent-sub">Your plan includes the Agent. Signing up in the CLI with this email connects automatically; the key below is for CI - add it as a <code>TRANSITIONS_AGENT_LICENSE</code> repo secret.</p>
+            <div class="skill-code-row">
+              <code id="acc-agent-key">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</code>
+              <button type="button" class="card-copy" aria-label="Copy Agent license key" data-copy-target="#acc-agent-key">
+                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              </button>
+            </div>
+            <p class="skill-section-note" id="acc-agent-plan"></p>
+          </div>
           <p class="account-note" id="acc-note-dl" role="status" hidden></p>
         </section>
       </div>
@@ -6265,6 +6277,21 @@
           .catch(function () { setNote(noteId, "Download failed. Please try again.", "err"); })
           .finally(function () { btn.disabled = false; });
       }
+      // Agent license: created server-side on first visit, so Pro customers
+      // never need a separate signup to find their key.
+      (function loadAgentKey() {
+        fetch(TP.apiBase + "/agent/key", { credentials: "include" })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) {
+            if (!d || !d.license) return;
+            el("acc-agent-key").textContent = d.license;
+            el("acc-agent-plan").textContent = d.plan === "team"
+              ? "Full Agent: 200 hosted fixes a month, polish + revamp."
+              : "Free Agent: 10 hosted polish fixes a month" + (d.pro ? ", plus Pro recipe sources over MCP." : ".");
+            el("acc-agent-key-block").hidden = false;
+          })
+          .catch(function () { /* optional block, stays hidden */ });
+      })();
       el("acc-dl-library").addEventListener("click", function () { downloadZip("/download/library", el("acc-dl-library"), "acc-note-dl"); });
       el("acc-dl-skills").addEventListener("click", function () { downloadZip("/download/skills", el("acc-dl-skills"), "acc-note-dl"); });
       // The two CLI command blocks copy via the shared .card-copy[data-copy-target]
