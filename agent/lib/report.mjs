@@ -123,7 +123,9 @@ export function renderMarkdown(result, opts = {}) {
   lines.push("");
   if (!result.findings.length) {
     lines.push("No motion issues found. 🎉");
-    return lines.join("\n");
+    const af = autofixLine(opts.autofix);
+    if (af) { lines.push(""); lines.push(af); }
+    return withMarker(lines, opts.autofix);
   }
   const comps = result.components || [];
   if (comps.length) {
@@ -146,12 +148,47 @@ export function renderMarkdown(result, opts = {}) {
     lines.push(`| ${RULE_TITLES[rule] || rule} | ${list.length} | ${where}${list.length > 3 ? "<br>..." : ""} |`);
   }
   lines.push("");
-  lines.push("Run `npx transitions-agent` locally for details, or `npx transitions-agent fix` to get fixes as a pull request.");
+  const af = autofixLine(opts.autofix);
+  if (af) {
+    lines.push(af);
+  } else {
+    lines.push("Run `npx transitions-agent` locally for details, or `npx transitions-agent fix` to get fixes as a pull request.");
+  }
   if (opts.licenseCta) {
     lines.push("");
-    lines.push("**Want these fixed automatically?** Add a `TRANSITIONS_AGENT_LICENSE` repo secret and the [fix workflow](https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml) - free key: `npx transitions-agent signup` · [plans](https://transitions.dev/pro.html)");
+    lines.push("**Want these fixed automatically?** Add a `TRANSITIONS_AGENT_LICENSE` repo secret and the Agent proposes fixes on every pull request, as a pull request into its branch. Free key: `npx transitions-agent signup` · [plans](https://transitions.dev/pro.html)");
   }
+  return withMarker(lines, opts.autofix);
+}
+
+// The hidden record of the last fix run, read back by the next run so fixes
+// are requested once per change, not on every push.
+function withMarker(lines, autofix) {
+  const m = autofix && autofix.marker;
+  if (m && (m.sha || m.pr)) lines.push(`<!-- transitions-agent:autofix sha=${m.sha || ""} mode=${m.mode || ""} pr=${m.pr || ""} -->`);
   return lines.join("\n");
+}
+
+// One line in the score comment about automatic fixes.
+export function autofixLine(af) {
+  if (!af) return null;
+  const link = (p) => `[#${p.number}](${p.url})`;
+  if (af.status === "opened" || af.status === "updated") {
+    const score = af.before != null && af.after != null ? `, motion score ${af.before} to ${af.after}` : "";
+    return `**Proposed fixes:** ${link(af.pr)} (${af.mode}${score})${af.status === "updated" ? ", updated for your latest changes" : ""}. Merge it to apply the fixes to this pull request, or close it to reject them.`;
+  }
+  if (af.status === "failed") return `**Automatic fixes could not run:** ${af.reason}.`;
+  const ex = af.existing;
+  if (ex && ex.url) {
+    if (ex.state === "MERGED") return `**Fixes applied:** ${link(ex)} was merged into this pull request.`;
+    if (ex.state === "CLOSED") return `Proposed fixes ${link(ex)} were closed. Change a style or component file to get a fresh proposal.`;
+    return `**Proposed fixes:** ${link(ex)} is open. Merge it to apply the fixes to this pull request, or close it to reject them.`;
+  }
+  if (af.reason === "fork") return "_No automatic fixes on pull requests from forks: they cannot read the license secret._";
+  if (af.reason === "nothing" && af.mode === "polish" && af.recipeFindings > 0) {
+    return `Polish has nothing left to fix. ${af.recipeFindings} finding${af.recipeFindings === 1 ? "" : "s"} need the library recipes: add the \`revamp\` label to install them (Business plan).`;
+  }
+  return null;
 }
 
 function wrap(text, width) {

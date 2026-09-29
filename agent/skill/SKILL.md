@@ -41,11 +41,12 @@ When the user asks to add the Agent to GitHub Actions / CI, or their message is 
 npx transitions-agent@latest init-ci
 ```
 
-It writes both workflows (score on every pull request, fix pull requests from the Actions tab), keeps existing ones, checks the GitHub side, shows which fix modes the user's key allows, and ends with lettered **Options**. Relay a one-line status, then present those options exactly as printed and ask which to do. Typical options:
+It writes both workflows (score plus automatic fixes on every pull request: a fix pull request into that branch, never main, that the user merges to apply or closes to reject; and a manual fix run from the Actions tab), keeps existing ones, checks the GitHub side, shows which fix modes the user's key allows, and ends with lettered **Options**. Relay a one-line status, then present those options exactly as printed and ask which to do. Automatic fixes default to polish; ask the user which they want when it matters: `--mode revamp` (Business) or `--no-auto-fix` (scores only). Labels on a pull request override it per pull request: `revamp`, `polish`, `no-motion-fix`. Typical options:
 
 - **Sign up or sign in** (no key yet): `npx transitions-agent@latest signup` opens the browser; existing accounts sign in the same way. Wait for it, then re-run `init-ci`.
 - **Finish the GitHub side** (license secret + pull request permission): `npx transitions-agent@latest init-ci --yes`. The key never appears in output.
 - **Revamp as the default fix mode** (Business keys): `npx transitions-agent@latest init-ci --mode revamp`.
+- **Turn on automatic fixes** for an older workflow: `npx transitions-agent@latest init-ci --upgrade`.
 - **Commit the workflow files**: on a new branch with a pull request, never straight to main.
 - **Create a GitHub repository** when the project has none.
 
