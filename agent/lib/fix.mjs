@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
 import readline from "node:readline";
 import { isInteractive } from "./env.mjs";
+import { scan } from "./scan.mjs";
 
 const MAX_FILES = 12;
 const MAX_FILE_BYTES = 40_000;
@@ -115,14 +116,21 @@ export async function runFix(root, result, opts) {
 
   const apply = yes || await confirm(`Apply these changes to ${proposed.length} files? [y/N] `);
   if (!apply) { console.log(c.dim("Nothing changed.")); return 0; }
-  for (const p of proposed) writeFileSync(join(root, p.path), p.content);
-  console.log(c.green("✓ ") + `Applied ${proposed.length} files.`);
+  for (const p of proposed) {
+    const dest = join(root, p.path);
+    let original = "";
+    try { original = readFileSync(dest, "utf8"); } catch { /* new file */ }
+    const content = original.endsWith("\n") && !p.content.endsWith("\n") ? p.content + "\n" : p.content;
+    writeFileSync(dest, content);
+  }
+  const after = scan(root).score;
+  console.log(c.green("✓ ") + `Applied ${proposed.length} files. Motion score ${result.score} to ${after}.`);
 
   if (!pr) {
     console.log(c.dim("Review with git diff. Re-run with --pr to open a pull request."));
     return 0;
   }
-  return openPr(root, result, proposed, { yes, mode });
+  return openPr(root, result, proposed, { yes, mode, after });
 }
 
 function showDiff(root, proposal) {
@@ -138,15 +146,17 @@ function showDiff(root, proposal) {
   console.log(body || c.dim("(no change)"));
 }
 
-async function openPr(root, result, proposed, { yes, mode }) {
+async function openPr(root, result, proposed, { yes, mode, after }) {
   const go = yes || await confirm("Create a branch, commit, push, and open a pull request? [y/N] ");
   if (!go) { console.log(c.dim("Changes stay local. Commit them yourself when ready.")); return 0; }
   const branch = `transitions-agent/${mode}-` + new Date().toISOString().slice(0, 10);
   const title = mode === "revamp"
-    ? `Revamp UI transitions with transitions.dev recipes (motion score ${result.score} before fixes)`
-    : `Polish UI transitions (motion score ${result.score} before fixes)`;
+    ? `Revamp UI transitions with transitions.dev recipes (motion score ${result.score} to ${after})`
+    : `Polish UI transitions (motion score ${result.score} to ${after})`;
   const body = [
     `Automated ${mode} pass by [Transitions Agent](https://transitions.dev).`,
+    "",
+    `**Motion score: ${result.score} to ${after} / 100**`,
     "",
     ...proposed.map((p) => `- \`${p.path}\``),
     "",
