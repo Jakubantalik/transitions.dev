@@ -551,12 +551,11 @@
     if (!signup) {
       return { title: "Sign in", sub: "Enter the email you signed up with.", btn: "Send code" };
     }
+    // Sign-up header copy (Figma 1674:35924).
     return {
-      title: "Create your account",
-      sub: plan && plan !== "free"
-        ? "Next, you’ll pay for " + PLAN_NAMES[plan] + " securely on Stripe."
-        : "Free library, skill and Agent. No card needed.",
-      btn: "Continue",
+      title: "Get Started.",
+      sub: "Make your motion UI better",
+      btn: plan && plan !== "free" ? "Continue to " + PLAN_NAMES[plan] : "Continue",
     };
   }
 
@@ -573,6 +572,8 @@
         '<button type="button" class="tp-modal-x" aria-label="Close" data-tp-close>&times;</button>' +
         // One question per screen: the email, then the code, then (free
         // sign-up only) a short confirmation.
+        // Sign-up header mark (Figma 1674:35924, ar-cube-3): the brand cube.
+        '<span class="tp-modal-mark" aria-hidden="true" hidden><svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.85265L15.5409 3.84441L14.5604 5.58756L13 4.70985V7H11V4.70985L9.43962 5.58756L8.45909 3.84441L12 1.85265ZM17.3613 4.86837L21 6.91515V11H19V9.23205L17.0359 10.366L16.0359 8.63397L17.9804 7.51132L16.3807 6.61152L17.3613 4.86837ZM7.61925 6.61152L6.01961 7.51132L7.9641 8.63397L6.9641 10.366L5 9.23205L5 11H3L3 6.91515L6.63873 4.86837L7.61925 6.61152ZM5 13V14.7679L6.9641 13.634L7.9641 15.366L6.0196 16.4887L7.61925 17.3885L6.63873 19.1316L3 17.0848V13H5ZM21 13V17.0848L17.3613 19.1316L16.3807 17.3885L17.9804 16.4887L16.0359 15.366L17.0359 13.634L19 14.7679V13H21ZM13 17V19.2902L14.5604 18.4124L15.5409 20.1556L12 22.1473L8.45908 20.1556L9.43961 18.4124L11 19.2902V17H13Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M15.0981 11.366L13 12.5774V15H11V12.5774L8.90192 11.366L9.90192 9.63397L12 10.8453L14.0981 9.63397L15.0981 11.366Z" fill="currentColor"/></svg></span>' +
         '<p class="tp-modal-intro" id="tp-modal-title"><span data-step-title>Sign in</span>' +
           '<span class="tp-modal-intro-muted" data-step-sub></span></p>' +
         '<form class="tp-modal-form tp-modal-email-form" novalidate>' +
@@ -621,6 +622,7 @@
     var titleEl = modalEl.querySelector("[data-step-title]");
     var subEl = modalEl.querySelector("[data-step-sub]");
     var footEl = modalEl.querySelector("[data-foot]");
+    var markEl = modalEl.querySelector(".tp-modal-mark");
     function showStep(step, email) {
       var copy = stepCopy(step, email);
       emailForm.hidden = step !== "email";
@@ -628,6 +630,8 @@
       doneEl.hidden = step !== "done";
       titleEl.textContent = copy.title;
       subEl.textContent = copy.sub;
+      // The cube heads the sign-up screen only.
+      markEl.hidden = !(authCtx.mode === "signup" && step === "email");
       if (copy.btn) {
         var btn = (step === "code" ? codeFormEl : emailForm).querySelector(".tp-modal-btn");
         btn.textContent = copy.btn;
@@ -824,6 +828,10 @@
       ".tp-modal-x:active{scale:.9}" +
       ".tp-modal-intro{margin:0;font-size:16px;line-height:24.2px;font-weight:400;padding-right:20px}" +
       ".tp-modal-intro-muted{color:#8a8a8a;display:block}" +
+      ".tp-modal-mark{display:block;width:24px;height:24px;color:#1d1d1d;margin-bottom:-9px}" +
+      ".tp-modal-mark[hidden]{display:none}" +
+      ".tp-modal-mark svg{display:block;width:24px;height:24px}" +
+      'html[data-theme="dark"] .tp-modal-mark{color:#f2f2f2}' +
       ".tp-modal-form{display:flex;flex-direction:column;gap:12px}" +
       // An author display rule outranks the UA [hidden] style, so every element
       // this modal toggles needs its own companion rule. Without it the code
