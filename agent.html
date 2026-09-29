@@ -3772,25 +3772,60 @@
       letter-spacing: -0.01em;
       color: var(--text);
     }
+    /* Multiline variant of .skill-code-row: same surface and copy-button
+       treatment, pre content instead of a single line. */
     .gs-code-block {
-      position: relative;
-      border-radius: 14px;
-      background: var(--card-bg);
-      box-shadow: inset 0 0 0 1px var(--card-border);
-      padding: 14px 16px;
-      overflow-x: auto;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 8px 12px 14px;
+      border-radius: 10px;
+      background: #f7f7f7;
     }
+    html[data-theme="dark"] .gs-code-block { background: rgba(255, 255, 255, 0.04); }
     .gs-code-block pre {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-x: auto;
       margin: 0;
       font-family: var(--font-mono);
-      font-size: 12.5px;
-      line-height: 20px;
-      color: var(--text);
+      font-size: 13px;
+      line-height: 22px;
+      color: #3c3c3c;
       white-space: pre;
     }
-    .gs-code-block .card-copy { position: absolute; top: 10px; right: 10px; }
+    html[data-theme="dark"] .gs-code-block pre { color: #d6d6d6; }
+    .gs-code-block .card-copy {
+      position: relative;
+      right: auto;
+      bottom: auto;
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      margin-right: -3px;
+      border-radius: 6px;
+      background: transparent;
+      background-image: none;
+    }
+    html[data-theme="dark"] .gs-code-block .card-copy { background: transparent; background-image: none; }
+    .gs-code-block .card-copy:hover { background-image: none; background: rgba(0, 0, 0, 0.04); color: var(--icon-color); }
+    html[data-theme="dark"] .gs-code-block .card-copy:hover { background: rgba(255, 255, 255, 0.06); }
+    .gs-code-block .card-copy:active { background-image: none; background: rgba(0, 0, 0, 0.06); }
+    html[data-theme="dark"] .gs-code-block .card-copy:active { background: rgba(255, 255, 255, 0.08); }
     .gs-bullets { margin: 4px 0 0; padding-left: 20px; }
     .gs-bullets li { font-size: 13px; line-height: 21px; margin-bottom: 6px; }
+    .gs-bullets li code,
+    .gs-qa .gs-q code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 18px;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text);
+    }
+    html[data-theme="dark"] .gs-bullets li code,
+    html[data-theme="dark"] .gs-qa .gs-q code { background: rgba(255, 255, 255, 0.06); }
     .gs-qa .gs-q { margin: 12px 0 2px; font-size: 13px; font-weight: 600; color: var(--text); }
     .gs-qa .skill-section-note { margin-top: 0; }
 
@@ -4707,23 +4742,6 @@
           <div class="gs-step">
             <div class="gs-step-block">
               <div class="gs-step-head">
-                <span class="gs-step-label">Setup</span>
-              </div>
-              <div class="skill-code-row">
-                <code id="cmd-license">export TRANSITIONS_AGENT_LICENSE=your-key</code>
-                <button type="button" class="card-copy" aria-label="Copy license setup command" data-copy-target="#cmd-license">
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                </button>
-              </div>
-            </div>
-            <p class="skill-section-note">
-              Scans need no key. Fixes run through the hosted fix service against your plan, and the key arrives with the <a href="/pro.html">Business plan</a> email. Set it once in your shell, or pass <code>--license your-key</code> on a single command.
-            </p>
-          </div>
-
-          <div class="gs-step">
-            <div class="gs-step-block">
-              <div class="gs-step-head">
                 <span class="gs-step-label">Fix</span>
               </div>
               <div class="skill-code-row">
@@ -4772,13 +4790,6 @@ jobs:
           min-score: "0"
           license: &#36;{{ secrets.TRANSITIONS_AGENT_LICENSE }}</pre><button type="button" class="card-copy" aria-label="Copy" data-copy-target="#yml-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button></div>
           <p class="skill-section-note">Both permissions matter: <code>pull-requests: write</code> lets the Action post its score comment.</p>
-
-          <h3 class="gs-h3">Configure</h3>
-          <div class="skill-code-row">
-            <code id="cmd-min-score">min-score: "75"</code>
-            <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-min-score"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-          </div>
-          <p class="skill-section-note">The optional merge gate, under <code>with:</code>. Start advisory - <code>"0"</code> reports without blocking - and raise it once the team trusts the score. Or pass <code>--min-score 75</code> to <code>init-ci</code> and it is templated in. With a <code>TRANSITIONS_AGENT_LICENSE</code> secret configured, the comment also drops its setup hint.</p>
 
           <h3 class="gs-h3">Fix pull requests from CI</h3>
           <div class="skill-code-row">
