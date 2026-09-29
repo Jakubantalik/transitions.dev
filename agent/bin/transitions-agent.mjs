@@ -28,6 +28,7 @@
 import { scan } from "../lib/scan.mjs";
 import { renderTerminal, renderMarkdown } from "../lib/report.mjs";
 import { runFix } from "../lib/fix.mjs";
+import { isInteractive, runByAgent } from "../lib/env.mjs";
 import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
@@ -70,7 +71,7 @@ const api = (flags.api || process.env.TRANSITIONS_AGENT_API || "https://api.tran
 async function maybeOfferSignup() {
   try {
     const hasKey = flags.license || process.env.TRANSITIONS_AGENT_LICENSE || (loadCreds() || {}).license;
-    if (hasKey || !process.stdin.isTTY) return;
+    if (hasKey || !isInteractive()) return;
     const readline = await import("node:readline");
     const answer = await new Promise((resolve) => {
       const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -84,15 +85,25 @@ async function maybeOfferSignup() {
 function maybeInstallSkill() {
   try {
     const skillsDir = join(homedir(), ".claude", "skills");
-    if (!existsSync(skillsDir)) return;
     const dest = join(skillsDir, "transitions-agent");
-    if (existsSync(join(dest, "SKILL.md"))) return;
-    mkdirSync(dest, { recursive: true });
-    copyFileSync(join(PKG_DIR, "skill", "SKILL.md"), join(dest, "SKILL.md"));
-    console.log("  \u2713 Claude Code skill installed (" + dest + ")");
-    console.log("    From your next conversation, \"check this app's motion\" runs this whole flow.");
-    console.log("    Remove anytime by deleting that folder.");
-    console.log("");
+    if (existsSync(skillsDir) && !existsSync(join(dest, "SKILL.md"))) {
+      mkdirSync(dest, { recursive: true });
+      copyFileSync(join(PKG_DIR, "skill", "SKILL.md"), join(dest, "SKILL.md"));
+      console.log("  \u2713 Claude Code skill installed (" + dest + ")");
+      console.log("    Remove anytime by deleting that folder.");
+    }
+    const codexDir = join(homedir(), ".codex");
+    const agentsFile = join(codexDir, "AGENTS.md");
+    const START = "<!-- transitions-agent:start -->";
+    let existing = "";
+    try { existing = readFileSync(agentsFile, "utf8"); } catch { /* none yet */ }
+    if (existsSync(codexDir) && !existing.includes(START)) {
+      const body = readFileSync(join(PKG_DIR, "skill", "SKILL.md"), "utf8").replace(/^---[\s\S]*?---\n/, "").trim();
+      const block = START + "\n" + body + "\n<!-- transitions-agent:end -->";
+      writeFileSync(agentsFile, (existing ? existing.trimEnd() + "\n\n" : "") + block + "\n");
+      console.log("  \u2713 Codex instructions added (" + agentsFile + ", managed block)");
+      console.log("    Remove anytime by deleting the transitions-agent block.");
+    }
   } catch { /* never let convenience break the scan */ }
 }
 
@@ -265,7 +276,7 @@ if (command === "fix") {
   // No explicit mode + a human at the keyboard + a license that could use
   // either: ask. Agents and CI pass --mode (or get the polish default).
   const license = flags.license || process.env.TRANSITIONS_AGENT_LICENSE || (loadCreds() || {}).license || "";
-  if (!mode && license && process.stdin.isTTY && !flags.yes) {
+  if (!mode && license && isInteractive() && !flags.yes) {
     const readline = await import("node:readline");
     const answer = await new Promise((resolve) => {
       const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
