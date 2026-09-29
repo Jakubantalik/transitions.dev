@@ -9,6 +9,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import readline from "node:readline";
 import { isInteractive, runByAgent, sandboxNoNetwork, NETWORK_HELP } from "./env.mjs";
 import { scan } from "./scan.mjs";
+import { describeChanges, changesMarkdown, changesText } from "./describe.mjs";
 
 const MAX_FILES = 12;
 const MAX_FILE_BYTES = 40_000;
@@ -145,16 +146,20 @@ export async function runFix(root, result, opts) {
     const content = original.endsWith("\n") && !p.content.endsWith("\n") ? p.content + "\n" : p.content;
     writeFileSync(dest, content);
   }
-  const after = scan(root).score;
+  const afterResult = scan(root);
+  const after = afterResult.score;
+  const changes = describeChanges(result, afterResult, { mode });
   report.after = after;
   report.applied = proposed.map((p) => p.path);
+  report.changes = changes;
   console.log(c.green("✓ ") + `Applied ${proposed.length} files. Motion score ${result.score} to ${after}.`);
+  if (changes.groups.length || changes.remaining.length) console.log("\n" + c.bold("What changed") + "\n" + changesText(changes) + "\n");
 
   if (!pr) {
     console.log(c.dim("Review with git diff. Re-run with --pr to open a pull request."));
     return done(0, "applied");
   }
-  const code = await openPr(root, result, proposed, { ...opts, yes, mode, after, summary: data.summary || "" });
+  const code = await openPr(root, result, proposed, { ...opts, yes, mode, after, changes, summary: data.summary || "" });
   return done(code, code === 0 && report.pr ? "pr" : code === 0 ? "applied" : "pr-failed", code === 0 ? null : "could not push the fixes or open the pull request");
 }
 
@@ -169,6 +174,35 @@ function showDiff(root, proposal) {
   console.log("\n" + c.bold(proposal.path));
   const body = (out.stdout || "").split("\n").slice(4).join("\n").trim();
   console.log(body || c.dim("(no change)"));
+}
+
+const MODE_LINE = {
+  polish: "polish: tunes timing, easing, and hover transitions",
+  revamp: "revamp: installs transitions.dev recipes on the components",
+};
+
+// The fix pull request's description: what someone will notice first, the
+// technical notes folded away.
+export function fixPrBody({ intro, mode, before, after, changes, summary, files, footer = [] }) {
+  return [
+    intro,
+    "",
+    `**Motion score: ${before} → ${after}** · ${MODE_LINE[mode] || mode}`,
+    "",
+    "### What changes",
+    "",
+    changes && changes.groups.length ? changesMarkdown(changes) : files.map((f) => `- \`${f}\``).join("\n"),
+    "",
+    ...footer,
+    "<details>",
+    "<summary>Technical notes</summary>",
+    "",
+    summary || "No notes.",
+    "",
+    "Files: " + files.map((f) => `\`${f}\``).join(", "),
+    "",
+    "</details>",
+  ].join("\n").replace(/\n{3,}/g, "\n\n");
 }
 
 function git(root, args, opts = {}) {
@@ -194,19 +228,14 @@ async function openPr(root, result, proposed, opts) {
   const base = opts.base || currentBranch(root);
   const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
   const branch = opts.branch || `transitions-agent/${mode}-${stamp}`;
-  const custom = (v) => (typeof v === "function" ? v({ before: result.score, after, files: proposed.map((p) => p.path), summary: opts.summary }) : v);
+  const custom = (v) => (typeof v === "function" ? v({ before: result.score, after, files: proposed.map((p) => p.path), summary: opts.summary, changes: opts.changes }) : v);
   const title = custom(opts.title) || (mode === "revamp"
     ? `Revamp UI transitions with transitions.dev recipes (motion score ${result.score} to ${after})`
     : `Polish UI transitions (motion score ${result.score} to ${after})`);
-  const body = custom(opts.body) || [
-    `Automated ${mode} pass by [Transitions Agent](https://transitions.dev).`,
-    "",
-    `**Motion score: ${result.score} to ${after} / 100**`,
-    "",
-    ...proposed.map((p) => `- \`${p.path}\``),
-    "",
-    "Every change was shown as a diff and confirmed in the terminal before this PR was opened.",
-  ].join("\n");
+  const body = custom(opts.body) || fixPrBody({
+    intro: "Transitions Agent reviewed the motion in this branch and proposes the changes below. Every change was shown as a diff and confirmed in the terminal first.",
+    mode, before: result.score, after, changes: opts.changes, summary: opts.summary, files: proposed.map((p) => p.path),
+  });
   try {
     git(root, ["checkout", "-B", branch]);
     git(root, ["add", ...proposed.map((p) => p.path)]);

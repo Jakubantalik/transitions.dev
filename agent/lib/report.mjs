@@ -174,8 +174,14 @@ export function autofixLine(af) {
   if (!af) return null;
   const link = (p) => `[#${p.number}](${p.url})`;
   if (af.status === "opened" || af.status === "updated") {
-    const score = af.before != null && af.after != null ? `, motion score ${af.before} to ${af.after}` : "";
-    return `**Proposed fixes:** ${link(af.pr)} (${af.mode}${score})${af.status === "updated" ? ", updated for your latest changes" : ""}. Merge it to apply the fixes to this pull request, or close it to reject them.`;
+    const score = af.before != null && af.after != null ? `, motion score ${af.before} → ${af.after}` : "";
+    const bullets = (af.highlights || []).map((h) => "- " + h);
+    return [
+      `**Proposed fixes:** ${link(af.pr)} (${af.mode}${score})${af.status === "updated" ? ", updated for your latest changes" : ""}`,
+      ...bullets,
+      "",
+      "Merge it to apply the fixes to this pull request, or close it to reject them.",
+    ].join("\n");
   }
   if (af.status === "failed") return `**Automatic fixes could not run:** ${af.reason}.`;
   const ex = af.existing;
