@@ -5791,16 +5791,37 @@
     }
     .docs-fold-chevron svg { width: 16px; height: 16px; }
     .docs-fold[data-open="true"] .docs-fold-chevron { transform: rotate(90deg); }
+    /* The panel tweens its rows, and the links inside cross-fade with a
+       small blur: on open they resolve in after the height has started
+       moving, on close they fade first so the fold never clips live text
+       (accordion recipe 21, with the content fade). */
     .docs-fold-panel {
       display: grid;
       grid-template-rows: 0fr;
       transition: grid-template-rows 250ms cubic-bezier(0.22, 1, 0.36, 1);
     }
     .docs-fold[data-open="true"] .docs-fold-panel { grid-template-rows: 1fr; }
-    .docs-fold-inner { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+    .docs-fold-inner {
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      filter: blur(2px);
+      transition:
+        opacity 160ms ease-out,
+        filter  160ms ease-out;
+    }
+    .docs-fold[data-open="true"] .docs-fold-inner {
+      opacity: 1;
+      filter: blur(0);
+      transition:
+        opacity 200ms ease-out 60ms,
+        filter  200ms ease-out 60ms;
+    }
     .docs-link--child { padding-left: 24px; }
     @media (prefers-reduced-motion: reduce) {
-      .docs-fold-panel, .docs-fold-chevron { transition: none !important; }
+      .docs-fold-panel, .docs-fold-chevron, .docs-fold-inner { transition: none !important; filter: none !important; }
     }
     .docs-link:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
 
@@ -6563,6 +6584,7 @@
       .docs-group-label { display: none; }
       /* The strip flattens the folds: every link becomes a chip. */
       .docs-fold, .docs-fold-panel, .docs-fold-inner { display: contents; }
+      .docs-fold-inner { opacity: 1; filter: none; }
       .docs-fold-head { display: none; }
       .docs-link--child { padding-left: 12px; }
       .docs-group,
