@@ -1058,7 +1058,6 @@
       transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
       transform-origin: center;
     }
-    .brand:hover .brand-mark { transform: rotate(60deg); }
     @media (prefers-reduced-motion: reduce) {
       .brand, .brand-mark { transition: none; }
       .brand:hover, .brand:hover .brand-mark { transform: none; }
@@ -2437,7 +2436,6 @@
       transform-origin: center;
     }
     .footer-brand-logo:hover { opacity: 1; transform: scale(1.02); }
-    .footer-brand-logo:hover .brand-mark { transform: rotate(60deg); }
     @media (prefers-reduced-motion: reduce) {
       .footer-brand-logo { transition: opacity 150ms ease; }
       .footer-brand-logo:hover { transform: none; }
@@ -5393,7 +5391,7 @@
         padding-bottom: 72px;
         justify-content: flex-end;
       }
-      .title { font-size: 26px; line-height: 32px; }
+      .title { font-size: 34px; line-height: 40px; }
       .subtitle { font-size: 15px; line-height: 22px; }
       /* Cards span the full available width (viewport − 12px margins)
          instead of the fixed 320px desktop width. */
@@ -6165,11 +6163,11 @@
       </div>
       <h1 class="title">UI motion agent,<br />backed by a library</h1>
       <p class="subtitle">
-        Better UI motion starts here. An AI agent, a library of 36+ transitions,
+        Better UI motion starts here. An AI agent, a library of 36+ crafted transitions,
         a skill that fits your workflow.
       </p>
       <div class="skill-cta-row">
-        <a class="skill-btn skill-btn--primary" href="/detail.html?doc=introduction">Get started</a>
+        <a class="skill-btn skill-btn--primary" href="/pro.html">Get started</a>
         <a class="skill-btn skill-btn--secondary" href="/library.html">Browse</a>
       </div>
     </header>
@@ -15550,6 +15548,7 @@ btn.textContent = STATES[i].label;
 </script>
   <!-- Pro platform client: mounts Pro badges on data-pro cards, reads auth state. -->
   <script src="assets/pro-client.js?v=36" defer></script>
+  <script src="assets/brand-mark.js?v=1" defer></script>
 </body>
 </html>
 

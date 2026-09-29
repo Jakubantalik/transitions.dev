@@ -1292,7 +1292,6 @@
       transform-origin: center;
     }
     .footer-brand-logo:hover { opacity: 1; transform: scale(1.02); }
-    .footer-brand-logo:hover .brand-mark { transform: rotate(60deg); }
     @media (prefers-reduced-motion: reduce) {
       .footer-brand-logo { transition: opacity 150ms ease; }
       .footer-brand-logo:hover { transform: none; }
@@ -3421,7 +3420,6 @@
       transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
       transform-origin: center;
     }
-    .brand:hover .brand-mark { transform: rotate(60deg); }
     @media (prefers-reduced-motion: reduce) {
       .brand, .brand-mark { transition: none; }
       .brand:hover, .brand:hover .brand-mark { transform: none; }
@@ -3756,6 +3754,10 @@
       object-fit: cover;
       display: block;
     }
+    /* Theme-swapped hero videos: light by default, dark under dark theme. */
+    .hero-visual .hero-video--dark { display: none; }
+    html[data-theme="dark"] .hero-visual .hero-video--light { display: none; }
+    html[data-theme="dark"] .hero-visual .hero-video--dark { display: block; }
     .hero-caption {
       margin: 12px 0 0;
       font-size: 12px;
@@ -4727,11 +4729,11 @@
 
     <section class="hero-visual-wrap" id="demo" aria-label="Agent demo">
       <div class="hero-visual" aria-label="Transitions Agent fixing motion from the terminal">
-        <!-- The launch capture (16:9). One file for both themes: autoplay,
+        <!-- The launch capture (16:9), a light and a dark render: autoplay,
              loop, muted. The box keeps the video's own ratio, so nothing
              is cropped. -->
         <video
-          class="hero-video"
+          class="hero-video hero-video--light"
           autoplay
           loop
           muted
@@ -4739,7 +4741,18 @@
           preload="metadata"
           aria-hidden="true"
         >
-          <source src="assets/agent-demo.mp4" type="video/mp4" />
+          <source src="assets/agent-demo.mp4?v=2" type="video/mp4" />
+        </video>
+        <video
+          class="hero-video hero-video--dark"
+          autoplay
+          loop
+          muted
+          playsinline
+          preload="metadata"
+          aria-hidden="true"
+        >
+          <source src="assets/agent-demo-dark.mp4?v=1" type="video/mp4" />
         </video>
       </div>
       <p class="hero-caption">Runs in your terminal and on GitHub pull requests</p>
@@ -5093,9 +5106,11 @@ jobs:
             } catch (_) {}
           }
         });
-        // Kick the hero video on theme changes so the autoplay loop
-        // always resumes if the browser paused it.
-        var heroVideo = document.querySelector(".hero-visual .hero-video");
+        // A display:none <video> can get paused by the browser; kick the
+        // now-visible hero video so the autoplay loop always resumes.
+        var heroVideo = document.querySelector(
+          ".hero-visual .hero-video--" + (next === "dark" ? "dark" : "light")
+        );
         if (heroVideo && typeof heroVideo.play === "function") {
           var p = heroVideo.play();
           if (p && typeof p.catch === "function") p.catch(function () {});
@@ -5709,5 +5724,6 @@ jobs:
     })();
   </script>
   <script src="assets/pro-client.js?v=29" defer></script>
+  <script src="assets/brand-mark.js?v=1" defer></script>
 </body>
 </html>
