@@ -324,9 +324,11 @@
       }
     }
     // Pro-page nav pill (replaces "Get Pro" there): Sign in -> Account.
+    // Signed in, the avatar button is the way to the account, so the pill hides.
     var navSigninLabel = document.querySelector("#nav-signin-btn .pill-label");
     if (navSigninLabel) {
-      navSigninLabel.textContent = state.authenticated ? "Account" : "Sign in";
+      navSigninLabel.textContent = "Sign in";
+      document.getElementById("nav-signin-btn").style.display = state.authenticated ? "none" : "";
     }
     // "Get Pro" nav pill (every page except /pro): once the visitor is signed
     // in AND entitled there is nothing left to sell, so the pill becomes a
@@ -343,6 +345,8 @@
       getPro.setAttribute("href", entitled ? "account.html" : "/pro.html");
       getPro.setAttribute("data-state", entitled ? "account" : "get-pro");
       getPro.setAttribute("aria-label", entitled ? "Account" : "Get Transitions Pro");
+      // Entitled: nothing left to sell and the avatar covers the account.
+      getPro.style.display = entitled ? "none" : "";
     }
     // Same swap in the mobile menu.
     var mobilePro = document.querySelector(".mobile-menu-link--pro");

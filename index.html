@@ -1488,6 +1488,41 @@
       outline-offset: 3px;
     }
 
+    /* ─── Customer logos under the hero (same block as pro.html) ─── */
+    .home-customers {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto 80px;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    .pro-customers-label {
+      margin: 0 0 24px;
+      font-size: 13px;
+      line-height: 18px;
+      text-align: center;
+      color: #979797;
+    }
+    html[data-theme="dark"] .pro-customers-label { color: #737373; }
+    .pro-customers-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 24px 37px;
+    }
+    .pro-customer-logo {
+      height: var(--logo-h, 32px);
+      width: auto;
+      opacity: 0.6;
+    }
+    html[data-theme="dark"] .pro-customer-logo { filter: invert(1); opacity: 0.55; }
+    @media (max-width: 640px) {
+      .home-customers { margin-bottom: 56px; }
+      .pro-customers-row { gap: 18px 28px; }
+      .pro-customer-logo { height: calc(var(--logo-h, 32px) * 0.85); }
+    }
+
     /* ─── Homepage sections: a left-aligned Saans lead per block ─── */
     .home-section-head {
       width: 100%;
@@ -6187,6 +6222,16 @@
         <a class="skill-btn skill-btn--secondary" href="/library.html">Browse</a>
       </div>
     </header>
+
+    <section class="home-customers" aria-label="Used by designers and engineers at">
+      <p class="pro-customers-label">Used by designers and engineers at</p>
+      <div class="pro-customers-row">
+        <img class="pro-customer-logo" src="assets/customers/higgsfield.png" alt="Higgsfield" style="--logo-h: 26px" loading="lazy" decoding="async" />
+        <img class="pro-customer-logo" src="assets/customers/mercado-libre.png" alt="Mercado Libre" style="--logo-h: 34px" loading="lazy" decoding="async" />
+        <img class="pro-customer-logo" src="assets/customers/cathay-hospital.png" alt="Cathay General Hospital" style="--logo-h: 34px" loading="lazy" decoding="async" />
+        <img class="pro-customer-logo" src="assets/customers/asu.svg" alt="Arizona State University" style="--logo-h: 24px" loading="lazy" decoding="async" />
+      </div>
+    </section>
 
     <!-- ─── Category filter + sort (Figma 1332:6109) ─────────────
          Pills filter the card grid by data-cat (Pro filters data-pro);
@@ -15562,7 +15607,7 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: mounts Pro badges on data-pro cards, reads auth state. -->
-  <script src="assets/pro-client.js?v=39" defer></script>
+  <script src="assets/pro-client.js?v=40" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
 </body>
 </html>
