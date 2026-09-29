@@ -3747,6 +3747,23 @@
       color: var(--text);
     }
 
+    /* Get-started copy uses the docs pages' text treatment
+       (detail.html?doc=installation): higher-contrast body text and
+       text-colored links that underline on hover. */
+    #get-started .skill-section-note,
+    #get-started .gs-step-label,
+    #get-started li { color: #0d0d0d; }
+    html[data-theme="dark"] #get-started .skill-section-note,
+    html[data-theme="dark"] #get-started .gs-step-label,
+    html[data-theme="dark"] #get-started li { color: #ededed; }
+    #get-started .skill-section-note a,
+    #get-started li a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    #get-started .skill-section-note a:hover,
+    #get-started li a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
     /* ─── Get started tabs (transitions-dev 16, tabs sliding) ─────
        The bar is a flex container; the pill's width and transform are
        written inline by JS so the tween runs between measured
