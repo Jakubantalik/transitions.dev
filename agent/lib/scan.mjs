@@ -4,7 +4,7 @@ import { runRules } from "./rules.mjs";
 
 const WEIGHTS = { major: 8, warn: 4, minor: 1, info: 2 };
 // Per-rule penalty caps so one noisy rule cannot zero the score.
-const CAPS = { "hardcoded-duration": 15, "hover-without-transition": 20, "transition-all": 12, "untransitioned-overlay": 32 };
+const CAPS = { "slow-duration": 16, "hardcoded-duration": 15, "hover-without-transition": 20, "transition-all": 12, "untransitioned-overlay": 32 };
 
 export function scan(root) {
   const files = collectFiles(root);
