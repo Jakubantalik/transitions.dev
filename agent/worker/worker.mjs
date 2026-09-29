@@ -4,7 +4,7 @@
 // license, meters monthly usage, asks Claude for fixed files, and returns them.
 //
 // Bindings (wrangler.toml):
-//   KV  LICENSES  key: license key,        value: {"plan":"free"|"team","quota":10|200,"active":true}
+//   KV  LICENSES  key: license key,        value: {"plan":"free"|"pro"|"team","quota":10|200,"active":true}
 //   KV  USAGE     key: "<license>:<YYYY-MM>", value: "<count>"
 //                 also "<license>:d:<YYYY-MM-DD>" (free daily) and
 //                 "global:free:<YYYY-MM>" (free-tier budget fuse)
@@ -16,7 +16,8 @@
 // Deploy: npx wrangler deploy   (route it under api.transitions.dev)
 //
 // Plans. free: polish only, haiku, 10 fixes/month, 2/day, shared monthly budget
-// fuse. team: polish + revamp, sonnet, 200 fixes/month.
+// fuse. pro: polish only, sonnet. team/business: polish + revamp, sonnet,
+// 200 fixes/month. Revamp is Business-only; Pro does not include it.
 
 const MODELS = { free: "claude-haiku-4-5-20251001", paid: "claude-sonnet-5" };
 const QUOTAS = { free: 10, paid: 200 };
@@ -51,7 +52,10 @@ async function handleFix(request, env) {
 
   const record = await env.LICENSES.get(license, { type: "json" });
   if (!record || record.active === false) return json({ error: "invalid license" }, 401);
-  const isFree = record.plan === "free";
+  const plan = record.plan || "team";
+  const isFree = plan === "free";
+  // Revamp is Business-only: a Pro (individual) key gets polish, not revamp.
+  const hasRevamp = plan === "team" || plan === "business";
 
   // Plan gates before quota checks, so a free key asking for revamp hears
   // about revamp, not about today's limit.
@@ -62,8 +66,8 @@ async function handleFix(request, env) {
   const { findings = [], files = [], mode = "polish" } = body;
   if (!files.length) return json({ error: "no files" }, 400);
   if (mode !== "polish" && mode !== "revamp") return json({ error: "bad mode" }, 400);
-  if (mode === "revamp" && isFree) {
-    return json({ error: "revamp requires team", detail: "Revamp mode (full recipe rewrites, Pro library) is part of the Business plan." }, 403);
+  if (mode === "revamp" && !hasRevamp) {
+    return json({ error: "revamp requires team", plan, detail: "Revamp mode (full recipe rewrites, Pro library) is part of the Business plan." }, 403);
   }
 
   const month = new Date().toISOString().slice(0, 7);
@@ -116,7 +120,7 @@ async function handleFix(request, env) {
     await env.USAGE.put(globalKey, String(globalUsed + 1), ttl);
   }
 
-  return json({ ...fixed, usage: { used: used + 1, quota, plan: record.plan || "team" } });
+  return json({ ...fixed, usage: { used: used + 1, quota, plan } });
 }
 
 const MAX_RECIPES = 4;
