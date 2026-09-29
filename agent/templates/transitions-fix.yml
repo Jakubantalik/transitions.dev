@@ -7,6 +7,11 @@
 #   TRANSITIONS_AGENT_LICENSE   your transitions.dev license key (Business
 #                               includes 200 hosted fixes/month; revamp mode
 #                               and the Pro recipe library are Business-only)
+#
+# One-time repo setting (GitHub blocks it by default): Settings > Actions >
+# General > Workflow permissions > check "Allow GitHub Actions to create and
+# approve pull requests". Without it the fixes still push as a branch, but
+# the PR must be opened by hand.
 name: Transitions Agent fix
 
 on:
