@@ -41,7 +41,7 @@ Flags: `--json`, `--md`, `--dir <path>`, `--min-score <n>` (exit 2 below n, for 
 `npx transitions-agent init-ci` sets it up (or copy [templates/transitions-agent.yml](templates/transitions-agent.yml) to `.github/workflows/`). Every pull request then gets:
 
 - a motion score comment with the recognized components and findings, updated in place on every push;
-- automatic fixes: when there is something to fix, one fix pull request into that pull request's branch (never main), linked from the comment. Merge it to apply the fixes, close it to reject them;
+- automatic fixes: when there is something to fix, one fix pull request into that pull request's branch (never main), linked from the comment. Merge it to apply the fixes, close it to reject them. Its description says, per component and in plain words, what someone using the app will notice ("Opens in 250ms instead of 800ms", "Animates out when it closes instead of disappearing instantly"), what is still open, and folds the technical notes away;
 - an optional merge gate with `min-score`.
 
 ```yaml

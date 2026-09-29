@@ -133,7 +133,8 @@ async function main() {
     sh("git", ["config", "user.email", "agent@transitions.dev"]);
     sh("git", ["checkout", "--force", "-B", branch, `origin/${pr.head.ref}`]);
     const { scan } = await import("../lib/scan.mjs");
-    const { runFix } = await import("../lib/fix.mjs");
+    const { runFix, fixPrBody } = await import("../lib/fix.mjs");
+    const { changesHighlights } = await import("../lib/describe.mjs");
     const result = scan(root);
     const report = {};
     const mode = decision.mode;
@@ -142,24 +143,19 @@ async function main() {
       license: process.env.TA_LICENSE, yes: true, pr: true, mode, report,
       base: pr.head.ref, branch,
       commitMessage: `fix(motion): transitions-agent ${mode} fixes for #${pr.number}`,
-      title: ({ before, after }) => `Motion fixes for #${pr.number}: ${mode}, score ${before} to ${after}`,
-      body: ({ before, after, files, summary }) => [
-        `Proposed by [Transitions Agent](https://transitions.dev/agent.html) for #${pr.number} (\`${pr.head.ref}\`).`,
-        "",
-        `**Motion score: ${before} to ${after} / 100** · mode: ${mode}`,
-        "",
-        summary || "",
-        "",
-        "Changed files:",
-        ...files.map((f) => `- \`${f}\``),
-        "",
-        `Merge this pull request to apply the fixes to #${pr.number}, or close it to reject them. It targets \`${pr.head.ref}\`, never your default branch.`,
-        mode === "polish" ? `Label #${pr.number} with \`revamp\` to install the transitions.dev recipes on its components instead (Business plan).` : "",
-      ].filter((l, i, a) => l !== "" || a[i - 1] !== "").join("\n"),
+      title: ({ before, after }) => `Motion fixes for #${pr.number} (${mode}, score ${before} → ${after})`,
+      body: ({ before, after, files, summary, changes }) => fixPrBody({
+        intro: `[Transitions Agent](https://transitions.dev/agent.html) reviewed the motion in #${pr.number} and proposes the changes below. **Merge** this pull request to apply them to #${pr.number}, or **close** it to keep #${pr.number} as it is. It targets \`${pr.head.ref}\`, never your default branch.`,
+        mode, before, after, changes, summary, files,
+        footer: mode === "polish" && changes && changes.remaining.some((r) => /Revamp installs/.test(r))
+          ? [`Want the library recipes installed too? Add the \`revamp\` label to #${pr.number} (Business plan).`, ""]
+          : [],
+      }),
     });
     out.before = report.before;
     out.after = report.after;
     out.applied = report.applied || [];
+    if (report.changes) out.highlights = changesHighlights(report.changes);
     if (report.pr) {
       out.status = report.pr.created ? "opened" : "updated";
       out.pr = report.pr;

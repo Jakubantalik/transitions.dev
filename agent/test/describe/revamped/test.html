@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dropdown test</title>
+  <!--
+    Dropdown uses the transitions.dev "menu-dropdown" recipe (250ms open,
+    150ms close, scale from 0.97, smooth ease-out) driven by .is-open /
+    .is-closing hooks on .dropdown-menu. Hover states carry their own
+    transitions and honor prefers-reduced-motion.
+  -->
+  <style>
+    :root {
+      --transition-fast: 150ms;
+      --transition-normal: 300ms;
+      --transition-slow: 400ms;
+
+      /* menu-dropdown recipe defaults */
+      --dropdown-open-dur: 250ms;
+      --dropdown-close-dur: 150ms;
+      --dropdown-pre-scale: 0.97;
+      --dropdown-closing-scale: 0.99;
+      --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :root {
+        --transition-fast: 0ms;
+        --transition-normal: 0ms;
+        --transition-slow: 0ms;
+      }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 120px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+      color: #111;
+    }
+
+    .dropdown { position: relative; }
+
+    .dropdown-button {
+      height: 36px;
+      padding: 0 14px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background: #fff;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      transition:
+        opacity var(--transition-normal) ease-in,
+        transform var(--transition-normal) ease-in,
+        background var(--transition-normal) ease-in,
+        border-color var(--transition-normal) ease-in;
+    }
+    .dropdown-button:hover { background: #eee; border-color: #bbb; }
+
+    /* menu-dropdown recipe */
+    .dropdown-menu {
+      position: absolute;
+      top: 44px;
+      left: 0;
+      width: 180px;
+      margin: 0;
+      padding: 6px;
+      list-style: none;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      transform-origin: top left;
+      transform: scale(var(--dropdown-pre-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--dropdown-open-dur) var(--dropdown-ease),
+        opacity   var(--dropdown-open-dur) var(--dropdown-ease);
+      will-change: transform, opacity;
+    }
+
+    .dropdown-menu.is-open {
+      transform: scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .dropdown-menu.is-closing {
+      transform: scale(var(--dropdown-closing-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--dropdown-close-dur) var(--dropdown-ease),
+        opacity   var(--dropdown-close-dur) var(--dropdown-ease);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dropdown-menu { transition: none !important; }
+    }
+
+    .dropdown-item {
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition:
+        opacity var(--transition-fast) ease,
+        transform var(--transition-fast) ease,
+        background var(--transition-fast) ease;
+    }
+    .dropdown-item:hover { background: #f0f0f0; transform: translateX(6px); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    function Dropdown() {
+      // menuState: "closed" | "opening" | "open" | "closing"
+      // "opening" mounts the menu without .is-open so the next frame can
+      // add it and force the recipe's transition to actually play.
+      const [menuState, setMenuState] = useState("closed");
+      const ref = useRef(null);
+      const closeTimeout = useRef(null);
+      const openFrame = useRef(null);
+
+      // Close on outside click.
+      useEffect(() => {
+        function onDown(e) {
+          if (ref.current && !ref.current.contains(e.target)) closeMenu();
+        }
+        document.addEventListener("mousedown", onDown);
+        return () => document.removeEventListener("mousedown", onDown);
+      }, []);
+
+      // Force a reflow before replaying: flip to .is-open on the next frame
+      // after mount so the browser commits the pre-scale/opacity-0 state first.
+      useEffect(() => {
+        if (menuState === "opening") {
+          openFrame.current = requestAnimationFrame(() => setMenuState("open"));
+        }
+        return () => cancelAnimationFrame(openFrame.current);
+      }, [menuState]);
+
+      useEffect(() => () => clearTimeout(closeTimeout.current), []);
+
+      function openMenu() {
+        clearTimeout(closeTimeout.current);
+        setMenuState("opening");
+      }
+
+      function closeMenu() {
+        setMenuState((prev) => (prev === "closed" ? prev : "closing"));
+        const closeMs =
+          parseFloat(
+            getComputedStyle(document.documentElement).getPropertyValue(
+              "--dropdown-close-dur"
+            )
+          ) || 150;
+        // Keep the menu mounted until its exit animation ends, then clean up
+        // .is-closing so the next open isn't jump-started mid-transition.
+        closeTimeout.current = setTimeout(() => setMenuState("closed"), closeMs);
+      }
+
+      function toggleMenu() {
+        if (menuState === "closed" || menuState === "closing") openMenu();
+        else closeMenu();
+      }
+
+      const visible = menuState !== "closed";
+      const menuClassName = `dropdown-menu${
+        menuState === "open" ? " is-open" : ""
+      }${menuState === "closing" ? " is-closing" : ""}`;
+
+      return (
+        <div className="dropdown" ref={ref}>
+          <button className="dropdown-button" onClick={toggleMenu}>
+            Options ▾
+          </button>
+          {visible && (
+            <ul className={menuClassName}>
+              <li className="dropdown-item" onClick={closeMenu}>Edit</li>
+              <li className="dropdown-item" onClick={closeMenu}>Duplicate</li>
+              <li className="dropdown-item" onClick={closeMenu}>Archive</li>
+              <li className="dropdown-item" onClick={closeMenu}>Delete</li>
+            </ul>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Dropdown />);
+  </script>
+</body>
+</html>

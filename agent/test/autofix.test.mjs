@@ -47,9 +47,9 @@ test("the agent's own commits and merges are not new work", () => {
 
 test("the score comment links the fix pull request and keeps the marker", () => {
   const scanned = { score: 72, grade: "janky", scannedFiles: 3, findings: [{ rule: "off-scale", severity: "warn", path: "a.css", line: 3, message: "x" }], components: [] };
-  const af = { status: "opened", mode: "polish", before: 72, after: 94, pr: { number: 13, url: "https://github.com/acme/app/pull/13" }, marker: { sha: "bbb", mode: "polish", pr: 13 } };
+  const af = { status: "opened", mode: "polish", before: 72, after: 94, pr: { number: 13, url: "https://github.com/acme/app/pull/13" }, marker: { sha: "bbb", mode: "polish", pr: 13 }, highlights: ["**Dropdown menu**: opens in 250ms instead of 800ms"] };
   const md = renderMarkdown(scanned, { autofix: af });
-  assert.match(md, /\*\*Proposed fixes:\*\* \[#13\]\(https:\/\/github\.com\/acme\/app\/pull\/13\) \(polish, motion score 72 to 94\)\. Merge it to apply/);
+  assert.match(md, /\*\*Proposed fixes:\*\* \[#13\]\(https:\/\/github\.com\/acme\/app\/pull\/13\) \(polish, motion score 72 → 94\)\n- \*\*Dropdown menu\*\*: opens in 250ms instead of 800ms\n\nMerge it to apply/);
   assert.deepEqual(parseMarker(md), { sha: "bbb", mode: "polish", pr: 13 });
   assert.match(autofixLine({ status: "skipped", existing: { number: 13, url: "u", state: "MERGED" } }), /Fixes applied/);
   assert.match(autofixLine({ status: "skipped", reason: "nothing", mode: "polish", recipeFindings: 2 }), /add the `revamp` label/);

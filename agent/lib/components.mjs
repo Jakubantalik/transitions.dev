@@ -793,12 +793,12 @@ function hoverChecks(pf, props, index, markup) {
       if (trans.length && uncovered.length) {
         const has = [...covered].filter((p) => p !== "all").join(", ");
         out.push({
-          rule: "hover-without-transition", severity: "warn", path: pf.path, line,
+          rule: "hover-without-transition", severity: "warn", path: pf.path, line, selector: sel, props: uncovered,
           message: `"${sel.slice(0, 60)}" changes ${uncovered.join(", ")}, but its transition only covers ${has || "other properties"}, so those changes snap. Add them to the transition.`,
         });
       } else if (!trans.length && visual.length) {
         out.push({
-          rule: "hover-without-transition", severity: "warn", path: pf.path, line,
+          rule: "hover-without-transition", severity: "warn", path: pf.path, line, selector: sel, props: visual,
           message: `"${sel.slice(0, 60)}" changes ${visual.join(", ")} with no transition. The change snaps instead of easing.`,
         });
       }
@@ -810,12 +810,12 @@ function hoverChecks(pf, props, index, markup) {
         out.push({
           rule: "off-scale", severity: "minor", path: lateEase.path, line: lateEase.line,
           message: `hover easing: ${lateEase.ease} -> var(--ease-smooth-out) (cubic-bezier(0.22, 1, 0.36, 1)). Hover in should be quick and direct; ${lateEase.ease} makes it feel late`,
-          usage: "hover easing", from: lateEase.ease, to: "var(--ease-smooth-out)",
+          usage: "hover easing", from: lateEase.ease, to: "var(--ease-smooth-out)", selector: sel,
         });
       }
       if (layout.length) {
         out.push({
-          rule: "layout-animation", severity: "warn", path: pf.path, line,
+          rule: "layout-animation", severity: "warn", path: pf.path, line, selector: sel, props: layout,
           message: `"${sel.slice(0, 60)}" shifts ${layout.join(", ")} on hover (layout), which moves surrounding content. Use transform (translate or scale) for the shift.`,
         });
       }
