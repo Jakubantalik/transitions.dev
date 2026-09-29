@@ -5,12 +5,14 @@
    symbol from a dot: the dot stretches into the three centre arms, one
    wavefront travels out from the hub drawing each spoke and then its
    arrow head, and the whole symbol turns in from -90deg while scaling
-   up from 0.42. On hover the mark folds that build back 40% of the way
-   (the arrow heads tuck in, the spokes shorten, the mark shrinks a
-   little) while it starts to spin, then grows back out on the video's
-   own timeline (its 1.5x logo speed). The spin is one full turn: it
-   picks up speed through the fold, peaks at the turnaround and settles
-   exactly as the regrowth lands.
+   up from 0.42. On hover the mark folds that build back 60% of the way
+   (the arrow heads tuck in and the spokes retract into the centre Y,
+   the mark shrinks) while it starts to spin, then grows back out on the
+   video's own timeline (its 1.5x logo speed). The spin is a half turn:
+   it picks up speed through the fold, peaks at the turnaround and
+   settles as the regrowth lands. The arrows repeat every 60deg, so a
+   half turn lands them in place; the Y repeats every 120deg, so it
+   turns two thirds as far (120deg) and lands upright too.
 
    The resting mark is left exactly as authored. The script only splits
    the arrows path into its six arrows and adds the masks and arms the
@@ -55,9 +57,9 @@
   var T_GROW = 1600 * K; // turn and scale settle
   var T_FADE = 450 * K;  // symbol fade-in
   var T_END = T_GROW;
-  var W_FOLD = 0.6;      // fold back 40% of the wavefront's reach
+  var W_FOLD = 0.4;      // fold back 60% of the wavefront's reach
   var FOLD_MS = 320;     // the fold, soft landing at the turnaround
-  var SPIN_DEG = 360;    // one full turn across fold + regrowth
+  var SPIN_DEG = 180;    // a half turn across fold + regrowth
 
   /* ── Geometry from the mark's own paths ────────────────────────── */
   /* Absolute M/L/H/V/Z polygons (the brand paths use nothing else). */
@@ -186,7 +188,11 @@
     });
 
     var yEl = paths[1];
-    all.appendChild(yEl);
+    var yg = document.createElementNS(NS, "g");
+    yg.style.transformBox = "view-box";
+    yg.style.transformOrigin = f(Y.hub[0]) + "px " + f(Y.hub[1]) + "px";
+    yg.appendChild(yEl);
+    all.appendChild(yg);
     var armsG = document.createElementNS(NS, "g");
     armsG.setAttribute("fill", "none");
     armsG.setAttribute("stroke", fill);
@@ -198,7 +204,7 @@
       armsG.appendChild(a);
       return { el: a, d: d };
     });
-    all.appendChild(armsG);
+    yg.appendChild(armsG);
 
     paths[0].remove();
     svg.setAttribute("overflow", "visible");
@@ -206,7 +212,7 @@
     svg.appendChild(all);
 
     var sMax = Math.max.apply(null, A.map(function (g) { return Math.max(g.rOut, g.s0 + g.hL); }));
-    return { all: all, arrows: arrows, y: yEl, armsG: armsG, arms: arms, Y: Y, dot: dot, sMax: sMax,
+    return { all: all, yg: yg, arrows: arrows, y: yEl, armsG: armsG, arms: arms, Y: Y, dot: dot, sMax: sMax,
              phase: "idle", t: T_END, raf: 0 };
   }
 
@@ -220,6 +226,8 @@
     var s = E(clamp(t / T_GROW));
     var r = rot == null ? lerp(-90, 0, s) : rot;
     S.all.style.transform = "rotate(" + r.toFixed(3) + "deg) scale(" + lerp(0.42, 1, s).toFixed(4) + ")";
+    /* the Y turns two thirds as far as the arrows, so both land in place */
+    S.yg.style.transform = rot == null ? "" : "rotate(" + (-rot / 3).toFixed(3) + "deg)";
     S.all.style.opacity = E(clamp(t / T_FADE)).toFixed(3);
     var wave = E(clamp((t - T_DOT) / T_WAVE)) * S.sMax;
     /* the dot: three zero-length round-capped arms; as the wavefront
@@ -250,6 +258,7 @@
   function rest(S) {
     renderAt(S, T_END);
     S.all.style.transform = "";
+    S.yg.style.transform = "";
     S.all.style.opacity = "";
     S.arrows.forEach(function (ar) { ar.el.removeAttribute("mask"); ar.el.style.opacity = ""; });
     S.y.style.opacity = "";
