@@ -23,60 +23,83 @@
     })();
   </script>
   <style>
+    /* Mirrors the sign-in modal (assets/pro-client.js, Figma 2330:2574 +
+       2330:2712): 369px card, 24px radius, inset hairlines, 40px pill
+       input and buttons. */
     :root {
       color-scheme: light;
-      --bg: #fdfdfd; --text: #0d0d0d; --text-muted: #6c6c6c; --text-faint: #8f8f8f;
-      --card-bg: #ffffff; --card-border: rgba(0, 0, 0, 0.08);
-      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bg: #fdfdfd;
+      --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
       --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     }
-    html[data-theme="dark"] {
-      color-scheme: dark;
-      --bg: #121212; --text: #ffffff; --text-muted: rgba(202, 202, 202, 0.7); --text-faint: #8f8f8f;
-      --card-bg: #1a1a1a; --card-border: rgba(255, 255, 255, 0.1);
-    }
+    html[data-theme="dark"] { color-scheme: dark; --bg: #121212; }
     * { box-sizing: border-box; }
     body {
       margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: var(--bg); color: var(--text); font-family: var(--font-sans); padding: 24px;
+      background: var(--bg); font-family: var(--font-sans); padding: 24px;
     }
     .card {
-      width: 420px; max-width: 100%; background: var(--card-bg);
-      border: 1px solid var(--card-border); border-radius: 20px; padding: 28px;
+      position: relative; width: min(92vw, 369px);
+      background: #fff; color: #0d0d0d;
+      border-radius: 24px; padding: 20px;
+      display: flex; flex-direction: column; gap: 24px;
+      box-shadow:
+        0 1px 3px rgba(0, 0, 0, .04),
+        inset 0 0 0 1px rgba(0, 0, 0, .06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, .06),
+        inset 0 0 0 1px rgba(196, 196, 196, .1);
     }
-    h1 { margin: 0 0 8px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
-    p { margin: 0 0 18px; font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+    html[data-theme="dark"] .card { background: #1b1b1d; color: #f2f2f2; }
+    h1 { margin: 0; font-size: 16px; line-height: 24.2px; font-weight: 400; }
+    .muted { color: #8a8a8a; display: block; }
     .code {
-      display: inline-block; font-family: var(--font-mono); font-size: 13px; font-weight: 500;
-      padding: 3px 8px; border-radius: 6px; background: rgba(0, 0, 0, 0.05); color: var(--text);
+      font-family: var(--font-mono); font-size: 12px; line-height: 18px;
+      padding: 1px 4px; border-radius: 6px;
+      border: 1px solid rgba(0, 0, 0, .08); background: rgba(0, 0, 0, .04); color: #0d0d0d;
     }
-    html[data-theme="dark"] .code { background: rgba(255, 255, 255, 0.08); }
+    html[data-theme="dark"] .code { border-color: rgba(255, 255, 255, .08); background: rgba(255, 255, 255, .06); color: #ededed; }
+    form { display: flex; flex-direction: column; gap: 12px; }
     input[type="email"] {
-      width: 100%; height: 44px; padding: 0 14px; font-size: 15px; font-family: var(--font-sans);
-      color: var(--text); background: transparent; border: 1px solid var(--card-border);
-      border-radius: 12px; outline: none; margin-bottom: 12px;
+      width: 100%; height: 40px; padding: 4px 4px 4px 12px;
+      font-family: inherit; font-size: 13px; line-height: 1.4; color: #0f0f0f;
+      background: #fff; border: 1px solid #dcdcdc; border-radius: 60px; outline: none;
+      transition: border-color 120ms ease;
     }
-    input[type="email"]:focus { border-color: #1651f4; }
+    input[type="email"]::placeholder { color: #828282; }
+    input[type="email"]:focus { border: 1.5px solid #585858; padding-left: 11.5px; }
+    html[data-theme="dark"] input[type="email"] { background: #151517; color: #f2f2f2; border-color: #3a3a3d; }
+    html[data-theme="dark"] input[type="email"]:focus { border-color: #a5a5a5; }
     button {
-      width: 100%; height: 44px; border: 0; border-radius: 26px; font-size: 14px; font-weight: 500;
-      font-family: var(--font-sans); cursor: pointer; background: #17181c; color: #ffffff;
+      width: 100%; height: 40px; border: 0; border-radius: 26px;
+      background: #17181c; color: #fff;
+      font-family: inherit; font-size: 13px; line-height: 13px; font-weight: 500; cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .2);
+      transition: scale 120ms cubic-bezier(0.22, 1, 0.36, 1), opacity 120ms ease;
     }
-    html[data-theme="dark"] button { background: #ffffff; color: #111111; }
-    button[disabled] { opacity: 0.6; cursor: default; }
-    .msg { margin-top: 14px; font-size: 13px; line-height: 1.6; color: var(--text-muted); }
-    .msg strong { color: var(--text); }
-    .err { color: #e5484d; }
+    button:not([disabled]):active { scale: .96; }
+    button[disabled] { opacity: .6; cursor: default; }
+    html[data-theme="dark"] button { background: #f2f2f2; color: #111; }
+    .msg { margin: 0; font-size: 13px; line-height: 1.4; }
+    .msg:empty { display: none; }
+    .msg[data-kind="ok"] { color: #16a34a; }
+    .msg[data-kind="err"] { color: #d62b11; }
+    .foot { margin: 0; font-size: 13px; line-height: 16px; color: #17181c; }
+    .foot a { color: inherit; font-weight: 500; text-decoration: none; }
+    .foot a:hover { text-decoration: underline; }
+    html[data-theme="dark"] .foot { color: #e5e5e5; }
+    @media (prefers-reduced-motion: reduce) { button, input { transition: none !important; } }
   </style>
 </head>
 <body>
   <main class="card">
-    <h1>Transitions Agent sign-up</h1>
-    <p id="intro">Free plan: unlimited motion scans and 10 hosted polish fixes a month. Enter your email and the license key goes to <strong>your terminal</strong> and your inbox.</p>
-    <form id="form">
-      <input type="email" id="email" placeholder="you@company.com" required autocomplete="email" autofocus />
+    <h1 id="intro">Get your free Transitions Agent key
+      <span class="muted">10 hosted polish fixes a month. The key goes to your terminal and your inbox.</span></h1>
+    <form id="form" novalidate>
+      <input type="email" id="email" placeholder="you@example.com" required autocomplete="email" aria-label="Email address" autofocus />
       <button type="submit" id="submit">Get my free key</button>
     </form>
-    <div class="msg" id="msg"></div>
+    <p class="msg" id="msg" role="status"></p>
+    <p class="foot">Need revamp and 200 fixes a month? <a href="/pro.html">See Business</a></p>
   </main>
   <script>
     (function () {
@@ -88,14 +111,15 @@
       var btn = document.getElementById("submit");
       if (code) {
         document.getElementById("intro").innerHTML =
-          'Connecting terminal session <span class="code">' + code.replace(/[^A-Z0-9-]/g, "") +
-          "</span>. Enter your email - the key lands in your waiting terminal and your inbox.";
+          "Get your free Transitions Agent key" +
+          '<span class="muted">Connecting terminal session <span class="code">' + code.replace(/[^A-Z0-9-]/g, "") +
+          "</span>. The key lands in your waiting terminal and your inbox.</span>";
       }
       form.addEventListener("submit", function (e) {
         e.preventDefault();
         var email = document.getElementById("email").value.trim();
         btn.disabled = true;
-        msg.className = "msg";
+        msg.removeAttribute("data-kind");
         msg.textContent = "Issuing your key...";
         fetch(API + "/agent/signup", {
           method: "POST",
@@ -104,18 +128,19 @@
         }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
           .then(function (res) {
             if (res.ok) {
-              msg.innerHTML = code
-                ? "<strong>Done.</strong> Your terminal picks the key up in a few seconds - you can close this tab. A copy is in your inbox."
-                : "<strong>Done.</strong> Check your inbox for the license key.";
+              msg.setAttribute("data-kind", "ok");
+              msg.textContent = code
+                ? "Done. Your terminal picks the key up in a few seconds - you can close this tab. A copy is in your inbox."
+                : "Done. Check your inbox for the license key.";
             } else {
               btn.disabled = false;
-              msg.className = "msg err";
+              msg.setAttribute("data-kind", "err");
               msg.textContent = "That didn't go through (" + (res.d.error || "error") + "). Try again.";
             }
           })
           .catch(function () {
             btn.disabled = false;
-            msg.className = "msg err";
+            msg.setAttribute("data-kind", "err");
             msg.textContent = "Could not reach the server. Try again.";
           });
       });

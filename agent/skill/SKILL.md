@@ -29,7 +29,7 @@ When the user's message is just the command (`npx transitions-agent` or a varian
    npx transitions-agent@latest signup
    ```
 
-   This opens the user's browser; they enter their email there and the key saves itself. Wait for it to finish, then run the fix.
+   This opens the user's browser; they enter their email there and the key saves itself. Wait for it to finish, then run the fix. If it reports the key could not be saved (sandboxed agent), pass it on every fix with `--license <key>`.
 
 4. **Verify**: re-run the scan and report the score change (for example "71 to 89"). If the user wants it as a pull request, use `fix --pr` (it creates a branch and opens a PR; it never touches the main branch) - only with their explicit ok.
 
