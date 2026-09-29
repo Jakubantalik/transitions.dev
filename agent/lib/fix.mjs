@@ -1,6 +1,7 @@
 // Fix flow: send findings + files to the transitions.dev fix service (option C:
 // the service holds the AI key), show proposed diffs, apply only after an
 // explicit yes, optionally open a pull request after a second explicit yes.
+// Keyless runs point to signup - the hosted service is the only fix path.
 import { readFileSync, writeFileSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -54,8 +55,9 @@ export async function runFix(root, result, opts) {
 
   if (!license) {
     await offerSignup(api);
-    writePromptFallback(root, findings, files, mode);
-    return 0;
+    console.log("Hosted fixes need a license key. Free plan: 10 polish fixes/month.");
+    console.log("Get yours: " + c.bold("npx transitions-agent signup") + c.dim(" (opens the browser)") + " - then re-run fix.");
+    return 1;
   }
 
   console.log(c.dim(`Requesting ${mode} fixes for ${files.length} files${dropped > 0 ? ` (${dropped} deferred to a later run)` : ""}...`));
@@ -173,34 +175,6 @@ async function offerSignup(api) {
     console.log(c.dim("Could not reach the signup service; try: npx transitions-agent signup " + email));
   }
 }
-
-function writePromptFallback(root, findings, files, mode) {
-  // No license: hand the work to the user's own coding agent instead.
-  const out = join(root, "transitions-agent-fixes.md");
-  const modeBrief = mode === "revamp"
-    ? "Where a finding names a recipe, replace the existing motion wholesale with that transitions.dev recipe pattern. You may add keyframes and classes, but never change component logic."
-    : "Make only small, safe adjustments: move durations to motion tokens, add a prefers-reduced-motion guard, replace transition: all with named properties, add missing transition declarations. Do not restructure markup, components, or keyframes.";
-  const lines = [
-    `# ${mode === "revamp" ? "Revamp" : "Polish"} the UI transitions in this repository`,
-    "",
-    "You are working in this repository. Apply fixes for the findings below using",
-    "production-quality CSS transitions (respect prefers-reduced-motion, use motion",
-    "tokens, animate transform and opacity rather than layout). Recipes: https://transitions.dev",
-    "",
-    modeBrief,
-    "",
-    "## Findings",
-    ...findings.map((f) => `- ${f.path}${f.line ? ":" + f.line : ""} [${f.rule}] ${f.message}${f.recipe ? ` (recipe: https://transitions.dev/transitions/${f.recipe})` : ""}`),
-    "",
-    "Affected files: " + files.map((f) => f.path).join(", "),
-  ];
-  writeFileSync(out, lines.join("\n"));
-  console.log("Get a free key: " + c.bold("npx transitions-agent signup you@email.com") + c.dim(" (then export TRANSITIONS_AGENT_LICENSE=<key>)"));
-  console.log("Wrote " + c.bold("transitions-agent-fixes.md") + " with the findings and fix instructions.");
-  console.log("Next step: get a free key - npx transitions-agent signup (opens the browser; 10 hosted polish fixes/month) - then re-run fix.");
-  console.log("Findings reference saved to transitions-agent-fixes.md.");
-}
-
 function ask(question) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
