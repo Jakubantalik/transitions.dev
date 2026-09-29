@@ -2,6 +2,7 @@
 // transitions-agent: scan a codebase for missing or janky UI transitions.
 //
 //   npx transitions-agent                 scan + motion score + findings
+//   npx transitions-agent skill           install the agent skill (Claude Code)
 //   npx transitions-agent signup          free plan: sign up in the browser
 //   npx transitions-agent signup you@x.co  free plan: license key by email
 //   npx transitions-agent fix             propose AI fixes as diffs, confirm, apply
@@ -26,12 +27,14 @@
 import { scan } from "../lib/scan.mjs";
 import { renderTerminal, renderMarkdown } from "../lib/report.mjs";
 import { runFix } from "../lib/fix.mjs";
-import { resolve, join } from "node:path";
+import { resolve, join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
 import { readFileSync, writeFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 
 const CREDS_PATH = join(homedir(), ".transitions-agent.json");
+const PKG_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 function loadCreds() {
   try { return JSON.parse(readFileSync(CREDS_PATH, "utf8")); } catch { return null; }
 }
@@ -58,6 +61,20 @@ for (let i = 0; i < args.length; i++) {
 const root = resolve(flags.dir || ".");
 const command = positional[0] || "scan";
 const api = (flags.api || process.env.TRANSITIONS_AGENT_API || "https://api.transitions.dev").replace(/\/$/, "");
+
+if (command === "skill") {
+  // Install the agent skill: the react.doctor move. Instructions live in the
+  // agent's TRUSTED context (user-installed config), so Claude Code follows
+  // the scan-present-fix workflow instead of ignoring CLI output.
+  const { mkdirSync, copyFileSync } = await import("node:fs");
+  const dest = resolve(flags.dir || join(homedir(), ".claude", "skills", "transitions-agent"));
+  mkdirSync(dest, { recursive: true });
+  copyFileSync(join(PKG_DIR, "skill", "SKILL.md"), join(dest, "SKILL.md"));
+  console.log("\u2713 Skill installed to " + dest);
+  console.log("Claude Code picks it up automatically. Ask it: \"check this app's motion\".");
+  console.log("Other agents (Cursor, Codex): point them at " + join(dest, "SKILL.md") + " or re-run with --dir <their skills folder>.");
+  process.exit(0);
+}
 
 if (command === "signup") {
   const email = (positional[1] || "").trim();
@@ -169,5 +186,5 @@ if (command === "fix") {
   process.exit(code);
 }
 
-console.error(`Unknown command "${command}". Use: transitions-agent [scan|fix|signup]`);
+console.error(`Unknown command "${command}". Use: transitions-agent [scan|fix|signup|skill]`);
 process.exit(1);
