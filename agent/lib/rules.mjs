@@ -218,7 +218,7 @@ export function runRules(files) {
         severity: "warn",
         path: f.path,
         line: lineOf(src, m.index),
-        message: "\"transition: all\" animates every property including layout. Name the properties (opacity, transform) for smoother, cheaper motion.",
+        message: "\"transition: all\" animates every property including layout. Name the properties its states actually change (for example background-color, opacity, transform) for smoother, cheaper motion.",
       });
     }
 
