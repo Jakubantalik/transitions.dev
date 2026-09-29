@@ -1,0 +1,3 @@
+.confetti-piece { position: absolute; width: 6px; height: 10px; animation: confetti-fall 2s linear infinite; }
+@keyframes confetti-fall { from { transform: translateY(-20px) rotate(0); } to { transform: translateY(300px) rotate(720deg); } }
+@media (prefers-reduced-motion: reduce) { .confetti-piece { animation: none; } }

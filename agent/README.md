@@ -20,12 +20,18 @@ The `fix` command sends the affected files to the hosted fix service (your licen
 
 | Mode | What it does | Risk |
 |---|---|---|
-| `--mode polish` (default) | Small safe adjustments only: durations onto motion tokens, `prefers-reduced-motion` guard, named properties instead of `transition: all`, missing transition lines on hover bases. Never restructures anything. | Minimal, few-line diffs |
-| `--mode revamp` (Business plan) | Superset of polish: confident recipe matches (modals, tooltips, dropdowns) get the recipe's full enter and exit motion, keyframes, and easing; every other finding gets the polish treatment. Logic is never touched. | Larger diffs, review the PR |
+| `--mode polish` (default) | The transitions-polish treatment: every value moved onto the transitions.dev motion-token scale by what it does (a 300ms modal close becomes 150ms, a 0.8 modal scale becomes 0.96), hover transitions covering what the hover changes, `prefers-reduced-motion` guard, named properties instead of `transition: all`. Never restructures anything. | Minimal, few-line diffs |
+| `--mode revamp` (Business plan) | Polish plus the transitions.dev skill: each recognized component gets its library recipe installed (recipe CSS, state hooks, and the JS for enter and exit), Pro recipes included. Logic is never touched. | Larger diffs, review the PR |
+
+### What the scan recognizes
+
+The scan reviews a project the way the transitions.dev skill does. It recognizes each UI component the library covers (modals, dropdowns, popovers, tooltips, toasts, drawers, accordions, tabs, toggles, checkboxes, badges, skeletons, and the rest of the 32 free and 11 Pro recipes) from class names, elements, ARIA roles, component names, Tailwind utilities, and Framer Motion props. It reads what each one's motion actually does (open and close timing, easing, scale, travel, exit, animated properties) and compares it with the recipe by usage. Components built from the library's `t-*` hooks are checked against the recipe's tunable defaults.
+
+Findings: `off-scale` (a value off the scale for its usage, with from and to), `recipe-mismatch` (motion built wrong for the component: animates layout, no exit, pops in), `recipe-available` (hand-rolled, the library has a recipe; no score penalty), plus the rules for hover coverage, `transition: all`, slow and hardcoded durations, and reduced motion. `--json` includes the full `components` list.
 
 ```bash
-npx transitions-agent fix                # polish: safe token-level cleanup
-npx transitions-agent fix --mode revamp  # recipe-level motion rewrite
+npx transitions-agent fix                # polish: values onto the motion scale
+npx transitions-agent fix --mode revamp  # install library recipes on recognized components
 ```
 
 Flags: `--json`, `--md`, `--dir <path>`, `--min-score <n>` (exit 2 below n, for CI), `--mode polish|revamp`, `--license <key>` (or `TRANSITIONS_AGENT_LICENSE`), `--yes` (skip prompts).

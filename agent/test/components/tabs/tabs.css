@@ -1,0 +1,3 @@
+.tabs { position: relative; display: flex; }
+.tab-indicator { position: absolute; left: 0; bottom: 0; height: 2px; transition: left 300ms ease, width 300ms ease; }
+@media (prefers-reduced-motion: reduce) { .tab-indicator { transition: none; } }
