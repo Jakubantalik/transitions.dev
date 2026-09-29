@@ -814,6 +814,8 @@
     .mobile-menu-link--2 { transition-delay: 40ms; }
     .mobile-menu-link--3 { transition-delay: 80ms; }
     .mobile-menu-link--4 { transition-delay: 120ms; }
+    .mobile-menu-link--5 { transition-delay: 160ms; }
+    .mobile-menu-link--6 { transition-delay: 200ms; }
     .mobile-menu-link--pro { color: #0053e3; }
     html[data-theme="dark"] .mobile-menu-link--pro { color: #7cd4ff; }
     .mobile-menu-link--pro[data-state="account"] { color: var(--text); }
@@ -965,6 +967,72 @@
       line-height: 34px;
       color: var(--text);
       letter-spacing: -0.01em;
+    }
+    /* "Skill" carries the Pro page's animated colour wash, as on the
+       agent page. */
+    .title-pro {
+      background-image:
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.88'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.34726 -1.3118e-7 8.6482e-7 0.89585 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.5'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-1.3 0.25 -1.2633 -2.7471 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.4'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.05 -0.8 0.46018 3.6184 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='0.71709'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.51067 -3.3275e-16 -4.3352e-14 -1.1396 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.45 -0.75 1.9052 -0.7091 33.5 21)'><stop stop-color='rgba(255,173,85,1)' offset='0'/><stop stop-color='rgba(255,173,85,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.25 -0.35 -0.4013 3.5959 33.5 21)'><stop stop-color='rgba(0,204,68,1)' offset='0'/><stop stop-color='rgba(0,196,102,0.75)' offset='0.25'/><stop stop-color='rgba(0,187,136,0.5)' offset='0.5'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87391 0.73043 -4.1482 -1.9503 33.5 21)'><stop stop-color='rgba(0,170,204,1)' offset='0'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        linear-gradient(rgb(108, 108, 108) 0%, rgb(216, 216, 216) 100%);
+      /* Each colour layer is blown up to 230% and swings around the
+         glyph box (the grey base ramp stays put at 100%), so the
+         enlarged blobs sweep corner-to-corner through the letters.
+         The repaint area is one ~55×47px word — negligible. */
+      background-size: 180% 180%, 180% 180%, 180% 180%, 180% 180%,
+                       180% 180%, 180% 180%, 180% 180%, 100% 100%;
+      background-repeat: no-repeat;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation:
+        title-pro-hue 4s linear infinite,
+        title-pro-drift 5s ease-in-out infinite;
+    }
+    /* Full hue cycle — ends where it starts, so the loop is seamless
+       and the colour travel is unmistakable. Compositor-only. The
+       saturate boost keeps the washes punchy at 180% blow-up. */
+    @keyframes title-pro-hue {
+      from { filter: hue-rotate(0deg) saturate(1.3); }
+      to   { filter: hue-rotate(-360deg) saturate(1.3); }
+    }
+    /* Blob travel — perimeter orbit. Each blob is re-centred inside
+       its own SVG tile (translation 33.5 21 above) and pinned to the
+       ring of edge stops TL,T,TR,R,BR,B,BL,L (in position space:
+       corners/edge-midpoints of the 0–100% range). Every blob starts
+       on the stop nearest its Figma quadrant and advances two ring
+       stops per keyframe — a full lap around the text outline per
+       cycle, so colour hugs and travels the edges while the middle
+       keeps the grey ramp. Last layer (grey ramp) never moves. */
+    @keyframes title-pro-drift {
+      0%, 100% {
+        background-position:
+          100% 0%, 0% 50%, 100% 50%, 0% 100%,
+          0% 0%, 50% 0%, 50% 100%, 0 0;
+      }
+      25% {
+        background-position:
+          100% 100%, 50% 0%, 50% 100%, 0% 0%,
+          100% 0%, 100% 50%, 0% 50%, 0 0;
+      }
+      50% {
+        background-position:
+          0% 100%, 100% 50%, 0% 50%, 100% 0%,
+          100% 100%, 50% 100%, 50% 0%, 0 0;
+      }
+      75% {
+        background-position:
+          0% 0%, 50% 100%, 50% 0%, 100% 100%,
+          0% 100%, 0% 50%, 100% 50%, 0 0;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .title-pro { animation: none; }
     }
 
     .subtitle {
@@ -3516,6 +3584,66 @@
        don't look like a tight rhythm of similar rows. */
     #commands .skill-section-rows,
     #installation .skill-section-rows { gap: 16px; }
+    /* Section copy matches the agent page's Get started (which follows
+       the docs typography): 14/22 body in #3f3f3f, 12/18 code chips with
+       a hairline, text-coloured links that underline on hover. */
+    .skill-content .skill-section-note {
+      font-size: 14px;
+      line-height: 22px;
+      color: #3f3f3f;
+    }
+    html[data-theme="dark"] .skill-content .skill-section-note { color: #cfcfcf; }
+    .skill-content .gs-step-label { color: #0d0d0d; }
+    html[data-theme="dark"] .skill-content .gs-step-label { color: #ededed; }
+    .skill-content .skill-section-note code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+      padding: 1px 4px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.04);
+      color: #0d0d0d;
+    }
+    html[data-theme="dark"] .skill-content .skill-section-note code {
+      border-color: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
+      color: #ededed;
+    }
+    .skill-content .skill-section-note a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    .skill-content .skill-section-note a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+    /* Labelled steps, same as the agent page's Get started. */
+    .get-started-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .gs-step {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .gs-step-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .gs-step-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .gs-step-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
     .skill-command {
       display: flex;
       flex-direction: column;
@@ -3865,9 +3993,10 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-            <a class="nav-pill" href="detail.html?t=card-resize">Transitions</a>
-            <a class="nav-pill nav-pill--active" href="/skill.html" aria-current="page">Skill</a>
-            <a class="nav-pill" href="/refine.html">Refine tool</a>
+          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
+          <a class="nav-pill nav-pill--active" href="/skill.html" data-nav="skill" aria-current="page">Skill</a>
+          <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           </nav>
         </div>
         <div class="site-nav-right">
@@ -3897,20 +4026,6 @@
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
             </svg>
             <span class="pill-label" id="gh-stars-count">—</span>
-          </a>
-          <a
-            class="icon-btn"
-            href="https://x.com/jakubantalik"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="X (Twitter)"
-          >
-            <svg class="icon-x" aria-hidden="true" viewBox="0 0 16 17" xmlns="http://www.w3.org/2000/svg">
-              <path
-                fill="currentColor"
-                d="M12.4041 1.39726H14.6953L9.69087 7.2591L15.5781 15.2368H10.9696L7.35741 10.3996L3.22921 15.2368H0.934687L6.28641 8.96575L0.642598 1.39726H5.36795L8.62962 5.81859L12.4041 1.39726ZM11.5992 13.8329H12.8682L4.67667 2.72798H3.31359L11.5992 13.8329Z"
-              />
-            </svg>
           </a>
           <!-- 3-dot menu — Appearance opens a theme sub-page (Light / Dark / System). -->
           <!-- 3-dot menu — exact Refine tool dropdown component. -->
@@ -3985,10 +4100,11 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
-          <li><a class="mobile-menu-link mobile-menu-link--1" href="detail.html?t=card-resize">Transitions</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/refine.html">Refine tool</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html">Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/skill.html" aria-current="page">Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <a class="mobile-menu-cta" id="mobile-signin" href="/pro.html">Sign in</a>
       </nav>
@@ -4013,11 +4129,10 @@
           decoding="async"
         />
       </div>
-      <h1 class="title">Transitions.dev Skill</h1>
+      <h1 class="title">Transitions <span class="title-pro">Skill</span></h1>
       <p class="subtitle">
-        Transitions skill teaches your AI about product motion<br />
-        and includes all the transitions from the main page and<br />
-        useful commands for your agent.
+        Teaches your coding agent product motion: every transition
+        from the library, and the commands to apply and refine them.
       </p>
       <div class="skill-cta-row">
         <a class="skill-btn skill-btn--primary" href="#installation">Get started</a>
@@ -4071,7 +4186,7 @@
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M8.55 2.27a.75.75 0 0 1 0 1.06L4.28 7.6a.75.75 0 0 1-1.06 0L1.45 5.83a.75.75 0 1 1 1.06-1.06l1.24 1.24 3.74-3.74a.75.75 0 0 1 1.06 0Z" fill="#ffffff"/>
               </svg>
             </span>
-            <span class="skill-compare-pane-label">With Transitions Skill</span>
+            <span class="skill-compare-pane-label">With Transitions.dev skill</span>
           </span>
         </button>
       </div>
@@ -4133,7 +4248,7 @@
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M8.55 2.27a.75.75 0 0 1 0 1.06L4.28 7.6a.75.75 0 0 1-1.06 0L1.45 5.83a.75.75 0 1 1 1.06-1.06l1.24 1.24 3.74-3.74a.75.75 0 0 1 1.06 0Z" fill="#ffffff"/>
               </svg>
             </span>
-            <span class="skill-compare-pane-label">With Transitions Skill</span>
+            <span class="skill-compare-pane-label">With Transitions.dev skill</span>
           </div>
           <iframe
             id="skill-compare-iframe"
@@ -4149,93 +4264,73 @@
     <section class="skill-content" aria-label="Skill contents">
       <div class="skill-section" id="installation">
         <h2 class="skill-section-title">Installation</h2>
-        <div class="skill-section-rows">
-          <div class="skill-command">
-            <div class="skill-code-row">
-              <code id="install-cmd">npx skills add Jakubantalik/transitions.dev</code>
-              <button
-                type="button"
-                class="card-copy"
-                aria-label="Copy install command"
-                data-copy-target="#install-cmd"
-              >
-                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+        <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">Run these in a terminal at your project's root folder, or paste them to your coding agent and it runs them for you.</p>
+        <div class="get-started-grid">
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Skill</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="install-cmd">npx skills add Jakubantalik/transitions.dev</code>
+                <button type="button" class="card-copy" aria-label="Copy install command" data-copy-target="#install-cmd">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
             </div>
             <p class="skill-section-note">
-              Installs the main skill with the transitions library, 27+ production-ready transitions. Works with Claude Code, Cursor, GitHub Copilot, Codex, and Gemini CLI.
+              Installs the main skill with the library of 27+ production-ready transitions. Works with Claude Code, Cursor, GitHub Copilot, Codex and Gemini CLI.
             </p>
           </div>
-          <div class="skill-command">
-            <div class="skill-code-row">
-              <code id="install-cmd-polish">npx skills add Jakubantalik/transitions.dev -s transitions-polish</code>
-              <button
-                type="button"
-                class="card-copy"
-                aria-label="Copy install polish skill command"
-                data-copy-target="#install-cmd-polish"
-              >
-                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Polish skill</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="install-cmd-polish">npx skills add Jakubantalik/transitions.dev -s transitions-polish</code>
+                <button type="button" class="card-copy" aria-label="Copy install polish skill command" data-copy-target="#install-cmd-polish">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
             </div>
             <p class="skill-section-note">
-              Installs the Polish skill, an add-on that aligns motion you already have to the transitions.dev token scale. Works alongside the main skill or on its own.
+              An add-on that aligns motion you already have to the transitions.dev token scale. Works alongside the main skill or on its own.
             </p>
           </div>
-          <div class="skill-command">
-            <div class="skill-code-row">
-              <code id="install-cmd-pro-skill">npx transitions-dev skill</code>
-              <button
-                type="button"
-                class="card-copy"
-                aria-label="Copy install Pro skill command"
-                data-copy-target="#install-cmd-pro-skill"
-              >
-                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Pro skill</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="install-cmd-pro-skill">npx transitions-dev skill</code>
+                <button type="button" class="card-copy" aria-label="Copy install Pro skill command" data-copy-target="#install-cmd-pro-skill">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
             </div>
             <p class="skill-section-note">
-              Installs the <strong>Pro</strong> transitions as an agent skill. Requires a <a href="/pro.html">Transitions Pro</a> plan — it opens your browser to confirm your account, then installs the premium recipes (CSS, React, TypeScript). <a href="/pro.html">Get Pro →</a>
+              Installs the Pro transitions as an agent skill, with CSS, React and TypeScript for every recipe. Needs a <a href="/pro.html">Transitions Pro</a> plan: it opens your browser once to confirm your account, then drops the recipes into your skills directory.
             </p>
           </div>
-          <div class="skill-command">
-            <div class="skill-code-row">
-              <code id="install-cmd-pro-recipes">npx transitions-dev add --pro</code>
-              <button
-                type="button"
-                class="card-copy"
-                aria-label="Copy add Pro recipes command"
-                data-copy-target="#install-cmd-pro-recipes"
-              >
-                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Pro recipes</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="install-cmd-pro-recipes">npx transitions-dev add --pro</code>
+                <button type="button" class="card-copy" aria-label="Copy add Pro recipes command" data-copy-target="#install-cmd-pro-recipes">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
             </div>
             <p class="skill-section-note">
-              Copies every <strong>Pro</strong> transition recipe straight into your project (<code>./transitions/</code>). Signs you in via the browser the first time. Prefer just the free set? Use <code>npx transitions-dev add --free</code>.
+              Copies every Pro recipe straight into <code>./transitions/</code>. Signs you in through the browser the first time. Prefer the free set? Use <code>npx transitions-dev add --free</code>.
             </p>
           </div>
         </div>
@@ -4243,115 +4338,90 @@
 
       <div class="skill-section" id="commands">
         <h2 class="skill-section-title">Commands</h2>
-        <div class="skill-section-rows">
-          <div class="skill-command">
-            <div class="skill-code-row">
-              <code id="cmd-reveal">transitions reveal</code>
-              <button
-                type="button"
-                class="card-copy"
-                aria-label="Copy transitions reveal command"
-                data-copy-target="#cmd-reveal"
-              >
-                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+        <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">Type them to your agent, or say it in plain words: each command lists the phrases that route to it.</p>
+        <div class="get-started-grid">
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Reveal</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-reveal">transitions reveal</code>
+                <button type="button" class="card-copy" aria-label="Copy transitions reveal command" data-copy-target="#cmd-reveal">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
             </div>
             <p class="skill-section-note">
-              List every transition in the skill as a numbered text list — handy when you've forgotten what's in the catalog. Phrases like "list all transitions" or "what transitions are available" route here too.
+              Lists every transition in the skill as a numbered text list, handy when you have forgotten what is in the catalog. "List all transitions" or "what transitions are available" route here too.
             </p>
           </div>
-          <div class="skill-command">
-            <div class="skill-code-row">
-              <code id="cmd-review">transitions review</code>
-              <button
-                type="button"
-                class="card-copy"
-                aria-label="Copy transitions review command"
-                data-copy-target="#cmd-review"
-              >
-                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Review</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-review">transitions review</code>
+                <button type="button" class="card-copy" aria-label="Copy transitions review command" data-copy-target="#cmd-review">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
             </div>
             <p class="skill-section-note">
-              Scan the whole project for ad-hoc transitions, hardcoded durations, and custom keyframes, then output a per-file list of where one of the twenty-one transitions would slot in. Read-only — nothing gets edited. Also triggers on "review my project" or "audit my animations".
+              Scans the whole project for ad-hoc transitions, hardcoded durations and custom keyframes, then prints a per-file list of where a transition from the library would slot in. Read-only, nothing gets edited. Also triggers on "review my project" or "audit my animations".
             </p>
           </div>
-          <div class="skill-command">
-            <div class="skill-code-row">
-              <code id="cmd-apply">transitions apply</code>
-              <button
-                type="button"
-                class="card-copy"
-                aria-label="Copy transitions apply command"
-                data-copy-target="#cmd-apply"
-              >
-                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Apply</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-apply">transitions apply</code>
+                <button type="button" class="card-copy" aria-label="Copy transitions apply command" data-copy-target="#cmd-apply">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
             </div>
             <p class="skill-section-note">
-              Auto-detect the best-fit transition for your current cursor context, propose it with a one-line rationale, then install it after you confirm. Name a transition directly to skip the detection — for example, <code>transitions apply menu-dropdown</code>. Also triggers on "add the right transition here".
+              Detects the best-fit transition for your current cursor context, proposes it with a one-line rationale, then installs it after you confirm. Name a transition to skip the detection, for example <code>transitions apply menu-dropdown</code>. Also triggers on "add the right transition here".
             </p>
           </div>
-          <div class="skill-command">
-            <div class="skill-code-row">
-              <code id="cmd-refine">transitions refine</code>
-              <button
-                type="button"
-                class="card-copy"
-                aria-label="Copy transitions refine command"
-                data-copy-target="#cmd-refine"
-              >
-                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Refine</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-refine">transitions refine</code>
+                <button type="button" class="card-copy" aria-label="Copy transitions refine command" data-copy-target="#cmd-refine">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
             </div>
             <p class="skill-section-note">
-              Scan the whole project for ad-hoc transitions, hardcoded durations, and custom keyframes, then suggest the matching motion token to reference — using each token's <em>usage</em>, not the raw number, as the deciding factor. Read-only — nothing gets edited. Also triggers on "replace hardcoded durations with motion tokens" or "tokenize my animations".
+              Scans the whole project for ad-hoc transitions, hardcoded durations and custom keyframes, then suggests the matching motion token to reference, judged by what each token is for rather than the raw number. Read-only, nothing gets edited. Also triggers on "replace hardcoded durations with motion tokens" or "tokenize my animations".
             </p>
           </div>
-          <div class="skill-command">
-            <div class="skill-code-row">
-              <code id="cmd-polish">transitions polish</code>
-              <button
-                type="button"
-                class="card-copy"
-                aria-label="Copy transitions polish command"
-                data-copy-target="#cmd-polish"
-              >
-                <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Polish</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-polish">transitions polish</code>
+                <button type="button" class="card-copy" aria-label="Copy transitions polish command" data-copy-target="#cmd-polish">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
             </div>
             <p class="skill-section-note">
-              Layers the open/close, hover in/out, and stagger/delay rules on top of <code>transitions refine</code>'s token matching, plus explicit distance coverage. Read-only — nothing gets edited. Works with the Polish skill installed. Also triggers on "polish my transitions" or "align to the motion tokens".
+              Layers the open and close, hover in and out, and stagger and delay rules on top of the token matching from <code>transitions refine</code>, plus explicit distance coverage. Read-only, nothing gets edited. Needs the Polish skill installed. Also triggers on "polish my transitions" or "align to the motion tokens".
             </p>
           </div>
         </div>
@@ -4359,57 +4429,34 @@
 
       <div class="skill-section" id="try-it">
         <h2 class="skill-section-title">Try it</h2>
-        <div class="skill-section-rows">
-          <div class="skill-code-row">
-            <code id="prompt-1">Update dropdowns transition based on transitions-dev skill</code>
-            <button
-              type="button"
-              class="card-copy"
-              aria-label="Copy prompt"
-              data-copy-target="#prompt-1"
-            >
-              <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-              </svg>
-              <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </button>
-          </div>
-          <div class="skill-code-row">
-            <code id="prompt-2">Update all icon swap transitions based on transitions-dev skill</code>
-            <button
-              type="button"
-              class="card-copy"
-              aria-label="Copy prompt"
-              data-copy-target="#prompt-2"
-            >
-              <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-              </svg>
-              <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </button>
-          </div>
-          <div class="skill-code-row">
-            <code id="prompt-3">Update all modals transitions based on transitions-dev skill</code>
-            <button
-              type="button"
-              class="card-copy"
-              aria-label="Copy prompt"
-              data-copy-target="#prompt-3"
-            >
-              <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-              </svg>
-              <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </button>
+        <div class="get-started-grid">
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Prompts</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="prompt-1">Update dropdowns transition based on transitions-dev skill</code>
+                <button type="button" class="card-copy" aria-label="Copy prompt" data-copy-target="#prompt-1">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+              <div class="skill-code-row">
+                <code id="prompt-2">Update all icon swap transitions based on transitions-dev skill</code>
+                <button type="button" class="card-copy" aria-label="Copy prompt" data-copy-target="#prompt-2">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+              <div class="skill-code-row">
+                <code id="prompt-3">Update all modals transitions based on transitions-dev skill</code>
+                <button type="button" class="card-copy" aria-label="Copy prompt" data-copy-target="#prompt-3">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <p class="skill-section-note">
+              Paste one to your agent in a project that has the skill installed. It picks the matching recipe, adapts it to your selectors and shows the diff.
+            </p>
           </div>
         </div>
       </div>
@@ -4435,7 +4482,7 @@
             <a href="/">Home</a>
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/skill.html">Skill</a>
-            <a href="/refine.html">Refine tool</a>
+            <a href="/agent.html">Agent</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -5017,7 +5064,9 @@
         "Shimmer text", "Tooltip open/close", "3D tilt", "Dropdown menu morph", "Accordion"
       ];
       var CMD_ITEMS = [
-        { group: "Pages", label: "Transitions", hint: "Home", href: "/", ic: "grid" },
+        { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
+        { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
+        { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }

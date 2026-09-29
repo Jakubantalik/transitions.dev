@@ -850,6 +850,8 @@
     .mobile-menu-link--2 { transition-delay: 40ms; }
     .mobile-menu-link--3 { transition-delay: 80ms; }
     .mobile-menu-link--4 { transition-delay: 120ms; }
+    .mobile-menu-link--5 { transition-delay: 160ms; }
+    .mobile-menu-link--6 { transition-delay: 200ms; }
     /* "Get Pro" reads as the accent CTA in the list (Figma 2332:82664). */
     .mobile-menu-link--pro { color: #0053e3; }
     html[data-theme="dark"] .mobile-menu-link--pro { color: #7cd4ff; }
@@ -1007,6 +1009,16 @@
       line-height: 24.2px;
       color: var(--text-muted);
     }
+    /* House inline-link style (same as the homepage): darker than the body
+       copy, underlined at rest with a softened line that solidifies on hover. */
+    .subtitle a {
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+      transition: text-decoration-color 180ms ease;
+    }
+    .subtitle a:hover { text-decoration-color: currentColor; }
 
     /* ─── Cards grid ──────────────────────────────────────────── */
     .cards {
@@ -4105,13 +4117,31 @@
        in with an 80ms appear-delay, instant out. The delay lives ONLY in
        the hover/focus rule, so leaving snaps the delay to 0 and the exit
        plays immediately. transform is used for both centering and scale. */
+    /* Tooltip open/close — transitions.dev recipe (skill 17-tooltip):
+       fade + scale in after a short appear-delay, disappear immediately on
+       leave (the delay lives only in the hover/focus rule). The badge is the
+       positioned wrap, so it plays the .t-tt-wrap role from the recipe. */
+    :root {
+      --tt-in-dur: 150ms;
+      --tt-out-dur: 50ms;
+      --tt-scale: 0.98;
+      --tt-delay: 80ms;
+      --tt-in-ease: ease-out;
+      --tt-out-ease: ease-out;
+      --tt-bg: #ffffff;
+      --tt-fg: #2f2f2f;
+    }
+    html[data-theme="dark"] {
+      --tt-bg: #181818;
+      --tt-fg: #e3e3e3;
+    }
     .pro-badge-tip {
       position: absolute;
       bottom: calc(100% + 8px);
       left: 50%;
-      transform: translate(-50%, 0) scale(0.98);
+      transform: translate(-50%, 0) scale(var(--tt-scale));
       transform-origin: 50% 100%;
-      padding: 5px 9px;
+      padding: 8px 12px;
       border-radius: 8px;
       font-family: var(--font-sans);
       font-size: 12px;
@@ -4120,35 +4150,33 @@
       pointer-events: none;
       z-index: 10;
       opacity: 0;
-      background: #ffffff;
-      color: #17181c;
+      background: var(--tt-bg);
+      color: var(--tt-fg);
       box-shadow:
         0 0 0 1px rgba(0, 0, 0, 0.06),
         0 2px 6px 0 rgba(0, 0, 0, 0.05),
         0 4px 42px 0 rgba(0, 0, 0, 0.06);
       /* Default rule = the LEAVE state: quick out, no delay. */
       transition:
-        opacity 50ms ease-out,
-        transform 50ms ease-out;
+        opacity var(--tt-out-dur) var(--tt-out-ease),
+        transform var(--tt-out-dur) var(--tt-out-ease);
     }
     html[data-theme="dark"] .pro-badge-tip {
-      background: #181818;
-      color: #e3e3e3;
       box-shadow:
         0 1px 16px 0 rgba(0, 0, 0, 0.4),
         inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
         inset 0 0 0 1px rgba(196, 196, 196, 0.08);
     }
     /* Gated to pointer devices so a tap on touch doesn't stick the tip
-       open. The 80ms delay belongs only here, so hover-out is instant. */
+       open. The appear-delay belongs only here, so hover-out is instant. */
     @media (hover: hover) {
       .pro-badge:hover .pro-badge-tip,
       .pro-badge:focus-visible .pro-badge-tip {
         opacity: 1;
         transform: translate(-50%, 0) scale(1);
-        transition-duration: 150ms;
-        transition-timing-function: ease-out;
-        transition-delay: 80ms;
+        transition-duration: var(--tt-in-dur);
+        transition-timing-function: var(--tt-in-ease);
+        transition-delay: var(--tt-delay);
       }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -4179,19 +4207,235 @@
         inset 0 0 0 1px rgba(196, 196, 196, 0.1);
       padding: 20px;
     }
-    .pro-price-tabs { display: flex; gap: 24px; }
-    .pro-price-tab {
-      border: 0;
-      background: none;
-      padding: 0;
+    /* Three plan cards side by side; they stack on narrow viewports. */
+    .pro-price-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 325px));
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+    }
+    .pro-price-grid .pro-price-card { width: auto; }
+    /* Cards stretch to the tallest sibling; the CTA pins to the bottom so
+       all three buttons sit on one line. */
+    .pro-price-grid .pro-price-cta { margin-top: auto; }
+    .pro-price-plan-name {
       font-family: var(--font-sans);
       font-size: 18px;
       font-weight: 500;
-      color: var(--text-faint);
-      cursor: pointer;
-      transition: color 150ms var(--ease-smooth-out);
+      color: var(--text);
     }
-    .pro-price-tab[data-active="true"] { color: var(--text); }
+    @media (max-width: 900px) {
+      .pro-price-grid { grid-template-columns: minmax(0, 325px); }
+    }
+    /* Plan pills under the price (Figma 1668:4823): what each plan bundles
+       at a glance. Accent pill marks the paid pieces. */
+    .pro-plan-pills { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .plan-pill {
+      display: inline-flex; align-items: center; height: 24px; padding: 0 10px;
+      border-radius: 50px; font-size: 13px; font-weight: 500; line-height: 16px;
+      white-space: nowrap; color: #5a5a5a;
+      background: rgba(158, 158, 158, 0.06);
+      box-shadow: 0 0 0 1px rgba(174, 174, 174, 0.18);
+    }
+    html[data-theme="dark"] .plan-pill {
+      color: #b3b3b3; background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.09);
+    }
+    .plan-pill--accent {
+      color: #1651f4; background: rgba(237, 245, 252, 0.73);
+      box-shadow: 0 0 0 1px rgba(32, 82, 219, 0.12);
+    }
+    html[data-theme="dark"] .plan-pill--accent {
+      color: #8ab2ff; background: rgba(22, 81, 244, 0.16);
+      box-shadow: 0 0 0 1px rgba(96, 137, 255, 0.25);
+    }
+    .pro-enterprise-note {
+      margin: 4px 0 0;
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--text-muted);
+      text-align: center;
+      text-wrap: balance;
+    }
+    .pro-enterprise-note strong { color: var(--text); font-weight: 500; }
+    .pro-enterprise-note a {
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+      transition: text-decoration-color 180ms ease;
+    }
+    .pro-enterprise-note a:hover { text-decoration-color: currentColor; }
+    /* Plan pills open the comparison modals. Button reset keeps the pill look. */
+    button.plan-pill {
+      border: 0;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: filter 150ms var(--ease-smooth-out);
+    }
+    button.plan-pill:hover { filter: brightness(0.96); }
+    html[data-theme="dark"] button.plan-pill:hover { filter: brightness(1.25); }
+    button.plan-pill:focus-visible { outline: 2px solid #1651f4; outline-offset: 2px; }
+
+    /* Comparison modal — transitions.dev modal recipe (skill 06-modal). */
+    :root {
+      --modal-open-dur: 250ms;
+      --modal-close-dur: 150ms;
+      --modal-scale: 0.96;
+      --modal-scale-close: 0.96;
+      --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .plan-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.32);
+      opacity: 0;
+      transition: opacity var(--modal-open-dur) var(--modal-ease);
+    }
+    .plan-modal-overlay[data-open] { display: flex; }
+    .plan-modal-overlay.is-open { opacity: 1; }
+    .plan-modal-overlay.is-closing { opacity: 0; transition-duration: var(--modal-close-dur); }
+    .t-modal {
+      transform-origin: center;
+      transform: scale(var(--modal-scale));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--modal-open-dur) var(--modal-ease),
+        opacity   var(--modal-open-dur) var(--modal-ease);
+      will-change: transform, opacity;
+    }
+    .t-modal.is-open {
+      transform: scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .t-modal.is-closing {
+      transform: scale(var(--modal-scale-close));
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform var(--modal-close-dur) var(--modal-ease),
+        opacity   var(--modal-close-dur) var(--modal-ease);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .t-modal, .plan-modal-overlay { transition: none !important; }
+    }
+    .plan-modal {
+      width: 560px;
+      max-width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow:
+        var(--card-shadow),
+        inset 0 0 0 1px var(--card-border),
+        0 24px 80px rgba(0, 0, 0, 0.18);
+      padding: 24px;
+    }
+    .plan-modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .plan-modal-title { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+    .plan-modal-close {
+      border: 0;
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text-muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+    }
+    html[data-theme="dark"] .plan-modal-close { background: rgba(255, 255, 255, 0.08); }
+    .plan-modal-close:hover { color: var(--text); }
+    .plan-cmp { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 18px; }
+    .plan-cmp th, .plan-cmp td { text-align: left; padding: 9px 10px; }
+    .plan-cmp th { font-weight: 600; color: var(--text); }
+    .plan-cmp td { color: var(--text); }
+    .plan-cmp td:first-child { color: var(--text-muted); }
+    .plan-cmp tr + tr { border-top: 1px solid var(--card-border); }
+    .plan-cmp .cmp-yes { color: #30a46c; }
+    .plan-cmp .cmp-no { color: var(--text-faint); }
+    .cmp-info { position: relative; display: inline-flex; margin-left: 6px; vertical-align: middle; margin-top: -2px; }
+    .cmp-info-btn {
+      border: 0; padding: 0; width: 16px; height: 16px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(0, 0, 0, 0.06); color: var(--text-faint);
+      font-family: var(--font-sans); font-size: 10.5px; font-weight: 600; line-height: 1;
+      cursor: help;
+    }
+    html[data-theme="dark"] .cmp-info-btn { background: rgba(255, 255, 255, 0.1); }
+    .cmp-info-btn:hover { color: var(--text); }
+    .cmp-tip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      right: -8px;
+      transform: scale(var(--tt-scale));
+      transform-origin: 90% 100%;
+      width: 240px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 17px;
+      text-align: left;
+      white-space: normal;
+      pointer-events: none;
+      z-index: 20;
+      opacity: 0;
+      background: var(--tt-bg);
+      color: var(--tt-fg);
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+      transition:
+        opacity var(--tt-out-dur) var(--tt-out-ease),
+        transform var(--tt-out-dur) var(--tt-out-ease);
+    }
+    html[data-theme="dark"] .cmp-tip {
+      box-shadow:
+        0 1px 16px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.08);
+    }
+    @media (hover: hover) {
+      .cmp-info:hover .cmp-tip,
+      .cmp-info-btn:focus-visible + .cmp-tip {
+        opacity: 1;
+        transform: scale(1);
+        transition-duration: var(--tt-in-dur);
+        transition-timing-function: var(--tt-in-ease);
+        transition-delay: var(--tt-delay);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) { .cmp-tip { transition: none !important; } }
+    .plan-modal-note { margin: 14px 0 0; font-size: 12px; color: var(--text-faint); }
+    .plan-modal-note a { color: var(--text); }
+    .plan-modal [data-cmp-panel] { display: none; }
+    .plan-modal[data-show="agent"] [data-cmp-panel="agent"],
+    .plan-modal[data-show="skill"] [data-cmp-panel="skill"] { display: block; }
+
+    /* Business has no lifetime: under the Lifetime toggle its card dims and
+       the CTA goes inert instead of quietly selling the monthly plan. */
+    .pro-price-card { transition: opacity 200ms var(--ease-smooth-out); }
+    .pro-price-card[data-disabled="true"] { opacity: 0.4; }
+    .pro-price-card[data-disabled="true"] .pro-price-cta {
+      pointer-events: none;
+      cursor: default;
+    }
     .pro-price-head { display: flex; flex-direction: column; gap: 4px; }
     .pro-price-amount {
       display: flex;
@@ -4249,7 +4493,9 @@
       );
     }
     .pro-feature-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
-    .pro-feature { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 20px; color: var(--text); }
+    /* Balanced wrapping: two-line features break at even widths instead of
+       leaving a one-word orphan on the second line. */
+    .pro-feature { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 20px; color: var(--text); text-wrap: balance; }
     .pro-feature-check {
       display: inline-flex;
       align-items: center;
@@ -4325,7 +4571,7 @@
     .pro-customers.pro-customers { margin: 0 auto 48px; }
     .pro-customers-label {
       margin: 0 0 24px;
-      font-size: 11px;
+      font-size: 13px;
       line-height: 18px;
       text-align: center;
       color: #979797;
@@ -4779,9 +5025,8 @@
       .pro2-card, .p22-toast { transition: none; }
     }
 
-    /* Refine tool — timeline panel (recreated from Figma refine card).
-       A cropped top-left corner of the Refine timeline: Selected header,
-       ruler with time ticks, and property rows with drag handles + tracks. */
+    /* Transitions Agent — terminal mock (cropped panel, same bleed as the
+       Pro-skill code card): scan output with motion score and findings. */
     .pro-refine-frame {
       position: absolute; left: 32px; right: -150px; top: 132px; bottom: -24px;
       background: #fff; border: 1px solid var(--card-border);
@@ -4789,36 +5034,18 @@
       font-family: var(--font-sans);
     }
     html[data-theme="dark"] .pro-refine-frame { background: #191919; border-color: rgba(255,255,255,0.07); }
-    .rf-topbar { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; border-bottom: 1px solid #f0f0f0; }
-    html[data-theme="dark"] .rf-topbar { border-bottom-color: #2a2a2a; }
-    .rf-tb-label { font-size: 10px; color: #696969; white-space: nowrap; }
-    html[data-theme="dark"] .rf-tb-label { color: #8b8b8b; }
-    .rf-tb-pill { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border-radius: 7px;
-      background: rgba(0,0,0,0.03); font-size: 10px; font-weight: 500; color: #1b1b1b; white-space: nowrap; }
-    html[data-theme="dark"] .rf-tb-pill { background: rgba(255,255,255,0.06); color: #fbfbfb; }
-    .rf-tb-pill .rf-dim { color: #979797; }
-    .rf-tb-pill svg { width: 10px; height: 10px; color: #696969; }
-    .rf-tb-count { margin-left: auto; font-size: 10px; color: #9b9b9b; white-space: nowrap; }
-    .rf-rows { position: relative; }
-    .rf-divider { position: absolute; top: 0; bottom: 0; left: 84px; width: 1px; background: #f0f0f0; z-index: 2; }
-    html[data-theme="dark"] .rf-divider { background: #2a2a2a; }
-    .rf-row { display: flex; align-items: center; height: 26px; }
-    .rf-row + .rf-row { box-shadow: inset 0 1px 0 0 #f4f4f4; }
-    html[data-theme="dark"] .rf-row + .rf-row { box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.03); }
-    .rf-row-label { width: 84px; flex: none; display: flex; align-items: center; gap: 7px; padding-left: 10px; font-size: 10px; font-weight: 500; color: #171717; }
-    html[data-theme="dark"] .rf-row-label { color: #e6e6e6; }
-    .rf-dots { width: 8px; height: 8px; flex: none; color: #cfcfcf;
-      background-image: radial-gradient(currentColor 42%, transparent 46%); background-size: 4px 4px; background-position: 0 0; }
-    html[data-theme="dark"] .rf-dots { color: #4a4a4a; }
-    .rf-lane { position: relative; flex: 1; align-self: stretch; }
-    .rf-bar { position: absolute; top: 50%; transform: translateY(-50%); height: 14px; border-radius: 7px;
-      background: #eeeeef; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06), inset 0 -0.5px 0 0 rgba(0,0,0,0.1); }
-    html[data-theme="dark"] .rf-bar { background: rgba(255,255,255,0.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
-    .rf-ruler { position: relative; height: 18px; }
-    .rf-ruler-ticks { position: absolute; left: 92px; right: 8px; top: 9px; height: 4px;
-      background-image: repeating-linear-gradient(90deg, #dcdce0 0 1px, transparent 1px 12px); }
-    html[data-theme="dark"] .rf-ruler-ticks { background-image: repeating-linear-gradient(90deg, #333 0 1px, transparent 1px 12px); }
-    .rf-ruler-lbl { position: absolute; top: 4px; font-size: 8px; color: #8b9099; transform: translateX(-1px); }
+    .pro-agent-frame { padding: 10px 12px; }
+    .ag-term { font-family: var(--font-mono); font-size: 10.5px; line-height: 2; color: #3c3c3c; white-space: nowrap; }
+    html[data-theme="dark"] .ag-term { color: #cfcfcf; }
+    .ag-line strong { font-weight: 600; color: #111; }
+    html[data-theme="dark"] .ag-line strong { color: #fff; }
+    .ag-cmd { color: #111; font-weight: 500; }
+    html[data-theme="dark"] .ag-cmd { color: #fff; }
+    .ag-dim { color: #979797; }
+    .ag-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+    .ag-dot--major { background: #e5484d; }
+    .ag-dot--warn { background: #f5a623; }
+    .ag-check { color: #30a46c; font-weight: 600; margin-right: 7px; }
 
     @media (max-width: 720px) {
       /* Single column; rows size to their own card (grid-auto-rows:1fr
@@ -5018,9 +5245,10 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-            <a class="nav-pill" href="detail.html?t=card-resize">Transitions</a>
-            <a class="nav-pill" href="/skill.html">Skill</a>
-            <a class="nav-pill" href="/refine.html">Refine tool</a>
+          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
+          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
+          <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           </nav>
         </div>
         <div class="site-nav-right">
@@ -5033,11 +5261,7 @@
             <span class="nav-search-label">Search</span>
             <span class="nav-search-kbd" id="nav-search-kbd">⌘K</span>
           </button>
-          <!-- Pro page swaps the "Get Pro" upsell for Sign in — you're
-               already looking at the Pro page, upselling it back is noise. -->
-          <button type="button" class="icon-btn-pill" id="nav-signin-btn">
-            <span class="pill-label">Sign in</span>
-          </button>
+          <!-- No Sign in pill here: signing in lives in the 3-dot menu. -->
           <!-- GitHub pill — shows live stargazer count fetched once per
                session from the public GitHub API. Falls back silently to
                "—" on network / rate-limit errors so the link still works. -->
@@ -5054,20 +5278,6 @@
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
             </svg>
             <span class="pill-label" id="gh-stars-count">—</span>
-          </a>
-          <a
-            class="icon-btn"
-            href="https://x.com/jakubantalik"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="X (Twitter)"
-          >
-            <svg class="icon-x" aria-hidden="true" viewBox="0 0 16 17" xmlns="http://www.w3.org/2000/svg">
-              <path
-                fill="currentColor"
-                d="M12.4041 1.39726H14.6953L9.69087 7.2591L15.5781 15.2368H10.9696L7.35741 10.3996L3.22921 15.2368H0.934687L6.28641 8.96575L0.642598 1.39726H5.36795L8.62962 5.81859L12.4041 1.39726ZM11.5992 13.8329H12.8682L4.67667 2.72798H3.31359L11.5992 13.8329Z"
-              />
-            </svg>
           </a>
           <!-- 3-dot menu — same dropdown pattern as the Refine tool.
                Appearance opens a theme sub-page (Light / Dark / System). -->
@@ -5142,39 +5352,22 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
-          <li><a class="mobile-menu-link mobile-menu-link--1" href="detail.html?t=card-resize">Transitions</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/refine.html">Refine tool</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html">Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/skill.html">Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <button type="button" class="mobile-menu-cta" id="mobile-signin">Sign in</button>
       </nav>
     </header>
 
     <header class="header">
-      <div class="header-icon-wrap" aria-hidden="true">
-        <img
-          class="header-icon-img header-icon-img--light"
-          src="assets/icon%20light%202x.png"
-          alt=""
-          width="136"
-          height="140"
-          decoding="async"
-        />
-        <img
-          class="header-icon-img header-icon-img--dark"
-          src="assets/icon-dark-2x.png?v=2"
-          alt=""
-          width="136"
-          height="140"
-          decoding="async"
-        />
-      </div>
-      <h1 class="title">Transitions <span class="title-pro">Pro</span></h1>
+      <h1 class="title">Pricing</h1>
       <p class="subtitle">
-        36+ production-ready transitions for modern web apps.<br />
-        Copy the CSS straight in, or let your agent apply them<br />
-        with the Pro skill, right inside your project.
+        36+ production-ready transitions, the <a href="/skill.html">Pro skill</a> for your agent,<br />
+        and the <a href="/agent.html">Transitions Agent</a> that scans your app, scores its motion,<br />
+        and fixes it as pull requests.
       </p>
     </header>
 
@@ -5215,32 +5408,124 @@
       <span class="pro-annual-note pro-lifetime-note" id="pro-lifetime-note">pay once</span>
     </div>
 
-    <!-- ─── Pricing card (Solo / Team) ─────────────────────────── -->
+    <!-- ─── Pricing cards (Free / Pro / Business) ──────────────── -->
     <div class="pro-price-wrap">
-      <div class="pro-price-card" id="pro-price-card">
-        <div class="pro-price-tabs" role="tablist" aria-label="Plan">
-          <button type="button" class="pro-price-tab" data-plan="solo" data-active="true" role="tab" aria-selected="true">Solo</button>
-          <button type="button" class="pro-price-tab" data-plan="team" data-active="false" role="tab" aria-selected="false">Team</button>
-        </div>
-        <div class="pro-price-head">
-          <div class="pro-price-amount">
-            <span class="pro-price-value p9-number" id="pro-price-value" aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">9</span></span></span>
-            <span class="pro-price-per p6-text" id="pro-price-per">/mo</span>
+      <div class="pro-price-grid">
+
+        <div class="pro-price-card" data-plan-card="free">
+          <div class="pro-price-plan-name">Free</div>
+          <div class="pro-price-head">
+            <div class="pro-price-amount">
+              <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">0</span></span></span>
+              <span class="pro-price-per p6-text" data-price-per>/mo</span>
+            </div>
+            <div class="pro-plan-pills">
+              <button type="button" class="plan-pill" data-cmp="skill">Free skill</button>
+              <button type="button" class="plan-pill" data-cmp="agent">Free Agent</button>
+            </div>
           </div>
-          <div class="pro-price-seat" id="pro-price-seat">Single seat</div>
+          <div class="pro-price-divider"></div>
+          <ul class="pro-feature-list">
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Core transitions library with copy-ready snippets</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Free Transitions skill for Claude Code, Cursor and Codex</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Free Agent: unlimited motion scans, 10 hosted polish fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-1">i</button><span class="cmp-tip" id="tip-free-agent-1" role="tooltip">The Free Agent: unlimited motion scans and score, the GitHub Action score comment on pull requests, 10 hosted polish fixes a month, and free recipe sources for your own AI over MCP.</span></span></li>
+          </ul>
+          <a class="pro-price-cta" href="#" data-plan="free">Start free</a>
         </div>
-        <div class="pro-price-divider"></div>
-        <ul class="pro-feature-list">
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>36+ production-ready transitions ready for React, Next.js, Typescript</li>
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Refine tool with Pro transitions skill</li>
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Every future transition, free</li>
-          <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license, unlimited projects</li>
-        </ul>
-        <a class="pro-price-cta" href="mailto:jakubja@gmail.com?subject=Transitions%20Pro%20access" id="pro-price-cta">Get access</a>
+
+        <div class="pro-price-card" data-plan-card="solo">
+          <div class="pro-price-plan-name">Pro</div>
+          <div class="pro-price-head">
+            <div class="pro-price-amount">
+              <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char">9</span></span></span>
+              <span class="pro-price-per p6-text" data-price-per>/mo</span>
+            </div>
+            <div class="pro-plan-pills">
+              <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
+              <button type="button" class="plan-pill" data-cmp="agent">Free Agent</button>
+            </div>
+          </div>
+          <div class="pro-price-divider"></div>
+          <ul class="pro-feature-list">
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>36+ production-ready transitions ready for React, Next.js, Typescript</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Refine tool with Pro transitions skill</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Free Agent included<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-2">i</button><span class="cmp-tip" id="tip-free-agent-2" role="tooltip">The Free Agent: unlimited motion scans and score, the GitHub Action score comment on pull requests, 10 hosted polish fixes a month, and free recipe sources for your own AI over MCP.</span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Every future transition, free</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license, unlimited projects</li>
+          </ul>
+          <a class="pro-price-cta" href="#" data-plan="solo">Get Pro</a>
+        </div>
+
+        <div class="pro-price-card" data-plan-card="team">
+          <div class="pro-price-plan-name">Business</div>
+          <div class="pro-price-head">
+            <div class="pro-price-amount">
+              <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char" data-stagger="1">5</span><span class="p9-char" data-stagger="2">9</span></span></span>
+              <span class="pro-price-per p6-text" data-price-per>/mo</span>
+            </div>
+            <div class="pro-plan-pills">
+              <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
+              <button type="button" class="plan-pill plan-pill--accent" data-cmp="agent">Full Agent</button>
+            </div>
+          </div>
+          <div class="pro-price-divider"></div>
+          <ul class="pro-feature-list">
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Everything in Pro, for 5 seats, +$9/mo per extra seat</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Full Agent included: 200 hosted fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the full Agent?" aria-describedby="tip-full-agent">i</button><span class="cmp-tip" id="tip-full-agent" role="tooltip">The Full Agent: 200 hosted fixes a month, polish + revamp modes with rewrites from the Pro recipe library, fix pull requests from CI with one secret, and the full recipe library for your own AI over MCP.</span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Polish + revamp modes, grounded in the Pro recipes</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>GitHub Action with pull-request motion gate</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license for the whole team</li>
+          </ul>
+          <a class="pro-price-cta" href="#" data-plan="team">Get Business</a>
+        </div>
+
       </div>
-      <!-- Purchasing-power-parity bar (Figma 2361:84298) — sits below the card,
+      <!-- Purchasing-power-parity bar (Figma 2361:84298) — sits below the cards,
            filled by pro-client.js when the visitor's country qualifies. -->
+      <!-- Enterprise: sold by conversation, not by card. BYO AI keys is the
+           feature - code never flows through our fix service. -->
+      <p class="pro-enterprise-note">
+        <strong>Enterprise</strong>: unlimited Agent on your own AI keys, org-wide license,
+        custom motion rules, priority support.
+        <a href="mailto:jakubja@gmail.com?subject=Transitions%20Enterprise">Talk to us</a>
+      </p>
+
+    <!-- Plan comparison modal: opened by the plan pills. Uses the
+         transitions.dev modal recipe (skill 06-modal). -->
+    <div class="plan-modal-overlay" id="plan-modal-overlay" role="presentation">
+      <div class="plan-modal t-modal" id="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-modal-title" data-show="agent">
+        <div class="plan-modal-head">
+          <h3 class="plan-modal-title" id="plan-modal-title">Comparison</h3>
+          <button type="button" class="plan-modal-close" id="plan-modal-close" aria-label="Close">&#10005;</button>
+        </div>
+        <div data-cmp-panel="agent">
+          <table class="plan-cmp">
+            <tr><th></th><th>Free Agent</th><th>Full Agent</th></tr>
+            <tr><td>Motion scans + score</td><td>Unlimited</td><td>Unlimited</td></tr>
+            <tr><td>GitHub Action: PR score + merge gate</td><td class="cmp-yes">&#10003;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Hosted fixes</td><td>10 / month</td><td>200 / month</td></tr>
+            <tr><td>Fix modes</td><td>Polish</td><td>Polish + Revamp<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is revamp?" aria-describedby="cmp-tip-revamp">i</button><span class="cmp-tip" id="cmp-tip-revamp" role="tooltip">Revamp does everything polish does, and where a finding matches a transitions.dev recipe it rewrites the motion with the recipe's real source: proper enter and exit states, keyframes, and easing.</span></span></td></tr>
+            <tr><td>Rewrites from the Pro recipe library</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Recipe sources for your own AI (MCP)</td><td>Free recipes</td><td>Full library incl. Pro</td></tr>
+            <tr><td>Fix pull requests from CI, one secret</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Use</td><td>Personal use</td><td>Commercial, whole team</td></tr>
+          </table>
+          <p class="plan-modal-note">Full Agent comes with the Business plan. More detail on the <a href="/agent.html">Agent page</a>.</p>
+        </div>
+        <div data-cmp-panel="skill">
+          <table class="plan-cmp">
+            <tr><th></th><th>Free skill</th><th>Pro skill</th></tr>
+            <tr><td>Transitions included</td><td>Core set</td><td>All 36+</td></tr>
+            <tr><td>Variants</td><td>CSS</td><td>CSS + React + TypeScript</td></tr>
+            <tr><td>Every future transition</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Works with</td><td colspan="2">Claude Code, Cursor and Codex</td></tr>
+            <tr><td>License</td><td>MIT core transitions</td><td>Commercial, unlimited projects</td></tr>
+          </table>
+          <p class="plan-modal-note">Pro skill comes with the Pro and Business plans. More on the <a href="/skill.html">Skill page</a>.</p>
+        </div>
+      </div>
+    </div>
       <div class="pro-ppp" id="pro-ppp" hidden></div>
     </div>
 
@@ -5399,29 +5684,17 @@ description: Production-ready CSS
         </div>
 
         <div class="pro-bento-card pro-bento-card--sm">
-          <h3 class="pro-bento-title">Refine tool</h3>
-          <p class="pro-bento-desc">Tune your transitions live and align them to the motion tokens.</p>
-          <div class="pro-refine-frame" aria-hidden="true">
-            <div class="rf-topbar">
-              <span class="rf-tb-label">Selected transition</span>
-              <span class="rf-tb-pill">Box resize <span class="rf-dim">400ms</span>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
-              </span>
-              <span class="rf-tb-count">4 transitions found</span>
-            </div>
-            <div class="rf-rows">
-              <div class="rf-divider"></div>
-              <div class="rf-ruler">
-                <div class="rf-ruler-ticks"></div>
-                <span class="rf-ruler-lbl" style="left:92px">0s</span>
-                <span class="rf-ruler-lbl" style="left:150px">5s</span>
-                <span class="rf-ruler-lbl" style="left:208px">10s</span>
-                <span class="rf-ruler-lbl" style="left:266px">15s</span>
-              </div>
-              <div class="rf-row"><span class="rf-row-label"><span class="rf-dots"></span>Width</span><span class="rf-lane"><span class="rf-bar" style="left:8px;width:56px"></span></span></div>
-              <div class="rf-row"><span class="rf-row-label"><span class="rf-dots"></span>Height</span><span class="rf-lane"><span class="rf-bar" style="left:8px;width:182px"></span></span></div>
-              <div class="rf-row"><span class="rf-row-label"><span class="rf-dots"></span>Opacity</span><span class="rf-lane"><span class="rf-bar" style="left:40px;width:66px"></span></span></div>
-              <div class="rf-row"><span class="rf-row-label"><span class="rf-dots"></span>Radius</span><span class="rf-lane"><span class="rf-bar" style="left:8px;width:120px"></span></span></div>
+          <h3 class="pro-bento-title">Transitions Agent</h3>
+          <p class="pro-bento-desc">Scans your app, scores the motion, and fixes it <span class="dim">as pull requests.</span></p>
+          <div class="pro-refine-frame pro-agent-frame" aria-hidden="true">
+            <div class="ag-term">
+              <div class="ag-line ag-cmd">$ npx transitions-agent</div>
+              <div class="ag-line">Motion score <strong>71 / 100</strong> <span class="ag-dim">(decent)</span></div>
+              <div class="ag-line"><span class="ag-dot ag-dot--major"></span>Modal.tsx:24 <span class="ag-dim">modal pops in with no transition</span></div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>nav.css:118 <span class="ag-dim">hover snaps, no transition on base</span></div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>app.css:203 <span class="ag-dim">transition: all animates layout</span></div>
+              <div class="ag-line ag-cmd">$ npx transitions-agent fix --pr</div>
+              <div class="ag-line"><span class="ag-check">✓</span>3 fixes applied, PR opened <span class="ag-dim">(score 89)</span></div>
             </div>
           </div>
         </div>
@@ -5448,7 +5721,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p>The free site showcases the core transitions with copy-ready snippets. Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-dev add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan.</p>
+            <p>The free site showcases the core transitions with copy-ready snippets, and the Free Agent scans any codebase for missing or janky motion (<code>npx transitions-agent</code>). Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-dev add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan. Business adds the Full Agent on top: hosted AI fixes as pull requests, grounded in the Pro recipe library.</p>
           </div></div>
         </div>
 
@@ -5468,7 +5741,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p><strong>Solo</strong> is a single seat for one person across all of their projects. <strong>Team</strong> is $39/mo and includes 5 seats for people in the same organization; each seat beyond 5 is an extra $9/mo. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase — $149 for Solo, $499 for a 5-seat Team — with every future transition included, forever. Switch the plan tab above to see team pricing.</p>
+            <p><strong>Free</strong> is the open library, the free skill, and the Free Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $9/mo, a single seat with the full Pro library, and includes the Free Agent. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $9/mo) plus the Full Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase for Pro, $149 for a single seat, covering the library forever (the Free Agent included); the Full Agent stays subscription-only because every fix runs on live AI, so Business has no lifetime option.</p>
           </div></div>
         </div>
 
@@ -5524,7 +5797,7 @@ description: Production-ready CSS
             <a href="/">Home</a>
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/skill.html">Skill</a>
-            <a href="/refine.html">Refine tool</a>
+            <a href="/agent.html">Agent</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -5936,7 +6209,9 @@ description: Production-ready CSS
         "Shimmer text", "Tooltip open/close", "3D tilt", "Dropdown menu morph", "Accordion"
       ];
       var CMD_ITEMS = [
-        { group: "Pages", label: "Transitions", hint: "Home", href: "/", ic: "grid" },
+        { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
+        { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
+        { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
@@ -6066,17 +6341,26 @@ description: Production-ready CSS
         }
       });
 
-      /* ── Pricing: billing (Monthly/Annual) × plan (Solo/Team) ── */
+      /* ── Pricing: billing (Monthly/Annual/Lifetime) × three cards ──
+         Card keys stay "solo"/"team" internally (pro-client.js and the
+         checkout API key on them); the visible names read Pro / Business.
+         Business has no lifetime (the hosted Agent runs on live AI), so
+         under Lifetime its card falls back to the monthly price. */
       var PRICES = {
+        free: {
+          monthly: { v: "$0", per: "/mo" },
+          annual:  { v: "$0", per: "/yr" },
+          lifetime: { v: "$0", per: "once" }
+        },
         solo: {
-          monthly: { v: "$9", per: "/mo", seat: "Single seat" },
-          annual:  { v: "$90", per: "/yr", seat: "Single seat · billed yearly" },
-          lifetime: { v: "$149", per: "once", seat: "Single seat · pay once, yours forever" }
+          monthly: { v: "$9", per: "/mo" },
+          annual:  { v: "$90", per: "/yr" },
+          lifetime: { v: "$149", per: "once" }
         },
         team: {
-          monthly: { v: "$39", per: "/mo", seat: "5 seats · +$9/seat after" },
-          annual:  { v: "$390", per: "/yr", seat: "5 seats · +$90/seat after · billed yearly" },
-          lifetime: { v: "$499", per: "once", seat: "5 seats · pay once, yours forever" }
+          monthly: { v: "$59", per: "/mo" },
+          annual:  { v: "$590", per: "/yr" },
+          lifetime: { v: "$59", per: "/mo" }
         }
       };
       var billing = document.getElementById("pro-billing");
@@ -6095,13 +6379,9 @@ description: Production-ready CSS
         billingIndicator.style.width = active.offsetWidth + "px";
         billingIndicator.style.transform = "translateX(" + active.offsetLeft + "px)";
       }
-      var planTabs = document.querySelectorAll(".pro-price-tab");
-      var priceValue = document.getElementById("pro-price-value");
-      var pricePer = document.getElementById("pro-price-per");
-      var priceSeat = document.getElementById("pro-price-seat");
-      var curBilling = "monthly", curPlan = "solo";
+      var priceCards = document.querySelectorAll("[data-plan-card]");
+      var curBilling = "monthly";
       var priceReady = false;
-      var lastPer = "/mo";
 
       // Number pop-in (skills/transitions-dev/02-number-pop-in.md): old
       // chars snapshot into a .p9-ghost that pops out while fresh .p9-char
@@ -6213,25 +6493,32 @@ description: Production-ready CSS
       }
 
       function renderPrice() {
-        var p = PRICES[curPlan][curBilling];
-        var shrinking = false;
-        if (priceValue) shrinking = setPriceNumber(priceValue, p.v, priceReady);
-        // Only swap "/mo" ↔ "/yr" when it actually changes — Solo↔Team
-        // both keep "/mo", so re-running the swap there just read as a jump.
-        // The digits' width-glide (see setPriceNumber) also carries "/mo"
-        // along horizontally, since it's a flex sibling. When the number
-        // shrinks ($90 → $9), "/mo" is gliding left at the same time its
-        // own cross-blur would start — a delay lets the glide land first
-        // so the blur doesn't clash with that leftward motion. Growing
-        // ($9 → $90) pushes "/mo" further from the digits as it moves, so
-        // the two don't visually compete and no delay is needed.
-        if (pricePer && p.per !== lastPer) {
-          var perStag = shrinking ? 200 : 0;
-          swapText(pricePer, p.per, priceReady, perStag);
-        }
-        lastPer = p.per;
+        priceCards.forEach(function (card) {
+          var plan = card.getAttribute("data-plan-card");
+          var p = PRICES[plan][curBilling];
+          var valueEl = card.querySelector("[data-price-value]");
+          var perEl = card.querySelector("[data-price-per]");
+          var shrinking = false;
+          if (valueEl) shrinking = setPriceNumber(valueEl, p.v, priceReady);
+          // Only swap "/mo" ↔ "/yr" when it actually changes. The digits'
+          // width-glide (see setPriceNumber) also carries "/mo" along
+          // horizontally, since it's a flex sibling. When the number shrinks
+          // ($90 → $9) a delay lets the glide land before the cross-blur.
+          var lastPer = card.getAttribute("data-last-per") || "/mo";
+          if (perEl && p.per !== lastPer) {
+            swapText(perEl, p.per, priceReady, shrinking ? 200 : 0);
+          }
+          card.setAttribute("data-last-per", p.per);
+          // Business goes inert under Lifetime (no lifetime plan to sell).
+          var disabled = plan === "team" && curBilling === "lifetime";
+          card.setAttribute("data-disabled", disabled ? "true" : "false");
+          var cardCta = card.querySelector(".pro-price-cta");
+          if (cardCta) {
+            cardCta.setAttribute("aria-disabled", disabled ? "true" : "false");
+            cardCta.setAttribute("tabindex", disabled ? "-1" : "0");
+          }
+        });
         priceReady = true;
-        if (priceSeat) priceSeat.textContent = p.seat;
         if (billing) billing.setAttribute("data-billing", curBilling);
         billingOpts.forEach(function (o) {
           var on = o.getAttribute("data-billing-opt") === curBilling;
@@ -6239,18 +6526,10 @@ description: Production-ready CSS
           o.setAttribute("aria-selected", on ? "true" : "false");
         });
         positionBillingIndicator();
-        planTabs.forEach(function (t) {
-          var on = t.getAttribute("data-plan") === curPlan;
-          t.setAttribute("data-active", on ? "true" : "false");
-          t.setAttribute("aria-selected", on ? "true" : "false");
-        });
       }
       function setBilling(b) { curBilling = b; renderPrice(); }
       billingOpts.forEach(function (o) {
         o.addEventListener("click", function () { setBilling(o.getAttribute("data-billing-opt")); });
-      });
-      planTabs.forEach(function (t) {
-        t.addEventListener("click", function () { curPlan = t.getAttribute("data-plan"); renderPrice(); });
       });
       renderPrice();
       // Re-measure the pill once fonts settle and on resize so it stays
@@ -6363,5 +6642,52 @@ description: Production-ready CSS
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
   <script src="assets/pro-client.js?v=36" defer></script>
+
+  <!-- Plan comparison modal behavior (recipe: skill 06-modal state dance). -->
+  <script>
+    (function () {
+      "use strict";
+      var overlay = document.getElementById("plan-modal-overlay");
+      var modal = document.getElementById("plan-modal");
+      var title = document.getElementById("plan-modal-title");
+      var closeBtn = document.getElementById("plan-modal-close");
+      if (!overlay || !modal) return;
+      var CLOSE_MS = 150;
+      var lastTrigger = null;
+
+      function open(kind, trigger) {
+        lastTrigger = trigger || null;
+        modal.setAttribute("data-show", kind);
+        if (title) title.textContent = kind === "skill" ? "Free skill vs Pro skill" : "Free Agent vs Full Agent";
+        overlay.setAttribute("data-open", "");
+        modal.classList.remove("is-closing");
+        overlay.classList.remove("is-closing");
+        void modal.offsetHeight;
+        overlay.classList.add("is-open");
+        modal.classList.add("is-open");
+        if (closeBtn) closeBtn.focus();
+      }
+      function close() {
+        modal.classList.remove("is-open");
+        overlay.classList.remove("is-open");
+        modal.classList.add("is-closing");
+        overlay.classList.add("is-closing");
+        window.setTimeout(function () {
+          modal.classList.remove("is-closing");
+          overlay.classList.remove("is-closing");
+          overlay.removeAttribute("data-open");
+          if (lastTrigger && lastTrigger.focus) lastTrigger.focus();
+        }, CLOSE_MS);
+      }
+      document.querySelectorAll(".plan-pill[data-cmp]").forEach(function (pill) {
+        pill.addEventListener("click", function () { open(pill.getAttribute("data-cmp"), pill); });
+      });
+      if (closeBtn) closeBtn.addEventListener("click", close);
+      overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && overlay.hasAttribute("data-open")) close();
+      });
+    })();
+  </script>
 </body>
 </html>

@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
 
-  <title>Transitions.dev Refine - Tune your motion, live</title>
+  <title>Transitions Agent - Fix your UI motion from the terminal and GitHub</title>
   <meta
     name="description"
-    content="Refine is a live, agent-driven panel for tuning CSS and Motion transitions. One command docks a timeline onto your running app - click Refine and an agent suggests token-aligned timing, then writes it back to your code."
+    content="Transitions Agent scans your codebase for missing or janky UI motion, gives it a motion score, and fixes it with transitions.dev recipes - as diffs in your terminal or pull requests on GitHub."
   />
   <meta
     name="keywords"
-    content="Refine, transitions, CSS transitions, web animations, motion tuning, motion tokens, Claude Code, Cursor, Codex, frontend, AI coding agent"
+    content="Transitions Agent, UI transitions, motion score, CSS transitions, web animations, motion lint, GitHub Action, Claude Code, Cursor, frontend, AI coding agent"
   />
   <meta name="author" content="Transitions.dev" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -24,9 +24,9 @@
   <meta name="apple-mobile-web-app-title" content="Transitions.dev" />
   <meta name="application-name" content="Transitions.dev" />
 
-  <link rel="canonical" href="https://transitions.dev/refine.html" />
-  <link rel="alternate" hreflang="en" href="https://transitions.dev/refine.html" />
-  <link rel="alternate" hreflang="x-default" href="https://transitions.dev/refine.html" />
+  <link rel="canonical" href="https://transitions.dev/agent.html" />
+  <link rel="alternate" hreflang="en" href="https://transitions.dev/agent.html" />
+  <link rel="alternate" hreflang="x-default" href="https://transitions.dev/agent.html" />
 
   <link rel="icon" href="assets/favicon-light-mode.png?v=4" type="image/png" sizes="any" />
   <link rel="icon" href="assets/favicon-light-mode.png?v=4" media="(prefers-color-scheme: light)" type="image/png" />
@@ -36,10 +36,10 @@
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Transitions.dev" />
-  <meta property="og:url" content="https://transitions.dev/refine.html" />
+  <meta property="og:url" content="https://transitions.dev/agent.html" />
   <meta property="og:locale" content="en_US" />
-  <meta property="og:title" content="Transitions.dev Refine - Tune your motion, live" />
-  <meta property="og:description" content="A live, agent-driven panel for tuning CSS and Motion transitions. Click Refine; an agent suggests token-aligned timing and writes it back to your code." />
+  <meta property="og:title" content="Transitions Agent - Fix your UI motion" />
+  <meta property="og:description" content="Scan for janky motion, get a motion score, fix it with transitions.dev recipes as pull requests." />
   <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
   <meta property="og:image:secure_url" content="https://transitions.dev/assets/og-main.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
@@ -48,8 +48,8 @@
   <meta property="og:image:alt" content="Transitions.dev Refine - Tune your motion, live" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Transitions.dev Refine - Tune your motion, live" />
-  <meta name="twitter:description" content="A live, agent-driven panel for tuning CSS and Motion transitions. Click Refine; an agent suggests token-aligned timing and writes it back to your code." />
+  <meta name="twitter:title" content="Transitions Agent - Fix your UI motion" />
+  <meta name="twitter:description" content="Scan for janky motion, get a motion score, fix it with transitions.dev recipes as pull requests." />
   <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
   <meta name="twitter:image:alt" content="Transitions.dev Refine - Tune your motion, live" />
 
@@ -89,8 +89,8 @@
         },
         {
           "@type": "WebPage",
-          "@id": "https://transitions.dev/refine.html#webpage",
-          "url": "https://transitions.dev/refine.html",
+          "@id": "https://transitions.dev/agent.html#webpage",
+          "url": "https://transitions.dev/agent.html",
           "name": "Transitions.dev Refine - Tune your motion, live",
           "isPartOf": { "@id": "https://transitions.dev/#website" },
           "inLanguage": "en",
@@ -119,28 +119,6 @@
     })();
   </script>
   <style>
-
-    /* ── iOS double-tap zoom ─────────────────────────────────────────
-       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
-       viewport meta (since iOS 10), and disabling pinch zoom outright
-       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
-       only the double-tap-to-zoom gesture on the things people tap,
-       leaving pinch zoom fully intact. Declared first in the sheet so
-       prototypes needing a stricter value (`touch-action: none` on the
-       tilt / drag demos) still override it further down. */
-    button,
-    a,
-    label,
-    summary,
-    input,
-    select,
-    [role="button"],
-    [role="switch"],
-    [role="checkbox"],
-    [role="tab"],
-    .card {
-      touch-action: manipulation;
-    }
     /* Saans - used for the hero eyebrow + title (Medium / 500). */
     @font-face {
       font-family: "Saans";
@@ -633,6 +611,72 @@
       line-height: 34px;
       color: var(--text);
       letter-spacing: -0.01em;
+    }
+    /* "Agent" carries the Pro page's animated colour wash: the same
+       layer stack and orbit as pro.html's .title-pro. */
+    .title-pro {
+      background-image:
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.88'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.34726 -1.3118e-7 8.6482e-7 0.89585 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.5'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-1.3 0.25 -1.2633 -2.7471 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.4'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.05 -0.8 0.46018 3.6184 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='0.71709'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.51067 -3.3275e-16 -4.3352e-14 -1.1396 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.45 -0.75 1.9052 -0.7091 33.5 21)'><stop stop-color='rgba(255,173,85,1)' offset='0'/><stop stop-color='rgba(255,173,85,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.25 -0.35 -0.4013 3.5959 33.5 21)'><stop stop-color='rgba(0,204,68,1)' offset='0'/><stop stop-color='rgba(0,196,102,0.75)' offset='0.25'/><stop stop-color='rgba(0,187,136,0.5)' offset='0.5'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87391 0.73043 -4.1482 -1.9503 33.5 21)'><stop stop-color='rgba(0,170,204,1)' offset='0'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+        linear-gradient(rgb(108, 108, 108) 0%, rgb(216, 216, 216) 100%);
+      /* Each colour layer is blown up to 230% and swings around the
+         glyph box (the grey base ramp stays put at 100%), so the
+         enlarged blobs sweep corner-to-corner through the letters.
+         The repaint area is one ~55×47px word — negligible. */
+      background-size: 180% 180%, 180% 180%, 180% 180%, 180% 180%,
+                       180% 180%, 180% 180%, 180% 180%, 100% 100%;
+      background-repeat: no-repeat;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation:
+        title-pro-hue 4s linear infinite,
+        title-pro-drift 5s ease-in-out infinite;
+    }
+    /* Full hue cycle — ends where it starts, so the loop is seamless
+       and the colour travel is unmistakable. Compositor-only. The
+       saturate boost keeps the washes punchy at 180% blow-up. */
+    @keyframes title-pro-hue {
+      from { filter: hue-rotate(0deg) saturate(1.3); }
+      to   { filter: hue-rotate(-360deg) saturate(1.3); }
+    }
+    /* Blob travel — perimeter orbit. Each blob is re-centred inside
+       its own SVG tile (translation 33.5 21 above) and pinned to the
+       ring of edge stops TL,T,TR,R,BR,B,BL,L (in position space:
+       corners/edge-midpoints of the 0–100% range). Every blob starts
+       on the stop nearest its Figma quadrant and advances two ring
+       stops per keyframe — a full lap around the text outline per
+       cycle, so colour hugs and travels the edges while the middle
+       keeps the grey ramp. Last layer (grey ramp) never moves. */
+    @keyframes title-pro-drift {
+      0%, 100% {
+        background-position:
+          100% 0%, 0% 50%, 100% 50%, 0% 100%,
+          0% 0%, 50% 0%, 50% 100%, 0 0;
+      }
+      25% {
+        background-position:
+          100% 100%, 50% 0%, 50% 100%, 0% 0%,
+          100% 0%, 100% 50%, 0% 50%, 0 0;
+      }
+      50% {
+        background-position:
+          0% 100%, 100% 50%, 0% 50%, 100% 0%,
+          100% 100%, 50% 100%, 50% 0%, 0 0;
+      }
+      75% {
+        background-position:
+          0% 0%, 50% 100%, 50% 0%, 100% 100%,
+          0% 100%, 0% 50%, 100% 50%, 0 0;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .title-pro { animation: none; }
     }
 
     .subtitle {
@@ -3672,8 +3716,8 @@
     .hero-visual {
       position: relative;
       width: 100%;
-      max-width: 620px;
-      aspect-ratio: 1421 / 1080;
+      max-width: 760px;
+      aspect-ratio: 16 / 9;
       border-radius: 16px;
       background: var(--stage-bg);
       box-shadow:
@@ -3706,15 +3750,12 @@
       width: 100%;
       /* +1px overscan: aspect-ratio can compute a fractional container height the
          media rounds down, leaving a hairline of background at the bottom. The
-         extra pixel is absorbed by object-fit: cover (no visible crop). */
+         extra pixel is absorbed by object-fit: cover; with the box on the
+         video's own ratio that is the only crop. */
       height: calc(100% + 1px);
       object-fit: cover;
       display: block;
     }
-    /* Theme-swapped hero videos: show light by default, dark under dark theme. */
-    .hero-visual .hero-video--dark { display: none; }
-    html[data-theme="dark"] .hero-visual .hero-video--light { display: none; }
-    html[data-theme="dark"] .hero-visual .hero-video--dark { display: block; }
     .hero-caption {
       margin: 12px 0 0;
       font-size: 12px;
@@ -3771,25 +3812,456 @@
       color: var(--text);
     }
 
-    /* ─── Features ─────────────────────────────────────────────── */
-    .feature-list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .feature-list li {
+    /* Get-started copy matches the live docs typography
+       (detail.html?doc=installation, measured): 14/22 body in #3f3f3f,
+       12/18 code chips padded 1px 4px, and text-colored hover links. */
+    #get-started .skill-section-note,
+    #get-started .gs-bullets li,
+    #get-started .gs-qa .skill-section-note {
       font-size: 14px;
-      line-height: 26px;
-      color: var(--text);
+      line-height: 22px;
+      color: #3f3f3f;
     }
-    .feature-name {
-      font-weight: 600;
-      color: var(--text);
-      margin-right: 6px;
-    }
-    .feature-desc {
+    html[data-theme="dark"] #get-started .skill-section-note,
+    html[data-theme="dark"] #get-started .gs-bullets li,
+    html[data-theme="dark"] #get-started .gs-qa .skill-section-note { color: #cfcfcf; }
+    #get-started .gs-step-label { color: #0d0d0d; }
+    html[data-theme="dark"] #get-started .gs-step-label { color: #ededed; }
+    #get-started .skill-section-note code,
+    #get-started .gs-bullets li code,
+    #get-started .gs-qa code {
+      font-family: var(--font-mono);
+      font-size: 12px;
       font-weight: 400;
+      line-height: 18px;
+      padding: 1px 4px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.04);
+      color: #0d0d0d;
+    }
+    html[data-theme="dark"] #get-started .skill-section-note code,
+    html[data-theme="dark"] #get-started .gs-bullets li code,
+    html[data-theme="dark"] #get-started .gs-qa code {
+      border-color: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
+      color: #ededed;
+    }
+    #get-started .skill-section-note a,
+    #get-started li a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    #get-started .skill-section-note a:hover,
+    #get-started li a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+    /* GitHub Action setup guide (react.doctor-style progression). */
+    /* Sub-sections inside the get-started panels reuse the doc pages'
+       section titles (detail.html?doc=installation) with breathing room. */
+    .skill-section-title.gs-sub { margin: 24px 0 4px; }
+    /* Multiline variant of .skill-code-row: same surface and copy-button
+       treatment, pre content instead of a single line. */
+    .gs-code-block {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 8px 12px 14px;
+      border-radius: 10px;
+      background: #f7f7f7;
+    }
+    html[data-theme="dark"] .gs-code-block { background: rgba(255, 255, 255, 0.04); }
+    .gs-code-block pre {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-x: auto;
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 22px;
+      color: #3c3c3c;
+      white-space: pre;
+    }
+    html[data-theme="dark"] .gs-code-block pre { color: #d6d6d6; }
+    .gs-code-block .card-copy {
+      position: relative;
+      right: auto;
+      bottom: auto;
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      margin-right: -3px;
+      border-radius: 6px;
+      background: transparent;
+      background-image: none;
+    }
+    html[data-theme="dark"] .gs-code-block .card-copy { background: transparent; background-image: none; }
+    .gs-code-block .card-copy:hover { background-image: none; background: rgba(0, 0, 0, 0.04); color: var(--icon-color); }
+    html[data-theme="dark"] .gs-code-block .card-copy:hover { background: rgba(255, 255, 255, 0.06); }
+    .gs-code-block .card-copy:active { background-image: none; background: rgba(0, 0, 0, 0.06); }
+    html[data-theme="dark"] .gs-code-block .card-copy:active { background: rgba(255, 255, 255, 0.08); }
+    .gs-bullets { margin: 4px 0 0; padding-left: 20px; }
+    .gs-bullets li { margin-bottom: 6px; }
+    .gs-qa .gs-q { margin: 14px 0 2px; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--text); }
+    .gs-qa .skill-section-note { margin-top: 0; }
+
+    /* ─── Get started tabs (transitions-dev 16, tabs sliding) ─────
+       The bar is a flex container; the pill's width and transform are
+       written inline by JS so the tween runs between measured
+       positions. Panels simply toggle [hidden]. */
+    .gs-tabs {
+      position: relative;
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      margin: 4px 0 8px;
+      border-radius: 48px;
+      background: #f1f1f1;
+    }
+    html[data-theme="dark"] .gs-tabs { background: rgba(255, 255, 255, 0.06); }
+    .gs-tabs .t-tab {
+      position: relative;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      height: 30px;
+      padding: 4px 12px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 22px;
+      color: rgba(15, 15, 15, 0.8);
+      cursor: pointer;
+      border-radius: 48px;
+      z-index: 1;
+      white-space: nowrap;
+      transition: color var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+    }
+    html[data-theme="dark"] .gs-tabs .t-tab { color: rgba(255, 255, 255, 0.7); }
+    .gs-tabs .t-tab:not([aria-selected="true"]):hover,
+    .gs-tabs .t-tab[aria-selected="true"] { color: #0f0f0f; }
+    html[data-theme="dark"] .gs-tabs .t-tab:not([aria-selected="true"]):hover,
+    html[data-theme="dark"] .gs-tabs .t-tab[aria-selected="true"] { color: #ffffff; }
+    .gs-tabs .t-tab:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+    .gs-tabs .t-tabs-pill {
+      position: absolute;
+      top: 3px;
+      left: 0;
+      height: 30px;
+      width: 0;
+      background: #ffffff;
+      border-radius: 48px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      transform: translateX(0);
+      transition:
+        transform var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+        width     var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+      will-change: transform, width;
+      z-index: 0;
+      pointer-events: none;
+    }
+    html[data-theme="dark"] .gs-tabs .t-tabs-pill { background: #2a2a2a; box-shadow: none; }
+    .gs-panel { display: flex; flex-direction: column; gap: 8px; }
+    .gs-panel[hidden] { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .gs-tabs .t-tabs-pill, .gs-tabs .t-tab { transition: none !important; }
+    }
+
+    /* ─── Features (Figma 1673:35752) ─────────────────────────────
+       Three 272px columns on a 97px gutter (1010px), each an icon, a
+       16px title and a 14px two-line description, all centred. */
+    .agent-features {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto 96px;
+      padding: 0 24px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Same size as the bento heading below it; the Figma rhythm to the
+       columns (70px from the text box) is kept. */
+    .agent-features-heading {
+      text-align: center;
+      font-family: "Saans", var(--font-sans);
+      font-size: 30px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 0 0 70px;
+    }
+    /* The row spans the same inner width as the bento below, so the outer
+       columns line up with the cards' edges; each column's copy still
+       stays on the Figma 272px measure. */
+    .agent-features-grid {
+      display: grid;
+      width: 100%;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 48px;
+      row-gap: 40px;
+    }
+    /* Figma: icon, 16px, then title and description as one text block
+       (the title sits in a 28px box on a 24.2px line, so ~4px between). */
+    .agent-feature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+      max-width: 272px;
+      margin: 0 auto;
+    }
+    .agent-feature-icon {
+      display: block;
+      width: 24px;
+      height: 24px;
+      margin-bottom: 16px;
+    }
+    .agent-feature-icon img { display: block; width: 24px; height: 24px; }
+    html[data-theme="dark"] .agent-feature-icon img { filter: invert(1); }
+    .agent-feature-title {
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 24.2px;
+      color: var(--text);
+      margin: 0 0 4px;
+    }
+    .agent-feature-desc {
+      font-size: 14px;
+      line-height: 21.2px;
       color: var(--text-muted);
+      margin: 0;
+    }
+    @media (max-width: 960px) {
+      .agent-features-grid { column-gap: 32px; }
+    }
+    @media (max-width: 720px) {
+      .agent-features { padding: 0 16px; margin-bottom: 64px; }
+      .agent-features-heading { font-size: 23px; margin-bottom: 36px; }
+      .agent-features-grid { grid-template-columns: minmax(0, 320px); row-gap: 32px; }
+    }
+
+    /* ─── What the Agent does: bento, same frame as the Pro page ─── */
+    .agent-bento-wrap {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto 96px;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    .agent-bento-heading {
+      text-align: center;
+      font-family: "Saans", var(--font-sans);
+      font-size: 30px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 0 0 40px;
+    }
+    .agent-bento {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      grid-auto-rows: 1fr;
+      gap: 16px;
+    }
+    .agent-bento-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #f6f6f6;
+      border-radius: 24px;
+      padding: 28px 32px;
+    }
+    html[data-theme="dark"] .agent-bento-card { background: #141414; }
+    /* Inset hairline drawn above the bleeding mockups so the frame stays
+       crisp on every edge. */
+    .agent-bento-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.03) inset;
+    }
+    html[data-theme="dark"] .agent-bento-card::after {
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.03) inset;
+    }
+    .agent-bento-card--tall { grid-row: span 2; min-height: 512px; }
+    .agent-bento-card--sm { min-height: 248px; }
+    .agent-bento-title {
+      font-family: "Saans", var(--font-sans);
+      font-weight: 500; font-size: 22px; line-height: 28px;
+      letter-spacing: -0.01em; color: var(--text); margin: 0 0 10px;
+    }
+    .agent-bento-desc { font-size: 15px; line-height: 22px; color: var(--text); margin: 0; max-width: 42ch; position: relative; z-index: 2; }
+    .agent-bento-desc .dim { color: var(--text-muted); }
+
+    /* The mockups sit in flow below the copy (titles and descriptions
+       wrap to different line counts per card) and fill the leftover
+       height, bleeding off the card's right and bottom edges, which the
+       card clips. */
+    .ab-frame {
+      position: relative;
+      flex: 1 1 0;
+      min-height: 120px;
+      /* Bleed 1px past the card's 28px padding so the frame's own 1px
+         border slips under the card's clip - flush frames otherwise stack
+         two hairlines into a darker seam on the card's bottom edge. */
+      margin: 20px -42px -30px 0;
+      background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 10px 0 0 0; box-shadow: var(--card-shadow); overflow: hidden;
+      font-family: var(--font-sans);
+    }
+    html[data-theme="dark"] .ab-frame { background: #191919; border-color: rgba(255, 255, 255, 0.07); }
+    .ab-frame--tall { padding: 14px 16px; }
+    .ab-frame--diff { margin-right: -60px; }
+    .ab-frame--pr { margin-right: -60px; }
+    .ab-term { font-family: var(--font-mono); font-size: 11px; line-height: 2; color: #3c3c3c; white-space: nowrap; }
+    html[data-theme="dark"] .ab-term { color: #cfcfcf; }
+    .ab-term .ag-line strong { font-weight: 600; color: #111; }
+    html[data-theme="dark"] .ab-term .ag-line strong { color: #fff; }
+    .ag-cmd { color: #111; font-weight: 500; }
+    html[data-theme="dark"] .ag-cmd { color: #fff; }
+    .ag-dim { color: #979797; }
+    .ag-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+    .ag-dot--major { background: #e5484d; }
+    .ag-dot--warn { background: #f5a623; }
+    .ag-check { color: #30a46c; font-weight: 600; margin-right: 7px; }
+    .ab-gap { height: 10px; }
+    .ab-recipe { padding-left: 13px; color: #979797; }
+    .ab-recipe::before { content: "\2514\00a0"; color: #c8c8c8; }
+
+    /* Diff mockup */
+    .ab-diff { font-family: var(--font-mono); font-size: 11px; line-height: 20px; white-space: nowrap; }
+    .ab-diff-file {
+      padding: 8px 14px; font-size: 10.5px; color: #6c6c6c;
+      border-bottom: 1px solid var(--card-border); background: #fafafa;
+    }
+    html[data-theme="dark"] .ab-diff-file { background: #1f1f1f; color: #9a9a9a; border-color: rgba(255, 255, 255, 0.07); }
+    .ab-diff-line { padding: 0 14px; color: #3c3c3c; }
+    html[data-theme="dark"] .ab-diff-line { color: #cfcfcf; }
+    .ab-diff-ctx { color: #8a8a8a; }
+    .ab-diff-del { background: #fff1f0; color: #b42318; }
+    .ab-diff-add { background: #ecfdf3; color: #067647; }
+    html[data-theme="dark"] .ab-diff-del { background: rgba(229, 72, 77, 0.12); color: #f28b8f; }
+    html[data-theme="dark"] .ab-diff-add { background: rgba(48, 164, 108, 0.14); color: #6fd39a; }
+    .ab-diff-prompt { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--card-border); color: #111; font-weight: 500; }
+    html[data-theme="dark"] .ab-diff-prompt { color: #fff; border-color: rgba(255, 255, 255, 0.07); }
+    .ab-caret {
+      display: inline-block; width: 6px; height: 12px; margin-left: 2px; vertical-align: -2px;
+      background: currentColor; animation: ab-blink 1s steps(2, start) infinite;
+    }
+    @keyframes ab-blink { to { visibility: hidden; } }
+
+    /* Pull request comment mockup */
+    .ab-pr { font-size: 11px; line-height: 18px; color: #3c3c3c; }
+    html[data-theme="dark"] .ab-pr { color: #cfcfcf; }
+    /* Same strip as the diff card's file header: padded, tinted, ruled. */
+    .ab-pr-head {
+      display: flex; align-items: center; gap: 6px; white-space: nowrap;
+      padding: 8px 14px; font-size: 10.5px; line-height: 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08); background: #fafafa;
+    }
+    html[data-theme="dark"] .ab-pr-head { background: #1f1f1f; border-color: rgba(255, 255, 255, 0.07); }
+    /* The transitions.dev mark, same path as the nav brand, in a
+       GitHub-style round avatar. */
+    .ab-pr-avatar {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      background: #ffffff; color: #111;
+      box-shadow: 0 0 0 1px var(--card-border) inset;
+    }
+    .ab-pr-avatar svg { width: 11px; height: 12.4px; display: block; }
+    html[data-theme="dark"] .ab-pr-avatar { background: #262626; color: #fff; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset; }
+    .ab-pr-name { font-weight: 600; color: #111; }
+    html[data-theme="dark"] .ab-pr-name { color: #fff; }
+    .ab-pr-bot { padding: 0 5px; border: 1px solid var(--card-border); border-radius: 10px; font-size: 9.5px; line-height: 14px; color: #6c6c6c; }
+    .ab-pr-time { color: #979797; }
+    .ab-pr-body { padding: 10px 14px 12px; }
+    .ab-pr-score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+    .ab-pr-score-label { color: #6c6c6c; }
+    .ab-pr-score-val { font-family: "Saans", var(--font-sans); font-size: 22px; line-height: 26px; font-weight: 500; color: #979797; letter-spacing: -0.01em; }
+    .ab-pr-score-val--up { color: #111; }
+    html[data-theme="dark"] .ab-pr-score-val--up { color: #fff; }
+    .ab-pr-arrow { color: #b0b0b0; }
+    .ab-pr-row { white-space: nowrap; }
+    .ab-pr-row code { font-family: var(--font-mono); font-size: 10.5px; }
+    .ab-pr-muted { color: #979797; }
+
+    @media (max-width: 720px) {
+      .agent-bento-wrap { padding: 0 16px; }
+      .agent-bento-heading { font-size: 23px; margin-bottom: 28px; }
+      /* Single column, every card the same height (the tallest row sets
+         it), so the score card matches its neighbours; its terminal is
+         simply clipped lower down. */
+      .agent-bento { grid-template-columns: 1fr; grid-auto-rows: 1fr; }
+      .agent-bento-card--tall { grid-row: auto; min-height: 300px; }
+      .agent-bento-card--sm { min-height: 300px; }
+      .agent-bento-title { font-size: 18px; }
+      .ab-frame { min-height: 140px; margin: 16px -32px -28px 0; }
+      .agent-bento-wrap { margin-bottom: 64px; }
+      .gs-tabs { align-self: stretch; }
+      .gs-tabs .t-tab { flex: 1; padding: 4px 8px; font-size: 12px; }
+    }
+
+    /* ─── Polish pass ──────────────────────────────────────────────
+       Headings balance their line breaks, body copy avoids orphans,
+       numbers that read as data sit on tabular figures, pressable
+       controls give a 0.96 press and a 40px hit area. */
+    .title,
+    .agent-features-heading,
+    .agent-bento-heading,
+    .agent-bento-title,
+    .skill-section-title,
+    .t-acc-head > span:first-child {
+      text-wrap: balance;
+    }
+    .agent-bento-desc,
+    .agent-feature-desc,
+    .skill-section-note,
+    .hero-caption,
+    .t-acc-panel-inner p {
+      text-wrap: pretty;
+    }
+    .ab-term,
+    .ab-diff,
+    .ab-pr-score-val,
+    .ab-pr-row {
+      font-variant-numeric: tabular-nums;
+    }
+    .gs-tabs .t-tab {
+      transition:
+        color var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+        scale 150ms cubic-bezier(0.2, 0, 0, 1);
+    }
+    .gs-tabs .t-tab:active { scale: 0.96; }
+    /* The bar is only 36px tall: extend each tab's hit area vertically to
+       40px. Neighbouring tabs sit 3px apart, so no horizontal extension,
+       which would overlap them. */
+    .gs-tabs .t-tab::before {
+      content: "";
+      position: absolute;
+      inset: -5px 0;
+    }
+    .skill-code-row .card-copy {
+      transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        scale 150ms cubic-bezier(0.2, 0, 0, 1);
+    }
+    .skill-code-row .card-copy:active { scale: 0.96; }
+    /* 32px visible, 40px hit area (the row is 40px tall). */
+    .skill-code-row .card-copy::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .gs-tabs .t-tab, .skill-code-row .card-copy { scale: none !important; }
     }
 
     /* ─── FAQ accordion (transitions-dev P21) ──────────────────── */
@@ -3886,19 +4358,11 @@
     html[data-theme="dark"] .t-acc-panel-inner code {
       background: rgba(255, 255, 255, 0.06);
     }
-    .t-acc-panel-inner a,
-    .skill-section-note a {
-      color: inherit;
-      display: inline-block;
+    .t-acc-panel-inner a {
+      color: var(--text);
       text-decoration: underline;
-      text-decoration-thickness: from-font;
-      text-underline-position: from-font;
-      text-decoration-skip-ink: auto;
-      text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
-      transition: none;
+      text-underline-offset: 2px;
     }
-    .t-acc-panel-inner a:hover,
-    .skill-section-note a:hover { text-decoration-color: currentColor; }
 
     @media (prefers-reduced-motion: reduce) {
       .t-acc-panel, .t-acc-panel-inner, .t-acc-chevron {
@@ -4134,10 +4598,9 @@
         </a>
         <nav class="site-nav-menu" aria-label="Primary">
           <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
+          <a class="nav-pill nav-pill--active" href="/agent.html" data-nav="agent" aria-current="page">Agent</a>
           <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
-          <a class="nav-pill nav-pill--active" href="/refine.html" aria-current="page">Refine tool</a>
         </nav>
       </div>
       <div class="site-nav-right">
@@ -4239,11 +4702,10 @@
     <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
       <ul class="mobile-menu-list">
         <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html">Agent</a></li>
+        <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html" aria-current="page">Agent</a></li>
         <li><a class="mobile-menu-link mobile-menu-link--3" href="/skill.html">Skill</a></li>
         <li><a class="mobile-menu-link mobile-menu-link--4" href="/detail.html?doc=introduction">Docs</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--5" href="/refine.html" aria-current="page">Refine tool</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+        <li><a class="mobile-menu-link mobile-menu-link--5 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
       </ul>
       <a class="mobile-menu-cta" id="mobile-signin" href="/pro.html">Sign in</a>
     </nav>
@@ -4251,25 +4713,25 @@
 
   <main id="main" class="app">
     <header class="header">
-      <p class="hero-eyebrow">Refine<span class="beta-badge">Beta</span></p>
-      <h1 class="title">Transitions refining for agents</h1>
+      <p class="hero-eyebrow"><span class="beta-badge">Beta</span></p>
+      <h1 class="title">Transitions <span class="title-pro">Agent</span></h1>
       <p class="subtitle">
-        Tune your UI transitions live in your agent. <br>The integrated
-        transitions.dev skill suggests refinements you can apply
-        instantly.
+        Finds the janky motion in your app, scores it,
+        and lets AI fix it with real recipes. You approve every diff.
       </p>
       <div class="skill-cta-row">
-        <a class="skill-btn skill-btn--primary" href="#get-started">Get started</a>
-        <a class="skill-btn skill-btn--secondary" href="/website-demo.html" target="_blank" rel="noopener noreferrer">See demo</a>
+        <a class="skill-btn skill-btn--primary" href="/pro.html">Get started</a>
+        <a class="skill-btn skill-btn--secondary" href="/detail.html?doc=installation-agent">See docs</a>
       </div>
     </header>
 
-    <section class="hero-visual-wrap" id="demo" aria-label="Refine demo">
-      <div class="hero-visual" aria-label="Refine panel docked onto a running app">
-        <!-- Autoplay loop. Two themed sources: light shows in light mode, dark in dark mode.
-             Drop the files in /assets (mp4 + optional webm). Add a poster image if available. -->
+    <section class="hero-visual-wrap" id="demo" aria-label="Agent demo">
+      <div class="hero-visual" aria-label="Transitions Agent fixing motion from the terminal">
+        <!-- The launch capture (16:9). One file for both themes: autoplay,
+             loop, muted. The box keeps the video's own ratio, so nothing
+             is cropped. -->
         <video
-          class="hero-video hero-video--light"
+          class="hero-video"
           autoplay
           loop
           muted
@@ -4277,124 +4739,216 @@
           preload="metadata"
           aria-hidden="true"
         >
-          <source src="assets/refine-web.mp4" type="video/mp4" />
-        </video>
-        <video
-          class="hero-video hero-video--dark"
-          autoplay
-          loop
-          muted
-          playsinline
-          preload="metadata"
-          aria-hidden="true"
-        >
-          <source src="assets/refine-web-dark.mp4?v=202606302149" type="video/mp4" />
+          <source src="assets/agent-demo.mp4" type="video/mp4" />
         </video>
       </div>
-      <p class="hero-caption">Works with Cursor CLI, Claude Code and Codex</p>
+      <p class="hero-caption">Runs in your terminal and on GitHub pull requests</p>
     </section>
 
-    <section class="skill-content" aria-label="Refine documentation">
-      <div class="skill-section" id="get-started">
-        <h2 class="skill-section-title">Get started</h2>
-        <p class="skill-section-note" style="font-size: 14px; line-height: 22px; color: var(--text);">There are two ways to install and use it.</p>
-        <div class="get-started-grid">
-          <div class="gs-step">
-            <div class="gs-step-block">
-              <div class="gs-step-head">
-                <span class="gs-step-label">Run with CLI agent</span>
-              </div>
-              <div class="skill-code-row">
-                <code id="cmd-cli">npx transitions-refine live</code>
-                <button
-                  type="button"
-                  class="card-copy"
-                  aria-label="Copy terminal command"
-                  data-copy-target="#cmd-cli"
-                >
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <p class="skill-section-note">
-              Run it in your terminal. Works with the Cursor CLI, Claude Code and Codex - the relay wires your agent and answers Refine jobs persistently, with no chat loop and no idle credit burn. Run <code>npx transitions-refine stop</code> to remove it.
-            </p>
-          </div>
+    <!-- ─── Features (Figma Portfolio 1673:35752): three centred columns ─── -->
+    <section class="agent-features" aria-labelledby="agent-features-title">
+      <h2 class="agent-features-heading" id="agent-features-title">Features</h2>
+      <div class="agent-features-grid">
+        <div class="agent-feature">
+          <span class="agent-feature-icon" aria-hidden="true"><img src="assets/agent/check-verified.svg" alt="" width="24" height="24" /></span>
+          <h3 class="agent-feature-title">Scans your project</h3>
+          <p class="agent-feature-desc">Scores your motion 0 to 100 and lists every finding, on your machine.</p>
+        </div>
+        <div class="agent-feature">
+          <span class="agent-feature-icon" aria-hidden="true"><img src="assets/agent/settings.svg" alt="" width="24" height="24" /></span>
+          <h3 class="agent-feature-title">Polish &amp; Revamp mode</h3>
+          <p class="agent-feature-desc">An AI agent polishes small fixes, or revamps motion with real recipes.</p>
+        </div>
+        <div class="agent-feature">
+          <span class="agent-feature-icon" aria-hidden="true"><img src="assets/agent/settings.svg" alt="" width="24" height="24" /></span>
+          <h3 class="agent-feature-title">GitHub Actions</h3>
+          <p class="agent-feature-desc">The agent reviews every pull request, scores it and can gate the merge.</p>
+        </div>
+      </div>
+    </section>
 
-          <div class="gs-step">
-            <div class="gs-step-block">
-              <div class="gs-step-head">
-                <span class="gs-step-label">Run with agent (no CLI)</span>
+    <!-- ─── What the Agent does (bento, same frame as the Pro page) ─── -->
+    <section class="agent-bento-wrap" aria-labelledby="agent-bento-title">
+      <h2 class="agent-bento-heading" id="agent-bento-title">What the Agent does</h2>
+      <div class="agent-bento">
+        <div class="agent-bento-card agent-bento-card--tall">
+          <h3 class="agent-bento-title">A motion score for every codebase</h2>
+          <p class="agent-bento-desc">One command scores your motion 0 to 100, <span class="dim">every finding mapped to the recipe that fixes it. Local and deterministic: no AI, no account.</span></p>
+          <div class="ab-frame ab-frame--tall" aria-hidden="true">
+            <div class="ab-term">
+              <div class="ag-line ag-cmd">$ npx transitions-agent</div>
+              <div class="ag-line ag-dim">Scanning 142 files in ./src</div>
+              <div class="ag-line">Motion score <strong>64 / 100</strong> <span class="ag-dim">(needs work)</span></div>
+              <div class="ag-line ab-gap"></div>
+              <div class="ag-line"><span class="ag-dot ag-dot--major"></span>Modal.tsx:24 <span class="ag-dim">modal pops in with no transition</span></div>
+              <div class="ag-line ab-recipe">recipe: modal open/close</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--major"></span>Tooltip.tsx:41 <span class="ag-dim">tooltip appears with no transition</span></div>
+              <div class="ag-line ab-recipe">recipe: tooltip open/close</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>nav.css:118 <span class="ag-dim">hover snaps, no transition on base</span></div>
+              <div class="ag-line ab-recipe">recipe: learn more hover</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>app.css:203 <span class="ag-dim">transition: all animates layout</span></div>
+              <div class="ag-line ab-recipe">fix: name the properties</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>Toast.tsx:12 <span class="ag-dim">hardcoded 0.3s, no motion token</span></div>
+              <div class="ag-line ab-recipe">fix: --duration-quick</div>
+              <div class="ag-line"><span class="ag-dot ag-dot--warn"></span>global.css:9 <span class="ag-dim">no prefers-reduced-motion guard</span></div>
+              <div class="ag-line ab-recipe">fix: reduced-motion guard</div>
+              <div class="ag-line ab-gap"></div>
+              <div class="ag-line ag-dim">6 findings, 2 major. Run <span class="ag-cmd">fix</span> to see the diffs.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="agent-bento-card agent-bento-card--sm">
+          <h3 class="agent-bento-title">Fixes as diffs, then a pull request</h2>
+          <p class="agent-bento-desc">Polish keeps diffs small. Revamp rewrites motion with the real recipe. <span class="dim">Nothing lands without your yes.</span></p>
+          <div class="ab-frame ab-frame--diff" aria-hidden="true">
+            <div class="ab-diff">
+              <div class="ab-diff-file">src/components/Modal.tsx</div>
+              <div class="ab-diff-line ab-diff-ctx">.modal {</div>
+              <div class="ab-diff-line ab-diff-del">-  transition: all 0.3s;</div>
+              <div class="ab-diff-line ab-diff-add">+  transition:</div>
+              <div class="ab-diff-line ab-diff-add">+    opacity var(--duration-quick) var(--ease-out),</div>
+              <div class="ab-diff-line ab-diff-add">+    transform var(--duration-quick) var(--ease-out);</div>
+              <div class="ab-diff-line ab-diff-ctx">}</div>
+              <div class="ab-diff-line ab-diff-add">+@media (prefers-reduced-motion: reduce) {</div>
+              <div class="ab-diff-line ab-diff-add">+  .modal { transition: none; }</div>
+              <div class="ab-diff-line ab-diff-add">+}</div>
+              <div class="ab-diff-line ab-diff-prompt">Apply 3 fixes? (y/n) <span class="ab-caret"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="agent-bento-card agent-bento-card--sm">
+          <h3 class="agent-bento-title">A score gate on every pull request</h2>
+          <p class="agent-bento-desc">The Action scores every pull request <span class="dim">and can block merges when motion quality drops.</span></p>
+          <div class="ab-frame ab-frame--pr" aria-hidden="true">
+            <div class="ab-pr">
+              <div class="ab-pr-head">
+                <span class="ab-pr-avatar" aria-hidden="true"><svg viewBox="0 0 18 20.2947" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 0L12.5409 1.99176L11.5604 3.73491L10 2.8572V5.14735H8V2.8572L6.43962 3.73491L5.45909 1.99176L9 0ZM14.3613 3.01571L18 5.0625V9.14735H16V7.3794L14.0359 8.51337L13.0359 6.78132L14.9804 5.65867L13.3807 4.75886L14.3613 3.01571ZM4.61925 4.75887L3.01961 5.65867L4.9641 6.78132L3.9641 8.51337L2 7.3794L2 9.14735H0L1.54972e-06 5.0625L3.63873 3.01572L4.61925 4.75887ZM2 11.1473V12.9153L3.9641 11.7813L4.9641 13.5134L3.01961 14.636L4.61925 15.5358L3.63873 17.279L3.57628e-07 15.2322V11.1473H2ZM18 11.1473V15.2322L14.3613 17.279L13.3807 15.5358L14.9804 14.636L13.0359 13.5134L14.0359 11.7813L16 12.9153V11.1473H18ZM10 15.1473V17.4375L11.5604 16.5598L12.5409 18.3029L9 20.2947L5.45908 18.3029L6.43961 16.5598L8 17.4375V15.1473H10Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0981 9.51337L10 10.7247V13.1474H8V10.7247L5.90192 9.51337L6.90192 7.78132L9 8.99265L11.0981 7.78132L12.0981 9.51337Z" fill="currentColor"/></svg></span>
+                <span class="ab-pr-name">transitions-agent</span>
+                <span class="ab-pr-bot">bot</span>
+                <span class="ab-pr-time">commented 2 minutes ago</span>
               </div>
-              <div class="skill-code-row">
-                <code id="cmd-install">npx transitions-refine live</code>
-                <button
-                  type="button"
-                  class="card-copy"
-                  aria-label="Copy install command"
-                  data-copy-target="#cmd-install"
-                >
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </button>
-              </div>
-              <div class="skill-code-row">
-                <code id="cmd-run">/refine live</code>
-                <button
-                  type="button"
-                  class="card-copy"
-                  aria-label="Copy run command"
-                  data-copy-target="#cmd-run"
-                >
-                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                  <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </button>
+              <div class="ab-pr-body">
+                <div class="ab-pr-score"><span class="ab-pr-score-label">Motion score</span><span class="ab-pr-score-val">64</span><span class="ab-pr-arrow">&rarr;</span><span class="ab-pr-score-val ab-pr-score-val--up">91</span></div>
+                <div class="ab-pr-row"><span class="ag-check">&#10003;</span>Passes <code>min-score: "75"</code></div>
+                <div class="ab-pr-row ab-pr-muted">3 elements fixed, 0 ship without transitions</div>
               </div>
             </div>
-            <p class="skill-section-note">
-              Run the install command in your project, then <code>/refine live</code> in the editor (Cursor, Claude Code or Codex). Your agent becomes the poller and keeps polling for Refine jobs - so it stays running and uses your chat credits while open. Say <strong>stop refine</strong> to end the loop, or run <code>npx transitions-refine stop</code> to remove the panel.
-            </p>
           </div>
         </div>
       </div>
+    </section>
 
-      <div class="skill-section" id="how-you-use-it">
-        <h2 class="skill-section-title">How you use it</h2>
-        <ol class="skill-steps">
-          <li>Wait until Refine scans your project and your agent understands all your transitions.</li>
-          <li>Select the transition you want to tune from the transition dropdown.</li>
-          <li>Manually tune it using the timeline or the value controls in the right column.</li>
-          <li>Use <strong>Refine</strong> for improvement suggestions powered by the integrated transitions.dev skill.</li>
-          <li>Save changes by accepting them straight into your source code.</li>
-        </ol>
-      </div>
+    <section class="skill-content" aria-label="Agent documentation">
+      <div class="skill-section" id="get-started">
+        <h2 class="skill-section-title">Get started</h2>
+        <div class="gs-tabs t-tabs" role="tablist" aria-label="How to run the Agent">
+          <span class="t-tabs-pill" aria-hidden="true"></span>
+          <button class="t-tab" type="button" role="tab" id="gs-tab-cli" aria-selected="true" aria-controls="gs-panel-cli">Coding agent (CLI)</button>
+          <button class="t-tab" type="button" role="tab" id="gs-tab-gha" aria-selected="false" aria-controls="gs-panel-gha" tabindex="-1">GitHub Action</button>
+        </div>
 
-      <div class="skill-section" id="features">
-        <h2 class="skill-section-title">Features</h2>
-        <ul class="feature-list">
-          <li><span class="feature-name">Timeline</span><span class="feature-desc">See every property's duration, delay and easing laid out on a shared time ruler.</span></li>
-          <li><span class="feature-name">Value controls</span><span class="feature-desc">Drag or type to tune timings and curves, with the live component updating as you go.</span></li>
-          <li><span class="feature-name">Refine: small improvements</span><span class="feature-desc">The agent nudges your timings toward proven motion tokens for cleaner, snappier feel.</span></li>
-          <li><span class="feature-name">Refine: replace transitions</span><span class="feature-desc">Swap a transition for a better-fit recipe straight from the transitions.dev library.</span></li>
-          <li><span class="feature-name">Accept changes</span><span class="feature-desc">Write the refined values back into your source in whatever styling approach you use.</span></li>
-          <li><span class="feature-name">motion.dev support</span><span class="feature-desc">Motion animations are detected automatically via the Web Animations API - previewed, refined and written back to your transition props.</span></li>
-        </ul>
+        <div class="gs-panel" id="gs-panel-cli" role="tabpanel" aria-labelledby="gs-tab-cli">
+          <p class="skill-section-note">Run these in a terminal at your project's root folder, or paste them to your coding agent (Claude Code, Cursor, Codex) and it runs them for you.</p>
+          <div class="get-started-grid">
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Install</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-skill">npx transitions-agent</code>
+                <button type="button" class="card-copy" aria-label="Copy install command" data-copy-target="#cmd-skill">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <p class="skill-section-note">
+              Nothing to install first: the command runs through npx. The first run scans the project and installs the agent skill into <code>~/.claude/skills</code> (use <code>--dir</code> for other agents), so from then on "check this app's motion" makes your agent scan, present the fix options, run your choice and verify the score. A scan walks your stylesheets and components and prints a motion score (0 to 100) with every finding mapped to its transitions.dev recipe. No AI, no account, your code never leaves the machine.
+            </p>
+          </div>
+
+          <div class="gs-step">
+            <div class="gs-step-block">
+              <div class="gs-step-head">
+                <span class="gs-step-label">Fix</span>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-fix">npx transitions-agent fix</code>
+                <button type="button" class="card-copy" aria-label="Copy fix command" data-copy-target="#cmd-fix">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+              <div class="skill-code-row">
+                <code id="cmd-revamp">npx transitions-agent fix --mode revamp --pr</code>
+                <button type="button" class="card-copy" aria-label="Copy revamp command" data-copy-target="#cmd-revamp">
+                  <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <p class="skill-section-note">
+              Every proposed change is shown as a diff first and applied only after you type yes. Polish (the default) keeps diffs small: durations onto motion tokens, a reduced-motion guard, named properties instead of <code>transition: all</code>. Revamp replaces janky motion wholesale with the matching transitions.dev recipe, Pro recipes included. With <code>--pr</code> it opens a pull request on a new branch after one more confirmation. It never pushes to your main branch.
+            </p>
+          </div>
+          </div>
+        </div>
+
+        <div class="gs-panel" id="gs-panel-gha" role="tabpanel" aria-labelledby="gs-tab-gha" hidden>
+          <p class="skill-section-note">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews. Scanning needs no account, no secrets, no AI key.</p>
+
+          <h2 class="skill-section-title gs-sub">Install with your coding agent</h2>
+          <div class="skill-code-row">
+            <code id="cmd-action">npx transitions-agent init-ci</code>
+            <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+          </div>
+          <p class="skill-section-note">Tell your coding agent <em>"set up Transitions Agent for CI"</em> and it runs this command for you - or run it yourself. It writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code>. Commit and push - done.</p>
+
+          <h2 class="skill-section-title gs-sub">Or add the workflow manually</h2>
+          <div class="gs-code-block"><pre id="yml-action">name: Transitions Agent
+on: pull_request
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  motion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Jakubantalik/transitions.dev/agent@main
+        with:
+          min-score: "0"
+          license: &#36;{{ secrets.TRANSITIONS_AGENT_LICENSE }}</pre><button type="button" class="card-copy" aria-label="Copy" data-copy-target="#yml-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button></div>
+          <p class="skill-section-note">Both permissions matter: <code>pull-requests: write</code> lets the Action post its score comment.</p>
+
+          <h2 class="skill-section-title gs-sub">Fix pull requests from CI</h2>
+          <div class="skill-code-row">
+            <code id="cmd-fix-workflow">npx transitions-agent init-ci --fix</code>
+            <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-fix-workflow"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+          </div>
+          <p class="skill-section-note">Also writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a>. Add one repo secret - <code>TRANSITIONS_AGENT_LICENSE</code>, the key from your <a href="/pro.html">Business plan</a> email - then run "Transitions Agent fix" from the Actions tab: a fix pull request opens with the diffs for your team to review. Our hosted service does the fixing; no AI key ever enters your repo. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</p>
+
+          <h2 class="skill-section-title gs-sub">What happens on a pull request</h2>
+          <ul class="gs-bullets">
+            <li>One sticky comment per pull request with the motion score and a findings table - it updates in place on every push, never stacking.</li>
+            <li>Findings name the file, line, and the transitions.dev recipe that fixes them.</li>
+            <li>With <code>min-score</code> set, the check fails when the score drops below it; otherwise it always passes and just informs.</li>
+          </ul>
+
+          <h2 class="skill-section-title gs-sub">Troubleshooting</h2>
+          <div class="gs-qa">
+            <p class="gs-q">No comment showed up.</p>
+            <p class="skill-section-note">The workflow needs <code>pull-requests: write</code> under <code>permissions:</code> (the template includes it). On forks, GitHub restricts write tokens - the score still appears in the job log.</p>
+            <p class="gs-q">The score looks wrong or scans 0 files.</p>
+            <p class="skill-section-note">The Action scans the repository root. In a monorepo, point it at your app with the <code>working-directory</code> input.</p>
+            <p class="gs-q">The check is blocking merges before the team is ready.</p>
+            <p class="skill-section-note">Set <code>min-score: "0"</code> - the comment keeps reporting, nothing blocks.</p>
+            <p class="gs-q">Fixes pushed a branch but no pull request appeared.</p>
+            <p class="skill-section-note">GitHub blocks workflows from opening pull requests by default. Repo <strong>Settings &gt; Actions &gt; General &gt; Workflow permissions</strong>: check "Allow GitHub Actions to create and approve pull requests", then re-run.</p>
+            <p class="gs-q">The fix workflow fails with a license error.</p>
+            <p class="skill-section-note">The secret must be named exactly <code>TRANSITIONS_AGENT_LICENSE</code>, and revamp mode needs a Business key - free keys cover polish.</p>
+          </div>
+        </div>
       </div>
 
       <div class="skill-section" id="faq">
@@ -4402,105 +4956,62 @@
         <div class="faq-list">
           <div class="t-acc" data-open="false">
             <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>What is Refine?</span>
+              <span>What is Transitions Agent?</span>
               <span class="t-acc-chevron" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
               </span>
             </button>
             <div class="t-acc-panel">
               <div class="t-acc-panel-inner">
-                <p>A timeline panel that docks onto your running app and lets you tune its UI transitions live. Pick a transition, drag the timing, and let your agent suggest values aligned to the transitions.dev motion tokens - then write them back into your code.</p>
+                <p>An agent that finds missing, janky or inconsistent UI motion in your codebase and fixes it with transitions.dev recipes. It runs in your terminal and on GitHub pull requests: scan gives a motion score and findings, fix proposes diffs and opens a pull request after your confirmation.</p>
               </div>
             </div>
           </div>
 
           <div class="t-acc" data-open="false">
             <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>How do I install it?</span>
+              <span>Can it break my app?</span>
               <span class="t-acc-chevron" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
               </span>
             </button>
             <div class="t-acc-panel">
               <div class="t-acc-panel-inner">
-                <p>There are two ways. <strong>With a CLI agent:</strong> run <code>npx transitions-refine live</code> in your terminal - it wires your agent (Cursor CLI, Claude Code or Codex) and answers Refine jobs persistently, with no chat loop or idle credit burn. <strong>With an agent (no CLI):</strong> run <code>npx transitions-refine live</code> in your project, then <code>/refine live</code> in the editor so your agent becomes the poller. Either way the panel is injected onto the running page - no edits to your code. Run <code>npx transitions-refine stop</code> to remove it.</p>
+                <p>The agent never commits to your main branch. Every change is shown as a diff and applied only after you confirm; with <code>--pr</code> the changes arrive as a pull request your team reviews, your tests run on, and a human merges. Fixes touch motion only - CSS transitions and animation guards, never logic - and any merged change is one <code>git revert</code> away.</p>
               </div>
             </div>
           </div>
 
           <div class="t-acc" data-open="false">
             <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>How does it find my transitions?</span>
+              <span>Where does the AI run?</span>
               <span class="t-acc-chevron" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
               </span>
             </button>
             <div class="t-acc-panel">
               <div class="t-acc-panel-inner">
-                <p>Refine scans your project and detects the CSS transitions and animations automatically. It also picks up <a href="https://motion.dev" target="_blank" rel="noopener">motion.dev</a> (Framer Motion) animations by intercepting the Web Animations API - no wrapper or code changes needed. They show up in the transition dropdown - select one to load its timeline and value controls. One caveat: Motion animations driven by its JS loop (some springs and layout animations) bypass the Web Animations API and aren't detected automatically.</p>
+                <p>Scanning is deterministic and runs on your machine - no AI involved. Hosted fixes run through the transitions.dev fix service with our AI key, so your team never manages API keys or model bills; usage is metered per plan.</p>
               </div>
             </div>
           </div>
 
           <div class="t-acc" data-open="false">
             <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>Which styling approaches does it support?</span>
+              <span>What do Free and Business include?</span>
               <span class="t-acc-chevron" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
               </span>
             </button>
             <div class="t-acc-panel">
               <div class="t-acc-panel-inner">
-                <p>Plain CSS, CSS Modules, styled-components, Tailwind, and inline styles. On Accept, Refine writes the values back in whichever one you already use.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="t-acc" data-open="false">
-            <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>Are my changes reversible before I accept?</span>
-              <span class="t-acc-chevron" aria-hidden="true">
-                <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
-              </span>
-            </button>
-            <div class="t-acc-panel">
-              <div class="t-acc-panel-inner">
-                <p>Yes. The running component is the preview - there's no play button. Every edit is applied live and stays reversible until you click <strong>Accept</strong>, which writes the values into your source.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="t-acc" data-open="false">
-            <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>Can I use it in production?</span>
-              <span class="t-acc-chevron" aria-hidden="true">
-                <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
-              </span>
-            </button>
-            <div class="t-acc-panel">
-              <div class="t-acc-panel-inner">
-                <p>No - Refine is a dev-only tool. It runs against your local app while you tune, and ships nothing to production. Run <code>npx transitions-refine stop</code> when you're done.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="t-acc" data-open="false">
-            <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>How do I report bugs or request features?</span>
-              <span class="t-acc-chevron" aria-hidden="true">
-                <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
-              </span>
-            </button>
-            <div class="t-acc-panel">
-              <div class="t-acc-panel-inner">
-                <p>Open an issue on <a href="https://github.com/Jakubantalik/transitions.dev" target="_blank" rel="noopener noreferrer">GitHub</a> or contact <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>.</p>
+                <p><strong>Free</strong>: unlimited scans, the GitHub Action, and 10 hosted polish fixes a month. <strong>Business</strong> ($59/mo): 200 hosted fixes a month, revamp mode grounded in the Pro recipe library, the pull-request gate, and 5 Transitions Pro seats. See <a href="/pro.html">pricing</a>.</p>
               </div>
             </div>
           </div>
         </div>
       </div>
     </section>
-
     <footer class="footer">
       <div class="footer-top">
         <div class="footer-brand">
@@ -4522,7 +5033,8 @@
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/skill.html">Skill</a>
             <a href="/agent.html">Agent</a>
-            <a href="/pro.html">Get Pro</a>
+            <a href="/refine.html">Refine tool</a>
+            <a href="/pro.html">Pricing</a>
           </div>
           <div class="footer-col">
             <p class="footer-col-title">Docs</p>
@@ -4581,11 +5093,9 @@
             } catch (_) {}
           }
         });
-        // A display:none <video> can get paused by the browser; kick the
-        // now-visible hero video so the autoplay loop always resumes.
-        var heroVideo = document.querySelector(
-          ".hero-visual .hero-video--" + (next === "dark" ? "dark" : "light")
-        );
+        // Kick the hero video on theme changes so the autoplay loop
+        // always resumes if the browser paused it.
+        var heroVideo = document.querySelector(".hero-visual .hero-video");
         if (heroVideo && typeof heroVideo.play === "function") {
           var p = heroVideo.play();
           if (p && typeof p.catch === "function") p.catch(function () {});
@@ -4873,6 +5383,60 @@
         });
       });
 
+      /* ── Get started tabs (transitions-dev 16) ─────────────────
+         The pill is measured from the active tab; each click writes
+         the new offset and width so CSS tweens the move. Panels toggle
+         [hidden]. Arrow keys move between tabs. */
+      (function () {
+        var bar = document.querySelector(".gs-tabs");
+        if (!bar) return;
+        var pill = bar.querySelector(".t-tabs-pill");
+        var tabs = Array.prototype.slice.call(bar.querySelectorAll(".t-tab"));
+        function moveTo(tab, animate) {
+          if (!animate) {
+            var prev = pill.style.transition;
+            pill.style.transition = "none";
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+            void pill.offsetWidth;
+            pill.style.transition = prev;
+          } else {
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+          }
+        }
+        function select(tab, animate) {
+          tabs.forEach(function (t) {
+            var on = t === tab;
+            t.setAttribute("aria-selected", on ? "true" : "false");
+            t.setAttribute("tabindex", on ? "0" : "-1");
+            var panel = document.getElementById(t.getAttribute("aria-controls"));
+            if (panel) panel.hidden = !on;
+          });
+          moveTo(tab, animate);
+        }
+        function active() {
+          return tabs.filter(function (t) { return t.getAttribute("aria-selected") === "true"; })[0] || tabs[0];
+        }
+        tabs.forEach(function (tab, i) {
+          tab.addEventListener("click", function () { select(tab, true); });
+          tab.addEventListener("keydown", function (e) {
+            var next = e.key === "ArrowRight" ? tabs[(i + 1) % tabs.length]
+                     : e.key === "ArrowLeft"  ? tabs[(i - 1 + tabs.length) % tabs.length]
+                     : null;
+            if (!next) return;
+            e.preventDefault();
+            select(next, true);
+            next.focus();
+          });
+        });
+        requestAnimationFrame(function () { moveTo(active(), false); });
+        window.addEventListener("resize", function () { moveTo(active(), false); });
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(function () { moveTo(active(), false); });
+        }
+      })();
+
       /* ── FAQ accordion ─────────────────────────────────────────
          Toggle data-open on each item; CSS owns the height
          (grid-template-rows 0fr↔1fr) and chevron flip. */
@@ -5055,6 +5619,7 @@
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Agent", hint: "Motion fixes + PRs", href: "/agent.html", ic: "wand" },
         { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
@@ -5143,6 +5708,6 @@
       });
     })();
   </script>
-  <script src="assets/pro-client.js?v=36" defer></script>
+  <script src="assets/pro-client.js?v=29" defer></script>
 </body>
 </html>

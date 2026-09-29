@@ -92,7 +92,16 @@ async function handleFix(request, env) {
   const recipes = mode === "revamp" ? await loadRecipes(env, findings) : [];
 
   const model = isFree ? MODELS.free : MODELS.paid;
-  const fixed = await proposeFixes(env, findings, files, mode, recipes, model);
+  // A model-side failure (rate limit, overload) is transient: surface it as a
+  // clean 502 the CLI can explain, and do NOT count the fix against the quota.
+  let fixed;
+  try {
+    fixed = await proposeFixes(env, findings, files, mode, recipes, model);
+  } catch (e) {
+    const detail = e?.detail || e?.message || "model error";
+    console.error("[fix] model call failed:", detail);
+    return json({ error: "model_unavailable", detail: "The AI backend had a hiccup. Nothing was counted against your quota; try again in a minute." }, 502);
+  }
   const ttl = { expirationTtl: 60 * 60 * 24 * 62 };
   await env.USAGE.put(usageKey, String(used + 1), ttl);
   if (isFree) {
@@ -145,7 +154,9 @@ async function proposeFixes(env, findings, files, mode, recipes, model) {
   });
   if (!res.ok) {
     const detail = await res.text();
-    throw new Response(JSON.stringify({ error: "model error", detail }), { status: 502 });
+    const err = new Error("anthropic " + res.status);
+    err.detail = detail;
+    throw err;
   }
   const data = await res.json();
   const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");

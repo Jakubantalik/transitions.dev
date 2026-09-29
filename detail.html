@@ -1227,6 +1227,8 @@
     .mobile-menu-link--2 { transition-delay: 40ms; }
     .mobile-menu-link--3 { transition-delay: 80ms; }
     .mobile-menu-link--4 { transition-delay: 120ms; }
+    .mobile-menu-link--5 { transition-delay: 160ms; }
+    .mobile-menu-link--6 { transition-delay: 200ms; }
     .mobile-menu-link--pro { color: #0053e3; }
     html[data-theme="dark"] .mobile-menu-link--pro { color: #7cd4ff; }
     .mobile-menu-link--pro[data-state="account"] { color: var(--text); }
@@ -5754,7 +5756,228 @@
     .docs-link.is-active { background: rgba(0, 0, 0, 0.05); }
     html[data-theme="dark"] .docs-link.is-active { background: rgba(255, 255, 255, 0.08); }
     .docs-link--muted { color: var(--text-muted); }
+    /* Collapsible groups (Lens-style): a head row with a chevron, and a
+       panel that tweens open on grid rows (transitions-dev 21). Children
+       sit one step in. */
+    .docs-fold { display: flex; flex-direction: column; min-width: 0; }
+    .docs-fold-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      height: 32px;
+      padding: 0 8px 0 12px;
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 16px;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: background 140ms ease;
+    }
+    .docs-fold-head:hover { background: rgba(0, 0, 0, 0.04); }
+    html[data-theme="dark"] .docs-fold-head:hover { background: rgba(255, 255, 255, 0.05); }
+    .docs-fold-head:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
+    .docs-fold-chevron {
+      display: inline-flex;
+      width: 16px;
+      height: 16px;
+      color: var(--text-subtle);
+      transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .docs-fold-chevron svg { width: 16px; height: 16px; }
+    .docs-fold[data-open="true"] .docs-fold-chevron { transform: rotate(90deg); }
+    /* The panel tweens its rows, and the links inside fade: on open
+       they come in after the height has started moving, on close they
+       fade first so the fold never clips live text. Opacity only, no
+       blur. */
+    .docs-fold-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 250ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .docs-fold[data-open="true"] .docs-fold-panel { grid-template-rows: 1fr; }
+    .docs-fold-inner {
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 160ms ease-out;
+    }
+    .docs-fold[data-open="true"] .docs-fold-inner {
+      opacity: 1;
+      transition: opacity 200ms ease-out 60ms;
+    }
+    .docs-link--child { padding-left: 24px; }
+    @media (prefers-reduced-motion: reduce) {
+      .docs-fold-panel, .docs-fold-chevron, .docs-fold-inner { transition: none !important; }
+    }
     .docs-link:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
+
+    /* ── Agent doc: the agent page's Get started, tabs and steps ── */
+    /* ─── Get started tabs (transitions-dev 16, tabs sliding) ─────
+       The bar is a flex container; the pill's width and transform are
+       written inline by JS so the tween runs between measured
+       positions. Panels simply toggle [hidden]. */
+    .gs-tabs {
+      position: relative;
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      margin: 4px 0 8px;
+      border-radius: 48px;
+      background: #f1f1f1;
+    }
+    html[data-theme="dark"] .gs-tabs { background: rgba(255, 255, 255, 0.06); }
+    .gs-tabs .t-tab {
+      position: relative;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      height: 30px;
+      padding: 4px 12px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 22px;
+      color: rgba(15, 15, 15, 0.8);
+      cursor: pointer;
+      border-radius: 48px;
+      z-index: 1;
+      white-space: nowrap;
+      transition: color var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+    }
+    html[data-theme="dark"] .gs-tabs .t-tab { color: rgba(255, 255, 255, 0.7); }
+    .gs-tabs .t-tab:not([aria-selected="true"]):hover,
+    .gs-tabs .t-tab[aria-selected="true"] { color: #0f0f0f; }
+    html[data-theme="dark"] .gs-tabs .t-tab:not([aria-selected="true"]):hover,
+    html[data-theme="dark"] .gs-tabs .t-tab[aria-selected="true"] { color: #ffffff; }
+    .gs-tabs .t-tab:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+    .gs-tabs .t-tabs-pill {
+      position: absolute;
+      top: 3px;
+      left: 0;
+      height: 30px;
+      width: 0;
+      background: #ffffff;
+      border-radius: 48px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      transform: translateX(0);
+      transition:
+        transform var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+        width     var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+      will-change: transform, width;
+      z-index: 0;
+      pointer-events: none;
+    }
+    html[data-theme="dark"] .gs-tabs .t-tabs-pill { background: #2a2a2a; box-shadow: none; }
+    .gs-panel { display: flex; flex-direction: column; gap: 8px; }
+    .gs-panel[hidden] { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .gs-tabs .t-tabs-pill, .gs-tabs .t-tab { transition: none !important; }
+    }
+
+    .get-started-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .gs-step {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .gs-step-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .gs-step-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .gs-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 36px;
+      background: var(--card-bg);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--text);
+      box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    }
+    html[data-theme="dark"] .gs-badge {
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    .gs-step-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    /* GitHub Action setup guide (react.doctor-style progression). */
+    /* Sub-sections inside the get-started panels reuse the doc pages'
+       section titles (detail.html?doc=installation) with breathing room. */
+    .skill-section-title.gs-sub { margin: 24px 0 4px; }
+    /* Multiline variant of .skill-code-row: same surface and copy-button
+       treatment, pre content instead of a single line. */
+    .gs-code-block {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 8px 12px 14px;
+      border-radius: 10px;
+      background: #f7f7f7;
+    }
+    html[data-theme="dark"] .gs-code-block { background: rgba(255, 255, 255, 0.04); }
+    .gs-code-block pre {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-x: auto;
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 22px;
+      color: #3c3c3c;
+      white-space: pre;
+    }
+    html[data-theme="dark"] .gs-code-block pre { color: #d6d6d6; }
+    .gs-code-block .card-copy {
+      position: relative;
+      right: auto;
+      bottom: auto;
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      margin-right: -3px;
+      border-radius: 6px;
+      background: transparent;
+      background-image: none;
+    }
+    html[data-theme="dark"] .gs-code-block .card-copy { background: transparent; background-image: none; }
+    .gs-code-block .card-copy:hover { background-image: none; background: rgba(0, 0, 0, 0.04); color: var(--icon-color); }
+    html[data-theme="dark"] .gs-code-block .card-copy:hover { background: rgba(255, 255, 255, 0.06); }
+    .gs-code-block .card-copy:active { background-image: none; background: rgba(0, 0, 0, 0.06); }
+    html[data-theme="dark"] .gs-code-block .card-copy:active { background: rgba(255, 255, 255, 0.08); }
+    .gs-bullets { margin: 4px 0 0; padding-left: 20px; }
+    .gs-bullets li { margin-bottom: 6px; }
+    .gs-qa .gs-q { margin: 14px 0 2px; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--text); }
+    .gs-qa .skill-section-note { margin-top: 0; }
 
     /* ── Main column ─────────────────────────────────────────── */
     .docs-main { position: relative; min-width: 0; }
@@ -6226,7 +6449,7 @@
     /* Inline links inside doc copy — jakubantalik.com .inline-link style:
        native from-font underline at 30% opacity, 100% on hover, no animation. */
     .doc-article a {
-      color: inherit;
+      color: var(--text);
       display: inline-block;
       text-decoration: underline;
       text-decoration-thickness: from-font;
@@ -6513,6 +6736,11 @@
           transparent 100%);
       }
       .docs-group-label { display: none; }
+      /* The strip flattens the folds: every link becomes a chip. */
+      .docs-fold, .docs-fold-panel, .docs-fold-inner { display: contents; }
+      .docs-fold-inner { opacity: 1; }
+      .docs-fold-head { display: none; }
+      .docs-link--child { padding-left: 12px; }
       .docs-group,
       .docs-list {
         flex-direction: row;
@@ -6559,9 +6787,10 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-            <a class="nav-pill nav-pill--active" href="detail.html?t=card-resize" aria-current="page">Transitions</a>
-            <a class="nav-pill" href="/skill.html">Skill</a>
-            <a class="nav-pill" href="/refine.html">Refine tool</a>
+          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
+          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
+          <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           </nav>
         </div>
         <div class="site-nav-right">
@@ -6591,20 +6820,6 @@
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
             </svg>
             <span class="pill-label" id="gh-stars-count">—</span>
-          </a>
-          <a
-            class="icon-btn"
-            href="https://x.com/jakubantalik"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="X (Twitter)"
-          >
-            <svg class="icon-x" aria-hidden="true" viewBox="0 0 16 17" xmlns="http://www.w3.org/2000/svg">
-              <path
-                fill="currentColor"
-                d="M12.4041 1.39726H14.6953L9.69087 7.2591L15.5781 15.2368H10.9696L7.35741 10.3996L3.22921 15.2368H0.934687L6.28641 8.96575L0.642598 1.39726H5.36795L8.62962 5.81859L12.4041 1.39726ZM11.5992 13.8329H12.8682L4.67667 2.72798H3.31359L11.5992 13.8329Z"
-              />
-            </svg>
           </a>
           <!-- 3-dot menu — Appearance opens a theme sub-page (Light / Dark / System). -->
           <!-- 3-dot menu — exact Refine tool dropdown component. -->
@@ -6679,10 +6894,11 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
-          <li><a class="mobile-menu-link mobile-menu-link--1" href="detail.html?t=card-resize">Transitions</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/refine.html">Refine tool</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html">Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/skill.html">Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <a class="mobile-menu-cta" id="mobile-signin" href="/pro.html">Sign in</a>
       </nav>
@@ -6693,7 +6909,15 @@
         <div class="docs-group">
           <div class="docs-group-label">Getting started</div>
           <a class="docs-link" href="?doc=introduction" data-doc="introduction">Introduction</a>
-          <a class="docs-link" href="?doc=installation" data-doc="installation">Installation</a>
+          <div class="docs-fold" data-open="false">
+            <button type="button" class="docs-fold-head" aria-expanded="false"><span class="docs-link-label">Installation</span><span class="docs-fold-chevron" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+            <div class="docs-fold-panel">
+              <div class="docs-fold-inner">
+                <a class="docs-link docs-link--child" href="?doc=installation" data-doc="installation">Library and Skill</a>
+                <a class="docs-link docs-link--child" href="?doc=installation-agent" data-doc="installation-agent">Agent</a>
+              </div>
+            </div>
+          </div>
           <a class="docs-link" href="?doc=accessibility" data-doc="accessibility">Accessibility</a>
         </div>
         <div class="docs-group">
@@ -6767,16 +6991,16 @@
 
         <div class="detail-doc" id="detail-doc" hidden>
           <article class="doc-article skill-content" data-doc="introduction"
-                   data-title="Introduction" data-subtitle="A copy-paste library of production-ready UI transitions." hidden>
+                   data-title="Introduction" data-subtitle="The UI motion layer for web apps: a library, a skill and an agent." hidden>
             <div class="skill-section">
-              <p class="skill-section-note">Transitions.dev is a curated collection of the most essential UI transitions for web apps: dropdowns, modals, notification badges, number pop-ins, page slides, accordions and more. Each one is a small, self-contained piece of motion you can drop into any project.</p>
-              <p class="skill-section-note">Every transition is built with plain CSS (plus a little JavaScript only where a demo needs it) and tuned against a shared scale of motion tokens (duration, easing, distance, blur and scale), so they feel consistent no matter where you use them.</p>
-              <p class="skill-section-note">Pick a transition from the sidebar to see it three ways: a live Preview, the portable CSS, and a self-contained React version. When you find one you like, see <a href="?doc=installation" data-doc="installation">Installation</a> for the ways to bring it into your project.</p>
+              <p class="skill-section-note">Transitions.dev is the motion layer for your product. It started as a library of the essential UI transitions and grew into three pieces that share one motion system: the <a href="/library.html">Library</a> you browse and copy from, the <a href="/skill.html">Skill</a> that teaches your coding agent to apply it, and the <a href="/agent.html">Agent</a> that scans a codebase, scores its motion and fixes it as pull requests.</p>
+              <p class="skill-section-note">Every piece reads from the same scale of motion tokens (duration, easing, distance, blur and scale), so a dropdown you paste by hand, one your agent writes from the skill, and one the Agent rewrites in a fix all move the same way. The recipes are plain CSS, with a little JavaScript only where a state change needs it.</p>
+              <p class="skill-section-note">Start wherever fits: pick a transition from the sidebar to see it three ways (a live Preview, the portable CSS, and a self-contained React version), then see <a href="?doc=installation" data-doc="installation">Installation</a> for the ways to bring it into your project, by hand, through the skill, or by letting the Agent do it.</p>
             </div>
           </article>
 
           <article class="doc-article skill-content" data-doc="installation"
-                   data-title="Installation" data-subtitle="Four ways to get transitions into your project." hidden>
+                   data-title="Library and Skill" data-subtitle="Four ways to get transitions into your project." hidden>
             <div class="skill-section">
               <h2 class="skill-section-title">Copy the snippet</h2>
               <p class="skill-section-note">There's nothing to install: open a transition, copy the CSS (or React) from the code panel, and paste it into your project; snippets are namespaced (<code>.t-*</code>) with their motion tokens exposed as CSS variables you can tweak directly.</p>
@@ -6849,6 +7073,116 @@
             </div>
           </article>
 
+          <article class="doc-article skill-content" data-doc="installation-agent"
+                   data-title="Agent" data-subtitle="Run the Agent from your terminal, or on every GitHub pull request." hidden>
+            <div class="gs-tabs t-tabs" role="tablist" aria-label="How to run the Agent">
+              <span class="t-tabs-pill" aria-hidden="true"></span>
+              <button class="t-tab" type="button" role="tab" id="gs-tab-cli" aria-selected="true" aria-controls="gs-panel-cli">Coding agent (CLI)</button>
+              <button class="t-tab" type="button" role="tab" id="gs-tab-gha" aria-selected="false" aria-controls="gs-panel-gha" tabindex="-1">GitHub Action</button>
+            </div>
+
+            <div class="gs-panel" id="gs-panel-cli" role="tabpanel" aria-labelledby="gs-tab-cli">
+              <p class="skill-section-note">Run these in a terminal at your project's root folder, or paste them to your coding agent (Claude Code, Cursor, Codex) and it runs them for you.</p>
+              <div class="get-started-grid">
+              <div class="gs-step">
+                <div class="gs-step-block">
+                  <div class="gs-step-head">
+                    <span class="gs-step-label">Install</span>
+                  </div>
+                  <div class="skill-code-row">
+                    <code id="cmd-skill">npx transitions-agent</code>
+                    <button type="button" class="skill-code-copy card-copy" aria-label="Copy install command" data-copy-target="#cmd-skill">
+                      <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    </button>
+                  </div>
+                </div>
+                <p class="skill-section-note">
+                  Nothing to install first: the command runs through npx. The first run scans the project and installs the agent skill into <code>~/.claude/skills</code> (use <code>--dir</code> for other agents), so from then on "check this app's motion" makes your agent scan, present the fix options, run your choice and verify the score. A scan walks your stylesheets and components and prints a motion score (0 to 100) with every finding mapped to its transitions.dev recipe. No AI, no account, your code never leaves the machine.
+                </p>
+              </div>
+
+              <div class="gs-step">
+                <div class="gs-step-block">
+                  <div class="gs-step-head">
+                    <span class="gs-step-label">Fix</span>
+                  </div>
+                  <div class="skill-code-row">
+                    <code id="cmd-fix">npx transitions-agent fix</code>
+                    <button type="button" class="skill-code-copy card-copy" aria-label="Copy fix command" data-copy-target="#cmd-fix">
+                      <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    </button>
+                  </div>
+                  <div class="skill-code-row">
+                    <code id="cmd-revamp">npx transitions-agent fix --mode revamp --pr</code>
+                    <button type="button" class="skill-code-copy card-copy" aria-label="Copy revamp command" data-copy-target="#cmd-revamp">
+                      <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    </button>
+                  </div>
+                </div>
+                <p class="skill-section-note">
+                  Every proposed change is shown as a diff first and applied only after you type yes. Polish (the default) keeps diffs small: durations onto motion tokens, a reduced-motion guard, named properties instead of <code>transition: all</code>. Revamp replaces janky motion wholesale with the matching transitions.dev recipe, Pro recipes included. With <code>--pr</code> it opens a pull request on a new branch after one more confirmation. It never pushes to your main branch.
+                </p>
+              </div>
+              </div>
+            </div>
+
+            <div class="gs-panel" id="gs-panel-gha" role="tabpanel" aria-labelledby="gs-tab-gha" hidden>
+              <p class="skill-section-note">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews. Scanning needs no account, no secrets, no AI key.</p>
+
+              <h2 class="skill-section-title gs-sub">Install with your coding agent</h2>
+              <div class="skill-code-row">
+                <code id="cmd-action">npx transitions-agent init-ci</code>
+                <button type="button" class="skill-code-copy card-copy" aria-label="Copy" data-copy-target="#cmd-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+              </div>
+              <p class="skill-section-note">Tell your coding agent <em>"set up Transitions Agent for CI"</em> and it runs this command for you - or run it yourself. It writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code>. Commit and push - done.</p>
+
+              <h2 class="skill-section-title gs-sub">Or add the workflow manually</h2>
+              <div class="gs-code-block"><pre id="yml-action">name: Transitions Agent
+on: pull_request
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  motion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Jakubantalik/transitions.dev/agent@main
+        with:
+          min-score: "0"
+          license: &#36;{{ secrets.TRANSITIONS_AGENT_LICENSE }}</pre><button type="button" class="skill-code-copy card-copy" aria-label="Copy" data-copy-target="#yml-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button></div>
+              <p class="skill-section-note">Both permissions matter: <code>pull-requests: write</code> lets the Action post its score comment.</p>
+
+              <h2 class="skill-section-title gs-sub">Fix pull requests from CI</h2>
+              <div class="skill-code-row">
+                <code id="cmd-fix-workflow">npx transitions-agent init-ci --fix</code>
+                <button type="button" class="skill-code-copy card-copy" aria-label="Copy" data-copy-target="#cmd-fix-workflow"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+              </div>
+              <p class="skill-section-note">Also writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a>. Add one repo secret - <code>TRANSITIONS_AGENT_LICENSE</code>, the key from your <a href="/pro.html">Business plan</a> email - then run "Transitions Agent fix" from the Actions tab: a fix pull request opens with the diffs for your team to review. Our hosted service does the fixing; no AI key ever enters your repo. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</p>
+
+              <h2 class="skill-section-title gs-sub">What happens on a pull request</h2>
+              <ul class="gs-bullets">
+                <li>One sticky comment per pull request with the motion score and a findings table - it updates in place on every push, never stacking.</li>
+                <li>Findings name the file, line, and the transitions.dev recipe that fixes them.</li>
+                <li>With <code>min-score</code> set, the check fails when the score drops below it; otherwise it always passes and just informs.</li>
+              </ul>
+
+              <h2 class="skill-section-title gs-sub">Troubleshooting</h2>
+              <div class="gs-qa">
+                <p class="gs-q">No comment showed up.</p>
+                <p class="skill-section-note">The workflow needs <code>pull-requests: write</code> under <code>permissions:</code> (the template includes it). On forks, GitHub restricts write tokens - the score still appears in the job log.</p>
+                <p class="gs-q">The score looks wrong or scans 0 files.</p>
+                <p class="skill-section-note">The Action scans the repository root. In a monorepo, point it at your app with the <code>working-directory</code> input.</p>
+                <p class="gs-q">The check is blocking merges before the team is ready.</p>
+                <p class="skill-section-note">Set <code>min-score: "0"</code> - the comment keeps reporting, nothing blocks.</p>
+                <p class="gs-q">Fixes pushed a branch but no pull request appeared.</p>
+                <p class="skill-section-note">GitHub blocks workflows from opening pull requests by default. Repo <strong>Settings &gt; Actions &gt; General &gt; Workflow permissions</strong>: check "Allow GitHub Actions to create and approve pull requests", then re-run.</p>
+                <p class="gs-q">The fix workflow fails with a license error.</p>
+                <p class="skill-section-note">The secret must be named exactly <code>TRANSITIONS_AGENT_LICENSE</code>, and revamp mode needs a Business key - free keys cover polish.</p>
+              </div>
+            </div>
+          </article>
+
           <article class="doc-article skill-content" data-doc="accessibility"
                    data-title="Accessibility" data-subtitle="Motion that respects the people using it." hidden>
             <div class="skill-section">
@@ -6868,7 +7202,7 @@
     <section class="cards" id="components" aria-label="Transition prototypes" style="scroll-margin-top: 24px;">
 
       <!-- 1. Card resize -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p4-card" data-proto-resize>
@@ -6898,7 +7232,7 @@
       </article>
 
       <!-- 2. Number pop-in -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts">
         <div class="card-stage">
           <div class="stage-inner p9-stage-inner">
             <div class="p9-number" data-proto-number aria-live="polite"
@@ -6927,7 +7261,7 @@
       </article>
 
       <!-- 3. Notification badge -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p1-stage-inner">
             <div class="p1-bell" data-proto-bell data-badge-open="false" aria-label="Notifications">
@@ -6955,7 +7289,7 @@
       </article>
 
       <!-- 4. Text states swap -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p6-stage-inner">
             <span class="p6-text" data-proto-text>Transaction processing...</span>
@@ -6978,7 +7312,7 @@
       </article>
 
       <!-- 5. Confetti burst (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="confetti-burst">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="confetti-burst" data-cat="effects">
         <div class="card-stage" id="pv1p">
           <canvas class="pv1c" id="pv1c" aria-hidden="true"></canvas>
           <button type="button" class="btn-animate" id="pv2h" data-proto="pro1">Animate</button>
@@ -6999,7 +7333,7 @@
       </article>
 
       <!-- 6. Menu dropdown -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p2-stage-inner">
             <button type="button" class="btn-animate" data-proto="2">Toggle menu</button>
@@ -7026,7 +7360,7 @@
       </article>
 
       <!-- 7. Modal open/close -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p7-dropdown is-open" data-proto-modal>
@@ -7057,7 +7391,7 @@
       </article>
 
       <!-- 8. Panel reveal -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p3-stage-inner">
             <button type="button" class="btn-animate" data-proto="3">Toggle panel</button>
@@ -7092,7 +7426,7 @@
         </button>
       </article>
 <!-- 33. Gooey plus menu (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="gooey-plus-menu">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="gooey-plus-menu" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv4k" id="pv52" data-open="false">
@@ -7194,7 +7528,7 @@
       </article>
 
       <!-- 9. Side-by-side page slide -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p8-stage-inner">
             <div class="p8-modal" data-proto-p8 data-page="1">
@@ -7265,7 +7599,7 @@
       </article>
 
       <!-- 10. Card stack hover (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="card-stack-hover">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="card-stack-hover" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv1r" aria-label="Card stack">
@@ -7294,7 +7628,7 @@
       </article>
 
       <!-- 11. Icon swap -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p5-stage-inner">
             <div class="p5-icon-wrap" data-proto-icon data-animated="false">
@@ -7331,7 +7665,7 @@
       </article>
 
       <!-- 12. Success check -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p10-stage-inner">
             <div class="p10-check" data-proto-check data-state="out" aria-hidden="true">
@@ -7365,7 +7699,7 @@
       </article>
 
       <!-- 13. Avatar group hover spring -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner p11-stage-inner">
             <div class="p11-avatars" data-proto-avatars>
@@ -7407,7 +7741,7 @@
       </article>
 
       <!-- 14. Input shake on error -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p12-stage-inner">
             <div class="p12-input-wrap" data-proto-shake>
@@ -7438,7 +7772,7 @@
       </article>
 
       <!-- 15. Organic shimmer (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="organic-shimmer">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="organic-shimmer" data-cat="effects ai">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="pv63" data-playing="true" aria-hidden="true">
@@ -7471,7 +7805,7 @@
       </article>
 
       <!-- 16. Input clear with dissolve -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner p13-stage-inner">
             <div class="p13-search has-value" data-proto-p13>
@@ -7516,7 +7850,7 @@
       </article>
 
       <!-- 17. Skeleton loader and reveal -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p14-stage-inner">
             <div class="p14-card" data-proto-skeleton>
@@ -7557,7 +7891,7 @@
       </article>
 
       <!-- 18. Texts reveal -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts">
         <div class="card-stage">
           <div class="stage-inner p18-stage-inner">
             <div class="p18-text" data-proto-stagger>
@@ -7583,7 +7917,7 @@
       </article>
 
       <!-- 19. Tabs sliding -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p16-stage-inner">
             <div class="p16-tabs" data-proto-tabs role="tablist" aria-label="Mode">
@@ -7609,7 +7943,7 @@
         </button>
       </article>
 <!-- 34. Drag &amp; drop with physics (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="drag-drop-physics">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="drag-drop-physics" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv57">
@@ -7660,7 +7994,7 @@
       </article>
 
       <!-- 20. Image open tilt (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="image-open-tilt">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="image-open-tilt" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1u">
             <button type="button" class="pv28" id="pv28" aria-expanded="false" aria-label="Open image">
@@ -7692,7 +8026,7 @@
       </article>
 
       <!-- 21. Shimmer text -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts ai">
         <div class="card-stage">
           <div class="stage-inner p15-stage-inner">
             <span class="p15-shimmer" data-proto-shimmer data-text="Planning next moves">Planning next moves</span>
@@ -7715,7 +8049,7 @@
       </article>
 
       <!-- 22. Tooltip open/close -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p17-stage-inner">
             <span class="p17-group" data-proto-tooltip>
@@ -7742,7 +8076,7 @@
       </article>
 
       <!-- 23. Tilt card -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner p19-stage-inner">
             <div class="p19-tilt" id="p19-tilt">
@@ -7774,7 +8108,7 @@
       </article>
 
       <!-- 24. Plus → menu morph -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p20-stage-inner">
             <div class="p20-anchor">
@@ -7810,7 +8144,7 @@
       </article>
 
       <!-- 25. Accordion expand/collapse -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p21-stage-inner">
             <div class="p21-accordion" id="p21-accordion">
@@ -7852,7 +8186,7 @@
       </article>
 
       <!-- 25. Toast open / close -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p22-toast" data-proto-toast role="status" aria-hidden="true">
@@ -7878,7 +8212,7 @@
       </article>
 
       <!-- 26. Like button: fill + pop + particle burst -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="p-pill p23-like" data-proto-like data-liked="false" aria-pressed="false">
@@ -7910,7 +8244,7 @@
       </article>
 
       <!-- 28. Learn more hover: chevron shift + spread -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="p-pill p24-btn">Learn more
@@ -7939,7 +8273,7 @@
       </article>
 
       <!-- 29. Checkbox with check path draw -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="p25-field">
@@ -7967,7 +8301,7 @@
         </button>
       </article>
 <!-- 35. Spinner to check morph (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="spinner-check-morph">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="spinner-check-morph" data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="pv5j">
@@ -8008,7 +8342,7 @@
       </article>
 
       <!-- 30. Spinning reel counter -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="texts">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p26-value" data-proto-reel aria-label="Count"></div>
@@ -8031,7 +8365,7 @@
       </article>
 
       <!-- 31. Toggle with double-bounce thumb -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="p27-switch" data-proto-toggle role="switch" aria-checked="false" data-on="false" aria-label="Toggle">
@@ -8055,7 +8389,7 @@
       </article>
 
       <!-- 32. Pro gradient text (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="pro-gradient-text">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="pro-gradient-text" data-cat="texts ai">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1w">
             <h2 class="pv17"><span class="pv7">Pro</span></h2>
@@ -8077,7 +8411,7 @@
       </article>
 
       <!-- 33. Delete image with smoky dissolve (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="smoky-dissolve">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="smoky-dissolve" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn pv1y">
             <div class="pv2c" id="pv2c">
@@ -8112,7 +8446,7 @@
       </article>
 
       <!-- 34. Thinking states: shimmer + text swap -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner">
             <span class="p28-swap" data-proto-think role="status"><span class="p28-sizer" aria-hidden="true">Setting up a workplace</span><span class="p28-text" data-text="Setting up a workplace">Setting up a workplace</span></span>
@@ -8135,7 +8469,7 @@
       </article>
 
       <!-- 35. Agent reasoning stream -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p29-card" aria-hidden="true">
@@ -8169,7 +8503,7 @@
       </article>
 
       <!-- 36. Streaming text: word-by-word cross-blur -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="p30-block" data-proto-stream aria-hidden="true">Animating mask-position never composites — it repaints the element. And the element being repainted sits inside a displacement chain, so the whole filter re-executes on the CPU each frame. That compounds: it isn't one cost, it's the repaint feeding the filter.</div>
@@ -8192,7 +8526,7 @@
       </article>
 
       <!-- 37. Matrix dot loaders -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="ai">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <div class="p33-row" aria-hidden="true">
@@ -8219,7 +8553,7 @@
       </article>
 
       <!-- 38. Banner stacking -->
-      <article class="card" data-proto-card>
+      <article class="card" data-proto-card data-cat="essential">
         <div class="card-stage">
           <div class="stage-inner p34-stage-inner">
             <div class="p34-stack" data-proto-stack aria-hidden="true"></div>
@@ -8242,7 +8576,7 @@
       </article>
 
       <!-- 39. Image generation placeholder (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="image-gen-placeholder">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="image-gen-placeholder" data-cat="ai effects">
         <div class="card-stage">
           <div class="stage-inner">
             <div class="pv6n" data-proto-imgen aria-hidden="true">
@@ -8268,7 +8602,7 @@
       </article>
 
       <!-- 40. Get Pro button (Pro) -->
-      <article class="card" data-proto-card data-pro="true" data-pro-id="get-pro-button">
+      <article class="card" data-proto-card data-pro="true" data-pro-id="get-pro-button" data-cat="effects">
         <div class="card-stage">
           <div class="stage-inner stage-inner--no-btn">
             <button type="button" class="pv6u"><span class="pv6m">Get Pro</span></button>
@@ -8359,7 +8693,7 @@
             <a href="/">Home</a>
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/skill.html">Skill</a>
-            <a href="/refine.html">Refine tool</a>
+            <a href="/agent.html">Agent</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -13307,12 +13641,61 @@ export function Surface({ open, children }) {
               title: title,
               subtitle: s ? s.textContent.trim() : "",
               slug: slugify(title),
-              pro: card.getAttribute("data-pro") === "true"
+              pro: card.getAttribute("data-pro") === "true",
+              cat: card.getAttribute("data-cat") || "essential"
             });
           });
           if (!items.length) return;
 
-          // Build the sidebar list.
+          // Fold toggles: every .docs-fold head flips data-open; CSS tweens
+          // the panel. Selecting a link inside a fold opens it.
+          function setFold(fold, open) {
+            fold.setAttribute("data-open", open ? "true" : "false");
+            var head = fold.querySelector(".docs-fold-head");
+            if (head) head.setAttribute("aria-expanded", open ? "true" : "false");
+          }
+          function openFoldFor(el) {
+            var fold = el && el.closest ? el.closest(".docs-fold") : null;
+            if (fold) setFold(fold, true);
+          }
+          function makeFold(label) {
+            var fold = document.createElement("div");
+            fold.className = "docs-fold";
+            fold.setAttribute("data-open", "false");
+            var head = document.createElement("button");
+            head.type = "button";
+            head.className = "docs-fold-head";
+            head.setAttribute("aria-expanded", "false");
+            head.innerHTML = '<span class="docs-link-label"></span>'
+              + '<span class="docs-fold-chevron" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+            head.querySelector(".docs-link-label").textContent = label;
+            var panel = document.createElement("div");
+            panel.className = "docs-fold-panel";
+            var inner = document.createElement("div");
+            inner.className = "docs-fold-inner";
+            panel.appendChild(inner);
+            fold.appendChild(head);
+            fold.appendChild(panel);
+            return { root: fold, inner: inner };
+          }
+          document.querySelectorAll(".docs-fold-head").forEach(function (head) {
+            head.addEventListener("click", function () {
+              var fold = head.closest(".docs-fold");
+              setFold(fold, fold.getAttribute("data-open") !== "true");
+            });
+          });
+
+          // Build the sidebar list: one fold per homepage category.
+          var CATS = [["essential", "Essential"], ["ai", "AI Agents"], ["effects", "Effects"], ["texts", "Texts"]];
+          var foldByCat = {};
+          CATS.forEach(function (c) {
+            var f = makeFold(c[1]);
+            f.root.querySelector(".docs-fold-head").addEventListener("click", function () {
+              setFold(f.root, f.root.getAttribute("data-open") !== "true");
+            });
+            foldByCat[c[0]] = f;
+            listEl.appendChild(f.root);
+          });
           var linkBySlug = {};
           items.forEach(function (it) {
             var a = document.createElement("a");
@@ -13337,7 +13720,8 @@ export function Surface({ open, children }) {
               setTab("preview");
               selectSlug(it.slug, true);
             });
-            listEl.appendChild(a);
+            a.classList.add("docs-link--child");
+            (foldByCat[it.cat] || foldByCat.essential).inner.appendChild(a);
             linkBySlug[it.slug] = a;
           });
 
@@ -13384,6 +13768,13 @@ export function Surface({ open, children }) {
 
           function setMode(mode) {
             if (docsMain) docsMain.classList.toggle("is-doc", mode === "doc");
+            /* The top bar mirrors the mode: Docs while reading a doc,
+               Library while viewing a transition. */
+            document.querySelectorAll(".site-nav-menu .nav-pill[data-nav]").forEach(function (pill) {
+              var on = pill.getAttribute("data-nav") === (mode === "doc" ? "docs" : "library");
+              pill.classList.toggle("nav-pill--active", on);
+              if (on) pill.setAttribute("aria-current", "page"); else pill.removeAttribute("aria-current");
+            });
           }
 
           function clearActiveLinks() {
@@ -13415,6 +13806,7 @@ export function Surface({ open, children }) {
               if (l.getAttribute("data-doc") === name) {
                 l.classList.add("is-active");
                 l.setAttribute("aria-current", "page");
+                openFoldFor(l);
               }
             });
             document.title = (art.getAttribute("data-title") || name) + " — Transitions.dev";
@@ -13628,6 +14020,7 @@ export function Surface({ open, children }) {
 
             clearActiveLinks();
             var active = linkBySlug[it.slug];
+            openFoldFor(active);
             if (active) {
               active.classList.add("is-active");
               active.setAttribute("aria-current", "page");
@@ -13851,6 +14244,63 @@ export function Surface({ open, children }) {
           });
         })();
       })();
+
+      /* ── Get started tabs (transitions-dev 16) ─────────────────
+         The pill is measured from the active tab; each click writes
+         the new offset and width so CSS tweens the move. Panels toggle
+         [hidden]. Arrow keys move between tabs. */
+      (function () {
+        var bar = document.querySelector(".gs-tabs");
+        if (!bar) return;
+        var pill = bar.querySelector(".t-tabs-pill");
+        var tabs = Array.prototype.slice.call(bar.querySelectorAll(".t-tab"));
+        function moveTo(tab, animate) {
+          if (!animate) {
+            var prev = pill.style.transition;
+            pill.style.transition = "none";
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+            void pill.offsetWidth;
+            pill.style.transition = prev;
+          } else {
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+          }
+        }
+        function select(tab, animate) {
+          tabs.forEach(function (t) {
+            var on = t === tab;
+            t.setAttribute("aria-selected", on ? "true" : "false");
+            t.setAttribute("tabindex", on ? "0" : "-1");
+            var panel = document.getElementById(t.getAttribute("aria-controls"));
+            if (panel) panel.hidden = !on;
+          });
+          moveTo(tab, animate);
+        }
+        function active() {
+          return tabs.filter(function (t) { return t.getAttribute("aria-selected") === "true"; })[0] || tabs[0];
+        }
+        tabs.forEach(function (tab, i) {
+          tab.addEventListener("click", function () { select(tab, true); });
+          tab.addEventListener("keydown", function (e) {
+            var next = e.key === "ArrowRight" ? tabs[(i + 1) % tabs.length]
+                     : e.key === "ArrowLeft"  ? tabs[(i - 1 + tabs.length) % tabs.length]
+                     : null;
+            if (!next) return;
+            e.preventDefault();
+            select(next, true);
+            next.focus();
+          });
+        });
+        requestAnimationFrame(function () { moveTo(active(), false); });
+        /* The doc starts hidden, so measure again whenever the bar gets a size. */
+        if (window.ResizeObserver) new ResizeObserver(function () { moveTo(active(), false); }).observe(bar);
+        window.addEventListener("resize", function () { moveTo(active(), false); });
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(function () { moveTo(active(), false); });
+        }
+      })();
+
 
       // ── Prototype 6 message cycle ────────────────────────────
       var p6Messages = ["Transaction processing...", "Transaction completed"];
@@ -15310,7 +15760,9 @@ export function Surface({ open, children }) {
         });
       })();
       var CMD_ITEMS = [
-        { group: "Pages", label: "Transitions", hint: "Home", href: "/", ic: "grid" },
+        { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
+        { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
+        { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
