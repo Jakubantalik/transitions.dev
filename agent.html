@@ -3648,8 +3648,8 @@
     .hero-visual {
       position: relative;
       width: 100%;
-      max-width: 620px;
-      aspect-ratio: 1421 / 1080;
+      max-width: 760px;
+      aspect-ratio: 16 / 9;
       border-radius: 16px;
       background: var(--stage-bg);
       box-shadow:
@@ -3682,15 +3682,12 @@
       width: 100%;
       /* +1px overscan: aspect-ratio can compute a fractional container height the
          media rounds down, leaving a hairline of background at the bottom. The
-         extra pixel is absorbed by object-fit: cover (no visible crop). */
+         extra pixel is absorbed by object-fit: cover; with the box on the
+         video's own ratio that is the only crop. */
       height: calc(100% + 1px);
       object-fit: cover;
       display: block;
     }
-    /* Theme-swapped hero videos: show light by default, dark under dark theme. */
-    .hero-visual .hero-video--dark { display: none; }
-    html[data-theme="dark"] .hero-visual .hero-video--light { display: none; }
-    html[data-theme="dark"] .hero-visual .hero-video--dark { display: block; }
     .hero-caption {
       margin: 12px 0 0;
       font-size: 12px;
@@ -3969,7 +3966,7 @@
          frame runs flush off the bottom edge with no sliver of card
          behind it. */
       margin: 20px -40px -28px 0;
-      background: #ffffff; border: 1px solid var(--card-border);
+      background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 10px 0 0 0; box-shadow: var(--card-shadow); overflow: hidden;
       font-family: var(--font-sans);
     }
@@ -4021,7 +4018,7 @@
     .ab-pr-head {
       display: flex; align-items: center; gap: 6px; white-space: nowrap;
       padding: 8px 14px; font-size: 10.5px; line-height: 16px;
-      border-bottom: 1px solid var(--card-border); background: #fafafa;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08); background: #fafafa;
     }
     html[data-theme="dark"] .ab-pr-head { background: #1f1f1f; border-color: rgba(255, 255, 255, 0.07); }
     /* The transitions.dev mark, same path as the nav brand, in a
@@ -4615,11 +4612,11 @@
 
     <section class="hero-visual-wrap" id="demo" aria-label="Agent demo">
       <div class="hero-visual" aria-label="Transitions Agent fixing motion from the terminal">
-        <!-- PLACEHOLDER: swap assets/agent-demo(.mp4/-dark.mp4) for the real hero capture. -->
-        <!-- Autoplay loop. Two themed sources: light shows in light mode, dark in dark mode.
-             Drop the files in /assets (mp4 + optional webm). Add a poster image if available. -->
+        <!-- The launch capture (16:9). One file for both themes: autoplay,
+             loop, muted. The box keeps the video's own ratio, so nothing
+             is cropped. -->
         <video
-          class="hero-video hero-video--light"
+          class="hero-video"
           autoplay
           loop
           muted
@@ -4628,17 +4625,6 @@
           aria-hidden="true"
         >
           <source src="assets/agent-demo.mp4" type="video/mp4" />
-        </video>
-        <video
-          class="hero-video hero-video--dark"
-          autoplay
-          loop
-          muted
-          playsinline
-          preload="metadata"
-          aria-hidden="true"
-        >
-          <source src="assets/agent-demo-dark.mp4" type="video/mp4" />
         </video>
       </div>
       <p class="hero-caption">Runs in your terminal and on GitHub pull requests</p>
@@ -4979,11 +4965,9 @@ jobs:
             } catch (_) {}
           }
         });
-        // A display:none <video> can get paused by the browser; kick the
-        // now-visible hero video so the autoplay loop always resumes.
-        var heroVideo = document.querySelector(
-          ".hero-visual .hero-video--" + (next === "dark" ? "dark" : "light")
-        );
+        // Kick the hero video on theme changes so the autoplay loop
+        // always resumes if the browser paused it.
+        var heroVideo = document.querySelector(".hero-visual .hero-video");
         if (heroVideo && typeof heroVideo.play === "function") {
           var p = heroVideo.play();
           if (p && typeof p.catch === "function") p.catch(function () {});
