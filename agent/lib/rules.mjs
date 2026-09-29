@@ -165,7 +165,7 @@ export function runRules(files) {
           severity: "minor",
           path: f.path,
           line: lineOf(src, m.index),
-          message: `Literal duration in "${m[0].trim().slice(0, 60)}". Use a motion token (var(--transition-fast) etc.) so the whole app moves consistently.`,
+          message: `Literal duration in "${m[0].trim().slice(0, 60)}". Use a motion token (var(--duration-fast) etc. from the transitions.dev scale) so the whole app moves consistently.`,
           recipe: "motion-tokens",
         });
       }
@@ -222,30 +222,6 @@ export function runRules(files) {
       });
     }
 
-    // hover-without-transition (stylesheets only, heuristic)
-    if (STYLESHEET.has(f.ext)) {
-      const hoverRe = /([^{}\n]{1,120}?):hover[^{]*\{([^}]*)\}/g;
-      while ((m = hoverRe.exec(src))) {
-        const body = m[2];
-        if (!/(transform|opacity|background|color|box-shadow|scale|translate|border)/.test(body)) continue;
-        if (/transition/.test(body)) continue;
-        const base = m[1].trim().split(/[\s>+~,]/).pop();
-        if (!base || base.length < 2) continue;
-        const esc = base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const baseHasTransition = new RegExp(esc + "[^{}]*\\{[^}]*transition", "s").test(src);
-        if (!baseHasTransition) {
-          findings.push({
-            rule: "hover-without-transition",
-            severity: "warn",
-            path: f.path,
-            line: lineOf(src, m.index),
-            message: `"${m[1].trim().slice(0, 50)}:hover" changes visual state with no transition on the base selector. The change snaps instead of easing.`,
-            recipe: "learn-more-hover",
-          });
-        }
-      }
-    }
-
     // untransitioned-overlay (JSX-ish files, per-file heuristic)
     if (JSXISH.has(f.ext) || f.ext === ".vue" || f.ext === ".svelte") {
       const overlay = src.match(/<(Modal|Dialog|Drawer|Sheet|Popover|Tooltip|Toast|Snackbar|Dropdown|DropdownMenu|Menu)\b/);
@@ -258,7 +234,7 @@ export function runRules(files) {
           path: f.path,
           line: lineOf(src, overlay.index),
           message: `<${overlay[1]}> appears and disappears with no enter or exit transition. It pops instead of animating.`,
-          recipe: overlay[1].toLowerCase().includes("tooltip") ? "tooltip" : "modal-open-close",
+          recipe: /tooltip/i.test(overlay[1]) ? "tooltip" : /toast|snackbar/i.test(overlay[1]) ? "toast" : /drawer|sheet/i.test(overlay[1]) ? "panel-reveal" : /popover|dropdown|menu/i.test(overlay[1]) ? "menu-dropdown" : "modal",
         });
       }
     }

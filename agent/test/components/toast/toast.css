@@ -1,0 +1,9 @@
+.toast {
+  position: fixed;
+  bottom: 24px;
+  opacity: 0;
+  transform: translateY(100px);
+  transition: all 800ms ease-in;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }

@@ -75,7 +75,7 @@ async function handleFix(request, env) {
   if (raw.length > MAX_BODY_BYTES) return json({ error: "payload too large" }, 413);
   let body;
   try { body = JSON.parse(raw); } catch { return json({ error: "bad json" }, 400); }
-  const { findings = [], files = [], mode = "polish" } = body;
+  const { findings = [], files = [], mode = "polish", components = [] } = body;
   if (!files.length) return json({ error: "no files" }, 400);
   if (mode !== "polish" && mode !== "revamp") return json({ error: "bad mode" }, 400);
   if (mode === "revamp" && isFree) {
@@ -115,7 +115,7 @@ async function handleFix(request, env) {
   // clean 502 the CLI can explain, and do NOT count the fix against the quota.
   let fixed;
   try {
-    fixed = await proposeFixes(env, findings, files, mode, recipes, model);
+    fixed = await proposeFixes(env, findings, files, mode, recipes, model, components.slice(0, 30));
   } catch (e) {
     const detail = e?.detail || e?.message || "model error";
     console.error("[fix] model call failed:", detail);
@@ -135,7 +135,7 @@ async function handleFix(request, env) {
   return json({ ...fixed, usage: { used: used + 1, quota, plan: record.plan || "team" } });
 }
 
-const MAX_RECIPES = 4;
+const MAX_RECIPES = 6;
 
 async function loadRecipes(env, findings) {
   const slugs = [...new Set(findings.map((f) => f.recipe).filter(Boolean))].slice(0, MAX_RECIPES);
@@ -147,7 +147,7 @@ async function loadRecipes(env, findings) {
   return recipes;
 }
 
-async function proposeFixes(env, findings, files, mode, recipes, model) {
+async function proposeFixes(env, findings, files, mode, recipes, model, components = []) {
   // polish: token-level adjustments only. revamp: full recipe rewrites allowed.
   // (Shared with the MCP server's fix_guidance tool - see guidance.mjs.)
   const system = [
@@ -159,7 +159,7 @@ async function proposeFixes(env, findings, files, mode, recipes, model) {
     "Include only files you actually changed.",
   ].join(" ");
 
-  const user = JSON.stringify(recipes.length ? { findings, files, recipes } : { findings, files });
+  const user = JSON.stringify({ findings, files, ...(components.length ? { components } : {}), ...(recipes.length ? { recipes } : {}) });
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

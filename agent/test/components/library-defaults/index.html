@@ -1,0 +1,183 @@
+<style>
+:root {
+  --dropdown-open-dur: 250ms;
+  --dropdown-close-dur: 150ms;
+  --dropdown-pre-scale: 0.97;
+  --dropdown-closing-scale: 0.99;
+  --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.t-dropdown {
+  transform-origin: top left;
+  transform: scale(var(--dropdown-pre-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--dropdown-open-dur) var(--dropdown-ease),
+    opacity   var(--dropdown-open-dur) var(--dropdown-ease);
+  will-change: transform, opacity;
+}
+.t-dropdown[data-origin="top-right"]     { transform-origin: top right; }
+.t-dropdown[data-origin="top-center"]    { transform-origin: top center; }
+.t-dropdown[data-origin="bottom-left"]   { transform-origin: bottom left; }
+.t-dropdown[data-origin="bottom-center"] { transform-origin: bottom center; }
+.t-dropdown[data-origin="bottom-right"]  { transform-origin: bottom right; }
+
+.t-dropdown.is-open {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.t-dropdown.is-closing {
+  transform: scale(var(--dropdown-closing-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--dropdown-close-dur) var(--dropdown-ease),
+    opacity   var(--dropdown-close-dur) var(--dropdown-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-dropdown { transition: none !important; }
+}
+
+:root {
+  --modal-open-dur: 250ms;
+  --modal-close-dur: 150ms;
+  --modal-scale: 0.96;
+  --modal-scale-close: 0.96;
+  --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.t-modal {
+  transform-origin: center;
+  transform: scale(var(--modal-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--modal-open-dur) var(--modal-ease),
+    opacity   var(--modal-open-dur) var(--modal-ease);
+  will-change: transform, opacity;
+}
+.t-modal.is-open {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.t-modal.is-closing {
+  transform: scale(var(--modal-scale-close));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--modal-close-dur) var(--modal-ease),
+    opacity   var(--modal-close-dur) var(--modal-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-modal { transition: none !important; }
+}
+</style>
+<style>
+#menu-modal-demo { --surface: light-dark(#ffffff,#232326); --canvas: light-dark(#f6f6f7,#19191c); --ink: light-dark(#242429,#eeeeef); --subtle: light-dark(#72727c,#a4a4ad); --line: light-dark(#e4e4e8,#3b3b42); --hover: light-dark(#f1f1f4,#333339); --danger: light-dark(#c33036,#ff8589); --radius: 12px; color:var(--ink); font:14px/1.5 system-ui,sans-serif; position:relative; min-height:350px; background:var(--canvas); border:1px solid var(--line); border-radius:18px; padding:28px; box-sizing:border-box; }
+#menu-modal-demo * { box-sizing:border-box; }
+#menu-modal-demo button { font:inherit; color:inherit; }
+#menu-modal-demo .demo-head {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;}
+#menu-modal-demo .demo-title {font-size:16px;font-weight:500;}
+#menu-modal-demo .demo-tag {font-size:12px;color:var(--subtle);}
+#menu-modal-demo .demo-item {padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);}
+#menu-modal-demo .demo-name {display:flex;gap:10px;align-items:center;font-weight:500;margin-bottom:5px;}
+#menu-modal-demo .demo-description {color:var(--subtle);margin:0 0 22px;}
+#menu-modal-demo .demo-actions {display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+#menu-modal-demo .demo-button {display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border:1px solid var(--line);border-radius:calc(var(--radius) - 4px);background:var(--surface);transition:background 150ms,transform 150ms;}
+#menu-modal-demo .demo-button:hover {background:var(--hover);}
+#menu-modal-demo .demo-button:active {transform:scale(.97);}
+#menu-modal-demo .demo-danger {color:var(--danger);}
+#menu-modal-demo .demo-anchor {position:relative;}
+#menu-modal-demo .demo-menu {position:absolute;left:0;top:calc(100% + 8px);width:180px;padding:5px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 25px #0002;z-index:3;}
+#menu-modal-demo .demo-menu button {display:flex;width:100%;text-align:left;gap:9px;align-items:center;padding:9px 10px;border:0;background:transparent;border-radius:7px;}
+#menu-modal-demo .demo-menu button:hover {background:var(--hover);}
+#menu-modal-demo .demo-chevron {transition:transform 250ms;}
+#menu-modal-demo [aria-expanded="true"] .demo-chevron {transform:rotate(180deg);}
+#menu-modal-demo .demo-status {color:var(--subtle);font-size:12px;margin-top:18px;min-height:18px;}
+#menu-modal-demo dialog {position:absolute;inset:0;margin:auto;width:calc(100% - 40px);max-width:360px;border:1px solid var(--line);border-radius:var(--radius);padding:24px;background:var(--surface);color:var(--ink);box-shadow:0 20px 60px #0003;}
+#menu-modal-demo dialog::backdrop {background:#0005;opacity:0;transition:opacity 250ms;}
+#menu-modal-demo dialog.is-open::backdrop {opacity:1;}
+#menu-modal-demo dialog.is-closing::backdrop {opacity:0;transition-duration:150ms;}
+#menu-modal-demo .demo-modal-title {font-size:18px;font-weight:500;margin:12px 0 8px;}
+#menu-modal-demo .demo-modal-text {color:var(--subtle);margin:0 0 24px;}
+#menu-modal-demo .demo-modal-actions {display:flex;justify-content:flex-end;gap:8px;}
+#menu-modal-demo .demo-confirm {background:light-dark(#c33036,#ad252e);color:#fff;border-color:transparent;}
+#menu-modal-demo .demo-confirm:hover {background:light-dark(#aa242b,#c33036);}
+#menu-modal-demo .demo-warning {display:inline-flex;padding:10px;border-radius:50%;background:light-dark(#fff0f0,#452b30);color:var(--danger);}
+@media (max-width:400px) { #menu-modal-demo {padding:18px;} }
+@media (pointer:coarse) {#menu-modal-demo button {min-height:44px;}}
+@media (prefers-reduced-motion:reduce) {#menu-modal-demo *,#menu-modal-demo dialog::backdrop {transition:none!important;}}
+</style>
+<div id="menu-modal-demo" aria-label="Dropdown and delete confirmation example">
+  <div class="demo-head"><span class="demo-title">Project files</span><span class="demo-tag">Interactive demo</span></div>
+  <div class="demo-item">
+    <div class="demo-name"><i data-lucide="file-text" aria-hidden="true"></i><span>Design brief</span></div>
+    <p class="demo-description">A sample document for your next project.</p>
+    <div class="demo-actions">
+      <div class="demo-anchor">
+        <button type="button" class="demo-button cursor-interaction" data-action="menu" aria-expanded="false" aria-controls="demo-options">Options <i data-lucide="chevron-down" class="demo-chevron" aria-hidden="true"></i></button>
+        <div id="demo-options" class="demo-menu t-dropdown" data-origin="top-left" inert>
+          <button type="button" class="cursor-interaction" data-choice="Favorite"><i data-lucide="star" aria-hidden="true"></i>Favorite</button>
+          <button type="button" class="cursor-interaction" data-choice="Duplicate"><i data-lucide="copy" aria-hidden="true"></i>Duplicate</button>
+          <button type="button" class="cursor-interaction" data-choice="Archive"><i data-lucide="archive" aria-hidden="true"></i>Archive</button>
+        </div>
+      </div>
+      <button type="button" class="demo-button demo-danger cursor-interaction" data-action="delete"><i data-lucide="trash-2" aria-hidden="true"></i>Delete</button>
+    </div>
+  </div>
+  <div class="demo-status" role="status" aria-live="polite">Sample document · no real files are affected</div>
+  <dialog class="t-modal" aria-labelledby="demo-dialog-title" aria-describedby="demo-dialog-description">
+    <span class="demo-warning"><i data-lucide="trash-2" aria-hidden="true"></i></span>
+    <h2 id="demo-dialog-title" class="demo-modal-title">Delete this document?</h2>
+    <p id="demo-dialog-description" class="demo-modal-text">“Design brief” will be removed from this demo.</p>
+    <div class="demo-modal-actions">
+      <button type="button" class="demo-button cursor-interaction" data-action="cancel" autofocus>Cancel</button>
+      <button type="button" class="demo-button demo-confirm cursor-interaction" data-action="confirm">Delete document</button>
+    </div>
+  </dialog>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('menu-modal-demo');
+  const menu = root.querySelector('.t-dropdown');
+  const trigger = root.querySelector('[data-action="menu"]');
+  const modal = root.querySelector('dialog');
+  const deleteButton = root.querySelector('[data-action="delete"]');
+  const cancelButton = root.querySelector('[data-action="cancel"]');
+  const status = root.querySelector('.demo-status');
+  const name = root.querySelector('.demo-name span');
+  let menuTimer, modalTimer;
+  let deleted = false;
+  const duration = token => matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : parseFloat(getComputedStyle(root).getPropertyValue(token)) || 150;
+  function save() { window.openai?.setWidgetState?.({modelContent:{deleted, status:status.textContent},privateContent:{}})?.catch(() => {}); }
+  function restore(state) { if(!state?.modelContent) return; deleted=state.modelContent.deleted === true; name.textContent=deleted?'Document deleted':'Design brief'; deleteButton.disabled=deleted; trigger.disabled=deleted; if(typeof state.modelContent.status==='string')status.textContent=state.modelContent.status; }
+  restore(window.openai?.widgetState);
+  window.addEventListener('openai:set_globals', e => restore(e.detail?.globals?.widgetState));
+  function closeMenu(focus = false) {
+    clearTimeout(menuTimer); menu.classList.remove('is-open'); menu.classList.add('is-closing'); menu.inert=true; trigger.setAttribute('aria-expanded','false');
+    menuTimer=setTimeout(()=>menu.classList.remove('is-closing'),duration('--dropdown-close-dur'));
+    if(focus)trigger.focus();
+  }
+  function openMenu() { clearTimeout(menuTimer); menu.inert=false; menu.classList.remove('is-closing');menu.classList.add('is-open');trigger.setAttribute('aria-expanded','true'); }
+  trigger.addEventListener('click',()=>menu.classList.contains('is-open')?closeMenu():openMenu());
+  trigger.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){e.preventDefault();openMenu();menu.querySelector('button').focus();}});
+  menu.addEventListener('keydown',e=>{const buttons=[...menu.querySelectorAll('button')];let i=buttons.indexOf(document.activeElement);if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();buttons[(i+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length].focus();}});
+  document.addEventListener('click',e=>{if(!root.querySelector('.demo-anchor').contains(e.target))closeMenu();});
+  root.addEventListener('focusout',()=>setTimeout(()=>{if(!root.querySelector('.demo-anchor').contains(document.activeElement))closeMenu();},0));
+  root.querySelectorAll('[data-choice]').forEach(button=>button.addEventListener('click',()=>{const choice=button.dataset.choice;status.textContent=choice==='Favorite'?'Design brief added to favorites.':choice==='Duplicate'?'A copy of Design brief was created in this demo.':'Design brief archived in this demo.';closeMenu(true);save();}));
+  deleteButton.addEventListener('click',()=>{closeMenu();clearTimeout(modalTimer);modal.classList.remove('is-closing','is-open');modal.showModal();void modal.offsetWidth;modal.classList.add('is-open');cancelButton.focus();});
+  function closeModal() { if(!modal.open||modal.classList.contains('is-closing'))return;modal.classList.remove('is-open');modal.classList.add('is-closing');modalTimer=setTimeout(()=>{modal.close();modal.classList.remove('is-closing');if(!deleted)deleteButton.focus();},duration('--modal-close-dur')); }
+  cancelButton.addEventListener('click',closeModal);
+  modal.addEventListener('cancel',e=>{e.preventDefault();closeModal();});
+  modal.addEventListener('click',e=>{const rect=modal.getBoundingClientRect();if(e.target===modal&&(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom))closeModal();});
+  root.querySelector('[data-action="confirm"]').addEventListener('click',()=>{deleted=true;name.textContent='Document deleted';deleteButton.disabled=true;trigger.disabled=true;status.textContent='Design brief was deleted from this demo.';closeModal();save();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.open&&menu.classList.contains('is-open')){e.preventDefault();closeMenu(true);}});
+  const design={radius:12};
+  if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>root.style.setProperty('--radius',design.radius+'px')});tweak.addSlider(design,'radius',{label:'Corner radius',min:6,max:20,unit:'px'});}
+})();
+</script>

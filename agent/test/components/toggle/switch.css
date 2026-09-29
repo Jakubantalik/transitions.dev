@@ -1,0 +1,4 @@
+.switch { width: 40px; height: 22px; border-radius: 11px; background: #ccc; }
+.switch-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform 400ms linear; }
+.switch.on .switch-thumb { transform: translateX(18px); }
+@media (prefers-reduced-motion: reduce) { .switch-thumb { transition: none; } }

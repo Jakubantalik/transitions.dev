@@ -1,0 +1,12 @@
+.has-tooltip { position: relative; }
+.tooltip {
+  position: absolute;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+.has-tooltip:hover .tooltip {
+  opacity: 1;
+  transform: scale(1);
+}
+@media (prefers-reduced-motion: reduce) { .tooltip { transition: none; } }
