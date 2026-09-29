@@ -56,6 +56,7 @@ for (let i = 0; i < args.length; i++) {
   else if (args[i] === "--mode") flags.mode = args[++i];
   else if (args[i] === "--api") flags.api = args[++i];
   else if (args[i] === "--license") flags.license = args[++i];
+  else if (args[i] === "--base") flags.base = args[++i];
   else if (args[i] === "--min-score") flags.minScore = parseInt(args[++i], 10);
   else if (args[i].startsWith("--")) flags[args[i].slice(2)] = true;
   else positional.push(args[i]);
@@ -144,9 +145,30 @@ async function initCi() {
     console.error(`Unknown mode "${flags.mode}". Use --mode polish or --mode revamp.`);
     process.exit(1);
   }
+  // Automatic fixes on pull requests: on by default, in polish mode. A human
+  // setting it up in a terminal picks the mode; agents pass --mode or
+  // --no-auto-fix after asking the user.
+  const scoreDest = join(wfDir, "transitions-agent.yml");
+  let autoFix = flags["no-auto-fix"] ? "false" : fixMode ? "true" : null;
+  let autoMode = fixMode;
+  if (autoFix === null && isInteractive() && (!existsSync(scoreDest) || flags.force || flags.upgrade)) {
+    const readline = await import("node:readline");
+    const answer = await new Promise((res) => {
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      rl.question("  Automatic fixes on every pull request (a fix pull request into its branch, never main):\n" +
+        "    [1] polish - values onto the motion scale (default)\n    [2] revamp - install library recipes (Business)\n    [3] off - score only\n  Choose [1/2/3]: ", (a) => { rl.close(); res(a.trim()); });
+    });
+    if (answer === "3" || /^o/i.test(answer)) autoFix = "false";
+    else { autoFix = "true"; autoMode = answer === "2" || /^r/i.test(answer) ? "revamp" : "polish"; }
+  }
+  const scoreTransform = (b, keepMin) => b
+    .replace('min-score: "0"', 'min-score: "' + (minScore || keepMin || "0") + '"')
+    .replace('auto-fix: "true"', 'auto-fix: "' + (autoFix || "true") + '"')
+    .replace('fix-mode: "polish"', 'fix-mode: "' + (autoMode || "polish") + '"');
+  let needsUpgrade = false;
   const files = [
-    { name: "transitions-agent.yml", what: "motion score on every pull request",
-      transform: (b) => b.replace('min-score: "0"', 'min-score: "' + (minScore || "0") + '"') },
+    { name: "transitions-agent.yml", what: "motion score and automatic fixes on every pull request",
+      transform: (b) => scoreTransform(b) },
     ...(flags["score-only"] ? [] : [{ name: "transitions-fix.yml", what: "fix pull requests from the Actions tab",
       transform: (b) => fixMode ? b.replace("default: polish", "default: " + fixMode) : b }]),
   ];
@@ -163,11 +185,27 @@ async function initCi() {
       continue;
     }
     const current = readFileSync(dest, "utf8");
-    if (minScore && f.name === "transitions-agent.yml" && /min-score: "\d+"/.test(current)) {
-      const updated = current.replace(/min-score: "\d+"/, 'min-score: "' + minScore + '"');
+    if (f.name === "transitions-agent.yml" && /transitions\.dev\/agent@/.test(current) && !/auto-fix:/.test(current)) {
+      // An older score workflow from us: automatic fixes need the new one.
+      const keepMin = (current.match(/min-score: "(\d+)"/) || [])[1];
+      if (flags.upgrade) {
+        writeFileSync(dest, scoreTransform(readFileSync(join(PKG_DIR, "templates", f.name), "utf8"), keepMin));
+        console.log("  " + OK + " " + rel + " upgraded: automatic fixes on every pull request (" + (autoFix === "false" ? "off" : autoMode || "polish") + ")");
+      } else {
+        needsUpgrade = true;
+        console.log("  " + TODO + " " + rel + " is an older version without automatic fixes");
+      }
+      continue;
+    }
+    if (f.name === "transitions-agent.yml" && (minScore || autoFix || autoMode)) {
+      let updated = current;
+      if (minScore) updated = updated.replace(/min-score: "\d+"/, 'min-score: "' + minScore + '"');
+      if (autoFix) updated = updated.replace(/auto-fix: "(true|false)"/, 'auto-fix: "' + autoFix + '"');
+      if (autoMode) updated = updated.replace(/fix-mode: "(polish|revamp)"/, 'fix-mode: "' + autoMode + '"');
       if (updated !== current) {
         writeFileSync(dest, updated);
-        console.log("  " + OK + " " + rel + " merge gate set to " + minScore);
+        const what = [minScore && "merge gate " + minScore, autoFix === "false" ? "automatic fixes off" : autoMode && "automatic fixes in " + autoMode + " mode"].filter(Boolean).join(", ");
+        console.log("  " + OK + " " + rel + " updated: " + what);
         continue;
       }
     }
@@ -206,7 +244,11 @@ async function initCi() {
   }
 
   // 3. GitHub side, through the gh CLI when it is installed and signed in.
-  const wantsFix = files.some((f) => f.name === "transitions-fix.yml");
+  let scoreNow = "";
+  try { scoreNow = readFileSync(scoreDest, "utf8"); } catch { /* not written */ }
+  const autoFixOn = /auto-fix: "true"/.test(scoreNow);
+  const autoFixMode = (scoreNow.match(/fix-mode: "(polish|revamp)"/) || [])[1] || "polish";
+  const wantsFix = files.some((f) => f.name === "transitions-fix.yml") || autoFixOn;
   const repo = run("gh", ["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"]);
   let license = flags.license || process.env.TRANSITIONS_AGENT_LICENSE || (loadCreds() || {}).license || "";
   if (!license && isInteractive()) {
@@ -302,23 +344,28 @@ async function initCi() {
         if (res.ok) info = await res.json();
       } catch { /* offline: skip the plan line */ }
     }
-    const wfPath = join(wfDir, "transitions-fix.yml");
-    let defMode = "polish";
-    try { defMode = (readFileSync(wfPath, "utf8").match(/default: (polish|revamp)/) || [])[1] || "polish"; } catch { /* none */ }
+    const defMode = autoFixOn ? autoFixMode : (() => {
+      try { return (readFileSync(join(wfDir, "transitions-fix.yml"), "utf8").match(/default: (polish|revamp)/) || [])[1] || "polish"; } catch { return "polish"; }
+    })();
+    if (autoFixOn) console.log("  " + OK + " Automatic fixes on every pull request: " + autoFixMode + " mode, as a fix pull request into its branch (never main)");
+    else if (!needsUpgrade && scoreNow) console.log("  " + TODO + " Automatic fixes on pull requests are off (score only)");
     if (info && info.modes && info.modes.includes("revamp")) {
       console.log("  " + OK + " Your key is on the " + (info.plan === "free" ? "Free" : "Business") + " plan: polish and revamp available (" + info.used + "/" + info.quota + " fixes used this month)");
-      console.log("      Pick the mode under \"Fix mode\" when you run \"Transitions Agent fix\"; the default is " + defMode + "." +
+      console.log("      Fixes use " + defMode + " by default; a `revamp` label on a pull request switches that one." +
         (defMode !== "revamp" ? " Make revamp the default: npx transitions-agent init-ci --mode revamp" : ""));
       offerRevampDefault = defMode !== "revamp";
     } else if (info) {
       console.log("  " + OK + " Your key is on the Free plan: polish mode (" + info.used + "/" + info.quota + " fixes used this month)");
       console.log("      Revamp (full recipe rewrites, e.g. a proper dropdown or modal animation) needs Business: transitions.dev/pro.html");
+      if (defMode === "revamp") todo.push("Automatic fixes are set to revamp, which needs the Business plan. Switch to polish: npx transitions-agent init-ci --mode polish");
     }
   }
 
   console.log("");
   if (!todo.length) {
-    console.log("CI is fully set up. Every pull request gets a motion score; run \"Transitions Agent fix\" from the Actions tab for a fix pull request.");
+    console.log(autoFixOn
+      ? "CI is fully set up. Every pull request gets a motion score, and when there is something to fix, a fix pull request into its branch: merge it to apply, close it to reject."
+      : "CI is fully set up. Every pull request gets a motion score; run \"Transitions Agent fix\" from the Actions tab for a fix pull request.");
   } else {
     console.log("Left to do:");
     todo.forEach((t, i) => console.log("  " + (i + 1) + ". " + t));
@@ -332,6 +379,8 @@ async function initCi() {
   }
   if (!license) options.push("Sign up or sign in for a license key (free, opens the browser): npx transitions-agent signup");
   if (todo.some((t) => t.includes("init-ci --yes"))) options.push("Finish the GitHub side (license secret, pull request permission): npx transitions-agent init-ci --yes");
+  if (needsUpgrade) options.push("Turn on automatic fixes on every pull request (updates transitions-agent.yml): npx transitions-agent init-ci --upgrade");
+  else if (scoreNow && !autoFixOn) options.push("Turn on automatic fixes on every pull request: npx transitions-agent init-ci --mode polish");
   if (offerRevampDefault) options.push("Make revamp the default fix mode: npx transitions-agent init-ci --mode revamp");
   if (needsCommit) options.push("Commit the workflow files on a new branch and open a pull request");
   if (options.length) {
@@ -515,6 +564,7 @@ if (command === "fix") {
     license,
     yes: !!flags.yes,
     pr: !!flags.pr,
+    base: flags.base,
   });
   process.exit(code);
 }

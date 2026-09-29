@@ -38,22 +38,40 @@ Flags: `--json`, `--md`, `--dir <path>`, `--min-score <n>` (exit 2 below n, for 
 
 ## GitHub Action
 
-Copy [templates/transitions-agent.yml](templates/transitions-agent.yml) to `.github/workflows/` in your repository. Every pull request then gets a motion score comment, and `min-score` can block merges when motion quality drops:
+`npx transitions-agent init-ci` sets it up (or copy [templates/transitions-agent.yml](templates/transitions-agent.yml) to `.github/workflows/`). Every pull request then gets:
+
+- a motion score comment with the recognized components and findings, updated in place on every push;
+- automatic fixes: when there is something to fix, one fix pull request into that pull request's branch (never main), linked from the comment. Merge it to apply the fixes, close it to reject them;
+- an optional merge gate with `min-score`.
 
 ```yaml
 - uses: actions/checkout@v4
+  with:
+    fetch-depth: 0
 - uses: Jakubantalik/transitions.dev/agent@main
   with:
-    min-score: "75"
+    min-score: "0"      # fail the check below this score (0 = report only)
+    auto-fix: "true"    # propose fixes as a pull request into the branch
+    fix-mode: "polish"  # or "revamp" (Business)
+    license: ${{ secrets.TRANSITIONS_AGENT_LICENSE }}
 ```
+
+Automatic fixes need the license secret, `contents: write` and `pull-requests: write` permissions, and the repository setting that lets Actions create pull requests (`init-ci --yes` handles the secret and the setting). They cost one hosted fix per run and are guarded: a pull request is fixed once, and again only when someone changes style or component files (the agent's own commits and merges do not count). Forks, the fix branches themselves, and pull requests already at the `min-score` gate are skipped.
+
+Labels on a pull request: `revamp` installs the transitions.dev recipes for that pull request (Business), `polish` forces polish, `no-motion-fix` skips fixes. `init-ci --mode revamp` makes revamp the default; `init-ci --no-auto-fix` keeps it to scores only; `init-ci --upgrade` moves an older workflow to this one.
 
 ## What it checks
 
 | Rule | What it catches |
 |---|---|
+| recipe-mismatch | A component's motion built wrong for it: animates height or top, no exit, pops in, unmounts instantly |
+| off-scale | A value off the motion scale for its usage (modal close 300ms, scale 0.8, linear surfaces, hover ease-in) |
+| recipe-available | A hand-rolled component the library has a recipe for (no score penalty) |
 | untransitioned-overlay | Modals, tooltips, dropdowns that pop in and out with no transition |
-| hover-without-transition | Hover states that snap instead of easing |
+| hover-without-transition | Hover states that snap because the transition does not cover what changes |
+| layout-animation | Hover shifts that move layout (padding, margin, width) |
 | transition-all | `transition: all`, which animates layout and hurts performance |
+| slow-duration | Transitions over a second, including through tokens |
 | hardcoded-duration | Literal durations instead of shared motion tokens |
 | no-reduced-motion | Animation with no `prefers-reduced-motion` guard |
 | inconsistent-durations | Too many different duration values across the project |
@@ -72,7 +90,7 @@ Tools: `scan_instructions`, `fix_guidance(mode)`, `list_recipes`, `get_recipe(sl
 
 Two workflow templates, pick by who supplies the AI:
 
-- **[transitions-fix.yml](templates/transitions-fix.yml)** (Business, zero friction): one secret - the license key. Fixes run through the hosted service on our AI, metered against the plan's 200/month, and land as a pull request.
+- **[transitions-fix.yml](templates/transitions-fix.yml)** (one secret, the license key): a whole-repository fix run from the Actions tab. Fixes run through the hosted service on our AI, metered against the plan, and land as a pull request into the branch you run it on. Pull requests get their fixes automatically from the score workflow above.
 - **[transitions-fix-own-claude.yml](templates/transitions-fix-own-claude.yml)** (Enterprise license required): runs `claude-code-action` on your own Anthropic key, connected to this MCP server. Unmetered, and your code never flows through our fix service - it goes only to Anthropic under your own agreement. CI automation on your own model keys is licensed on the Enterprise plan (org-wide license, custom rules, priority support); Business licenses hosted CI fixing only.
 
 The score/gate Action stays AI-free either way.
