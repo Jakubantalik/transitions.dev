@@ -4895,7 +4895,7 @@
         </div>
 
         <div class="gs-panel" id="gs-panel-gha" role="tabpanel" aria-labelledby="gs-tab-gha" hidden>
-          <p class="skill-section-note">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews. Scanning needs no account, no secrets, no AI key.</p>
+          <p class="skill-section-note">One workflow file and every pull request gets a motion score, plus its fixes as a pull request into that branch: merge it to apply them, close it to reject them. Nothing ever lands on main by itself. Scanning needs no account, no secrets, no AI key.</p>
 
           <h2 class="skill-section-title gs-sub">Install with your coding agent</h2>
           <div class="skill-code-row">
@@ -4906,22 +4906,30 @@
 
           <h2 class="skill-section-title gs-sub">Or add the workflow manually</h2>
           <div class="gs-code-block"><pre id="yml-action">name: Transitions Agent
-on: pull_request
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
+concurrency:
+  group: transitions-agent-&#36;{{ github.event.pull_request.number }}
 jobs:
   motion:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: Jakubantalik/transitions.dev/agent@main
         with:
           min-score: "0"
+          auto-fix: "true"
+          fix-mode: "polish"
           license: &#36;{{ secrets.TRANSITIONS_AGENT_LICENSE }}</pre><button type="button" class="card-copy" aria-label="Copy" data-copy-target="#yml-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button></div>
-          <p class="skill-section-note">Both permissions matter: <code>pull-requests: write</code> lets the Action post its score comment.</p>
+          <p class="skill-section-note">Both permissions matter: <code>pull-requests: write</code> posts the score comment and opens the fix pull request, <code>contents: write</code> pushes the fix branch. Without the license secret you still get the score comment.</p>
 
-          <h2 class="skill-section-title gs-sub">Fix pull requests from CI</h2>
+          <h2 class="skill-section-title gs-sub">Finish the GitHub side</h2>
           <div class="skill-code-row">
             <code id="cmd-fix-workflow">npx transitions-agent init-ci --yes</code>
             <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-fix-workflow"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
@@ -4930,9 +4938,11 @@ jobs:
 
           <h2 class="skill-section-title gs-sub">What happens on a pull request</h2>
           <ul class="gs-bullets">
-            <li>One sticky comment per pull request with the motion score and a findings table - it updates in place on every push, never stacking.</li>
-            <li>Findings name the file, line, and the transitions.dev recipe that fixes them.</li>
-            <li>With <code>min-score</code> set, the check fails when the score drops below it; otherwise it always passes and just informs.</li>
+            <li>One sticky comment per pull request with the motion score, the components it recognized, and a findings table. It updates in place on every push, never stacking.</li>
+            <li>When there is something to fix, the Agent opens one fix pull request into that branch and links it in the comment. Merge it to apply the fixes, close it to reject them.</li>
+            <li>It runs again only when someone changes style or component files. Merging the fixes, or pushes that do not touch them, never spend a fix.</li>
+            <li>Polish by default. Label a pull request <code>revamp</code> to install the transitions.dev recipes instead (Business), or <code>no-motion-fix</code> to skip it.</li>
+            <li>With <code>min-score</code> set, the check fails when the score drops below it, and pull requests already at the gate get no fixes.</li>
           </ul>
 
           <h2 class="skill-section-title gs-sub">Troubleshooting</h2>
@@ -4943,7 +4953,7 @@ jobs:
             <p class="skill-section-note">The Action scans the repository root. In a monorepo, point it at your app with the <code>working-directory</code> input.</p>
             <p class="gs-q">The check is blocking merges before the team is ready.</p>
             <p class="skill-section-note">Set <code>min-score: "0"</code> - the comment keeps reporting, nothing blocks.</p>
-            <p class="gs-q">Fixes pushed a branch but no pull request appeared.</p>
+            <p class="gs-q">The comment says the fix pull request could not be opened.</p>
             <p class="skill-section-note">GitHub blocks workflows from opening pull requests by default. Repo <strong>Settings &gt; Actions &gt; General &gt; Workflow permissions</strong>: check "Allow GitHub Actions to create and approve pull requests", then re-run.</p>
             <p class="gs-q">The fix workflow fails with a license error.</p>
             <p class="skill-section-note">The secret must be named exactly <code>TRANSITIONS_AGENT_LICENSE</code>, and revamp mode needs a Business key - free keys cover polish.</p>

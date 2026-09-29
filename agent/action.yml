@@ -1,5 +1,5 @@
 name: "Transitions Agent"
-description: "Scan pull requests for missing or janky UI transitions. Posts a motion score comment and can gate merges on a minimum score."
+description: "Scan pull requests for missing or janky UI transitions. Posts a motion score comment, proposes fixes as a pull request into the branch, and can gate merges on a minimum score."
 branding:
   icon: "activity"
   color: "purple"
@@ -15,16 +15,28 @@ inputs:
     description: "Directory to scan."
     default: "."
   github-token:
-    description: "Token used to post the PR comment."
+    description: "Token used to post the PR comment and open fix pull requests."
     default: ${{ github.token }}
   license:
-    description: "Transitions Agent license key (optional). Only used to hide the fix-setup hint in the comment when present."
+    description: "Transitions Agent license key. Needed for automatic fixes; without it the comment shows how to set it up."
     default: ""
+  auto-fix:
+    description: "Propose fixes automatically: a fix pull request into the pull request's branch, never main. Needs a license, contents: write, and the repository setting that lets Actions create pull requests."
+    default: "false"
+  fix-mode:
+    description: "polish (values onto the motion scale) or revamp (install library recipes, Business plan). A `revamp` or `polish` label on the pull request overrides it; `no-motion-fix` skips it."
+    default: "polish"
+  api:
+    description: "Fix service URL."
+    default: "https://api.transitions.dev"
 
 outputs:
   score:
     description: "The motion score (0-100)."
     value: ${{ steps.scan.outputs.score }}
+  fix-pr:
+    description: "URL of the fix pull request, when one was opened or updated."
+    value: ${{ steps.autofix.outputs.fix-pr }}
 
 runs:
   using: "composite"
@@ -32,12 +44,32 @@ runs:
     - name: Scan
       id: scan
       shell: bash
+      run: |
+        node "${{ github.action_path }}/bin/transitions-agent.mjs" --json --dir "${{ inputs.working-directory }}" > "$RUNNER_TEMP/tagent.json"
+        echo "score=$(node -p "JSON.parse(require('fs').readFileSync(process.env.RUNNER_TEMP + '/tagent.json','utf8')).score")" >> "$GITHUB_OUTPUT"
+
+    - name: Propose fixes
+      id: autofix
+      if: ${{ inputs.auto-fix == 'true' && github.event_name == 'pull_request' }}
+      shell: bash
+      env:
+        TA_LICENSE: ${{ inputs.license }}
+        TA_MODE: ${{ inputs.fix-mode }}
+        TA_MIN_SCORE: ${{ inputs.min-score }}
+        TA_DIR: ${{ inputs.working-directory }}
+        TA_API: ${{ inputs.api }}
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: |
+        node "${{ github.action_path }}/action/autofix.mjs" "$RUNNER_TEMP/tagent.json" "$RUNNER_TEMP/tagent-autofix.json" || true
+        echo "fix-pr=$(node -p "try { (JSON.parse(require('fs').readFileSync(process.env.RUNNER_TEMP + '/tagent-autofix.json','utf8')).pr || {}).url || '' } catch { '' }")" >> "$GITHUB_OUTPUT"
+
+    - name: Comment body
+      if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
+      shell: bash
       env:
         TA_HAS_LICENSE: ${{ inputs.license != '' && '1' || '0' }}
       run: |
-        node "${{ github.action_path }}/bin/transitions-agent.mjs" --json --dir "${{ inputs.working-directory }}" > "$RUNNER_TEMP/tagent.json"
-        node "${{ github.action_path }}/action/comment.mjs" "$RUNNER_TEMP/tagent.json" > "$RUNNER_TEMP/tagent-comment.md"
-        echo "score=$(node -p "JSON.parse(require('fs').readFileSync(process.env.RUNNER_TEMP + '/tagent.json','utf8')).score")" >> "$GITHUB_OUTPUT"
+        node "${{ github.action_path }}/action/comment.mjs" "$RUNNER_TEMP/tagent.json" "" "$RUNNER_TEMP/tagent-autofix.json" > "$RUNNER_TEMP/tagent-comment.md"
 
     - name: Comment on PR
       if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
@@ -50,8 +82,8 @@ runs:
           const marker = "<!-- transitions-agent -->";
           const { owner, repo } = context.repo;
           const issue_number = context.payload.pull_request.number;
-          const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
-          const existing = comments.data.find((c) => c.body && c.body.includes(marker));
+          const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+          const existing = comments.find((c) => c.body && c.body.includes(marker));
           if (existing) {
             await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
           } else {

@@ -34,17 +34,24 @@ export function findingsForMode(findings, mode) {
   return findings.filter((f) => POLISH_RULES.has(f.rule));
 }
 
+// opts.report, when given, is filled with what happened so callers (the
+// GitHub Action) can act on it: { status, reason, before, after, applied,
+// summary, usage, pr: { number, url, created } }.
 export async function runFix(root, result, opts) {
-  const { api, license, yes, pr, mode = "polish" } = opts;
+  const { api, license, yes, pr, mode = "polish", report = {} } = opts;
+  const done = (code, status, reason) => { report.status = status; if (reason) report.reason = reason; return code; };
+  report.mode = mode;
+  report.before = result.score;
   const findings = findingsForMode(result.findings, mode);
   const skipped = result.findings.length - findings.length;
+  report.recipeFindings = skipped;
   if (skipped > 0) {
     console.log(c.dim(`${skipped} findings need the library recipe (--mode revamp) and are skipped in polish mode.`));
   }
   const fixable = findings.filter((f) => f.path !== "(project)");
   if (!fixable.length && !findings.length) {
     console.log(c.green("Nothing to fix" + (mode === "polish" ? " in polish mode." : ".")));
-    return 0;
+    return done(0, "nothing", "nothing to fix" + (mode === "polish" ? " in polish mode" : ""));
   }
 
   // Revamp also needs the markup/JS that drives a component (open and close
@@ -67,7 +74,7 @@ export async function runFix(root, result, opts) {
     await offerSignup(api);
     console.log("Hosted fixes need a license key. Free plan: 10 polish fixes/month.");
     console.log("Get yours: " + c.bold("npx transitions-agent signup") + c.dim(" (opens the browser)") + " - then re-run fix.");
-    return 1;
+    return done(1, "no-license", "no license key");
   }
 
   console.log(c.dim(`Requesting ${mode} fixes for ${files.length} files${dropped > 0 ? ` (${dropped} deferred to a later run)` : ""}...`));
@@ -85,12 +92,12 @@ export async function runFix(root, result, opts) {
     console.error(c.red("✗ ") + "Could not reach the fix service: " + e.message);
     if (sandboxNoNetwork() || runByAgent()) console.error(NETWORK_HELP);
     ciSummary("Could not reach the fix service: " + e.message);
-    return 1;
+    return done(1, "unreachable", "could not reach the fix service");
   }
   if (res.status === 401) {
     console.error(c.red("✗ ") + "License key not valid. Check TRANSITIONS_AGENT_LICENSE.");
     ciSummary("License key not valid. Check the `TRANSITIONS_AGENT_LICENSE` repo secret.");
-    return 1;
+    return done(1, "invalid-license", "the license key is not valid");
   }
   if (res.status === 403 || res.status === 429) {
     const err = await res.json().catch(() => ({}));
@@ -98,29 +105,31 @@ export async function runFix(root, result, opts) {
       console.error(c.yellow("Revamp mode is a Business plan feature") + " (full recipe rewrites, Pro library).");
       console.error("Your free plan includes polish mode. Upgrade at " + c.bold("transitions.dev/pro.html") + " or run without --mode revamp.");
       ciSummary("Revamp mode needs a Business license. This key covers polish mode; upgrade at https://transitions.dev/pro.html.");
-    } else {
-      const msg = (err.detail || "Monthly fix quota reached. Upgrade at transitions.dev/pro.") +
-        (err.error === "daily limit" ? " Business has no daily cap: transitions.dev/pro.html" : "");
-      console.error(c.red("✗ ") + msg);
-      ciSummary("No fixes this run: " + msg);
+      return done(1, "revamp-needs-business", "revamp needs the Business plan");
     }
-    return 1;
+    const msg = (err.detail || "Monthly fix quota reached. Upgrade at transitions.dev/pro.") +
+      (err.error === "daily limit" ? " Business has no daily cap: transitions.dev/pro.html" : "");
+    console.error(c.red("✗ ") + msg);
+    ciSummary("No fixes this run: " + msg);
+    return done(1, "quota", msg);
   }
   if (res.status === 503) {
     const err = await res.json().catch(() => ({}));
     console.error(c.yellow("The fix service is down on our side.") + " " + (err.detail || "Please try again later."));
     ciSummary("The fix service is down on our side. Re-run this workflow later.");
-    return 1;
+    return done(1, "service-down", "the fix service is down on our side");
   }
   if (res.status === 502) {
     const err = await res.json().catch(() => ({}));
     console.error(c.yellow("The fix service could not reach the AI backend.") + " " + (err.detail || "Try again in a minute."));
-    return 1;
+    return done(1, "model-failed", "the fix service could not reach its AI backend; nothing was counted");
   }
-  if (!res.ok) { console.error(c.red("✗ ") + `Fix service error (${res.status}).`); return 1; }
+  if (!res.ok) { console.error(c.red("✗ ") + `Fix service error (${res.status}).`); return done(1, "error", `fix service error ${res.status}`); }
   const data = await res.json();
+  report.summary = data.summary || "";
+  report.usage = data.usage || null;
   const proposed = (data.files || []).filter((f) => f.path && typeof f.content === "string");
-  if (!proposed.length) { console.log(c.yellow("The service proposed no changes.")); return 0; }
+  if (!proposed.length) { console.log(c.yellow("The service proposed no changes.")); return done(0, "no-changes", "the service proposed no changes"); }
 
   // Show each proposal as a diff. Nothing is written yet.
   for (const p of proposed) showDiff(root, p);
@@ -128,7 +137,7 @@ export async function runFix(root, result, opts) {
   if (data.usage) console.log(c.dim(`Fixes used this month: ${data.usage.used}/${data.usage.quota}`));
 
   const apply = yes || await confirm(`Apply these changes to ${proposed.length} files? [y/N] `);
-  if (!apply) { console.log(c.dim("Nothing changed.")); return 0; }
+  if (!apply) { console.log(c.dim("Nothing changed.")); return done(0, "declined"); }
   for (const p of proposed) {
     const dest = join(root, p.path);
     let original = "";
@@ -137,13 +146,16 @@ export async function runFix(root, result, opts) {
     writeFileSync(dest, content);
   }
   const after = scan(root).score;
+  report.after = after;
+  report.applied = proposed.map((p) => p.path);
   console.log(c.green("✓ ") + `Applied ${proposed.length} files. Motion score ${result.score} to ${after}.`);
 
   if (!pr) {
     console.log(c.dim("Review with git diff. Re-run with --pr to open a pull request."));
-    return 0;
+    return done(0, "applied");
   }
-  return openPr(root, result, proposed, { yes, mode, after });
+  const code = await openPr(root, result, proposed, { ...opts, yes, mode, after, summary: data.summary || "" });
+  return done(code, code === 0 && report.pr ? "pr" : code === 0 ? "applied" : "pr-failed", code === 0 ? null : "could not push the fixes or open the pull request");
 }
 
 function showDiff(root, proposal) {
@@ -159,14 +171,34 @@ function showDiff(root, proposal) {
   console.log(body || c.dim("(no change)"));
 }
 
-async function openPr(root, result, proposed, { yes, mode, after }) {
+function git(root, args, opts = {}) {
+  return execFileSync("git", args, { cwd: root, stdio: "pipe", encoding: "utf8", ...opts });
+}
+
+// The branch the fixes land on: the branch you ran from, so fixes stack on
+// your work instead of going to main.
+export function currentBranch(root) {
+  try {
+    const b = git(root, ["rev-parse", "--abbrev-ref", "HEAD"]).trim();
+    return b && b !== "HEAD" ? b : null;
+  } catch { return null; }
+}
+
+// opts: base (target branch; default: the current branch), branch (the fix
+// branch name; reused and force-pushed when given), title/body (override),
+// report (filled with the pull request).
+async function openPr(root, result, proposed, opts) {
+  const { yes, mode, after, report = {} } = opts;
   const go = yes || await confirm("Create a branch, commit, push, and open a pull request? [y/N] ");
   if (!go) { console.log(c.dim("Changes stay local. Commit them yourself when ready.")); return 0; }
-  const branch = `transitions-agent/${mode}-` + new Date().toISOString().slice(0, 10);
-  const title = mode === "revamp"
+  const base = opts.base || currentBranch(root);
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
+  const branch = opts.branch || `transitions-agent/${mode}-${stamp}`;
+  const custom = (v) => (typeof v === "function" ? v({ before: result.score, after, files: proposed.map((p) => p.path), summary: opts.summary }) : v);
+  const title = custom(opts.title) || (mode === "revamp"
     ? `Revamp UI transitions with transitions.dev recipes (motion score ${result.score} to ${after})`
-    : `Polish UI transitions (motion score ${result.score} to ${after})`;
-  const body = [
+    : `Polish UI transitions (motion score ${result.score} to ${after})`);
+  const body = custom(opts.body) || [
     `Automated ${mode} pass by [Transitions Agent](https://transitions.dev).`,
     "",
     `**Motion score: ${result.score} to ${after} / 100**`,
@@ -176,19 +208,35 @@ async function openPr(root, result, proposed, { yes, mode, after }) {
     "Every change was shown as a diff and confirmed in the terminal before this PR was opened.",
   ].join("\n");
   try {
-    execFileSync("git", ["checkout", "-b", branch], { cwd: root, stdio: "pipe" });
-    execFileSync("git", ["add", ...proposed.map((p) => p.path)], { cwd: root, stdio: "pipe" });
-    execFileSync("git", ["commit", "-m", `fix(motion): transitions-agent ${mode} pass`], { cwd: root, stdio: "pipe" });
-    execFileSync("git", ["push", "-u", "origin", branch], { cwd: root, stdio: "inherit" });
+    git(root, ["checkout", "-B", branch]);
+    git(root, ["add", ...proposed.map((p) => p.path)]);
+    git(root, ["commit", "-m", opts.commitMessage || `fix(motion): transitions-agent ${mode} pass`]);
+    git(root, ["push", ...(opts.branch ? ["--force"] : []), "-u", "origin", branch], { stdio: "inherit" });
   } catch (e) {
     console.error(c.red("✗ ") + "Git step failed: " + (e.stderr?.toString() || e.message));
     return 1;
   }
-  const gh = spawnSync("gh", ["pr", "create", "--title", title, "--body", body], { cwd: root, stdio: "inherit" });
-  if (gh.status !== 0) {
-    console.log(c.yellow("Could not open the PR automatically (is GitHub CLI installed?)."));
-    console.log("Branch " + c.bold(branch) + " is pushed. Open the PR from GitHub with this description:\n\n" + body);
+  // One pull request per fix branch: a re-run updates it instead of opening another.
+  const existing = spawnSync("gh", ["pr", "list", "--head", branch, "--state", "open", "--json", "number,url", "--limit", "1"], { cwd: root, encoding: "utf8" });
+  let found = null;
+  try { found = JSON.parse(existing.stdout || "[]")[0] || null; } catch { /* gh missing */ }
+  if (found) {
+    spawnSync("gh", ["pr", "edit", String(found.number), "--title", title, "--body", body], { cwd: root, stdio: "inherit" });
+    report.pr = { number: found.number, url: found.url, created: false };
+    console.log(c.green("✓ ") + "Updated pull request " + found.url);
+    return 0;
   }
+  const args = ["pr", "create", "--title", title, "--body", body, "--head", branch, ...(base ? ["--base", base] : [])];
+  const gh = spawnSync("gh", args, { cwd: root, encoding: "utf8" });
+  const url = (gh.stdout || "").trim().split("\n").pop();
+  if (gh.status !== 0 || !/\/pull\/\d+/.test(url)) {
+    console.log(c.yellow("Could not open the PR automatically (is GitHub CLI installed?)."));
+    if (gh.stderr) console.log(c.dim(gh.stderr.trim()));
+    console.log("Branch " + c.bold(branch) + " is pushed. Open the PR from GitHub with this description:\n\n" + body);
+    return 0;
+  }
+  report.pr = { number: Number(url.match(/\/pull\/(\d+)/)[1]), url, created: true };
+  console.log(c.green("✓ ") + "Opened " + url + (base ? " into " + base : ""));
   return 0;
 }
 

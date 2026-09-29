@@ -1,9 +1,19 @@
-# Transitions Agent: motion score on every pull request.
-# Copy this file to .github/workflows/transitions-agent.yml in your repository.
+# Transitions Agent: motion score on every pull request, with fixes proposed
+# as a pull request into that branch (never main): merge it to apply, close it
+# to reject. Copy this file to .github/workflows/transitions-agent.yml.
+#
+# Automatic fixes need the TRANSITIONS_AGENT_LICENSE repo secret (free key:
+# npx transitions-agent signup) and one repo setting: Settings > Actions >
+# General > Workflow permissions > "Allow GitHub Actions to create and approve
+# pull requests". Without the secret you still get the score comment.
+#
+# Labels on a pull request: `revamp` installs the transitions.dev recipes
+# (Business plan), `polish` forces polish, `no-motion-fix` skips fixes.
 name: Transitions Agent
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
   # Manual runs from the Actions tab scan the chosen branch on demand.
   workflow_dispatch:
   # Narrow when it runs, e.g.:
@@ -12,17 +22,27 @@ on:
   #     paths: ["**.css", "**.tsx", "**.jsx", "**.vue", "**.svelte"]
 
 permissions:
-  contents: read
-  pull-requests: write
+  contents: write        # push the fix branch
+  pull-requests: write   # score comment and fix pull request
+
+# One run per pull request at a time, so a quick second push never pays twice.
+concurrency:
+  group: transitions-agent-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 jobs:
   motion:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: Jakubantalik/transitions.dev/agent@main
         with:
           # Fail the check when the motion score drops below this (0 = report only).
           min-score: "0"
-          # Optional: with a license configured, the comment drops its setup hint.
+          # Propose fixes as a pull request into this branch: "true" or "false".
+          auto-fix: "true"
+          # polish (values onto the motion scale) or revamp (library recipes, Business).
+          fix-mode: "polish"
           license: ${{ secrets.TRANSITIONS_AGENT_LICENSE }}
