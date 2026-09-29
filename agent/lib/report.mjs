@@ -75,7 +75,7 @@ export function renderTerminal(result, opts = {}) {
   const lines = [];
   const scoreColor = result.score >= 90 ? c.green : result.score >= 75 ? c.cyan : result.score >= 50 ? c.yellow : c.red;
   lines.push("");
-  lines.push(c.bold("  transitions-agent") + c.dim(`  scanned ${result.scannedFiles} files`));
+  lines.push(c.bold("  transitions-agent") + c.dim(`${result.version ? " " + result.version : ""}  scanned ${result.scannedFiles} files`));
   lines.push("");
   lines.push("  Motion score  " + scoreColor(c.bold(`${result.score} / 100`)) + c.dim(`  (${result.grade})`));
   // Gauge: 20 cells, filled portion in the score color.
