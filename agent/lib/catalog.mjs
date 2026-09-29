@@ -149,6 +149,7 @@ export const RECIPES = R.map((r) => {
     when: (data ? data.when : r.desc || "").replace(/\s*\u2014\s*/g, ": ").replace(/\*\*/g, ""),
     hook: data ? data.hook : null,
     spec,
+    specVars: r.spec || null,
     nameSeqs: r.names.map((n) => n.split("-")),
   };
 });
