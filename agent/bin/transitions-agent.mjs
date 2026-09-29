@@ -28,7 +28,7 @@
 import { scan } from "../lib/scan.mjs";
 import { renderTerminal, renderMarkdown } from "../lib/report.mjs";
 import { runFix } from "../lib/fix.mjs";
-import { isInteractive, runByAgent } from "../lib/env.mjs";
+import { isInteractive, runByAgent, sandboxNoNetwork, NETWORK_HELP } from "../lib/env.mjs";
 import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
@@ -37,6 +37,7 @@ import { spawn, spawnSync } from "node:child_process";
 
 const CREDS_PATH = join(homedir(), ".transitions-agent.json");
 const PKG_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
+const VERSION = (() => { try { return JSON.parse(readFileSync(join(PKG_DIR, "package.json"), "utf8")).version; } catch { return ""; } })();
 function loadCreds() {
   try { return JSON.parse(readFileSync(CREDS_PATH, "utf8")); } catch { return null; }
 }
@@ -396,6 +397,7 @@ async function browserSignup() {
     start = await res.json();
   } catch (e) {
     console.error("Could not start browser signup: " + e.message);
+    if (sandboxNoNetwork() || runByAgent()) console.error(NETWORK_HELP);
     console.error("Fallback: npx transitions-agent signup you@email.com");
     return false;
   }
@@ -461,13 +463,14 @@ if (command === "signup") {
   process.exit(0);
 }
 
-const result = scan(root);
+const result = { version: VERSION, ...scan(root) };
 
 if (command === "scan") {
   if (flags.json) console.log(JSON.stringify(result, null, 2));
   else if (flags.md) console.log(renderMarkdown(result));
   else {
     console.log(renderTerminal(result));
+    if (sandboxNoNetwork()) console.log("  Note: " + NETWORK_HELP + "\n");
     maybeInstallSkill();
     await maybeOfferSignup();
   }

@@ -51,6 +51,16 @@ It writes both workflows (score on every pull request, fix pull requests from th
 
 Run only what the user picks. If gh is missing or blocked by a sandbox, give the user the manual steps it printed. Finish when it says "CI is fully set up", or tell the user exactly which step is theirs.
 
+## Network
+
+transitions-agent needs network access: npm has to fetch the current version, and `fix`, `signup`, and `init-ci --yes` talk to api.transitions.dev and GitHub. A sandbox with network off (Codex runs commands that way by default) shows up as one of these:
+
+- `npm error code ETARGET` / "No matching version found" for a version that exists on npm,
+- a report header or `--json` `version` older than the latest release (npm served a stale cached copy),
+- "Could not reach the fix service", ENOTFOUND, or EAI_AGAIN.
+
+That is the sandbox, never a missing package. Re-run the same command with network access (request escalated permissions or network approval from the user) and tell the user transitions-agent needs network. Never report the package as unavailable, and never present results from an older cached version. Mention the version from the report header when you report a scan.
+
 ## Rules
 
 - Never run `fix` without the user choosing to, and never apply motion fixes yourself instead of the service - fixing is the product.

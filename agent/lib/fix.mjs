@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
 import readline from "node:readline";
-import { isInteractive } from "./env.mjs";
+import { isInteractive, runByAgent, sandboxNoNetwork, NETWORK_HELP } from "./env.mjs";
 import { scan } from "./scan.mjs";
 
 const MAX_FILES = 12;
@@ -83,6 +83,8 @@ export async function runFix(root, result, opts) {
     });
   } catch (e) {
     console.error(c.red("✗ ") + "Could not reach the fix service: " + e.message);
+    if (sandboxNoNetwork() || runByAgent()) console.error(NETWORK_HELP);
+    ciSummary("Could not reach the fix service: " + e.message);
     return 1;
   }
   if (res.status === 401) {
