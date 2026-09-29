@@ -891,9 +891,6 @@
     }
     .mobile-menu-link--2 { transition-delay: 40ms; }
     .mobile-menu-link--3 { transition-delay: 80ms; }
-    .mobile-menu-link--4 { transition-delay: 120ms; }
-    .mobile-menu-link--5 { transition-delay: 160ms; }
-    .mobile-menu-link--6 { transition-delay: 200ms; }
     body.menu-open .mobile-menu-link {
       opacity: 1;
       transform: translateY(0);
@@ -4791,10 +4788,9 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
-          <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
+            <a class="nav-pill" href="detail.html?t=card-resize">Transitions</a>
+            <a class="nav-pill" href="/skill.html">Skill</a>
+            <a class="nav-pill" href="/refine.html">Refine tool</a>
           </nav>
         </div>
         <div class="site-nav-right">
@@ -4828,6 +4824,20 @@
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
             </svg>
             <span class="pill-label" id="gh-stars-count">—</span>
+          </a>
+          <a
+            class="icon-btn"
+            href="https://x.com/jakubantalik"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="X (Twitter)"
+          >
+            <svg class="icon-x" aria-hidden="true" viewBox="0 0 16 17" xmlns="http://www.w3.org/2000/svg">
+              <path
+                fill="currentColor"
+                d="M12.4041 1.39726H14.6953L9.69087 7.2591L15.5781 15.2368H10.9696L7.35741 10.3996L3.22921 15.2368H0.934687L6.28641 8.96575L0.642598 1.39726H5.36795L8.62962 5.81859L12.4041 1.39726ZM11.5992 13.8329H12.8682L4.67667 2.72798H3.31359L11.5992 13.8329Z"
+              />
+            </svg>
           </a>
           <!-- 3-dot menu — same dropdown pattern as the Refine tool.
                Appearance opens a theme sub-page (Light / Dark / System). -->
@@ -4902,10 +4912,9 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
-          <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--1" href="detail.html?t=card-resize">Transitions</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/skill.html">Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/refine.html">Refine tool</a></li>
         </ul>
       </nav>
     </header>
@@ -5096,7 +5105,7 @@
             <a href="/">Home</a>
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/skill.html">Skill</a>
-            <a href="/agent.html">Agent</a>
+            <a href="/refine.html">Refine tool</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -5508,9 +5517,7 @@
         "Tooltip", "Staggered text reveal", "Card hover tilt", "Plus-to-menu morph", "Accordion"
       ];
       var CMD_ITEMS = [
-        { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
-        { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
-        { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
+        { group: "Pages", label: "Transitions", hint: "Home", href: "/", ic: "grid" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
@@ -5646,8 +5653,8 @@
           annual:  { v: "$90", per: "/yr", seat: "Single seat · billed yearly" }
         },
         team: {
-          monthly: { v: "$59", per: "/mo", seat: "5 seats + Agent · +$9/seat after" },
-          annual:  { v: "$590", per: "/yr", seat: "5 seats + Agent · +$90/seat after · billed yearly" }
+          monthly: { v: "$39", per: "/mo", seat: "5 seats · +$9/seat after" },
+          annual:  { v: "$390", per: "/yr", seat: "5 seats · +$90/seat after · billed yearly" }
         }
       };
       var billing = document.getElementById("pro-billing");
