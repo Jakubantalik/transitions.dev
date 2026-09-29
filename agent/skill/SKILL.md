@@ -1,11 +1,13 @@
 ---
 name: transitions-agent
-description: Scan a codebase for missing, janky, or inconsistent UI motion and fix it with transitions.dev recipes. Use when the user asks about UI transitions, animations, motion quality, a motion score, janky or missing transitions, "polish the motion", "fix the animations", or runs/mentions npx transitions-agent. Also use after UI changes when the user asks whether the motion is good.
+description: Scan a codebase for missing, janky, or inconsistent UI motion and fix it with transitions.dev recipes. ALWAYS use this skill when the user's message is or contains a transitions-agent command (npx transitions-agent, npx transitions-agent fix, any variant) - the command is a request for the full guided flow, not just command execution. Also use when the user asks about UI transitions, animations, motion quality, a motion score, janky or missing transitions, "polish the motion", "fix the animations", or whether the motion is good after UI changes.
 ---
 
 # Transitions Agent
 
 You drive the `transitions-agent` CLI for the user: scan, present choices, run the choice they pick, verify. The scan is deterministic and free; fixes change files, so every fix step needs the user's go-ahead first.
+
+When the user's message is just the command (`npx transitions-agent` or a variant), that IS the request for this whole workflow: run the scan, then ALWAYS continue to the options step below - never stop at reporting the scan output.
 
 ## Workflow
 
