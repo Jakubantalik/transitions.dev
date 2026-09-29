@@ -2,6 +2,7 @@
 // transitions-agent: scan a codebase for missing or janky UI transitions.
 //
 //   npx transitions-agent                 scan + motion score + findings
+//   npx transitions-agent init-ci         write the GitHub Actions workflow(s)
 //   npx transitions-agent skill           install the agent skill (Claude Code)
 //   npx transitions-agent signup          free plan: sign up in the browser
 //   npx transitions-agent signup you@x.co  free plan: license key by email
@@ -93,6 +94,42 @@ function maybeInstallSkill() {
     console.log("    Remove anytime by deleting that folder.");
     console.log("");
   } catch { /* never let convenience break the scan */ }
+}
+
+if (command === "init-ci") {
+  // Seamless CI setup (react.doctor pattern): one command writes the
+  // workflow files; committing them is the whole install.
+  const wfDir = resolve(".github", "workflows");
+  mkdirSync(wfDir, { recursive: true });
+  const minScore = Number.isFinite(flags.minScore) ? String(flags.minScore) : "0";
+  const wrote = [];
+  const put = (name, transform) => {
+    const dest = join(wfDir, name);
+    if (existsSync(dest) && !flags.force) {
+      console.log("  \u2022 " + name + " already exists - skipped (use --force to overwrite)");
+      return;
+    }
+    let body = readFileSync(join(PKG_DIR, "templates", name), "utf8");
+    if (transform) body = transform(body);
+    writeFileSync(dest, body);
+    wrote.push(name);
+    console.log("  \u2713 .github/workflows/" + name);
+  };
+  console.log("Setting up Transitions Agent for GitHub Actions:");
+  put("transitions-agent.yml", (b) => b.replace('min-score: "0"', 'min-score: "' + minScore + '"'));
+  if (flags.fix) put("transitions-fix.yml");
+  console.log("");
+  console.log("Next steps:");
+  console.log("  1. Commit and push - every pull request then gets a motion score comment" + (minScore !== "0" ? " and a merge gate at " + minScore : "") + ".");
+  if (flags.fix) {
+    console.log("  2. Add a repo secret TRANSITIONS_AGENT_LICENSE (Business key), then run the");
+    console.log("     \"Transitions Agent fix\" workflow from the Actions tab to get fix PRs.");
+  } else {
+    console.log("  2. Optional: add a repo secret TRANSITIONS_AGENT_LICENSE and re-run with --fix");
+    console.log("     for fix pull requests from CI (Business plan).");
+  }
+  console.log("  Docs: https://transitions.dev/agent.html");
+  process.exit(0);
 }
 
 if (command === "skill") {
@@ -252,5 +289,5 @@ if (command === "fix") {
   process.exit(code);
 }
 
-console.error(`Unknown command "${command}". Use: transitions-agent [scan|fix|signup|skill]`);
+console.error(`Unknown command "${command}". Use: transitions-agent [scan|fix|signup|skill|init-ci]`);
 process.exit(1);
