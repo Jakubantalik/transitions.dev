@@ -1,6 +1,6 @@
 {
   "name": "transitions-agent",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Scan your codebase for missing, janky, or inconsistent UI transitions. Get a motion score, ready-to-apply fixes from transitions.dev recipes, and an optional pull request with the fixes.",
   "type": "module",
   "bin": {
