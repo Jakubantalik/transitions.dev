@@ -5819,6 +5819,166 @@
     }
     .docs-link:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
 
+    /* ── Agent doc: the agent page's Get started, tabs and steps ── */
+    /* ─── Get started tabs (transitions-dev 16, tabs sliding) ─────
+       The bar is a flex container; the pill's width and transform are
+       written inline by JS so the tween runs between measured
+       positions. Panels simply toggle [hidden]. */
+    .gs-tabs {
+      position: relative;
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      margin: 4px 0 8px;
+      border-radius: 48px;
+      background: #f1f1f1;
+    }
+    html[data-theme="dark"] .gs-tabs { background: rgba(255, 255, 255, 0.06); }
+    .gs-tabs .t-tab {
+      position: relative;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      height: 30px;
+      padding: 4px 12px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 22px;
+      color: rgba(15, 15, 15, 0.8);
+      cursor: pointer;
+      border-radius: 48px;
+      z-index: 1;
+      white-space: nowrap;
+      transition: color var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+    }
+    html[data-theme="dark"] .gs-tabs .t-tab { color: rgba(255, 255, 255, 0.7); }
+    .gs-tabs .t-tab:not([aria-selected="true"]):hover,
+    .gs-tabs .t-tab[aria-selected="true"] { color: #0f0f0f; }
+    html[data-theme="dark"] .gs-tabs .t-tab:not([aria-selected="true"]):hover,
+    html[data-theme="dark"] .gs-tabs .t-tab[aria-selected="true"] { color: #ffffff; }
+    .gs-tabs .t-tab:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+    .gs-tabs .t-tabs-pill {
+      position: absolute;
+      top: 3px;
+      left: 0;
+      height: 30px;
+      width: 0;
+      background: #ffffff;
+      border-radius: 48px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      transform: translateX(0);
+      transition:
+        transform var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+        width     var(--duration-normal, 250ms) var(--ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+      will-change: transform, width;
+      z-index: 0;
+      pointer-events: none;
+    }
+    html[data-theme="dark"] .gs-tabs .t-tabs-pill { background: #2a2a2a; box-shadow: none; }
+    .gs-panel { display: flex; flex-direction: column; gap: 8px; }
+    .gs-panel[hidden] { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .gs-tabs .t-tabs-pill, .gs-tabs .t-tab { transition: none !important; }
+    }
+
+    .get-started-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .gs-step {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .gs-step-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .gs-step-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .gs-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 36px;
+      background: var(--card-bg);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--text);
+      box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    }
+    html[data-theme="dark"] .gs-badge {
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    .gs-step-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    /* GitHub Action setup guide (react.doctor-style progression). */
+    /* Sub-sections inside the get-started panels reuse the doc pages'
+       section titles (detail.html?doc=installation) with breathing room. */
+    .skill-section-title.gs-sub { margin: 24px 0 4px; }
+    /* Multiline variant of .skill-code-row: same surface and copy-button
+       treatment, pre content instead of a single line. */
+    .gs-code-block {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 8px 12px 14px;
+      border-radius: 10px;
+      background: #f7f7f7;
+    }
+    html[data-theme="dark"] .gs-code-block { background: rgba(255, 255, 255, 0.04); }
+    .gs-code-block pre {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-x: auto;
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 22px;
+      color: #3c3c3c;
+      white-space: pre;
+    }
+    html[data-theme="dark"] .gs-code-block pre { color: #d6d6d6; }
+    .gs-code-block .card-copy {
+      position: relative;
+      right: auto;
+      bottom: auto;
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      margin-right: -3px;
+      border-radius: 6px;
+      background: transparent;
+      background-image: none;
+    }
+    html[data-theme="dark"] .gs-code-block .card-copy { background: transparent; background-image: none; }
+    .gs-code-block .card-copy:hover { background-image: none; background: rgba(0, 0, 0, 0.04); color: var(--icon-color); }
+    html[data-theme="dark"] .gs-code-block .card-copy:hover { background: rgba(255, 255, 255, 0.06); }
+    .gs-code-block .card-copy:active { background-image: none; background: rgba(0, 0, 0, 0.06); }
+    html[data-theme="dark"] .gs-code-block .card-copy:active { background: rgba(255, 255, 255, 0.08); }
+    .gs-bullets { margin: 4px 0 0; padding-left: 20px; }
+    .gs-bullets li { margin-bottom: 6px; }
+    .gs-qa .gs-q { margin: 14px 0 2px; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--text); }
+    .gs-qa .skill-section-note { margin-top: 0; }
+
     /* ── Main column ─────────────────────────────────────────── */
     .docs-main { position: relative; min-width: 0; }
 
@@ -6915,82 +7075,110 @@
 
           <article class="doc-article skill-content" data-doc="installation-agent"
                    data-title="Agent" data-subtitle="Run the Agent from your terminal, or on every GitHub pull request." hidden>
-            <div class="skill-section">
-              <h2 class="skill-section-title">Coding agent (CLI)</h2>
-              <p class="skill-section-note">Run these in a terminal at your project's root folder, or paste them to your coding agent (Claude Code, Cursor, Codex) and it runs them for you. Nothing to install first: the command runs through npx.</p>
-              <div class="skill-command">
-                <span class="skill-command-label">Scan</span>
-                <div class="skill-code-row">
-                  <code id="agent-doc-scan">npx transitions-agent</code>
-                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy scan command" data-copy-target="#agent-doc-scan">
-                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                  </button>
+            <div class="gs-tabs t-tabs" role="tablist" aria-label="How to run the Agent">
+              <span class="t-tabs-pill" aria-hidden="true"></span>
+              <button class="t-tab" type="button" role="tab" id="gs-tab-cli" aria-selected="true" aria-controls="gs-panel-cli">Coding agent (CLI)</button>
+              <button class="t-tab" type="button" role="tab" id="gs-tab-gha" aria-selected="false" aria-controls="gs-panel-gha" tabindex="-1">GitHub Action</button>
+            </div>
+
+            <div class="gs-panel" id="gs-panel-cli" role="tabpanel" aria-labelledby="gs-tab-cli">
+              <p class="skill-section-note">Run these in a terminal at your project's root folder, or paste them to your coding agent (Claude Code, Cursor, Codex) and it runs them for you.</p>
+              <div class="get-started-grid">
+              <div class="gs-step">
+                <div class="gs-step-block">
+                  <div class="gs-step-head">
+                    <span class="gs-step-label">Install</span>
+                  </div>
+                  <div class="skill-code-row">
+                    <code id="cmd-skill">npx transitions-agent</code>
+                    <button type="button" class="skill-code-copy card-copy" aria-label="Copy install command" data-copy-target="#cmd-skill">
+                      <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    </button>
+                  </div>
                 </div>
-                <p class="skill-section-note">The first run scans the project and installs the agent skill into <code>~/.claude/skills</code>, so from then on "check this app's motion" makes your agent scan, present the fix options, run your choice and verify the score. A scan prints a motion score (0 to 100) with every finding mapped to its transitions.dev recipe. No AI, no account, your code never leaves the machine.</p>
+                <p class="skill-section-note">
+                  Nothing to install first: the command runs through npx. The first run scans the project and installs the agent skill into <code>~/.claude/skills</code> (use <code>--dir</code> for other agents), so from then on "check this app's motion" makes your agent scan, present the fix options, run your choice and verify the score. A scan walks your stylesheets and components and prints a motion score (0 to 100) with every finding mapped to its transitions.dev recipe. No AI, no account, your code never leaves the machine.
+                </p>
               </div>
-              <div class="skill-command">
-                <span class="skill-command-label">Setup</span>
-                <div class="skill-code-row">
-                  <code id="agent-doc-license">export TRANSITIONS_AGENT_LICENSE=your-key</code>
-                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy license setup command" data-copy-target="#agent-doc-license">
-                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                  </button>
+
+              <div class="gs-step">
+                <div class="gs-step-block">
+                  <div class="gs-step-head">
+                    <span class="gs-step-label">Fix</span>
+                  </div>
+                  <div class="skill-code-row">
+                    <code id="cmd-fix">npx transitions-agent fix</code>
+                    <button type="button" class="skill-code-copy card-copy" aria-label="Copy fix command" data-copy-target="#cmd-fix">
+                      <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    </button>
+                  </div>
+                  <div class="skill-code-row">
+                    <code id="cmd-revamp">npx transitions-agent fix --mode revamp --pr</code>
+                    <button type="button" class="skill-code-copy card-copy" aria-label="Copy revamp command" data-copy-target="#cmd-revamp">
+                      <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    </button>
+                  </div>
                 </div>
-                <p class="skill-section-note">Scans need no key. Fixes run through the hosted fix service against your plan, and the key arrives with the <a href="/pro.html">Business plan</a> email. Set it once in your shell, or pass <code>--license your-key</code> on a single command.</p>
+                <p class="skill-section-note">
+                  Every proposed change is shown as a diff first and applied only after you type yes. Polish (the default) keeps diffs small: durations onto motion tokens, a reduced-motion guard, named properties instead of <code>transition: all</code>. Revamp replaces janky motion wholesale with the matching transitions.dev recipe, Pro recipes included. With <code>--pr</code> it opens a pull request on a new branch after one more confirmation. It never pushes to your main branch.
+                </p>
               </div>
-              <div class="skill-command">
-                <span class="skill-command-label">Fix</span>
-                <div class="skill-code-row">
-                  <code id="agent-doc-fix">npx transitions-agent fix</code>
-                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy fix command" data-copy-target="#agent-doc-fix">
-                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                  </button>
-                </div>
-                <p class="skill-section-note">Every proposed change is shown as a diff first and applied only after you type yes. Polish (the default) keeps diffs small: durations onto motion tokens, a reduced-motion guard, named properties instead of <code>transition: all</code>.</p>
-              </div>
-              <div class="skill-command">
-                <span class="skill-command-label">Revamp and open a pull request</span>
-                <div class="skill-code-row">
-                  <code id="agent-doc-revamp">npx transitions-agent fix --mode revamp --pr</code>
-                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy revamp command" data-copy-target="#agent-doc-revamp">
-                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                  </button>
-                </div>
-                <p class="skill-section-note">Revamp replaces janky motion wholesale with the matching transitions.dev recipe, Pro recipes included. With <code>--pr</code> it opens a pull request on a new branch after one more confirmation. It never pushes to your main branch.</p>
               </div>
             </div>
-            <div class="skill-section">
-              <h2 class="skill-section-title">GitHub Action</h2>
-              <p class="skill-section-note">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews.</p>
-              <div class="skill-command">
-                <span class="skill-command-label">Install</span>
-                <div class="skill-code-row">
-                  <code id="agent-doc-action">curl -fsSL --create-dirs -o .github/workflows/transitions-agent.yml https://raw.githubusercontent.com/Jakubantalik/transitions.dev/main/agent/templates/transitions-agent.yml</code>
-                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy workflow install command" data-copy-target="#agent-doc-action">
-                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                  </button>
-                </div>
-                <p class="skill-section-note">Drops <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into your repo. Commit it and every pull request gets a motion score comment. Runs on GitHub's machines, scan only. No account, no secrets, no AI key.</p>
+
+            <div class="gs-panel" id="gs-panel-gha" role="tabpanel" aria-labelledby="gs-tab-gha" hidden>
+              <p class="skill-section-note">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews. Scanning needs no account, no secrets, no AI key.</p>
+
+              <h2 class="skill-section-title gs-sub">Install with your coding agent</h2>
+              <div class="skill-code-row">
+                <code id="cmd-action">npx transitions-agent init-ci</code>
+                <button type="button" class="skill-code-copy card-copy" aria-label="Copy" data-copy-target="#cmd-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
               </div>
-              <div class="skill-command">
-                <span class="skill-command-label">Setup</span>
-                <div class="skill-code-row">
-                  <code id="agent-doc-min-score">min-score: "75"</code>
-                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy min-score setting" data-copy-target="#agent-doc-min-score">
-                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                  </button>
-                </div>
-                <p class="skill-section-note">Optional merge gate under <code>with:</code> in the workflow file: pull requests that drop the score below it fail the check, and <code>"0"</code> reports only. Add a repo secret named <code>TRANSITIONS_AGENT_LICENSE</code> with your Business key and pass it as <code>license: ${{ secrets.TRANSITIONS_AGENT_LICENSE }}</code> to drop the comment's setup hint.</p>
+              <p class="skill-section-note">Tell your coding agent <em>"set up Transitions Agent for CI"</em> and it runs this command for you - or run it yourself. It writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code>. Commit and push - done.</p>
+
+              <h2 class="skill-section-title gs-sub">Or add the workflow manually</h2>
+              <div class="gs-code-block"><pre id="yml-action">name: Transitions Agent
+on: pull_request
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  motion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Jakubantalik/transitions.dev/agent@main
+        with:
+          min-score: "0"
+          license: &#36;{{ secrets.TRANSITIONS_AGENT_LICENSE }}</pre><button type="button" class="skill-code-copy card-copy" aria-label="Copy" data-copy-target="#yml-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button></div>
+              <p class="skill-section-note">Both permissions matter: <code>pull-requests: write</code> lets the Action post its score comment.</p>
+
+              <h2 class="skill-section-title gs-sub">Fix pull requests from CI</h2>
+              <div class="skill-code-row">
+                <code id="cmd-fix-workflow">npx transitions-agent init-ci --fix</code>
+                <button type="button" class="skill-code-copy card-copy" aria-label="Copy" data-copy-target="#cmd-fix-workflow"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
               </div>
-              <div class="skill-command">
-                <span class="skill-command-label">Fix from CI</span>
-                <div class="skill-code-row">
-                  <code id="agent-doc-fix-workflow">curl -fsSL --create-dirs -o .github/workflows/transitions-fix.yml https://raw.githubusercontent.com/Jakubantalik/transitions.dev/main/agent/templates/transitions-fix.yml</code>
-                  <button type="button" class="skill-code-copy card-copy" aria-label="Copy fix workflow install command" data-copy-target="#agent-doc-fix-workflow">
-                    <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                  </button>
-                </div>
-                <p class="skill-section-note">Business plan, and it needs the license secret from Setup. Run the workflow from the Actions tab: fixes go through the hosted service and land as a pull request with the diffs, which your team reviews and merges.</p>
+              <p class="skill-section-note">Also writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a>. Add one repo secret - <code>TRANSITIONS_AGENT_LICENSE</code>, the key from your <a href="/pro.html">Business plan</a> email - then run "Transitions Agent fix" from the Actions tab: a fix pull request opens with the diffs for your team to review. Our hosted service does the fixing; no AI key ever enters your repo. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</p>
+
+              <h2 class="skill-section-title gs-sub">What happens on a pull request</h2>
+              <ul class="gs-bullets">
+                <li>One sticky comment per pull request with the motion score and a findings table - it updates in place on every push, never stacking.</li>
+                <li>Findings name the file, line, and the transitions.dev recipe that fixes them.</li>
+                <li>With <code>min-score</code> set, the check fails when the score drops below it; otherwise it always passes and just informs.</li>
+              </ul>
+
+              <h2 class="skill-section-title gs-sub">Troubleshooting</h2>
+              <div class="gs-qa">
+                <p class="gs-q">No comment showed up.</p>
+                <p class="skill-section-note">The workflow needs <code>pull-requests: write</code> under <code>permissions:</code> (the template includes it). On forks, GitHub restricts write tokens - the score still appears in the job log.</p>
+                <p class="gs-q">The score looks wrong or scans 0 files.</p>
+                <p class="skill-section-note">The Action scans the repository root. In a monorepo, point it at your app with the <code>working-directory</code> input.</p>
+                <p class="gs-q">The check is blocking merges before the team is ready.</p>
+                <p class="skill-section-note">Set <code>min-score: "0"</code> - the comment keeps reporting, nothing blocks.</p>
+                <p class="gs-q">Fixes pushed a branch but no pull request appeared.</p>
+                <p class="skill-section-note">GitHub blocks workflows from opening pull requests by default. Repo <strong>Settings &gt; Actions &gt; General &gt; Workflow permissions</strong>: check "Allow GitHub Actions to create and approve pull requests", then re-run.</p>
+                <p class="gs-q">The fix workflow fails with a license error.</p>
+                <p class="skill-section-note">The secret must be named exactly <code>TRANSITIONS_AGENT_LICENSE</code>, and revamp mode needs a Business key - free keys cover polish.</p>
               </div>
             </div>
           </article>
@@ -14056,6 +14244,63 @@ export function Surface({ open, children }) {
           });
         })();
       })();
+
+      /* ── Get started tabs (transitions-dev 16) ─────────────────
+         The pill is measured from the active tab; each click writes
+         the new offset and width so CSS tweens the move. Panels toggle
+         [hidden]. Arrow keys move between tabs. */
+      (function () {
+        var bar = document.querySelector(".gs-tabs");
+        if (!bar) return;
+        var pill = bar.querySelector(".t-tabs-pill");
+        var tabs = Array.prototype.slice.call(bar.querySelectorAll(".t-tab"));
+        function moveTo(tab, animate) {
+          if (!animate) {
+            var prev = pill.style.transition;
+            pill.style.transition = "none";
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+            void pill.offsetWidth;
+            pill.style.transition = prev;
+          } else {
+            pill.style.transform = "translateX(" + tab.offsetLeft + "px)";
+            pill.style.width = tab.offsetWidth + "px";
+          }
+        }
+        function select(tab, animate) {
+          tabs.forEach(function (t) {
+            var on = t === tab;
+            t.setAttribute("aria-selected", on ? "true" : "false");
+            t.setAttribute("tabindex", on ? "0" : "-1");
+            var panel = document.getElementById(t.getAttribute("aria-controls"));
+            if (panel) panel.hidden = !on;
+          });
+          moveTo(tab, animate);
+        }
+        function active() {
+          return tabs.filter(function (t) { return t.getAttribute("aria-selected") === "true"; })[0] || tabs[0];
+        }
+        tabs.forEach(function (tab, i) {
+          tab.addEventListener("click", function () { select(tab, true); });
+          tab.addEventListener("keydown", function (e) {
+            var next = e.key === "ArrowRight" ? tabs[(i + 1) % tabs.length]
+                     : e.key === "ArrowLeft"  ? tabs[(i - 1 + tabs.length) % tabs.length]
+                     : null;
+            if (!next) return;
+            e.preventDefault();
+            select(next, true);
+            next.focus();
+          });
+        });
+        requestAnimationFrame(function () { moveTo(active(), false); });
+        /* The doc starts hidden, so measure again whenever the bar gets a size. */
+        if (window.ResizeObserver) new ResizeObserver(function () { moveTo(active(), false); }).observe(bar);
+        window.addEventListener("resize", function () { moveTo(active(), false); });
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(function () { moveTo(active(), false); });
+        }
+      })();
+
 
       // ── Prototype 6 message cycle ────────────────────────────
       var p6Messages = ["Transaction processing...", "Transaction completed"];
