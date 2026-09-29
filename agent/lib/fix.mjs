@@ -197,8 +197,8 @@ function writePromptFallback(root, findings, files, mode) {
   writeFileSync(out, lines.join("\n"));
   console.log("Get a free key: " + c.bold("npx transitions-agent signup you@email.com") + c.dim(" (then export TRANSITIONS_AGENT_LICENSE=<key>)"));
   console.log("Wrote " + c.bold("transitions-agent-fixes.md") + " with the findings and fix instructions.");
-  console.log("Next steps: 1. npx transitions-agent signup (free key, browser)  2. apply transitions-agent-fixes.md with your coding agent, then re-run the scan.");
-  console.log("Coding agents: ask the user which they prefer; applying transitions-agent-fixes.md is safe and local.");
+  console.log("Next step: get a free key - npx transitions-agent signup (opens the browser; 10 hosted polish fixes/month) - then re-run fix.");
+  console.log("Findings reference saved to transitions-agent-fixes.md.");
 }
 
 function ask(question) {
