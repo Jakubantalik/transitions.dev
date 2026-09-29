@@ -5967,6 +5967,58 @@
     .tl-set-back-ic { display: flex; flex: none; color: #696969; transform: scaleX(-1); }
     html[data-theme="dark"] .tl-set-back-ic { color: #8b8b8b; }
     .tl-set-back-title { flex: 1; min-width: 0; }
+    /* ⋮ menu Feedback page (same as libraries.dev): the menu widens for the
+       form while the slide carries the height. Logic lives in pro-client.js. */
+    .tl-set-slide .t-page[data-page-id="4"] { --t-page-from-x: var(--page-slide-distance); }
+    .tl-set-slide[data-page="4"] .t-page[data-page-id="4"] {
+      opacity: 1; pointer-events: auto; transform: translateX(0); filter: blur(0); }
+    .tl-menu.t-dropdown.is-open {
+      transition: transform var(--dropdown-open-dur) var(--dropdown-ease), opacity var(--dropdown-open-dur) var(--dropdown-ease),
+        width var(--p4-dur, 300ms) var(--p4-ease, cubic-bezier(0.22, 1, 0.36, 1)); }
+    .tl-menu.is-feedback { width: 320px; }
+    .pm-feedback { display: flex; flex-direction: column; gap: 8px; padding: 2px; }
+    .pm-feedback-input, .pm-feedback-email {
+      width: 100%; box-sizing: border-box; display: block; padding: 0 12px;
+      font-family: var(--font-sans); font-size: 13px; line-height: 1.4; color: #0f0f0f;
+      background: #fff; border: 1px solid #dcdcdc; border-radius: 12px; outline: none;
+      transition: border-color 120ms ease; }
+    .pm-feedback-input { min-height: 130px; padding-top: 10px; padding-bottom: 10px; resize: none; }
+    .pm-feedback-email { height: 40px; }
+    .pm-feedback-input::placeholder, .pm-feedback-email::placeholder { color: #828282; }
+    .pm-feedback-input:focus, .pm-feedback-email:focus { border-color: #585858; }
+    .pm-feedback-input.is-error, .pm-feedback-email.is-error { border-color: #e23014; }
+    html[data-theme="dark"] .pm-feedback-input, html[data-theme="dark"] .pm-feedback-email { background: #151517; color: #f2f2f2; border-color: #3a3a3d; }
+    html[data-theme="dark"] .pm-feedback-input:focus, html[data-theme="dark"] .pm-feedback-email:focus { border-color: #a5a5a5; }
+    html[data-theme="dark"] .pm-feedback-input.is-error, html[data-theme="dark"] .pm-feedback-email.is-error { border-color: #e23014; }
+    .pm-feedback-btn {
+      width: 100%; height: 40px; border: 0; border-radius: 26px; background: #17181c; color: #fff;
+      font-family: var(--font-sans); font-size: 13px; line-height: 13px; font-weight: 500; cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), scale 120ms cubic-bezier(0.22, 1, 0.36, 1), opacity 120ms ease; }
+    .pm-feedback-btn:hover { background: #2a2a2a; }
+    .pm-feedback-btn:not([disabled]):active { scale: 0.96; background: #000; }
+    .pm-feedback-btn[disabled] { opacity: 0.6; cursor: default; }
+    .pm-feedback-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+    html[data-theme="dark"] .pm-feedback-btn { background: #f2f2f2; color: #111; }
+    html[data-theme="dark"] .pm-feedback-btn:hover { background: #e8e8e8; }
+    html[data-theme="dark"] .pm-feedback-btn:not([disabled]):active { background: #d8d8d8; }
+    .pm-feedback-note { margin: -2px 0 0; padding: 0 2px; font-size: 13px; line-height: 1.4; color: #4d4d4d; }
+    .pm-feedback-note[hidden] { display: none; }
+    .pm-feedback-note[data-kind="ok"] { color: #16a34a; }
+    .pm-feedback-note[data-kind="err"] { color: #d62b11; }
+    .pm-feedback-note a { color: inherit; font-weight: 500; }
+    .pm-feedback-input.is-shaking, .pm-feedback-email.is-shaking { animation: pm-shake 280ms linear; }
+    @keyframes pm-shake {
+      0% { transform: translateX(0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      28.57% { transform: translateX(6px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      57.14% { transform: translateX(-6px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      78.57% { transform: translateX(4px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      100% { transform: translateX(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tl-menu.t-dropdown.is-open { transition: none !important; }
+      .pm-feedback-input, .pm-feedback-email { animation: none !important; }
+    }
 
     /* Command palette (⌘K) */
     .cmdk-overlay {
@@ -6134,9 +6186,28 @@
                       <span class="tl-menu-chevr" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
                     </span>
                   </div>
+                  <div class="tl-menu-item" id="pm-feedback" role="menuitem" tabindex="0">
+                    <span class="tl-menu-item-label">Feedback</span>
+                    <span class="tl-menu-trail">
+                      <span class="tl-menu-chevr" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
+                    </span>
+                  </div>
                   <a class="tl-menu-item" id="pm-support" href="mailto:jakubja@gmail.com" role="menuitem">
                     <span class="tl-menu-item-label">Support</span>
                   </a>
+                </div>
+                <div class="t-page" data-page-id="4">
+                  <button type="button" class="tl-set-back" id="pm-fb-back">
+                    <span class="tl-set-back-ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
+                    <span class="tl-set-back-title">Feedback</span>
+                  </button>
+                  <div class="tl-menu-divider"></div>
+                  <form class="pm-feedback" id="pm-feedback-form" novalidate>
+                    <textarea class="pm-feedback-input" rows="6" maxlength="2000" placeholder="Share your feedback, idea or comment" aria-label="Your feedback"></textarea>
+                    <input type="email" class="pm-feedback-email" maxlength="200" placeholder="Email (optional)" aria-label="Your email (optional)" autocomplete="email" spellcheck="false" />
+                    <p class="pm-feedback-note" role="status" hidden></p>
+                    <button type="submit" class="pm-feedback-btn">Send feedback</button>
+                  </form>
                 </div>
                 <div class="t-page" data-page-id="3">
                   <button type="button" class="tl-set-back" id="pm-back">
@@ -15607,7 +15678,7 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: mounts Pro badges on data-pro cards, reads auth state. -->
-  <script src="assets/pro-client.js?v=41" defer></script>
+  <script src="assets/pro-client.js?v=42" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
 </body>
 </html>

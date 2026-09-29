@@ -967,6 +967,127 @@
     document.head.appendChild(style);
   }
 
+  // ⋮ menu Feedback page (same as libraries.dev). The page scripts own the
+  // menu's open/close and the Appearance page; this adds page 4, a note
+  // form behind a back button. Watching the slide's data-page keeps the
+  // menu's width and the form's note in step however the page changes
+  // (back button, menu close, Appearance).
+  function wireFeedback() {
+    var slide = document.getElementById("pm-slide");
+    var menu = document.getElementById("more-menu");
+    var item = document.getElementById("pm-feedback");
+    var back = document.getElementById("pm-fb-back");
+    var form = document.getElementById("pm-feedback-form");
+    if (!slide || !menu || !item || !form) return;
+    var input = form.querySelector(".pm-feedback-input");
+    var emailEl = form.querySelector(".pm-feedback-email");
+    var note = form.querySelector(".pm-feedback-note");
+    var btn = form.querySelector(".pm-feedback-btn");
+    var sending = false;
+    var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    function syncHeight() {
+      var active = slide.querySelector('.t-page[data-page-id="' + slide.getAttribute("data-page") + '"]');
+      if (active) slide.style.height = active.offsetHeight + "px";
+    }
+    function setPage(page) { slide.setAttribute("data-page", page); syncHeight(); }
+    function setNote(kind, html) {
+      if (!html) { note.hidden = true; note.removeAttribute("data-kind"); note.innerHTML = ""; }
+      else { note.hidden = false; note.setAttribute("data-kind", kind); note.innerHTML = html; }
+      syncHeight();
+    }
+    new MutationObserver(function () {
+      var onForm = slide.getAttribute("data-page") === "4";
+      menu.classList.toggle("is-feedback", onForm);
+      // Leaving the form keeps an unsent draft but drops any note or error.
+      if (!onForm) {
+        input.classList.remove("is-error");
+        if (emailEl) emailEl.classList.remove("is-error");
+        if (!note.hidden) setNote(null, "");
+      }
+    }).observe(slide, { attributes: true, attributeFilter: ["data-page"] });
+
+    function open() {
+      setPage("4");
+      // A signed-in visitor's address is known, so a reply can reach them.
+      if (emailEl && !emailEl.value && state.email) emailEl.value = state.email;
+      input.focus({ preventScroll: true });
+    }
+    function shake(el) {
+      el.classList.add("is-error");
+      el.classList.remove("is-shaking");
+      void el.offsetWidth;
+      el.classList.add("is-shaking");
+      el.addEventListener("animationend", function () { el.classList.remove("is-shaking"); }, { once: true });
+    }
+    function send() {
+      if (sending) return;
+      var message = input.value.trim();
+      if (!message) {
+        shake(input);
+        setNote("err", "Write a few words first.");
+        input.focus();
+        return;
+      }
+      var email = emailEl ? emailEl.value.trim() : "";
+      if (email && !EMAIL_RE.test(email)) {
+        shake(emailEl);
+        setNote("err", "That email doesn't look right.");
+        emailEl.focus();
+        return;
+      }
+      sending = true;
+      btn.disabled = true;
+      btn.textContent = "Sending…";
+      setNote(null, "");
+      api("/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message, page: location.href, email: email || undefined })
+      })
+        .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+        .then(function () {
+          input.value = "";
+          setNote("ok", "Sent. Thank you!");
+          setTimeout(function () {
+            var moreBtn = document.getElementById("more-btn");
+            if (menu.classList.contains("is-open") && moreBtn) moreBtn.click();
+          }, 1400);
+        })
+        .catch(function () {
+          var subject = encodeURIComponent("Feedback on Transitions.dev");
+          var body = encodeURIComponent(message + "\n\nFrom " + location.href);
+          setNote("err", 'Could not send. <a href="mailto:jakubja@gmail.com?subject=' + subject + "&body=" + body + '">Email it instead</a>.');
+        })
+        .then(function () {
+          sending = false;
+          btn.disabled = false;
+          btn.textContent = "Send feedback";
+        });
+    }
+
+    item.addEventListener("click", function (e) { e.preventDefault(); open(); });
+    item.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
+    });
+    if (back) back.addEventListener("click", function () { setPage("1"); item.focus({ preventScroll: true }); });
+    form.addEventListener("submit", function (e) { e.preventDefault(); send(); });
+    [input, emailEl].forEach(function (el) {
+      if (!el) return;
+      el.addEventListener("input", function () {
+        el.classList.remove("is-error");
+        if (note.getAttribute("data-kind") === "err") setNote(null, "");
+      });
+    });
+    if (emailEl) emailEl.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); send(); }
+    });
+    // ⌘/Ctrl+Enter sends; Escape bubbles to the page's menu handler.
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); }
+    });
+  }
+
   function wire() {
     document.querySelectorAll(".pro-price-cta[data-plan]").forEach(function (cta) {
       cta.addEventListener("click", function (e) {
@@ -1034,6 +1155,7 @@
     }
     mountProBadges();
     wireProCopy();
+    wireFeedback();
     refreshMe();
     refreshGeo();
   }
