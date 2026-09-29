@@ -59,16 +59,17 @@
     }
     html[data-theme="dark"] .code { border-color: rgba(255, 255, 255, .08); background: rgba(255, 255, 255, .06); color: #ededed; }
     form { display: flex; flex-direction: column; gap: 12px; }
-    input[type="email"] {
+    form[hidden] { display: none; }
+    input[type="email"], input[type="text"] {
       width: 100%; height: 40px; padding: 4px 4px 4px 12px;
       font-family: inherit; font-size: 13px; line-height: 1.4; color: #0f0f0f;
       background: #fff; border: 1px solid #dcdcdc; border-radius: 60px; outline: none;
       transition: border-color 120ms ease;
     }
-    input[type="email"]::placeholder { color: #828282; }
-    input[type="email"]:focus { border: 1.5px solid #585858; padding-left: 11.5px; }
-    html[data-theme="dark"] input[type="email"] { background: #151517; color: #f2f2f2; border-color: #3a3a3d; }
-    html[data-theme="dark"] input[type="email"]:focus { border-color: #a5a5a5; }
+    input[type="email"]::placeholder, input[type="text"]::placeholder { color: #828282; }
+    input[type="email"]:focus, input[type="text"]:focus { border: 1.5px solid #585858; padding-left: 11.5px; }
+    html[data-theme="dark"] input[type="email"], html[data-theme="dark"] input[type="text"] { background: #151517; color: #f2f2f2; border-color: #3a3a3d; }
+    html[data-theme="dark"] input[type="email"]:focus, html[data-theme="dark"] input[type="text"]:focus { border-color: #a5a5a5; }
     button {
       width: 100%; height: 40px; border: 0; border-radius: 26px;
       background: #17181c; color: #fff;
@@ -97,6 +98,10 @@
     <form id="form" novalidate>
       <input type="email" id="email" placeholder="you@example.com" required autocomplete="email" aria-label="Email address" autofocus />
       <button type="submit" id="submit">Get my free key</button>
+    </form>
+    <form id="otp-form" novalidate hidden>
+      <input type="text" id="otp" placeholder="XXXX-XXXX" autocomplete="one-time-code" spellcheck="false" style="text-transform:uppercase" aria-label="One-time code" />
+      <button type="submit" id="otp-submit">Verify and connect</button>
     </form>
     <p class="msg" id="msg" role="status"></p>
     <p class="foot">Need revamp and 200 fixes a month? <a href="/pro.html">See Business</a></p>
@@ -127,11 +132,16 @@
           body: JSON.stringify(code ? { email: email, code: code } : { email: email }),
         }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
           .then(function (res) {
-            if (res.ok) {
+            if (res.ok && res.d.verify) {
+              // Terminal flow: the emailed code proves this address.
+              form.hidden = true;
+              otpForm.hidden = false;
+              msg.removeAttribute("data-kind");
+              msg.textContent = "We sent a code to " + email + ". Enter it to connect your terminal.";
+              document.getElementById("otp").focus();
+            } else if (res.ok) {
               msg.setAttribute("data-kind", "ok");
-              msg.textContent = code
-                ? "Done. Your terminal picks the key up in a few seconds - you can close this tab. A copy is in your inbox."
-                : "Done. Check your inbox for the license key.";
+              msg.textContent = "Done. Check your inbox for the license key.";
             } else {
               btn.disabled = false;
               msg.setAttribute("data-kind", "err");
@@ -140,6 +150,41 @@
           })
           .catch(function () {
             btn.disabled = false;
+            msg.setAttribute("data-kind", "err");
+            msg.textContent = "Could not reach the server. Try again.";
+          });
+      });
+
+      var otpForm = document.getElementById("otp-form");
+      var otpBtn = document.getElementById("otp-submit");
+      otpForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var otp = document.getElementById("otp").value.trim();
+        if (!otp) return;
+        otpBtn.disabled = true;
+        msg.removeAttribute("data-kind");
+        msg.textContent = "Verifying...";
+        fetch(API + "/agent/signup/verify", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ code: code, otp: otp }),
+        }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+            if (res.ok) {
+              otpForm.hidden = true;
+              msg.setAttribute("data-kind", "ok");
+              msg.textContent = "Done. Your terminal picks the key up in a few seconds - you can close this tab.";
+            } else {
+              otpBtn.disabled = false;
+              msg.setAttribute("data-kind", "err");
+              msg.textContent = res.d.error === "wrong_code"
+                ? "That code didn't match - " + res.d.remaining + " tries left."
+                : res.d.error === "too_many_attempts" ? "Too many attempts. Run signup again in your terminal."
+                : "Session expired. Run signup again in your terminal.";
+            }
+          })
+          .catch(function () {
+            otpBtn.disabled = false;
             msg.setAttribute("data-kind", "err");
             msg.textContent = "Could not reach the server. Try again.";
           });
