@@ -672,10 +672,24 @@ function compareTunables(inst, props) {
     component: {
       recipe: r.slug, name: label, tier: r.tier, url: recipeUrl(r), path: inst.path, line: inst.line, selector: inst.token,
       status: offs.length ? "off" : "matches", usesRecipe: true, issues: [], offScale: offs,
-      motion: { open: null, close: null, ease: null, scale: null, exit: true, layout: [] },
+      motion: tunedMotion(r, props),
       recipeSpec: r.spec ? { open: r.spec.open, close: r.spec.close, scale: r.spec.preScale, ease: r.spec.ease } : null,
     },
   };
+}
+
+// The recipe's timing as this project sets it (tunables, falling back to defaults).
+function tunedMotion(r, props) {
+  const sv = r.specVars || {};
+  const defaults = RECIPE_VARS.get(r.slug) || {};
+  const val = (name) => {
+    if (!name) return null;
+    const cur = props.get(name);
+    return cur ? resolveVars(cur.value, props).value.trim() : defaults[name] ?? null;
+  };
+  const ms = (v) => { const m = v && v.match(/^(-?\d*\.?\d+)(ms|s)$/); return m ? Math.round(m[2] === "s" ? parseFloat(m[1]) * 1000 : parseFloat(m[1])) : null; };
+  const num = (v) => (v != null && /^-?\d*\.?\d+$/.test(v) ? parseFloat(v) : null);
+  return { open: ms(val(sv.open)), close: ms(val(sv.close)), ease: val(sv.ease), scale: num(val(sv.preScale)), exit: true, layout: [] };
 }
 
 function usageOfVar(r, name) {
