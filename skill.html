@@ -3584,6 +3584,39 @@
        don't look like a tight rhythm of similar rows. */
     #commands .skill-section-rows,
     #installation .skill-section-rows { gap: 16px; }
+    /* Section copy matches the agent page's Get started (which follows
+       the docs typography): 14/22 body in #3f3f3f, 12/18 code chips with
+       a hairline, text-coloured links that underline on hover. */
+    .skill-content .skill-section-note {
+      font-size: 14px;
+      line-height: 22px;
+      color: #3f3f3f;
+    }
+    html[data-theme="dark"] .skill-content .skill-section-note { color: #cfcfcf; }
+    .skill-content .gs-step-label { color: #0d0d0d; }
+    html[data-theme="dark"] .skill-content .gs-step-label { color: #ededed; }
+    .skill-content .skill-section-note code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+      padding: 1px 4px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.04);
+      color: #0d0d0d;
+    }
+    html[data-theme="dark"] .skill-content .skill-section-note code {
+      border-color: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
+      color: #ededed;
+    }
+    .skill-content .skill-section-note a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    .skill-content .skill-section-note a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
     /* Labelled steps, same as the agent page's Get started. */
     .get-started-grid {
       display: grid;
