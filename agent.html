@@ -4940,6 +4940,8 @@ jobs:
             <p class="skill-section-note">The Action scans the repository root. In a monorepo, point it at your app with the <code>working-directory</code> input.</p>
             <p class="gs-q">The check is blocking merges before the team is ready.</p>
             <p class="skill-section-note">Set <code>min-score: "0"</code> - the comment keeps reporting, nothing blocks.</p>
+            <p class="gs-q">Fixes pushed a branch but no pull request appeared.</p>
+            <p class="skill-section-note">GitHub blocks workflows from opening pull requests by default. Repo <strong>Settings &gt; Actions &gt; General &gt; Workflow permissions</strong>: check "Allow GitHub Actions to create and approve pull requests", then re-run.</p>
             <p class="gs-q">The fix workflow fails with a license error.</p>
             <p class="skill-section-note">The secret must be named exactly <code>TRANSITIONS_AGENT_LICENSE</code>, and revamp mode needs a Business key - free keys cover polish.</p>
           </div>
