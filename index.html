@@ -1053,6 +1053,7 @@
       transform-origin: center;
       will-change: transform;
     }
+    .brand:hover { transform: scale(1.02); }
     .brand-mark {
       transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
       transform-origin: center;
@@ -1498,6 +1499,8 @@
       gap: 16px;
     }
     .home-section-head--agent { margin-bottom: 32px; }
+    /* One line is ~828px; 460px lets balance settle on two lines instead of three. */
+    .home-section-head--agent .home-section-title { max-width: 460px; }
     .home-section-title {
       font-family: "Saans", var(--font-sans);
       font-size: 22px;
@@ -1507,7 +1510,9 @@
       color: var(--text);
       max-width: 400px;
       margin: 0;
-      text-wrap: pretty;
+      /* balance, not pretty: pretty only guards against a one-word last
+         line, so a two-word tail ("pull requests.") still dangled. */
+      text-wrap: balance;
     }
     .home-section-title .dim { color: #6a6a6a; }
     html[data-theme="dark"] .home-section-title .dim { color: var(--text-muted); }

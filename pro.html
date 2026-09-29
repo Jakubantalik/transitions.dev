@@ -1009,16 +1009,14 @@
       line-height: 24.2px;
       color: var(--text-muted);
     }
-    /* House inline-link style (same as the homepage): darker than the body
-       copy, underlined at rest with a softened line that solidifies on hover. */
+    /* Hero links: darker than the body copy, no underline at rest; the
+       underline only appears on hover. */
     .subtitle a {
       color: var(--text);
-      text-decoration: underline;
+      text-decoration: none;
       text-underline-offset: 2px;
-      text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
-      transition: text-decoration-color 180ms ease;
     }
-    .subtitle a:hover { text-decoration-color: currentColor; }
+    .subtitle a:hover { text-decoration: underline; }
 
     /* ─── Cards grid ──────────────────────────────────────────── */
     .cards {
@@ -3676,6 +3674,7 @@
       transform-origin: center;
       will-change: transform;
     }
+    .brand:hover { transform: scale(1.02); }
     .brand-mark {
       transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
       transform-origin: center;
@@ -5524,6 +5523,7 @@
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Core transitions library with copy-ready snippets</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Free Transitions skill for Claude Code, Cursor and Codex</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Agent: unlimited motion scans, 10 hosted polish fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-1">i</button><span class="cmp-tip" id="tip-free-agent-1" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Agent for personal use</span></li>
           </ul>
           <a class="pro-price-cta" href="#" data-plan="free">Start free</a>
         </div>
@@ -5806,6 +5806,7 @@ description: Production-ready CSS
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
             <p>Transitions Pro is a collection of the most essential UI transitions for web apps: 36+ polished, production-ready recipes, each with React and TypeScript variants. Copy and paste the CSS into any project, or let your AI agent apply them through the Pro skill. It also unlocks the Refine tool wired to the Pro recipes.</p>
+            <p>For teams there is <strong>Business</strong>: $59/mo for 5 Pro seats in one organization, plus the Full Transitions Agent. It scans and fixes your motion with 200 hosted fixes a month, in both polish and revamp modes, and can gate pull requests on GitHub.</p>
           </div></div>
         </div>
 
@@ -5816,16 +5817,6 @@ description: Production-ready CSS
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
             <p>The free site showcases the core transitions with copy-ready snippets, and the Free Agent scans any codebase for missing or janky motion (<code>npx transitions-agent</code>). Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-dev add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan. Business adds the Full Agent on top: hosted AI fixes as pull requests, grounded in the Pro recipe library.</p>
-          </div></div>
-        </div>
-
-        <div class="t-acc" data-open="false">
-          <button class="t-acc-head" type="button" aria-expanded="false">
-            <span>Do I need an AI agent to use it?</span>
-            <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
-          </button>
-          <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p>No. Every transition ships as self-contained, copy-ready CSS that works in any project. The Pro skill is an optional accelerator for agent-driven workflows. It plugs into Cursor, Claude Code, Codex and similar tools.</p>
           </div></div>
         </div>
 
