@@ -355,6 +355,9 @@
       mobilePro.textContent = mobileEntitled ? "Account" : "Get Pro";
       mobilePro.setAttribute("href", mobileEntitled ? "account.html" : "/pro.html");
       mobilePro.setAttribute("data-state", mobileEntitled ? "account" : "get-pro");
+      // Entitled: the avatar and the Sign in CTA already lead to the account.
+      var mobileProItem = mobilePro.closest("li") || mobilePro;
+      mobileProItem.style.display = mobileEntitled ? "none" : "";
     }
     // Footer "Sign in" link (present on every page): label follows auth state.
     var footerLink = document.getElementById("footer-signin");

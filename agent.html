@@ -1053,6 +1053,17 @@
       }
     }
 
+    /* Phones: the skill code blocks' copy button sits near the right
+       edge, so a centered tooltip pokes past the viewport and adds a
+       horizontal scroll. Anchor it to the button's right edge instead. */
+    @media (max-width: 640px) {
+      .skill-section .card-copy-tooltip {
+        left: auto;
+        right: 0;
+        transform: none;
+      }
+    }
+
     /* ─── Animate button (centered inside stage bottom) ──────── */
     /* Same reset as prototypes `.btn`: no native button chrome. */
     .btn-animate {
@@ -5740,7 +5751,7 @@ jobs:
       });
     })();
   </script>
-  <script src="assets/pro-client.js?v=40" defer></script>
+  <script src="assets/pro-client.js?v=41" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
 </body>
 </html>
