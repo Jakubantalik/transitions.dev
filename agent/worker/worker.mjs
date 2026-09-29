@@ -154,7 +154,8 @@ async function proposeFixes(env, findings, files, mode, recipes, model, componen
     ...BASE_RULES,
     "You receive source files and a list of motion findings. Return the corrected files.",
     ...MODE_RULES[mode] || MODE_RULES.polish,
-    'Respond with ONLY a JSON object: {"summary": "<short human summary>",',
+    'Respond with ONLY a JSON object: {"summary": "<at most three short sentences for the engineer',
+    'reviewing it: which components changed and how; no jargon like rAF or keyed>",',
     '"files": [{"path": "...", "content": "<full corrected file>"}]}.',
     "Include only files you actually changed.",
   ].join(" ");
