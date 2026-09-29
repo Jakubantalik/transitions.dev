@@ -215,9 +215,18 @@ async function browserSignup() {
     if (poll.status === 202) continue;
     const data = await poll.json().catch(() => ({}));
     if (data.status === "ready" && data.license) {
-      saveCreds({ license: data.license, plan: data.plan || "free" });
-      console.log("\u2713 License key received and saved to " + CREDS_PATH);
-      console.log("You are set: npx transitions-agent fix");
+      try {
+        saveCreds({ license: data.license, plan: data.plan || "free" });
+        console.log("\u2713 License key received and saved to " + CREDS_PATH);
+        console.log("You are set: npx transitions-agent fix");
+      } catch {
+        // Sandboxed agents (Codex) cannot write to the home folder.
+        console.log("\u2713 License key received: " + data.license);
+        console.log("Could not save it here (sandboxed). Pass it on each fix:");
+        console.log("  npx transitions-agent fix --yes --license " + data.license);
+        console.log("A copy is in your email; for a permanent setup run in your own terminal:");
+        console.log("  export TRANSITIONS_AGENT_LICENSE=" + data.license);
+      }
       return true;
     }
     if (data.status === "expired") break;
