@@ -131,16 +131,23 @@ async function initCi() {
   };
   const OK = "\u2713", TODO = "\u2022";
   const todo = [];
+  let needsCommit = false, offerRevampDefault = false;
 
   // 1. Workflow files. The fix workflow only runs when triggered from the
   // Actions tab, so writing it by default costs nothing.
   const wfDir = join(root, ".github", "workflows");
   mkdirSync(wfDir, { recursive: true });
   const minScore = Number.isFinite(flags.minScore) ? String(flags.minScore) : null;
+  const fixMode = flags.mode === "revamp" || flags.mode === "polish" ? flags.mode : null;
+  if (flags.mode && !fixMode) {
+    console.error(`Unknown mode "${flags.mode}". Use --mode polish or --mode revamp.`);
+    process.exit(1);
+  }
   const files = [
     { name: "transitions-agent.yml", what: "motion score on every pull request",
       transform: (b) => b.replace('min-score: "0"', 'min-score: "' + (minScore || "0") + '"') },
-    ...(flags["score-only"] ? [] : [{ name: "transitions-fix.yml", what: "fix pull requests from the Actions tab" }]),
+    ...(flags["score-only"] ? [] : [{ name: "transitions-fix.yml", what: "fix pull requests from the Actions tab",
+      transform: (b) => fixMode ? b.replace("default: polish", "default: " + fixMode) : b }]),
   ];
   console.log("Transitions Agent CI setup");
   console.log("");
@@ -163,6 +170,14 @@ async function initCi() {
         continue;
       }
     }
+    if (fixMode && f.name === "transitions-fix.yml" && /default: (polish|revamp)/.test(current)) {
+      const updated = current.replace(/default: (polish|revamp)/, "default: " + fixMode);
+      if (updated !== current) {
+        writeFileSync(dest, updated);
+        console.log("  " + OK + " " + rel + " default fix mode set to " + fixMode);
+        continue;
+      }
+    }
     console.log("  " + OK + " " + rel + (current === body ? " already set up" : " already set up (your edits kept; --force replaces it)"));
   }
 
@@ -176,6 +191,7 @@ async function initCi() {
       : run("git", ["rev-parse", "--verify", "-q", "origin/master"]).ok ? "origin/master" : "origin/main";
     const onDefault = paths.every((p) => run("git", ["cat-file", "-e", head + ":" + p]).ok);
     if (dirty) {
+      needsCommit = true;
       console.log("  " + TODO + " Workflow files not committed yet");
       todo.push("Commit and push the workflow files. The fix workflow appears in the Actions tab once it is on " + head.replace(/^origin\//, "") + ".");
     } else if (!onDefault) {
@@ -191,7 +207,18 @@ async function initCi() {
   // 3. GitHub side, through the gh CLI when it is installed and signed in.
   const wantsFix = files.some((f) => f.name === "transitions-fix.yml");
   const repo = run("gh", ["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"]);
-  const license = flags.license || process.env.TRANSITIONS_AGENT_LICENSE || (loadCreds() || {}).license || "";
+  let license = flags.license || process.env.TRANSITIONS_AGENT_LICENSE || (loadCreds() || {}).license || "";
+  if (!license && isInteractive()) {
+    const readline = await import("node:readline");
+    const answer = await new Promise((res) => {
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      rl.question("  Fix pull requests need a license key. Sign up or sign in now (free, opens the browser)? [Y/n] ", (a) => { rl.close(); res(a.trim()); });
+    });
+    if (answer === "" || /^y/i.test(answer)) {
+      await browserSignup();
+      license = (loadCreds() || {}).license || "";
+    }
+  }
   const MANUAL_SECRET = "Add a repository secret named TRANSITIONS_AGENT_LICENSE with your license key (GitHub repo > Settings > Secrets and variables > Actions), or run: gh secret set TRANSITIONS_AGENT_LICENSE";
   const MANUAL_PRS = "Allow Actions to open pull requests: GitHub repo > Settings > Actions > General > Workflow permissions > check \"Allow GitHub Actions to create and approve pull requests\".";
   if (!repo.ok) {
@@ -264,15 +291,55 @@ async function initCi() {
     }
   }
 
+  // 4. What the key on this machine unlocks, so revamp is never a secret.
+  if (wantsFix) {
+    const key = license;
+    let info = null;
+    if (key) {
+      try {
+        const res = await fetch(api + "/v1/agent/license", { headers: { authorization: "Bearer " + key } });
+        if (res.ok) info = await res.json();
+      } catch { /* offline: skip the plan line */ }
+    }
+    const wfPath = join(wfDir, "transitions-fix.yml");
+    let defMode = "polish";
+    try { defMode = (readFileSync(wfPath, "utf8").match(/default: (polish|revamp)/) || [])[1] || "polish"; } catch { /* none */ }
+    if (info && info.modes && info.modes.includes("revamp")) {
+      console.log("  " + OK + " Your key is on the " + (info.plan === "free" ? "Free" : "Business") + " plan: polish and revamp available (" + info.used + "/" + info.quota + " fixes used this month)");
+      console.log("      Pick the mode under \"Fix mode\" when you run \"Transitions Agent fix\"; the default is " + defMode + "." +
+        (defMode !== "revamp" ? " Make revamp the default: npx transitions-agent init-ci --mode revamp" : ""));
+      offerRevampDefault = defMode !== "revamp";
+    } else if (info) {
+      console.log("  " + OK + " Your key is on the Free plan: polish mode (" + info.used + "/" + info.quota + " fixes used this month)");
+      console.log("      Revamp (full recipe rewrites, e.g. a proper dropdown or modal animation) needs Business: transitions.dev/pro.html");
+    }
+  }
+
   console.log("");
   if (!todo.length) {
     console.log("CI is fully set up. Every pull request gets a motion score; run \"Transitions Agent fix\" from the Actions tab for a fix pull request.");
   } else {
     console.log("Left to do:");
     todo.forEach((t, i) => console.log("  " + (i + 1) + ". " + t));
-    if (runByAgent() && todo.some((t) => t.includes("init-ci --yes"))) {
+  }
+
+  // Choices for whoever drives this: a person, or a coding agent relaying
+  // them. CI setup never scans or fixes; those are separate choices.
+  const options = [];
+  if (inGit && !run("git", ["remote", "get-url", "origin"]).ok) {
+    options.push("Create a private GitHub repository for this project and push it: gh repo create --private --source . --push");
+  }
+  if (!license) options.push("Sign up or sign in for a license key (free, opens the browser): npx transitions-agent signup");
+  if (todo.some((t) => t.includes("init-ci --yes"))) options.push("Finish the GitHub side (license secret, pull request permission): npx transitions-agent init-ci --yes");
+  if (offerRevampDefault) options.push("Make revamp the default fix mode: npx transitions-agent init-ci --mode revamp");
+  if (needsCommit) options.push("Commit the workflow files on a new branch and open a pull request");
+  if (options.length) {
+    console.log("");
+    console.log("Options:");
+    options.forEach((o, i) => console.log("  " + String.fromCharCode(97 + i) + ") " + o));
+    if (runByAgent()) {
       console.log("");
-      console.log("\x1b[1mQuestion for the user: finish the GitHub setup now (license secret and pull request permission)?\x1b[0m");
+      console.log("\x1b[1mQuestion for the user: which of these should I do? (CI setup does not scan or fix anything.)\x1b[0m");
     }
   }
   console.log("Docs: https://transitions.dev/agent.html#get-started");

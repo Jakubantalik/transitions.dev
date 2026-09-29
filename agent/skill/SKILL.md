@@ -7,7 +7,7 @@ description: Scan a codebase for missing, janky, or inconsistent UI motion and f
 
 You drive the `transitions-agent` CLI for the user: scan, present choices, run the choice they pick, verify. The scan is deterministic and free; fixes change files, so every fix step needs the user's go-ahead first.
 
-When the user's message is just the command (`npx transitions-agent` or a variant), that IS the request for this whole workflow: run the scan, then ALWAYS continue to the options step below - never stop at reporting the scan output.
+When the user's message is just the scan or fix command (`npx transitions-agent`, `npx transitions-agent fix`, or a variant), that IS the request for this whole workflow: run the scan, then ALWAYS continue to the options step below - never stop at reporting the scan output. `init-ci` is different: it is CI setup only (see CI setup) - never scan or fix as part of it.
 
 ## Workflow
 
@@ -35,19 +35,21 @@ When the user's message is just the command (`npx transitions-agent` or a varian
 
 ## CI setup
 
-When the user asks to add the Agent to GitHub Actions / CI (or just runs `npx transitions-agent init-ci`), that IS the request for the whole setup - never stop at "nothing changed". Run:
+When the user asks to add the Agent to GitHub Actions / CI, or their message is `npx transitions-agent init-ci` (any flags), set up CI and nothing else: do NOT run a scan or a fix. Run:
 
 ```bash
 npx transitions-agent@latest init-ci
 ```
 
-It writes both workflows (score on every pull request, fix pull requests from the Actions tab), keeps existing ones, and prints a checklist: workflow files committed and on the default branch, the `TRANSITIONS_AGENT_LICENSE` repo secret, and the repo setting that lets Actions open pull requests. Relay the checklist, then work through whatever is left:
+It writes both workflows (score on every pull request, fix pull requests from the Actions tab), keeps existing ones, checks the GitHub side, shows which fix modes the user's key allows, and ends with lettered **Options**. Relay a one-line status, then present those options exactly as printed and ask which to do. Typical options:
 
-- **GitHub side** (secret + pull request permission): ask the user, and on a yes run `npx transitions-agent@latest init-ci --yes`. It uses the gh CLI and the license key already on this machine; the key never appears in output. If there is no key, run `signup` first. If gh is missing or blocked by a sandbox, give the user the manual steps it printed.
-- **Workflow files**: offer to commit them. On the default branch, put them on a new branch and open a pull request instead of pushing to main.
-- `--min-score <n>` sets a merge gate (updates an existing workflow in place); `--score-only` skips the fix workflow.
+- **Sign up or sign in** (no key yet): `npx transitions-agent@latest signup` opens the browser; existing accounts sign in the same way. Wait for it, then re-run `init-ci`.
+- **Finish the GitHub side** (license secret + pull request permission): `npx transitions-agent@latest init-ci --yes`. The key never appears in output.
+- **Revamp as the default fix mode** (Business keys): `npx transitions-agent@latest init-ci --mode revamp`.
+- **Commit the workflow files**: on a new branch with a pull request, never straight to main.
+- **Create a GitHub repository** when the project has none.
 
-Finish when the checklist says "CI is fully set up", or tell the user exactly which step is theirs.
+Run only what the user picks. If gh is missing or blocked by a sandbox, give the user the manual steps it printed. Finish when it says "CI is fully set up", or tell the user exactly which step is theirs.
 
 ## Rules
 
