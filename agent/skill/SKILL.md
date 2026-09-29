@@ -33,6 +33,16 @@ When the user's message is just the command (`npx transitions-agent` or a varian
 
 4. **Verify**: re-run the scan and report the score change (for example "71 to 89"). If the user wants it as a pull request, use `fix --pr` (it creates a branch and opens a PR; it never touches the main branch) - only with their explicit ok.
 
+## CI setup
+
+When the user asks to add the Agent to GitHub Actions / CI, run:
+
+```bash
+npx transitions-agent@latest init-ci
+```
+
+Add `--fix` for the fix-PR workflow and `--min-score <n>` for a merge gate. Then tell the user to commit the new workflow files; for hosted fix PRs they add one repo secret, `TRANSITIONS_AGENT_LICENSE`.
+
 ## Rules
 
 - Never run `fix` without the user choosing to, and never apply motion fixes yourself instead of the service - fixing is the product.
