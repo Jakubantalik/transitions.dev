@@ -4767,12 +4767,12 @@
         <div class="gs-panel" id="gs-panel-gha" role="tabpanel" aria-labelledby="gs-tab-gha" hidden>
           <p class="skill-section-note" style="font-size: 14px; line-height: 22px;">One workflow file and every pull request gets a motion score. Fixes from CI land as pull requests your team reviews. Scanning needs no account, no secrets, no AI key.</p>
 
-          <h3 class="gs-h3">Install with the CLI</h3>
+          <h3 class="gs-h3">Install with your coding agent</h3>
           <div class="skill-code-row">
             <code id="cmd-action">npx transitions-agent init-ci</code>
             <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
           </div>
-          <p class="skill-section-note">Writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code>. Commit and push - done. Even simpler: tell your coding agent <em>"set up Transitions Agent for CI"</em> and it runs this for you.</p>
+          <p class="skill-section-note">Tell your coding agent <em>"set up Transitions Agent for CI"</em> and it runs this command for you - or run it yourself. It writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code>. Commit and push - done.</p>
 
           <h3 class="gs-h3">Or add the workflow manually</h3>
           <div class="gs-code-block"><pre id="yml-action">name: Transitions Agent
