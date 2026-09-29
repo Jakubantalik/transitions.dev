@@ -3965,10 +3965,10 @@
       position: relative;
       flex: 1 1 0;
       min-height: 120px;
-      /* The bottom bleed matches the card's 28px padding exactly, so the
-         frame runs flush off the bottom edge with no sliver of card
-         behind it. */
-      margin: 20px -40px -28px 0;
+      /* Bleed 1px past the card's 28px padding so the frame's own 1px
+         border slips under the card's clip - flush frames otherwise stack
+         two hairlines into a darker seam on the card's bottom edge. */
+      margin: 20px -42px -30px 0;
       background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 10px 0 0 0; box-shadow: var(--card-shadow); overflow: hidden;
       font-family: var(--font-sans);
