@@ -6,10 +6,13 @@ Scan your codebase for missing, janky, or inconsistent UI transitions. Get a mot
 
 ```bash
 npx transitions-agent                     # scan: motion score + findings + recipes
-npx transitions-agent signup you@x.com    # free plan: license key arrives by email
+npx transitions-agent skill               # install the agent skill (Claude Code drives the whole flow)
+npx transitions-agent signup              # free plan: sign up in the browser (or: signup you@x.com)
 npx transitions-agent fix                 # propose fixes as diffs, confirm, apply
 npx transitions-agent fix --pr            # after applying: branch, commit, push, open a PR
 ```
+
+`skill` installs a Claude Code skill (`~/.claude/skills/transitions-agent/`, `--dir` for other agents): from then on "check this app's motion" makes your agent scan, present the fix options, run your choice, and verify the score - the trusted-context version of the CLI's next-steps menu.
 
 The `fix` command sends the affected files to the hosted fix service (your license key, our AI). Without a license key it writes `transitions-agent-fixes.md`, a ready-made task for your own Claude Code, Cursor or Codex.
 
