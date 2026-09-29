@@ -161,6 +161,7 @@
         state.name = me.name || null;
         state.pro = !!(me.entitlements && me.entitlements.pro);
         state.lifetime = !!me.lifetime;
+        state.business = !!me.business;
         state.subscription = me.subscription || null;
         state.billing = !!me.billing;
         state.resolved = true;
@@ -358,11 +359,18 @@
     }
     // CTAs reflect entitlement: entitled users manage their plan instead of
     // buying. Only the paid cards switch; "Start free" stays as it is.
+    // A plain Pro subscriber is offered the upgrade: checkout reuses their
+    // Stripe customer and the webhook retires the Pro subscription, prorated.
     if (state.pro) {
-      document.querySelectorAll('.pro-price-cta[data-plan="solo"], .pro-price-cta[data-plan="team"]').forEach(function (c) {
-        c.textContent = "Manage subscription";
-        c.setAttribute("data-action", "portal");
-      });
+      var soloCta = document.querySelector('.pro-price-cta[data-plan="solo"]');
+      var teamCta = document.querySelector('.pro-price-cta[data-plan="team"]');
+      if (state.business) {
+        if (teamCta) { teamCta.textContent = "Manage subscription"; teamCta.setAttribute("data-action", "portal"); }
+        if (soloCta) { soloCta.textContent = "Included in Business"; soloCta.setAttribute("data-action", "portal"); }
+      } else {
+        if (soloCta) { soloCta.textContent = "Manage subscription"; soloCta.setAttribute("data-action", "portal"); }
+        if (teamCta) { teamCta.textContent = "Upgrade to Business"; teamCta.setAttribute("data-action", "upgrade"); }
+      }
     }
   }
 
