@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Transitions CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    // Same theme source as the rest of the site: tdev:theme, else the system.
+    (function () {
+      var pref = null;
+      try { pref = localStorage.getItem("tdev:theme"); } catch (e) {}
+      var dark = pref === "dark" || (!pref && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+  <style>
+    /* Refine tool design system (refine/demo.html), keyed to the site's
+       html[data-theme="dark"] instead of the panel's data-tl-theme. */
+    :root {
+      --c-text: #17181c; --c-text-strong: #1b1b1b; --c-text-mut: #585858; --c-text-mut2: #696969; --c-text-faint: #979797;
+      --c-sec: rgba(170, 170, 170, 0.1); --c-sec-h: rgba(170, 170, 170, 0.2); --c-sec-a: rgba(170, 170, 170, 0.28);
+      --c-ghost-h: #f7f7f7; --c-ghost-a: #f0f0f0;
+      --c-field-bg: rgba(238, 238, 239, 0.51);
+      --c-line: #ededf0; --c-line2: #f0f0f0;
+      --c-blue: #0071e2; --c-blue-bg: rgba(0, 117, 237, 0.06); --c-blue-bg-h: rgba(0, 117, 237, 0.1);
+      --ring-blue: inset 0 0 0 1px rgba(0, 101, 208, 0.1), inset 0 -1px 0 0 rgba(3, 66, 142, 0.15);
+      --drop-btn: 0 1px 3px 0 rgba(4, 41, 117, 0.08);
+      --shadow-btn: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.06), inset 0 -1px 0 0 rgba(0, 0, 0, 0.10), inset 0 0 0 1px rgba(196, 196, 196, 0.10);
+      --panel-bg: #fff; --card-bg: #fff; --page-bg: #fafafa;
+      --panel-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 6px 0 rgba(0, 0, 0, 0.05), 0 4px 42px 0 rgba(0, 0, 0, 0.06);
+      --card-ring: 0 0 0 1px rgba(0, 0, 0, 0.08);
+      --menu-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.05), 0 4px 42px rgba(0, 0, 0, 0.06);
+      --row-h: #fcfcfd; --row-sel: #fafafa;
+      --chip-bg: #fff; --chip-ring: 0 0 0 1px rgba(0, 0, 0, 0.08); --chip-fg: #696969;
+      --phase-bg: rgba(15, 15, 15, 0.05); --phase-fg: #4a4a4a;
+      --kbd-bg: #f4f4f5; --kbd-ring: inset 0 0 0 1px #ececed; --kbd-fg: #4c4c4c;
+      --err-fg: #c0392b; --err-bg: rgba(192, 57, 43, 0.06);
+      --ok-fg: #18a32f; --ok-dot: #34cc20;
+      --primary-bg: #171717; --primary-fg: #fff; --primary-h: #000;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    html[data-theme="dark"] {
+      --c-text: #fbfbfb; --c-text-strong: #fbfbfb; --c-text-mut: #979797; --c-text-mut2: #979797; --c-text-faint: #8b8b8b;
+      --c-sec: rgba(255, 255, 255, 0.06); --c-sec-h: rgba(255, 255, 255, 0.1); --c-sec-a: rgba(255, 255, 255, 0.12);
+      --c-ghost-h: rgba(255, 255, 255, 0.04); --c-ghost-a: rgba(255, 255, 255, 0.06);
+      --c-field-bg: rgba(255, 255, 255, 0.04);
+      --c-line: #262626; --c-line2: #262626;
+      --c-blue: #90dcff; --c-blue-bg: rgba(0, 128, 255, 0.17); --c-blue-bg-h: rgba(0, 128, 255, 0.25);
+      --ring-blue: inset 0 0 0 1px rgba(85, 207, 255, 0.04), inset 0 1px 0 0 rgba(85, 207, 255, 0.06);
+      --drop-btn: 0 1px 1px 0 rgba(0, 0, 0, 0.24);
+      --shadow-btn: 0 1px 1px 0 rgba(0, 0, 0, 0.24), inset 0 0 0 1px rgba(255, 255, 255, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+      --panel-bg: #1b1b1b; --card-bg: #202020; --page-bg: #141414;
+      --panel-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.05), 0 4px 42px 0 rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 1px 0 0 rgba(255, 255, 255, 0.02) inset;
+      --card-ring: 0 0 0 1px rgba(255, 255, 255, 0.06);
+      --menu-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.05), 0 4px 42px rgba(0, 0, 0, 0.24), inset 0 0 0 1px rgba(255, 255, 255, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+      --row-h: rgba(255, 255, 255, 0.02); --row-sel: rgba(255, 255, 255, 0.04);
+      --chip-bg: rgba(255, 255, 255, 0.04); --chip-ring: 0 0 0 1px rgba(255, 255, 255, 0.08); --chip-fg: #bdbdbd;
+      --phase-bg: rgba(255, 255, 255, 0.06); --phase-fg: #cfcfcf;
+      --kbd-bg: rgba(255, 255, 255, 0.06); --kbd-ring: inset 0 0 0 1px rgba(255, 255, 255, 0.1); --kbd-fg: #cfcfcf;
+      --err-fg: #ff8a7a; --err-bg: rgba(192, 57, 43, 0.14);
+      --ok-fg: #70e984;
+      --primary-bg: #fbfbfb; --primary-fg: #1b1b1b; --primary-h: #e8e8e8;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { margin: 0; }
+    body {
+      background: var(--page-bg); color: var(--c-text);
+      font-family: "Inter", system-ui, -apple-system, sans-serif; font-size: 13px; line-height: 18px;
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    }
+    button, input, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .tnum { font-variant-numeric: tabular-nums; }
+
+    /* ─── Shell ─────────────────────────────────────────────── */
+    .crm { max-width: 1440px; margin: 0 auto; padding: 24px; }
+    .crm-panel { background: var(--panel-bg); border-radius: 12px; box-shadow: var(--panel-shadow); overflow: hidden; }
+    .crm-head {
+      display: flex; align-items: center; gap: 8px; height: 52px; padding: 7.5px 7.5px 7.5px 14px;
+      border-bottom: 1px solid var(--c-line2);
+    }
+    .crm-title { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+    .crm-title h1 { margin: 0; font-size: 13px; line-height: 14px; font-weight: 500; color: var(--c-text); }
+    .crm-title p { margin: 0; font-size: 12px; line-height: 14px; color: var(--c-text-mut2); }
+
+    /* ─── Buttons ───────────────────────────────────────────── */
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: none; background: transparent;
+      border-radius: 8px; font-size: 13px; font-weight: 500; line-height: 16px; color: var(--c-text-strong);
+      transition: background 0.12s ease, scale 0.12s ease;
+    }
+    .btn-ghost:hover:not(:disabled) { background: var(--c-ghost-h); }
+    .btn-ghost:active:not(:disabled) { background: var(--c-ghost-a); scale: 0.97; }
+    .btn-icon {
+      display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: none;
+      border-radius: 60px; background: transparent; color: var(--c-text-mut2);
+      transition: background 0.14s ease, color 0.14s ease, scale 0.12s ease;
+    }
+    .btn-icon:hover { background: var(--c-sec); color: var(--c-text); }
+    .btn-icon:active { scale: 0.96; }
+    .btn-icon svg { width: 16px; height: 16px; display: block; }
+    .btn-icon.is-spinning svg { animation: spin 800ms linear infinite; }
+    @keyframes spin { to { rotate: 360deg; } }
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border: none;
+      border-radius: 8px; background: var(--primary-bg); color: var(--primary-fg); font-size: 13px; font-weight: 500;
+      transition: background 0.12s ease, scale 0.12s ease, opacity 0.12s ease;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-h); }
+    .btn-primary:active:not(:disabled) { scale: 0.96; }
+    .btn-primary:disabled { opacity: 0.6; cursor: default; }
+    .btn-accent {
+      position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px;
+      border: none; border-radius: 8px; background: transparent; color: var(--c-blue); box-shadow: var(--drop-btn);
+      font-size: 13px; font-weight: 500; line-height: 14px; text-decoration: none; transition: scale 0.12s ease;
+    }
+    .btn-accent::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--c-blue-bg); z-index: 0; transition: background 0.12s ease; }
+    .btn-accent::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: var(--ring-blue); pointer-events: none; z-index: 2; }
+    .btn-accent > * { position: relative; z-index: 1; }
+    .btn-accent:hover::before { background: var(--c-blue-bg-h); }
+    .btn-accent:active { scale: 0.96; }
+    .btn-sec {
+      display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: none; border-radius: 8px;
+      background: var(--card-bg); box-shadow: var(--shadow-btn); color: var(--c-text); font-size: 13px; font-weight: 500;
+      text-decoration: none; transition: background 0.12s ease, scale 0.12s ease;
+    }
+    .btn-sec:hover { background: var(--c-ghost-h); }
+    html[data-theme="dark"] .btn-sec { background: rgba(255, 255, 255, 0.06); }
+    html[data-theme="dark"] .btn-sec:hover { background: rgba(255, 255, 255, 0.1); }
+    .btn-sec:active { scale: 0.96; }
+    .btn-sec svg, .btn-accent svg { width: 14px; height: 14px; display: block; }
+
+    /* ─── Stats ─────────────────────────────────────────────── */
+    .stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-bottom: 1px solid var(--c-line); }
+    .stat { padding: 14px 16px; border-right: 1px solid var(--c-line); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .stat:last-child { border-right: none; }
+    .stat-label { font-size: 11px; line-height: 14px; color: var(--c-text-faint); display: flex; align-items: center; gap: 6px; }
+    .stat-value { font-size: 20px; line-height: 24px; font-weight: 500; color: var(--c-text); font-variant-numeric: tabular-nums; }
+    .stat-sub { font-size: 11px; line-height: 14px; color: var(--c-text-faint); font-variant-numeric: tabular-nums; }
+
+    /* ─── Toolbar ───────────────────────────────────────────── */
+    .toolbar { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--c-line); flex-wrap: wrap; }
+    .field {
+      display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border-radius: 8px; background: var(--c-field-bg);
+      transition: box-shadow 0.12s ease, background 0.12s ease; width: 280px; max-width: 100%;
+    }
+    .field:hover { background: var(--c-sec-h); }
+    .field:focus-within { background: var(--c-field-bg); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14); }
+    html[data-theme="dark"] .field:hover { background: rgba(255, 255, 255, 0.06); }
+    html[data-theme="dark"] .field:focus-within { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); }
+    .field svg { width: 14px; height: 14px; color: var(--c-text-faint); flex: none; }
+    .field input { flex: 1; min-width: 0; height: 100%; border: none; outline: none; background: transparent; font-size: 13px; }
+    .field input::placeholder { color: #999; }
+    html[data-theme="dark"] .field input::placeholder { color: #8b8b8b; }
+    .seg { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .seg-btn {
+      display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 6px 10px 6px 12px; border: none; border-radius: 8px;
+      background: transparent; font-size: 13px; font-weight: 500; line-height: 14px; color: #676767;
+      transition: background 0.14s ease, color 0.14s ease;
+    }
+    .seg-btn:hover:not(.is-active) { background: rgba(170, 170, 170, 0.06); color: #17181c; }
+    .seg-btn.is-active { background: rgba(170, 170, 170, 0.1); color: #17181c; }
+    html[data-theme="dark"] .seg-btn { color: #8b8b8b; }
+    html[data-theme="dark"] .seg-btn:hover:not(.is-active) { background: rgba(255, 255, 255, 0.04); color: #fbfbfb; }
+    html[data-theme="dark"] .seg-btn.is-active { background: rgba(255, 255, 255, 0.1); color: #fbfbfb; }
+    .seg-count { font-size: 11px; font-weight: 400; color: var(--c-text-faint); font-variant-numeric: tabular-nums; }
+    .toolbar-end { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+    /* ─── Body: table + inspector ───────────────────────────── */
+    .crm-body { display: flex; align-items: stretch; min-height: 480px; }
+    .table-wrap { flex: 1; min-width: 0; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      position: sticky; top: 0; z-index: 1; background: var(--panel-bg); height: 36px; padding: 0 12px; text-align: left;
+      font-size: 11px; line-height: 14px; font-weight: 400; color: var(--c-text-faint); border-bottom: 1px solid var(--c-line);
+      white-space: nowrap; user-select: none;
+    }
+    th[data-sort] { cursor: pointer; }
+    th[data-sort]:hover { color: var(--c-text); }
+    th .arrow { display: inline-block; margin-left: 4px; opacity: 0; }
+    th.is-sorted { color: var(--c-text); }
+    th.is-sorted .arrow { opacity: 1; }
+    th.num, td.num { text-align: right; }
+    td { height: 52px; padding: 0 12px; border-bottom: 1px solid var(--c-line); vertical-align: middle; white-space: nowrap; }
+    tbody tr { cursor: pointer; transition: background 0.1s ease; }
+    tbody tr:hover { background: var(--row-h); }
+    tbody tr.selected { background: var(--row-sel); }
+    .who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .avatar {
+      flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+      font-size: 11px; font-weight: 500; color: var(--c-text-mut2); background: var(--c-sec);
+    }
+    .who-text { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+    .who-name { font-size: 13px; line-height: 16px; font-weight: 500; color: var(--c-text); overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+    .who-email { font-size: 12px; line-height: 14px; color: var(--c-text-mut2); overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+    .who-name.is-empty { color: var(--c-text-faint); font-weight: 400; }
+    .company { display: flex; flex-direction: column; gap: 1px; max-width: 220px; }
+    .company-name { overflow: hidden; text-overflow: ellipsis; color: var(--c-text); }
+    .company-src { font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
+    .muted { color: var(--c-text-faint); }
+    .plan-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+    .plan-detail { font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
+
+    /* Plan badges: the Refine category pills. */
+    .plan {
+      display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 50px;
+      font-size: 12px; font-weight: 500; line-height: 16px; white-space: nowrap;
+    }
+    .plan--business { color: #a830fd; background: rgba(173, 68, 247, 0.06); box-shadow: inset 0 0 0 1px rgba(173, 68, 247, 0.18); }
+    .plan--pro { color: #3097fd; background: rgba(111, 183, 255, 0.08); box-shadow: inset 0 0 0 1px rgba(48, 151, 253, 0.18); }
+    .plan--lifetime { color: #26953b; background: rgba(38, 149, 59, 0.06); box-shadow: inset 0 0 0 1px rgba(38, 149, 59, 0.18); }
+    .plan--comp { color: #0e9aa7; background: rgba(14, 154, 167, 0.07); box-shadow: inset 0 0 0 1px rgba(14, 154, 167, 0.20); }
+    .plan--sponsor { color: #c35c00; background: rgba(247, 152, 68, 0.06); box-shadow: inset 0 0 0 1px rgba(205, 115, 36, 0.18); }
+    .plan--churned { color: var(--phase-fg); background: var(--phase-bg); }
+    .plan--free { color: var(--chip-fg); background: var(--chip-bg); box-shadow: var(--chip-ring); }
+    html[data-theme="dark"] .plan--business { color: #c471ff; background: rgba(173, 68, 247, 0.12); }
+    html[data-theme="dark"] .plan--pro { color: #50a7ff; background: rgba(48, 151, 253, 0.12); }
+    html[data-theme="dark"] .plan--lifetime { color: #64d378; background: rgba(38, 149, 59, 0.14); }
+    html[data-theme="dark"] .plan--comp { color: #3ec9d6; background: rgba(14, 154, 167, 0.14); }
+    html[data-theme="dark"] .plan--sponsor { color: #f99032; background: rgba(247, 152, 68, 0.12); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+    .tag {
+      display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: 50px; font-size: 11px; line-height: 20px;
+      background: var(--chip-bg); box-shadow: var(--chip-ring); color: var(--chip-fg);
+    }
+    .tag--warn { color: #c2410c; }
+    html[data-theme="dark"] .tag--warn { color: #ff8a7a; }
+
+    .inspector {
+      flex: 0 0 340px; border-left: 1px solid var(--c-line); padding: 16px; display: flex; flex-direction: column; gap: 14px;
+      position: sticky; top: 0; align-self: flex-start; max-height: 100vh; overflow-y: auto;
+    }
+    .inspector[hidden] { display: none; }
+    .insp-head { display: flex; align-items: flex-start; gap: 12px; }
+    .insp-head .avatar { width: 40px; height: 40px; font-size: 14px; }
+    .insp-head h2 { margin: 0; font-size: 15px; line-height: 21px; font-weight: 500; color: var(--c-text); word-break: break-word; }
+    .insp-head p { margin: 0; font-size: 12px; line-height: 16px; color: var(--c-text-mut2); word-break: break-all; }
+    .insp-head .btn-icon { margin: -6px -6px 0 auto; flex: none; }
+    .insp-divider { height: 1px; background: var(--c-line); margin: 0 -16px; }
+    .insp-section { font-size: 11px; line-height: 14px; color: var(--c-text-faint); margin-bottom: -6px; }
+    dl { margin: 0; display: grid; grid-template-columns: 110px 1fr; row-gap: 10px; column-gap: 12px; }
+    dt { font-size: 12px; line-height: 18px; color: #737373; }
+    html[data-theme="dark"] dt { color: #8b8b8b; }
+    dd { margin: 0; font-size: 13px; line-height: 18px; color: var(--c-text); min-width: 0; word-break: break-word; }
+    .insp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    code.id { font-family: var(--mono); font-size: 12px; color: var(--c-text); background: var(--kbd-bg); border-radius: 5px; padding: 1px 5px; }
+
+    /* ─── Gate / empty / error ──────────────────────────────── */
+    .gate { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .gate-card { width: 100%; max-width: 380px; background: var(--panel-bg); border-radius: 12px; box-shadow: var(--panel-shadow); padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+    .gate-card h1 { margin: 0; font-size: 15px; line-height: 21px; font-weight: 500; color: var(--c-text); }
+    .gate-card p { margin: 0; font-size: 13px; line-height: 21px; color: var(--c-text-mut2); }
+    .gate-card .field { width: 100%; height: 36px; }
+    .gate-card .btn-primary { width: 100%; }
+    .note-err { font-size: 13px; line-height: 18px; color: var(--err-fg); background: var(--err-bg); border-radius: 10px; padding: 8px 12px; }
+    .note-err[hidden] { display: none; }
+    .empty { padding: 56px 16px; text-align: center; color: var(--c-text-faint); font-size: 13px; }
+    .kbd { display: inline-flex; align-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 5px; background: var(--kbd-bg); box-shadow: var(--kbd-ring); font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--kbd-fg); }
+
+    /* Menu (token + theme). */
+    .menu-anchor { position: relative; }
+    .menu {
+      position: absolute; top: calc(100% + 6px); right: 0; width: 220px; background: var(--card-bg); border-radius: 12px; padding: 6px;
+      box-shadow: var(--menu-shadow); z-index: 20; transform-origin: top right;
+      opacity: 0; transform: scale(0.97); pointer-events: none;
+      transition: opacity 150ms var(--ease), transform 150ms var(--ease);
+    }
+    .menu.is-open { opacity: 1; transform: scale(1); pointer-events: auto; transition-duration: 250ms; }
+    .menu-item {
+      display: flex; align-items: center; gap: 8px; width: 100%; min-height: 32px; padding: 0 8px; border: none; background: none;
+      border-radius: 8px; font-size: 13px; line-height: 16px; color: var(--c-text-strong); text-align: left; transition: background 0.1s ease;
+    }
+    .menu-item:hover { background: #f4f4f5; }
+    html[data-theme="dark"] .menu-item:hover { background: rgba(255, 255, 255, 0.04); }
+    .menu-item .menu-value { margin-left: auto; font-size: 11px; color: #8b8b8b; }
+    .menu-divider { height: 1px; background: var(--c-line2); margin: 6px -6px; }
+
+    @media (max-width: 1100px) {
+      .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stat:nth-child(3n) { border-right: none; }
+      .stat:nth-child(-n+3) { border-bottom: 1px solid var(--c-line); }
+      .col-country, .col-last { display: none; }
+    }
+    @media (max-width: 860px) {
+      .crm { padding: 0; }
+      .crm-panel { border-radius: 0; box-shadow: none; }
+      .inspector { position: fixed; inset: auto 0 0 0; max-height: 80vh; background: var(--panel-bg); border-left: none;
+        border-radius: 12px 12px 0 0; box-shadow: var(--panel-shadow); z-index: 30; }
+      .col-company, .col-signup { display: none; }
+      .field { width: 100%; }
+      .toolbar-end { margin-left: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Token gate -->
+  <div class="gate" id="gate" hidden>
+    <form class="gate-card" id="gate-form" autocomplete="off">
+      <h1>Transitions CRM</h1>
+      <p>Paste your admin token. It stays in this browser only.</p>
+      <label class="field">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.4"/></svg>
+        <input type="password" id="gate-token" placeholder="Admin token" aria-label="Admin token" spellcheck="false" />
+      </label>
+      <p class="note-err" id="gate-err" role="status" hidden></p>
+      <button type="submit" class="btn-primary" id="gate-btn">Open</button>
+    </form>
+  </div>
+
+  <!-- CRM -->
+  <main class="crm" id="app" hidden>
+    <section class="crm-panel">
+      <header class="crm-head">
+        <div class="crm-title">
+          <h1>Customers</h1>
+          <p id="subtitle">Loading…</p>
+        </div>
+        <button type="button" class="btn-sec" id="export-btn" title="Download the current view as CSV">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5v7.5m0 0L5 7m3 3 3-3M3 12.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Export CSV</span>
+        </button>
+        <button type="button" class="btn-icon" id="refresh-btn" aria-label="Refresh" title="Refresh">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.46-3.54M13 3v2.5h-2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="menu-anchor">
+          <button type="button" class="btn-icon" id="menu-btn" aria-label="More" aria-haspopup="menu" aria-expanded="false">
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="3.5" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="8" cy="12.5" r="1.3"/></svg>
+          </button>
+          <div class="menu" id="menu" role="menu">
+            <button type="button" class="menu-item" id="theme-item" role="menuitem">Appearance <span class="menu-value" id="theme-value"></span></button>
+            <div class="menu-divider"></div>
+            <button type="button" class="menu-item" id="forget-item" role="menuitem">Forget token on this device</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="toolbar">
+        <label class="field">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input type="search" id="search" placeholder="Search name, email, company" aria-label="Search" />
+          <span class="kbd">/</span>
+        </label>
+        <div class="seg" id="filters" role="tablist" aria-label="Filter by plan"></div>
+      </div>
+
+      <div class="crm-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-sort="name">Person<span class="arrow"></span></th>
+                <th data-sort="company" class="col-company">Company<span class="arrow"></span></th>
+                <th data-sort="plan">Plan<span class="arrow"></span></th>
+                <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
+                <th data-sort="created" class="col-signup">Joined<span class="arrow"></span></th>
+                <th data-sort="last" class="col-last">Last sign-in<span class="arrow"></span></th>
+                <th data-sort="country" class="col-country">Country<span class="arrow"></span></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+          <div class="empty" id="empty" hidden>No one matches.</div>
+        </div>
+        <aside class="inspector" id="inspector" hidden aria-label="Person details"></aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  (function () {
+    "use strict";
+    var API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://localhost:8787" : "https://api.transitions.dev";
+    var TOKEN_KEY = "tdev:admin-token";
+    var PLAN_LABEL = { business: "Business", pro: "Pro", lifetime: "Lifetime", comp: "Comp", sponsor: "Sponsor", churned: "Churned", free: "Free" };
+    var PLAN_ORDER = { business: 0, lifetime: 1, pro: 2, comp: 3, sponsor: 4, churned: 5, free: 6 };
+    var FILTERS = [
+      { id: "all", label: "All" },
+      { id: "paying", label: "Paying" },
+      { id: "business", label: "Business" },
+      { id: "pro", label: "Pro" },
+      { id: "lifetime", label: "Lifetime" },
+      { id: "churned", label: "Churned" },
+      { id: "free", label: "Free" }
+    ];
+    var PAYING = { business: 1, pro: 1, lifetime: 1, sponsor: 1 };
+
+    var $ = function (id) { return document.getElementById(id); };
+    var state = { data: null, filter: "all", q: "", sort: "created", dir: -1, selected: null };
+
+    function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+    function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    function money(cents, cur) {
+      try { return new Intl.NumberFormat("en-US", { style: "currency", currency: (cur || "usd").toUpperCase(), maximumFractionDigits: cents % 100 ? 2 : 0 }).format(cents / 100); }
+      catch (e) { return (cents / 100).toFixed(2) + " " + (cur || "").toUpperCase(); }
+    }
+    function paidText(paid) {
+      var keys = Object.keys(paid || {});
+      if (!keys.length) return "";
+      return keys.map(function (c) { return money(paid[c], c); }).join(" + ");
+    }
+    function paidTotal(paid) { var t = 0; for (var k in paid) t += paid[k]; return t; }
+    function day(isoStr) {
+      if (!isoStr) return "";
+      var d = new Date(isoStr);
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric" });
+    }
+    function ago(isoStr) {
+      if (!isoStr) return "";
+      var s = (Date.now() - new Date(isoStr).getTime()) / 1000;
+      if (s < 3600) return Math.max(1, Math.round(s / 60)) + "m ago";
+      if (s < 86400) return Math.round(s / 3600) + "h ago";
+      if (s < 86400 * 30) return Math.round(s / 86400) + "d ago";
+      return day(isoStr);
+    }
+    function initials(p) {
+      var src = p.name || p.email;
+      var parts = src.replace(/@.*/, "").split(/[\s._-]+/).filter(Boolean);
+      return ((parts[0] || "?")[0] + (parts[1] ? parts[1][0] : "")).toUpperCase();
+    }
+    function flag(cc) {
+      if (!cc || cc.length !== 2) return "";
+      return String.fromCodePoint.apply(null, cc.toUpperCase().split("").map(function (c) { return 127397 + c.charCodeAt(0); }));
+    }
+    function planBadge(plan) { return '<span class="plan plan--' + esc(plan) + '">' + esc(PLAN_LABEL[plan] || plan) + "</span>"; }
+    var SRC_LABEL = { stripe: "from Stripe", team: "team name", domain: "email domain" };
+
+    /* ─── Fetch ─────────────────────────────────────────────── */
+    function fetchCrm(token) {
+      return fetch(API + "/admin/crm", { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
+        .then(function (r) {
+          if (r.status === 403 || r.status === 401) throw new Error("forbidden");
+          if (!r.ok) throw new Error("http " + r.status);
+          return r.json();
+        });
+    }
+    function showGate(msg) {
+      $("app").hidden = true;
+      $("gate").hidden = false;
+      $("gate-err").hidden = !msg;
+      $("gate-err").textContent = msg || "";
+      $("gate-token").focus();
+    }
+    function open(token) {
+      var btn = $("gate-btn");
+      btn.disabled = true; btn.textContent = "Opening…";
+      return fetchCrm(token).then(function (data) {
+        store(TOKEN_KEY, token);
+        state.data = data;
+        $("gate").hidden = true;
+        $("app").hidden = false;
+        render();
+      }).catch(function (e) {
+        showGate(e.message === "forbidden" ? "That token was not accepted." : "Could not reach the API. Try again.");
+      }).then(function () { btn.disabled = false; btn.textContent = "Open"; });
+    }
+    function refresh() {
+      var token = load(TOKEN_KEY);
+      if (!token) return showGate();
+      var btn = $("refresh-btn");
+      btn.classList.add("is-spinning");
+      fetchCrm(token).then(function (data) { state.data = data; render(); })
+        .catch(function (e) { if (e.message === "forbidden") { store(TOKEN_KEY, null); showGate("The saved token no longer works."); } })
+        .then(function () { btn.classList.remove("is-spinning"); });
+    }
+
+    /* ─── Render ────────────────────────────────────────────── */
+    function visible() {
+      var q = state.q.trim().toLowerCase();
+      var rows = state.data.people.filter(function (p) {
+        if (state.filter === "paying" && !PAYING[p.plan]) return false;
+        if (state.filter !== "all" && state.filter !== "paying" && p.plan !== state.filter) return false;
+        if (!q) return true;
+        return [p.name, p.email, p.company, p.country, p.plan].some(function (v) { return v && String(v).toLowerCase().indexOf(q) !== -1; });
+      });
+      var key = state.sort, dir = state.dir;
+      var val = {
+        name: function (p) { return (p.name || p.email).toLowerCase(); },
+        company: function (p) { return (p.company || "~").toLowerCase(); },
+        plan: function (p) { return PLAN_ORDER[p.plan]; },
+        paid: function (p) { return paidTotal(p.paid); },
+        created: function (p) { return p.created_at || ""; },
+        last: function (p) { return p.last_sign_in || ""; },
+        country: function (p) { return p.country || "~"; }
+      }[key];
+      return rows.slice().sort(function (a, b) {
+        var x = val(a), y = val(b);
+        return x < y ? -dir : x > y ? dir : 0;
+      });
+    }
+    function renderStats() {
+      var d = state.data, c = d.counts || {};
+      var paying = (c.business || 0) + (c.pro || 0) + (c.lifetime || 0) + (c.sponsor || 0);
+      var rev = paidText(d.revenue) || "$0";
+      var cells = [
+        { label: "People", value: d.total, sub: (c.free || 0) + " free" },
+        { label: "Paying", value: paying, sub: d.total ? Math.round(paying / d.total * 100) + "% of all" : "" },
+        { label: "Business", value: c.business || 0, dot: "#a830fd" },
+        { label: "Pro", value: c.pro || 0, dot: "#3097fd" },
+        { label: "Lifetime", value: c.lifetime || 0, dot: "#26953b", sub: (c.churned || 0) + " churned" },
+        { label: "Revenue, all time", value: rev, sub: "net of refunds" }
+      ];
+      $("stats").innerHTML = cells.map(function (s) {
+        return '<div class="stat"><span class="stat-label">' + (s.dot ? '<span class="dot" style="background:' + s.dot + '"></span>' : "") + esc(s.label) +
+          '</span><span class="stat-value">' + esc(s.value) + '</span><span class="stat-sub">' + esc(s.sub || "") + "</span></div>";
+      }).join("");
+      $("subtitle").textContent = "Accounts and Stripe customers · updated " + new Date(d.generated_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    }
+    function renderFilters() {
+      var c = state.data.counts || {};
+      var count = {
+        all: state.data.total,
+        paying: (c.business || 0) + (c.pro || 0) + (c.lifetime || 0) + (c.sponsor || 0)
+      };
+      $("filters").innerHTML = FILTERS.map(function (f) {
+        var n = f.id in count ? count[f.id] : (c[f.id] || 0);
+        return '<button type="button" role="tab" class="seg-btn' + (state.filter === f.id ? " is-active" : "") + '" data-filter="' + f.id +
+          '" aria-selected="' + (state.filter === f.id) + '">' + esc(f.label) + ' <span class="seg-count">' + n + "</span></button>";
+      }).join("");
+    }
+    function renderRows() {
+      var rows = visible();
+      // The detail panel follows the list: a person filtered out closes it.
+      if (state.selected && !rows.some(function (p) { return p.email === state.selected; })) {
+        state.selected = null;
+        renderInspector();
+      }
+      $("empty").hidden = rows.length > 0;
+      $("rows").innerHTML = rows.map(function (p) {
+        var tags = [];
+        if (!p.account) tags.push('<span class="tag">No account</span>');
+        if (p.abandoned_checkout) tags.push('<span class="tag tag--warn">Abandoned checkout</span>');
+        return '<tr data-email="' + esc(p.email) + '"' + (state.selected === p.email ? ' class="selected"' : "") + ">" +
+          '<td><div class="who"><span class="avatar">' + esc(initials(p)) + '</span><span class="who-text">' +
+            '<span class="who-name' + (p.name ? "" : " is-empty") + '">' + esc(p.name || "No name") + "</span>" +
+            '<span class="who-email">' + esc(p.email) + "</span></span></div></td>" +
+          '<td class="col-company">' + (p.company
+            ? '<div class="company"><span class="company-name">' + esc(p.company) + '</span><span class="company-src">' + esc(SRC_LABEL[p.company_source] || "") + "</span></div>"
+            : '<span class="muted">·</span>') + "</td>" +
+          '<td><div class="plan-cell"><span style="display:flex;gap:6px;align-items:center">' + planBadge(p.plan) + tags.join("") + "</span>" +
+            (p.plan_detail ? '<span class="plan-detail">' + esc(p.plan_detail) + "</span>" : "") + "</div></td>" +
+          '<td class="num tnum">' + (paidText(p.paid) ? esc(paidText(p.paid)) : '<span class="muted">·</span>') + "</td>" +
+          '<td class="col-signup tnum">' + esc(day(p.created_at)) + "</td>" +
+          '<td class="col-last tnum">' + (p.last_sign_in ? esc(ago(p.last_sign_in)) : '<span class="muted">' + (p.account ? "Never" : "·") + "</span>") + "</td>" +
+          '<td class="col-country">' + (p.country ? esc(flag(p.country) + " " + p.country) : '<span class="muted">·</span>') + "</td>" +
+          "</tr>";
+      }).join("");
+      document.querySelectorAll("th[data-sort]").forEach(function (th) {
+        var on = th.getAttribute("data-sort") === state.sort;
+        th.classList.toggle("is-sorted", on);
+        th.querySelector(".arrow").textContent = on ? (state.dir > 0 ? "↑" : "↓") : "↓";
+      });
+    }
+    function renderInspector() {
+      var el = $("inspector");
+      var p = state.selected && state.data.people.find(function (x) { return x.email === state.selected; });
+      if (!p) { el.hidden = true; el.innerHTML = ""; return; }
+      el.hidden = false;
+      var stripeLinks = (p.stripe_customers || []).map(function (id) {
+        return '<a class="btn-accent" href="https://dashboard.stripe.com/customers/' + encodeURIComponent(id) + '" target="_blank" rel="noopener noreferrer"><span>Open in Stripe</span>' +
+          '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3.5h6.5V10M12.5 3.5 4 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>';
+      });
+      var row = function (k, v) { return "<dt>" + esc(k) + "</dt><dd>" + v + "</dd>"; };
+      el.innerHTML =
+        '<div class="insp-head"><span class="avatar">' + esc(initials(p)) + "</span><div><h2>" + esc(p.name || "No name") + "</h2><p>" + esc(p.email) + "</p></div>" +
+          '<button type="button" class="btn-icon" id="insp-close" aria-label="Close"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button></div>' +
+        '<div class="insp-actions">' + stripeLinks.join("") +
+          '<a class="btn-sec" href="mailto:' + esc(p.email) + '">Email</a>' +
+          '<button type="button" class="btn-sec" id="insp-copy">Copy email</button></div>' +
+        '<div class="insp-divider"></div><div class="insp-section">Plan</div><dl>' +
+          row("Plan", planBadge(p.plan)) +
+          (p.plan_detail ? row("Details", esc(p.plan_detail)) : "") +
+          (p.seats ? row("Seats", esc(p.seats)) : "") +
+          row("Total paid", paidText(p.paid) ? '<span class="tnum">' + esc(paidText(p.paid)) + "</span>" : '<span class="muted">Nothing yet</span>') +
+          (p.first_paid ? row("First payment", esc(day(p.first_paid))) : "") +
+          (p.last_paid ? row("Last payment", esc(day(p.last_paid))) : "") +
+          (p.abandoned_checkout ? row("Checkout", '<span class="tag tag--warn">Started, never paid</span>') : "") +
+        '</dl><div class="insp-divider"></div><div class="insp-section">Person</div><dl>' +
+          row("Name", p.name ? esc(p.name) : '<span class="muted">Unknown</span>') +
+          row("Company", p.company ? esc(p.company) + ' <span class="muted">(' + esc(SRC_LABEL[p.company_source] || "") + ")</span>" : '<span class="muted">Unknown</span>') +
+          row("Country", p.country ? esc(flag(p.country) + " " + p.country) : '<span class="muted">Unknown</span>') +
+        '</dl><div class="insp-divider"></div><div class="insp-section">Activity</div><dl>' +
+          row("Joined", esc(day(p.created_at))) +
+          row("Account", p.account ? "Yes" : '<span class="muted">No, Stripe only</span>') +
+          row("Signed in", p.signed_in ? esc(ago(p.last_sign_in)) : '<span class="muted">Never</span>') +
+          ((p.stripe_customers || []).length ? row("Stripe", p.stripe_customers.map(function (id) { return '<code class="id">' + esc(id) + "</code>"; }).join(" ")) : "") +
+        "</dl>";
+      $("insp-close").addEventListener("click", function () { select(null); });
+      $("insp-copy").addEventListener("click", function (e) {
+        var b = e.currentTarget;
+        navigator.clipboard && navigator.clipboard.writeText(p.email).then(function () {
+          b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy email"; }, 1200);
+        });
+      });
+    }
+    function render() { renderStats(); renderFilters(); renderRows(); renderInspector(); }
+    function select(email) {
+      state.selected = state.selected === email ? null : email;
+      document.querySelectorAll("#rows tr").forEach(function (tr) { tr.classList.toggle("selected", tr.getAttribute("data-email") === state.selected); });
+      renderInspector();
+    }
+
+    /* ─── CSV ───────────────────────────────────────────────── */
+    function exportCsv() {
+      var cols = ["name", "email", "company", "company_source", "plan", "plan_detail", "seats", "paid", "first_paid", "last_paid", "created_at", "last_sign_in", "country", "account", "abandoned_checkout", "stripe_customers"];
+      var cell = function (v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+      var lines = [cols.join(",")].concat(visible().map(function (p) {
+        return cols.map(function (c) {
+          if (c === "paid") return cell(paidText(p.paid));
+          if (c === "stripe_customers") return cell((p.stripe_customers || []).join(" "));
+          return cell(p[c]);
+        }).join(",");
+      }));
+      var blob = new Blob([lines.join("\n")], { type: "text/csv" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "transitions-customers-" + new Date().toISOString().slice(0, 10) + ".csv";
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    }
+
+    /* ─── Theme + menu ──────────────────────────────────────── */
+    function themePref() { return load("tdev:theme") || "system"; }
+    function applyTheme() {
+      var pref = themePref();
+      var dark = pref === "dark" || (pref === "system" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+      if (dark) document.documentElement.setAttribute("data-theme", "dark"); else document.documentElement.removeAttribute("data-theme");
+      $("theme-value").textContent = pref[0].toUpperCase() + pref.slice(1);
+    }
+    function toggleMenu(open) {
+      var m = $("menu");
+      var on = open == null ? !m.classList.contains("is-open") : open;
+      m.classList.toggle("is-open", on);
+      $("menu-btn").setAttribute("aria-expanded", on ? "true" : "false");
+    }
+
+    /* ─── Wire ──────────────────────────────────────────────── */
+    $("gate-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var t = $("gate-token").value.trim();
+      if (t) open(t);
+    });
+    $("search").addEventListener("input", function (e) { state.q = e.target.value; renderRows(); });
+    $("filters").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-filter]");
+      if (!b) return;
+      state.filter = b.getAttribute("data-filter");
+      renderFilters(); renderRows();
+    });
+    document.querySelector("thead").addEventListener("click", function (e) {
+      var th = e.target.closest("th[data-sort]");
+      if (!th) return;
+      var k = th.getAttribute("data-sort");
+      if (state.sort === k) state.dir = -state.dir;
+      else { state.sort = k; state.dir = (k === "name" || k === "company" || k === "plan" || k === "country") ? 1 : -1; }
+      renderRows();
+    });
+    $("rows").addEventListener("click", function (e) {
+      var tr = e.target.closest("tr[data-email]");
+      if (tr) select(tr.getAttribute("data-email"));
+    });
+    $("refresh-btn").addEventListener("click", refresh);
+    $("export-btn").addEventListener("click", exportCsv);
+    $("menu-btn").addEventListener("click", function (e) { e.stopPropagation(); toggleMenu(); });
+    document.addEventListener("click", function (e) { if (!e.target.closest(".menu-anchor")) toggleMenu(false); });
+    $("theme-item").addEventListener("click", function () {
+      var next = { system: "light", light: "dark", dark: "system" }[themePref()];
+      store("tdev:theme", next === "system" ? null : next);
+      applyTheme();
+    });
+    $("forget-item").addEventListener("click", function () {
+      store(TOKEN_KEY, null);
+      state.data = null; state.selected = null;
+      toggleMenu(false);
+      $("gate-token").value = "";
+      showGate();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "/" && document.activeElement.tagName !== "INPUT" && !$("app").hidden) { e.preventDefault(); $("search").focus(); }
+      if (e.key === "Escape") { toggleMenu(false); if (state.selected) select(null); }
+    });
+    if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+
+    applyTheme();
+    var saved = load(TOKEN_KEY);
+    if (saved) { $("gate").hidden = true; open(saved); } else showGate();
+  })();
+  </script>
+</body>
+</html>
