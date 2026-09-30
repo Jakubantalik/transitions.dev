@@ -311,7 +311,7 @@
       .crm-panel { border-radius: 0; box-shadow: none; }
       .inspector { position: fixed; inset: auto 0 0 0; max-height: 80vh; background: var(--panel-bg); border-left: none;
         border-radius: 12px 12px 0 0; box-shadow: var(--panel-shadow); z-index: 30; }
-      .col-company, .col-signup { display: none; }
+      .col-company, .col-signup, .col-fixes { display: none; }
       .field { width: 100%; }
       .toolbar-end { margin-left: 0; }
     }
@@ -383,6 +383,7 @@
                 <th data-sort="company" class="col-company">Company<span class="arrow"></span></th>
                 <th data-sort="plan">Plan<span class="arrow"></span></th>
                 <th data-sort="agent" class="col-agent">Agent<span class="arrow"></span></th>
+                <th data-sort="fixes" class="num col-fixes" title="Hosted Agent fixes">Fixes<span class="arrow"></span></th>
                 <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
                 <th data-sort="created" class="col-signup">Joined<span class="arrow"></span></th>
                 <th data-sort="last" class="col-last">Last sign-in<span class="arrow"></span></th>
@@ -462,7 +463,13 @@
     function hasAgent(p) { return !!(p.agent && (p.agent.key || p.agent.last_used)); }
     // At least one hosted fix: this or last month's counter (from before the
     // history existed) or any fix in the history.
-    function hasAgentFix(p) { var a = p.agent; return !!(a && (a.fixes_month || a.fixes_prev_month || a.fixes_total)); }
+    function hasAgentFix(p) { return fixCount(p) > 0; }
+    // Best known total: the history once it covers more than the two monthly
+    // counters (which expire after ~2 months), the counters until then.
+    function fixCount(p) {
+      var a = p.agent;
+      return a ? Math.max(a.fixes_total || 0, (a.fixes_month || 0) + (a.fixes_prev_month || 0)) : 0;
+    }
     function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
     function agentSummary(a) {
       if (!a) return null;
@@ -532,6 +539,7 @@
         company: function (p) { return (p.company || "~").toLowerCase(); },
         plan: function (p) { return PLAN_ORDER[p.plan]; },
         paid: function (p) { return paidTotal(p.paid); },
+        fixes: function (p) { return fixCount(p); },
         agent: function (p) { var a = p.agent; return a ? (a.fixes_month * 1e6 + (a.fixes_total || 0) * 1e3 + (a.last_used ? 1 : 0) + (a.key ? 0.5 : 0)) : -1; },
         created: function (p) { return p.created_at || ""; },
         last: function (p) { return p.last_sign_in || ""; },
@@ -631,6 +639,11 @@
               ? '<div class="agent-cell"><span class="agent-main' + (s.idle ? " muted" : "") + '">' + esc(s.main) + '</span><span class="agent-sub">' + esc(s.sub) + "</span></div>"
               : '<span class="muted">·</span>') + "</td>";
           })() +
+          (function () {
+            var n = fixCount(p);
+            return '<td class="num tnum col-fixes"' + (n ? ' title="' + esc(plural(p.agent.fixes_month || 0, "fix", "fixes") + " this month") + '"' : "") + ">" +
+              (n ? esc(n) : '<span class="muted">·</span>') + "</td>";
+          })() +
           '<td class="num tnum">' + (paidText(p.paid) ? esc(paidText(p.paid)) : '<span class="muted">·</span>') + "</td>" +
           '<td class="col-signup tnum">' + esc(day(p.created_at)) + "</td>" +
           '<td class="col-last tnum">' + (p.last_sign_in ? esc(ago(p.last_sign_in)) : '<span class="muted">' + (p.account ? "Never" : "·") + "</span>") + "</td>" +
@@ -708,13 +721,14 @@
     /* ─── CSV ───────────────────────────────────────────────── */
     function exportCsv() {
       var cols = ["name", "email", "company", "company_source", "plan", "plan_detail", "seats", "paid", "first_paid", "last_paid", "created_at", "last_sign_in", "country", "account", "abandoned_checkout", "stripe_customers",
-        "agent_key", "agent_plan", "agent_source", "agent_fixes_month", "agent_fixes_prev_month", "agent_fixes_total", "agent_last_used"];
+        "agent_key", "agent_plan", "agent_source", "agent_fixes", "agent_fixes_month", "agent_fixes_prev_month", "agent_fixes_total", "agent_last_used"];
       var AG = { agent_key: "key", agent_plan: "plan", agent_source: "source", agent_fixes_month: "fixes_month", agent_fixes_prev_month: "fixes_prev_month", agent_fixes_total: "fixes_total", agent_last_used: "last_used" };
       var cell = function (v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
       var lines = [cols.join(",")].concat(visible().map(function (p) {
         return cols.map(function (c) {
           if (c === "paid") return cell(paidText(p.paid));
           if (c === "stripe_customers") return cell((p.stripe_customers || []).join(" "));
+          if (c === "agent_fixes") return cell(fixCount(p) || "");
           if (AG[c]) return cell(p.agent ? p.agent[AG[c]] : "");
           return cell(p[c]);
         }).join(",");
