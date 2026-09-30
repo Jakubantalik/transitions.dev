@@ -269,6 +269,7 @@ function buildSkillMd(pro) {
     .join("\n");
   return `---
 name: transitions-pro
+license: Free for personal and commercial use in your own projects; see https://transitions.dev/terms.html (no redistribution of the library itself)
 description: Premium transitions.dev recipes — production-ready UI transitions with CSS, React, and TypeScript variants. Use when building modals, panels, cards, image viewers, confetti bursts, and other polished motion.
 ---
 
