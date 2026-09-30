@@ -11,6 +11,7 @@
 //   KV  RECIPES   key: "recipe:<slug>",    value: {"slug","tier","variants":{css,react,...}}
 //                 populated by pack-recipes.mjs (free + Pro recipe sources)
 //   var FREE_GLOBAL_MONTHLY   total free-tier fixes across all users per month
+//   D1  DB        transitions_pro: agent_events usage history (events.mjs)
 //   secret ANTHROPIC_API_KEY
 //
 // Deploy: npx wrangler deploy   (route it under api.transitions.dev)
@@ -26,20 +27,21 @@ const MAX_BODY_BYTES = 600_000;
 
 import { handleMcp } from "./mcp.mjs";
 import { BASE_RULES, MODE_RULES } from "./guidance.mjs";
+import { logEvent } from "./events.mjs";
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (request.method === "POST" && url.pathname === "/v1/agent/fix") {
-      return handleFix(request, env);
+      return handleFix(request, env, ctx);
     }
     // MCP (streamable HTTP): the user's own AI connects here and fixes on
     // its own tokens; this server serves guidance + recipe sources only.
     if (request.method === "POST" && url.pathname === "/v1/agent/mcp") {
-      return handleMcp(request, env);
+      return handleMcp(request, env, ctx);
     }
     if (request.method === "GET" && url.pathname === "/v1/agent/license") {
-      return handleLicense(request, env);
+      return handleLicense(request, env, ctx);
     }
     if (request.method === "GET" && url.pathname === "/v1/agent/mcp") {
       return new Response(null, { status: 405 }); // JSON-only transport, no SSE stream
@@ -49,7 +51,7 @@ export default {
 };
 
 // What a key can do, so setup tools can say whether revamp is available.
-async function handleLicense(request, env) {
+async function handleLicense(request, env, ctx) {
   const license = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
   if (!license) return json({ error: "missing license" }, 401);
   const record = await env.LICENSES.get(license, { type: "json" });
@@ -58,10 +60,11 @@ async function handleLicense(request, env) {
   const month = new Date().toISOString().slice(0, 7);
   const used = parseInt((await env.USAGE.get(`${license}:${month}`)) || "0", 10);
   const quota = record.quota || (isFree ? QUOTAS.free : QUOTAS.paid);
+  logEvent(env, ctx, { event: "license", record });
   return json({ plan: record.plan, modes: isFree ? ["polish"] : ["polish", "revamp"], used, quota });
 }
 
-async function handleFix(request, env) {
+async function handleFix(request, env, ctx) {
   const license = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
   if (!license) return json({ error: "missing license" }, 401);
 
@@ -78,7 +81,9 @@ async function handleFix(request, env) {
   const { findings = [], files = [], mode = "polish", components = [] } = body;
   if (!files.length) return json({ error: "no files" }, 400);
   if (mode !== "polish" && mode !== "revamp") return json({ error: "bad mode" }, 400);
+  const shape = { mode, findings: findings.length, files: files.length, score: body.score };
   if (mode === "revamp" && isFree) {
+    logEvent(env, ctx, { event: "fix_blocked", record, ...shape, status: "revamp_gate" });
     return json({ error: "revamp requires team", detail: "Revamp mode (full recipe rewrites, Pro library) is part of the Business plan." }, 403);
   }
 
@@ -86,7 +91,10 @@ async function handleFix(request, env) {
   const usageKey = `${license}:${month}`;
   const used = parseInt((await env.USAGE.get(usageKey)) || "0", 10);
   const quota = record.quota || (isFree ? QUOTAS.free : QUOTAS.paid);
-  if (used >= quota) return json({ error: "quota exceeded", used, quota }, 429);
+  if (used >= quota) {
+    logEvent(env, ctx, { event: "fix_blocked", record, ...shape, status: "quota" });
+    return json({ error: "quota exceeded", used, quota }, 429);
+  }
 
   // Free-tier valves: per-day rate limit and a global monthly budget fuse.
   let dayKey, globalKey, dayUsed, globalUsed;
@@ -95,12 +103,14 @@ async function handleFix(request, env) {
     dayKey = `${license}:d:${day}`;
     dayUsed = parseInt((await env.USAGE.get(dayKey)) || "0", 10);
     if (dayUsed >= FREE_DAILY_LIMIT) {
+      logEvent(env, ctx, { event: "fix_blocked", record, ...shape, status: "daily" });
       return json({ error: "daily limit", detail: `Free plan allows ${FREE_DAILY_LIMIT} fixes per day. Try again tomorrow or upgrade.` }, 429);
     }
     globalKey = `global:free:${month}`;
     globalUsed = parseInt((await env.USAGE.get(globalKey)) || "0", 10);
     const globalCap = parseInt(env.FREE_GLOBAL_MONTHLY || "", 10) || DEFAULT_FREE_GLOBAL_MONTHLY;
     if (globalUsed >= globalCap) {
+      logEvent(env, ctx, { event: "fix_blocked", record, ...shape, status: "capacity" });
       return json({ error: "free capacity", detail: "Free fix capacity for this month is used up. It resets on the 1st; Team plans are unaffected." }, 429);
     }
   }
@@ -119,6 +129,7 @@ async function handleFix(request, env) {
   } catch (e) {
     const detail = e?.detail || e?.message || "model error";
     console.error("[fix] model call failed:", detail);
+    logEvent(env, ctx, { event: "fix_error", record, ...shape, status: "model", detail });
     // Auth failures are our misconfiguration, not a blip: retrying cannot help.
     if (e?.status === 401 || e?.status === 403 || /credential|authentication|api.key/i.test(detail)) {
       return json({ error: "service_unavailable", detail: "The fix service is temporarily unavailable on our side. Nothing was counted against your quota; please try again later." }, 503);
@@ -132,6 +143,7 @@ async function handleFix(request, env) {
     await env.USAGE.put(globalKey, String(globalUsed + 1), ttl);
   }
 
+  logEvent(env, ctx, { event: "fix", record, ...shape });
   return json({ ...fixed, usage: { used: used + 1, quota, plan: record.plan || "team" } });
 }
 

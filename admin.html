@@ -145,6 +145,24 @@
     .stat-value { font-size: 20px; line-height: 24px; font-weight: 500; color: var(--c-text); font-variant-numeric: tabular-nums; }
     .stat-sub { font-size: 11px; line-height: 14px; color: var(--c-text-faint); font-variant-numeric: tabular-nums; }
 
+    /* Agent band: the same stat cells, with a 30-day fixes chart. */
+    .stats--agent { border-bottom: 1px solid var(--c-line); }
+    .band-label {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px 0;
+      font-size: 11px; line-height: 14px; color: var(--c-text-faint);
+    }
+    .band-label strong { font-weight: 500; color: var(--c-text-mut2); }
+    .spark { display: block; width: 100%; height: 28px; margin-top: 2px; }
+    .spark rect { fill: var(--c-sec-a); }
+    .spark rect.has { fill: #3097fd; }
+    html[data-theme="dark"] .spark rect.has { fill: #50a7ff; }
+    .meter { height: 4px; border-radius: 4px; background: var(--c-sec); overflow: hidden; margin-top: 4px; }
+    .meter i { display: block; height: 100%; border-radius: inherit; background: #26953b; }
+    .meter.is-warn i { background: #c35c00; }
+    .agent-cell { display: flex; flex-direction: column; gap: 1px; }
+    .agent-main { color: var(--c-text); }
+    .agent-sub { font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
+
     /* ─── Toolbar ───────────────────────────────────────────── */
     .toolbar { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--c-line); flex-wrap: wrap; }
     .field {
@@ -286,7 +304,7 @@
       .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .stat:nth-child(3n) { border-right: none; }
       .stat:nth-child(-n+3) { border-bottom: 1px solid var(--c-line); }
-      .col-country, .col-last { display: none; }
+      .col-country, .col-last, .col-agent { display: none; }
     }
     @media (max-width: 860px) {
       .crm { padding: 0; }
@@ -345,6 +363,7 @@
       </header>
 
       <div class="stats" id="stats"></div>
+      <div id="agent-band"></div>
 
       <div class="toolbar">
         <label class="field">
@@ -363,6 +382,7 @@
                 <th data-sort="name">Person<span class="arrow"></span></th>
                 <th data-sort="company" class="col-company">Company<span class="arrow"></span></th>
                 <th data-sort="plan">Plan<span class="arrow"></span></th>
+                <th data-sort="agent" class="col-agent">Agent<span class="arrow"></span></th>
                 <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
                 <th data-sort="created" class="col-signup">Joined<span class="arrow"></span></th>
                 <th data-sort="last" class="col-last">Last sign-in<span class="arrow"></span></th>
@@ -392,6 +412,7 @@
       { id: "pro", label: "Pro" },
       { id: "lifetime", label: "Lifetime" },
       { id: "churned", label: "Churned" },
+      { id: "agent", label: "Agent" },
       { id: "free", label: "Free" }
     ];
     var PAYING = { business: 1, pro: 1, lifetime: 1, sponsor: 1 };
@@ -436,6 +457,20 @@
     }
     function planBadge(plan) { return '<span class="plan plan--' + esc(plan) + '">' + esc(PLAN_LABEL[plan] || plan) + "</span>"; }
     var SRC_LABEL = { stripe: "from Stripe", team: "team name", domain: "email domain" };
+    var KEY_SOURCE = { cli: "CLI signup", browser: "browser signup", account: "account page", purchase: "with a purchase" };
+    function hasAgent(p) { return !!(p.agent && (p.agent.key || p.agent.last_used)); }
+    function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
+    function agentSummary(a) {
+      if (!a) return null;
+      var main, sub;
+      if (a.fixes_month) main = plural(a.fixes_month, "fix", "fixes") + " this month";
+      else if (a.fixes_total) main = plural(a.fixes_total, "fix", "fixes") + " total";
+      else if (a.mcp_calls) main = plural(a.mcp_calls, "MCP call");
+      else if (a.last_used) main = "Checked plan";
+      else main = "Key, not used";
+      sub = a.last_used ? "active " + ago(a.last_used) : (a.key_created_at ? "key " + day(a.key_created_at) : "");
+      return { main: main, sub: sub, idle: !a.last_used && !a.fixes_month && !a.fixes_prev_month };
+    }
 
     /* ─── Fetch ─────────────────────────────────────────────── */
     function fetchCrm(token) {
@@ -481,7 +516,8 @@
       var q = state.q.trim().toLowerCase();
       var rows = state.data.people.filter(function (p) {
         if (state.filter === "paying" && !PAYING[p.plan]) return false;
-        if (state.filter !== "all" && state.filter !== "paying" && p.plan !== state.filter) return false;
+        if (state.filter === "agent" && !hasAgent(p)) return false;
+        if (state.filter !== "all" && state.filter !== "paying" && state.filter !== "agent" && p.plan !== state.filter) return false;
         if (!q) return true;
         return [p.name, p.email, p.company, p.country, p.plan].some(function (v) { return v && String(v).toLowerCase().indexOf(q) !== -1; });
       });
@@ -491,6 +527,7 @@
         company: function (p) { return (p.company || "~").toLowerCase(); },
         plan: function (p) { return PLAN_ORDER[p.plan]; },
         paid: function (p) { return paidTotal(p.paid); },
+        agent: function (p) { var a = p.agent; return a ? (a.fixes_month * 1e6 + (a.fixes_total || 0) * 1e3 + (a.last_used ? 1 : 0) + (a.key ? 0.5 : 0)) : -1; },
         created: function (p) { return p.created_at || ""; },
         last: function (p) { return p.last_sign_in || ""; },
         country: function (p) { return p.country || "~"; }
@@ -518,11 +555,42 @@
       }).join("");
       $("subtitle").textContent = "Accounts and Stripe customers · updated " + new Date(d.generated_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     }
+    function renderAgent() {
+      var a = state.data.agent;
+      var el = $("agent-band");
+      if (!a) { el.innerHTML = ""; return; }
+      var src = Object.keys(a.keys_by_source || {}).sort(function (x, y) { return a.keys_by_source[y] - a.keys_by_source[x]; })
+        .map(function (k) { return a.keys_by_source[k] + " " + (k === "unknown" ? "older" : k); }).join(" · ");
+      var max = Math.max.apply(null, (a.daily || []).map(function (d) { return d.fixes; }).concat([1]));
+      var bars = (a.daily || []).map(function (d, i) {
+        var h = d.fixes ? Math.max(3, Math.round(d.fixes / max * 26)) : 2;
+        return '<rect x="' + (i * 10) + '" y="' + (28 - h) + '" width="7" height="' + h + '" rx="1.5"' + (d.fixes ? ' class="has"' : "") + "><title>" +
+          esc(plural(d.fixes, "fix", "fixes") + ", " + plural(d.people, "person", "people")) + "</title></rect>";
+      }).join("");
+      var capPct = a.free_cap ? Math.min(100, Math.round(a.free_fixes_month / a.free_cap * 100)) : 0;
+      var modes = Object.keys(a.modes_month || {}).map(function (m) { return a.modes_month[m] + " " + m; }).join(" · ");
+      var cells = [
+        { label: "Agent keys", value: a.keys, sub: src || " " },
+        { label: "Active users", value: a.active_7d + " / " + a.active_30d, sub: "last 7 / 30 days" },
+        { label: "Fixes this month", value: a.fixes_month, html: '<svg class="spark" viewBox="0 0 300 28" preserveAspectRatio="none" aria-label="Fixes per day, last 30 days">' + bars + "</svg>", sub: modes || "fixes per day, 30 days" },
+        { label: "Free capacity", value: a.free_fixes_month + " / " + a.free_cap, html: '<div class="meter' + (capPct >= 80 ? " is-warn" : "") + '"><i style="width:' + capPct + '%"></i></div>', sub: capPct + "% of this month's free fixes" },
+        { label: "Hit a limit", value: a.blocked_month, sub: "quota, daily cap or revamp, this month" },
+        { label: "MCP calls", value: a.mcp_30d, sub: a.mcp_anonymous_30d + " without a key, 30 days" }
+      ];
+      el.innerHTML = '<div class="band-label"><strong>Transitions Agent</strong><span>' +
+        esc(a.tracking_since ? "usage history since " + day(a.tracking_since) : "usage history starts with the next Agent run") +
+        (a.keys_pending_backfill ? " · " + a.keys_pending_backfill + " keys still indexing" : "") + "</span></div>" +
+        '<div class="stats stats--agent">' + cells.map(function (s) {
+          return '<div class="stat"><span class="stat-label">' + esc(s.label) + '</span><span class="stat-value">' + esc(s.value) + "</span>" +
+            (s.html || "") + '<span class="stat-sub">' + esc(s.sub || "") + "</span></div>";
+        }).join("") + "</div>";
+    }
     function renderFilters() {
       var c = state.data.counts || {};
       var count = {
         all: state.data.total,
-        paying: (c.business || 0) + (c.pro || 0) + (c.lifetime || 0) + (c.sponsor || 0)
+        paying: (c.business || 0) + (c.pro || 0) + (c.lifetime || 0) + (c.sponsor || 0),
+        agent: state.data.people.filter(hasAgent).length
       };
       $("filters").innerHTML = FILTERS.map(function (f) {
         var n = f.id in count ? count[f.id] : (c[f.id] || 0);
@@ -551,6 +619,12 @@
             : '<span class="muted">·</span>') + "</td>" +
           '<td><div class="plan-cell"><span style="display:flex;gap:6px;align-items:center">' + planBadge(p.plan) + tags.join("") + "</span>" +
             (p.plan_detail ? '<span class="plan-detail">' + esc(p.plan_detail) + "</span>" : "") + "</div></td>" +
+          (function () {
+            var s = hasAgent(p) ? agentSummary(p.agent) : null;
+            return '<td class="col-agent">' + (s
+              ? '<div class="agent-cell"><span class="agent-main' + (s.idle ? " muted" : "") + '">' + esc(s.main) + '</span><span class="agent-sub">' + esc(s.sub) + "</span></div>"
+              : '<span class="muted">·</span>') + "</td>";
+          })() +
           '<td class="num tnum">' + (paidText(p.paid) ? esc(paidText(p.paid)) : '<span class="muted">·</span>') + "</td>" +
           '<td class="col-signup tnum">' + esc(day(p.created_at)) + "</td>" +
           '<td class="col-last tnum">' + (p.last_sign_in ? esc(ago(p.last_sign_in)) : '<span class="muted">' + (p.account ? "Never" : "·") + "</span>") + "</td>" +
@@ -591,6 +665,19 @@
           row("Name", p.name ? esc(p.name) : '<span class="muted">Unknown</span>') +
           row("Company", p.company ? esc(p.company) + ' <span class="muted">(' + esc(SRC_LABEL[p.company_source] || "") + ")</span>" : '<span class="muted">Unknown</span>') +
           row("Country", p.country ? esc(flag(p.country) + " " + p.country) : '<span class="muted">Unknown</span>') +
+        (hasAgent(p) ? (function (a) {
+          return '</dl><div class="insp-divider"></div><div class="insp-section">Transitions Agent</div><dl>' +
+            row("Key", a.key ? esc((a.plan === "team" ? "Business" : a.plan === "enterprise" ? "Enterprise" : "Free") + (a.active === false ? ", revoked" : "")) +
+              (a.key_created_at ? ' <span class="muted">since ' + esc(day(a.key_created_at)) + "</span>" : "") : '<span class="muted">No key</span>') +
+            (a.source ? row("Came from", esc(KEY_SOURCE[a.source] || a.source)) : "") +
+            row("This month", '<span class="tnum">' + esc(plural(a.fixes_month, "fix", "fixes")) + "</span>") +
+            row("Last month", '<span class="tnum">' + esc(plural(a.fixes_prev_month, "fix", "fixes")) + "</span>") +
+            (a.fixes_total ? row("All tracked", '<span class="tnum">' + esc(plural(a.fixes_total, "fix", "fixes")) + (a.revamps_total ? ", " + a.revamps_total + " revamp" : "") + "</span>") : "") +
+            (a.avg_score != null ? row("Avg score", '<span class="tnum">' + esc(a.avg_score) + "</span> at fix time") : "") +
+            (a.blocked_total ? row("Hit a limit", '<span class="tag tag--warn">' + esc(plural(a.blocked_total, "time")) + "</span>") : "") +
+            (a.mcp_calls ? row("MCP", esc(plural(a.mcp_calls, "call")) + (a.recipes ? ", " + esc(plural(a.recipes, "recipe")) + " fetched" : "")) : "") +
+            row("Last used", a.last_used ? esc(ago(a.last_used)) : '<span class="muted">Never</span>');
+        })(p.agent) : "") +
         '</dl><div class="insp-divider"></div><div class="insp-section">Activity</div><dl>' +
           row("Joined", esc(day(p.created_at))) +
           row("Account", p.account ? "Yes" : '<span class="muted">No, Stripe only</span>') +
@@ -605,7 +692,7 @@
         });
       });
     }
-    function render() { renderStats(); renderFilters(); renderRows(); renderInspector(); }
+    function render() { renderStats(); renderAgent(); renderFilters(); renderRows(); renderInspector(); }
     function select(email) {
       state.selected = state.selected === email ? null : email;
       document.querySelectorAll("#rows tr").forEach(function (tr) { tr.classList.toggle("selected", tr.getAttribute("data-email") === state.selected); });
@@ -614,12 +701,15 @@
 
     /* ─── CSV ───────────────────────────────────────────────── */
     function exportCsv() {
-      var cols = ["name", "email", "company", "company_source", "plan", "plan_detail", "seats", "paid", "first_paid", "last_paid", "created_at", "last_sign_in", "country", "account", "abandoned_checkout", "stripe_customers"];
+      var cols = ["name", "email", "company", "company_source", "plan", "plan_detail", "seats", "paid", "first_paid", "last_paid", "created_at", "last_sign_in", "country", "account", "abandoned_checkout", "stripe_customers",
+        "agent_key", "agent_plan", "agent_source", "agent_fixes_month", "agent_fixes_prev_month", "agent_fixes_total", "agent_last_used"];
+      var AG = { agent_key: "key", agent_plan: "plan", agent_source: "source", agent_fixes_month: "fixes_month", agent_fixes_prev_month: "fixes_prev_month", agent_fixes_total: "fixes_total", agent_last_used: "last_used" };
       var cell = function (v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
       var lines = [cols.join(",")].concat(visible().map(function (p) {
         return cols.map(function (c) {
           if (c === "paid") return cell(paidText(p.paid));
           if (c === "stripe_customers") return cell((p.stripe_customers || []).join(" "));
+          if (AG[c]) return cell(p.agent ? p.agent[AG[c]] : "");
           return cell(p[c]);
         }).join(",");
       }));
