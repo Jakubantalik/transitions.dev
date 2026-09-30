@@ -413,6 +413,7 @@
       { id: "lifetime", label: "Lifetime" },
       { id: "churned", label: "Churned" },
       { id: "agent", label: "Agent" },
+      { id: "agent-fix", label: "Agent fixes" },
       { id: "free", label: "Free" }
     ];
     var PAYING = { business: 1, pro: 1, lifetime: 1, sponsor: 1 };
@@ -459,6 +460,9 @@
     var SRC_LABEL = { stripe: "from Stripe", team: "team name", domain: "email domain" };
     var KEY_SOURCE = { cli: "CLI signup", browser: "browser signup", account: "account page", purchase: "with a purchase" };
     function hasAgent(p) { return !!(p.agent && (p.agent.key || p.agent.last_used)); }
+    // At least one hosted fix: this or last month's counter (from before the
+    // history existed) or any fix in the history.
+    function hasAgentFix(p) { var a = p.agent; return !!(a && (a.fixes_month || a.fixes_prev_month || a.fixes_total)); }
     function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
     function agentSummary(a) {
       if (!a) return null;
@@ -517,7 +521,8 @@
       var rows = state.data.people.filter(function (p) {
         if (state.filter === "paying" && !PAYING[p.plan]) return false;
         if (state.filter === "agent" && !hasAgent(p)) return false;
-        if (state.filter !== "all" && state.filter !== "paying" && state.filter !== "agent" && p.plan !== state.filter) return false;
+        if (state.filter === "agent-fix" && !hasAgentFix(p)) return false;
+        if (state.filter !== "all" && state.filter !== "paying" && state.filter !== "agent" && state.filter !== "agent-fix" && p.plan !== state.filter) return false;
         if (!q) return true;
         return [p.name, p.email, p.company, p.country, p.plan].some(function (v) { return v && String(v).toLowerCase().indexOf(q) !== -1; });
       });
@@ -590,7 +595,8 @@
       var count = {
         all: state.data.total,
         paying: (c.business || 0) + (c.pro || 0) + (c.lifetime || 0) + (c.sponsor || 0),
-        agent: state.data.people.filter(hasAgent).length
+        agent: state.data.people.filter(hasAgent).length,
+        "agent-fix": state.data.people.filter(hasAgentFix).length
       };
       $("filters").innerHTML = FILTERS.map(function (f) {
         var n = f.id in count ? count[f.id] : (c[f.id] || 0);
