@@ -2,7 +2,7 @@
 // the service holds the AI key), show proposed diffs, apply only after an
 // explicit yes, optionally open a pull request after a second explicit yes.
 // Keyless runs point to signup - the hosted service is the only fix path.
-import { readFileSync, writeFileSync, mkdtempSync, appendFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, appendFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -10,9 +10,78 @@ import readline from "node:readline";
 import { isInteractive, runByAgent, sandboxNoNetwork, NETWORK_HELP } from "./env.mjs";
 import { scan } from "./scan.mjs";
 import { describeChanges, changesMarkdown, changesText } from "./describe.mjs";
+import { TOKENS } from "./catalog.mjs";
 
-const MAX_FILES = 12;
-const MAX_FILE_BYTES = 40_000;
+// A run is sized by how much code the service has to read, not by file
+// count: the model answers with small edits, so big files are fine, but one
+// request still has to fit comfortably in the model's context.
+const MAX_FILES = 15;
+const MAX_FILE_BYTES = 100_000;
+const BATCH_BYTES = 120_000;
+const SEVERITY_WEIGHT = { major: 8, warn: 4, minor: 1, info: 0.25 };
+// Findings a fix must never create where they were not before.
+const REGRESSIONS = new Set(["hover-without-transition", "layout-animation", "untransitioned-overlay", "recipe-mismatch"]);
+const findingKey = (f) => [f.rule, f.selector || f.usage || f.recipe || f.message].join("|");
+// A transitions.dev token used in a fix always carries its value as a CSS
+// fallback, var(--duration-fast, 250ms), so the fix works whether or not the
+// project defines the tokens. Without it, an undefined token silently turns a
+// transition off.
+const TOKEN_VALUE = new Map(TOKENS.map((t) => [t.name, t.value]));
+export function withTokenFallbacks(css) {
+  return css.replace(/var\(\s*(--(?:duration|ease|distance|scale|blur)-[a-z-]+)\s*\)/g, (m, name) => (TOKEN_VALUE.has(name) ? `var(${name}, ${TOKEN_VALUE.get(name)})` : m));
+}
+
+// The service sends a space every few seconds while it works; this long a
+// silence means the connection is dead.
+const IDLE_MS = 90_000;
+
+async function readBody(res, idleMs) {
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let out = "";
+  for (;;) {
+    let timer;
+    const idle = new Promise((_, reject) => { timer = setTimeout(() => reject(Object.assign(new Error("idle"), { idle: true })), idleMs); });
+    let step;
+    try { step = await Promise.race([reader.read(), idle]); }
+    catch (e) { reader.cancel().catch(() => {}); throw e; }
+    finally { clearTimeout(timer); }
+    if (step.done) return out + decoder.decode();
+    out += decoder.decode(step.value, { stream: true });
+  }
+}
+
+// Which files this run fixes: the most important first (by finding severity),
+// with the markup that drives a component in revamp mode, until the size
+// budget is used. Everything else waits for the next run.
+export function planBatch(root, fixable, mode, { budget = BATCH_BYTES, maxFiles = MAX_FILES } = {}) {
+  const byPath = new Map();
+  for (const f of fixable) {
+    const e = byPath.get(f.path) || { path: f.path, weight: 0, related: new Set(), onlyInfo: true };
+    e.weight += SEVERITY_WEIGHT[f.severity] ?? 1;
+    if (f.severity !== "info") e.onlyInfo = false;
+    if (mode === "revamp") for (const r of f.related || []) e.related.add(r);
+    byPath.set(f.path, e);
+  }
+  const order = [...byPath.values()].sort((a, b) => b.weight - a.weight || a.path.localeCompare(b.path));
+  const sizeOf = (p) => { try { return statSync(join(root, p)).size; } catch { return null; } };
+  const paths = [];
+  const tooBig = [];
+  let bytes = 0;
+  for (const e of order) {
+    const own = sizeOf(e.path);
+    if (own == null) continue;
+    if (own > MAX_FILE_BYTES) { tooBig.push(e.path); continue; }
+    const group = [e.path, ...e.related].filter((p) => !paths.includes(p)).filter((p) => { const z = sizeOf(p); return z != null && z <= MAX_FILE_BYTES; });
+    const add = group.reduce((sum, p) => sum + sizeOf(p), 0);
+    if (paths.length && (bytes + add > budget || paths.length + group.length > maxFiles)) continue;
+    paths.push(...group);
+    bytes += add;
+    if (bytes >= budget || paths.length >= maxFiles) break;
+  }
+  const remaining = order.filter((e) => !paths.includes(e.path) && !tooBig.includes(e.path));
+  return { paths, bytes, tooBig, remaining: remaining.map((e) => e.path), remainingInfoOnly: remaining.filter((e) => e.onlyInfo).length };
+}
 
 const c = {
   dim: (s) => `\x1b[2m${s}\x1b[0m`,
@@ -55,20 +124,14 @@ export async function runFix(root, result, opts) {
     return done(0, "nothing", "nothing to fix" + (mode === "polish" ? " in polish mode" : ""));
   }
 
-  // Revamp also needs the markup/JS that drives a component (open and close
-  // classes, unmount timing), not only its stylesheet.
-  const wanted = [...new Set([
-    ...fixable.map((f) => f.path),
-    ...(mode === "revamp" ? fixable.flatMap((f) => f.related || []) : []),
-  ])];
-  const paths = wanted.slice(0, MAX_FILES);
-  const dropped = wanted.length - paths.length;
-  const files = [];
-  for (const p of paths) {
-    try {
-      const content = readFileSync(join(root, p), "utf8");
-      if (Buffer.byteLength(content) <= MAX_FILE_BYTES) files.push({ path: p, content });
-    } catch { /* file may be gone */ }
+  const plan = planBatch(root, fixable, mode);
+  report.deferred = plan.remaining.length;
+  if (!plan.paths.length) {
+    const msg = plan.tooBig.length
+      ? `The files with findings are over ${MAX_FILE_BYTES / 1000}KB each, too big to fix automatically: ${plan.tooBig.slice(0, 3).join(", ")}${plan.tooBig.length > 3 ? ", ..." : ""}.`
+      : "The files with findings could not be read.";
+    console.log(c.yellow(msg));
+    return done(1, "too-large", msg);
   }
 
   if (!license) {
@@ -78,30 +141,68 @@ export async function runFix(root, result, opts) {
     return done(1, "no-license", "no license key");
   }
 
-  console.log(c.dim(`Requesting ${mode} fixes for ${files.length} files${dropped > 0 ? ` (${dropped} deferred to a later run)` : ""}...`));
-  let res;
-  try {
-    res = await fetch(api + "/v1/agent/fix", {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: "Bearer " + license },
-      body: JSON.stringify({
-        mode, findings, files, score: result.score,
-        components: (result.components || []).filter((x) => x.status !== "matches" && paths.includes(x.path)),
-      }),
-    });
-  } catch (e) {
-    console.error(c.red("✗ ") + "Could not reach the fix service: " + e.message);
-    if (sandboxNoNetwork() || runByAgent()) console.error(NETWORK_HELP);
-    ciSummary("Could not reach the fix service: " + e.message);
-    return done(1, "unreachable", "could not reach the fix service");
+  // Ask for fixes. The service streams its answer (a space every few seconds
+  // while the model works) so long fixes never hit a timeout; a batch that is
+  // still too big is retried with fewer files.
+  let batch = plan.paths;
+  let paths = batch;
+  let status = 0;
+  let data = {};
+  for (let attempt = 0; ; attempt++) {
+    paths = batch;
+    const files = [];
+    for (const p of batch) {
+      try { files.push({ path: p, content: readFileSync(join(root, p), "utf8") }); } catch { /* file may be gone */ }
+    }
+    const inBatch = new Set(batch);
+    const sent = findings.filter((f) => f.path === "(project)" || inBatch.has(f.path));
+    const later = plan.remaining.length + (plan.paths.length - batch.length);
+    console.log(c.dim(`Requesting ${mode} fixes for ${files.length} file${files.length === 1 ? "" : "s"}` + (later ? `, the most important first (${later} more next run)` : "") + "..."));
+    try {
+      const res = await fetch(api + "/v1/agent/fix", {
+        method: "POST",
+        // Uncompressed, so the service's keepalive spaces arrive as it sends them.
+        headers: { "content-type": "application/json", authorization: "Bearer " + license, "x-ta-stream": "1", "accept-encoding": "identity" },
+        body: JSON.stringify({
+          mode, findings: sent, files, score: result.score,
+          components: (result.components || []).filter((x) => x.status !== "matches" && inBatch.has(x.path)),
+        }),
+      });
+      const raw = await readBody(res, IDLE_MS);
+      try { data = raw.trim() ? JSON.parse(raw) : {}; } catch { data = {}; }
+      const streamed = res.headers.get("x-ta-stream") === "1";
+      status = streamed ? (data.status ?? 0) : res.status;
+    } catch (e) {
+      const cause = (e && e.cause && (e.cause.code || e.cause.message)) || "";
+      if (e && e.idle) {
+        console.error(c.red("✗ ") + "The fix service stopped responding mid-run. Run it again.");
+        return done(1, "unreachable", "the fix service stopped responding mid-run");
+      }
+      console.error(c.red("✗ ") + "Could not reach the fix service: " + e.message + (cause ? ` (${cause})` : ""));
+      // Only a failed lookup or refused connection points at a sandbox without network.
+      if (sandboxNoNetwork() || (runByAgent() && /ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ENETUNREACH|getaddrinfo/i.test(cause))) console.error(NETWORK_HELP);
+      ciSummary("Could not reach the fix service: " + e.message);
+      return done(1, "unreachable", "could not reach the fix service");
+    }
+    if (status === 0) {
+      console.error(c.red("✗ ") + "The connection dropped before the fixes arrived. Run it again.");
+      return done(1, "unreachable", "the connection dropped before the fixes arrived");
+    }
+    if ((status === 413) && batch.length > 1 && attempt < 3) {
+      batch = batch.slice(0, Math.max(1, Math.floor(batch.length / 2)));
+      console.log(c.dim("That was more code than one run can handle. Retrying with fewer files (nothing was counted)..."));
+      continue;
+    }
+    break;
   }
-  if (res.status === 401) {
+
+  if (status === 401) {
     console.error(c.red("✗ ") + "License key not valid. Check TRANSITIONS_AGENT_LICENSE.");
     ciSummary("License key not valid. Check the `TRANSITIONS_AGENT_LICENSE` repo secret.");
     return done(1, "invalid-license", "the license key is not valid");
   }
-  if (res.status === 403 || res.status === 429) {
-    const err = await res.json().catch(() => ({}));
+  if (status === 403 || status === 429) {
+    const err = data;
     if (err.error === "revamp requires team") {
       console.error(c.yellow("Revamp mode is a Business plan feature") + " (full recipe rewrites, Pro library).");
       console.error("Your free plan includes polish mode. Upgrade at " + c.bold("transitions.dev/pro.html") + " or run without --mode revamp.");
@@ -114,22 +215,25 @@ export async function runFix(root, result, opts) {
     ciSummary("No fixes this run: " + msg);
     return done(1, "quota", msg);
   }
-  if (res.status === 503) {
-    const err = await res.json().catch(() => ({}));
-    console.error(c.yellow("The fix service is down on our side.") + " " + (err.detail || "Please try again later."));
+  if (status === 503) {
+    console.error(c.yellow("The fix service is down on our side.") + " " + (data.detail || "Please try again later."));
     ciSummary("The fix service is down on our side. Re-run this workflow later.");
     return done(1, "service-down", "the fix service is down on our side");
   }
-  if (res.status === 502) {
-    const err = await res.json().catch(() => ({}));
-    console.error(c.yellow("The fix service could not reach the AI backend.") + " " + (err.detail || "Try again in a minute."));
-    return done(1, "model-failed", "the fix service could not reach its AI backend; nothing was counted");
+  if (status === 413) {
+    const msg = data.detail || "This file has more code than one fix can handle.";
+    console.error(c.yellow("Too big for one run.") + " " + msg);
+    return done(1, "too-large", msg);
   }
-  if (!res.ok) { console.error(c.red("✗ ") + `Fix service error (${res.status}).`); return done(1, "error", `fix service error ${res.status}`); }
-  const data = await res.json();
+  if (status === 502) {
+    console.error(c.yellow("The fix did not go through.") + " " + (data.detail || "Try again in a minute."));
+    return done(1, "model-failed", (data.detail || "the AI backend returned an error").replace(/\.$/, ""));
+  }
+  if (status < 200 || status >= 300) { console.error(c.red("✗ ") + `Fix service error (${status}).`); return done(1, "error", `fix service error ${status}`); }
   report.summary = data.summary || "";
   report.usage = data.usage || null;
-  const proposed = (data.files || []).filter((f) => f.path && typeof f.content === "string");
+  const proposed = (data.files || []).filter((f) => f.path && typeof f.content === "string")
+    .map((f) => ({ ...f, content: withTokenFallbacks(f.content) }));
   if (!proposed.length) { console.log(c.yellow("The service proposed no changes.")); return done(0, "no-changes", "the service proposed no changes"); }
 
   // Show each proposal as a diff. Nothing is written yet.
@@ -139,27 +243,62 @@ export async function runFix(root, result, opts) {
 
   const apply = yes || await confirm(`Apply these changes to ${proposed.length} files? [y/N] `);
   if (!apply) { console.log(c.dim("Nothing changed.")); return done(0, "declined"); }
+  const originals = new Map();
   for (const p of proposed) {
     const dest = join(root, p.path);
     let original = "";
     try { original = readFileSync(dest, "utf8"); } catch { /* new file */ }
+    originals.set(p.path, original);
     const content = original.endsWith("\n") && !p.content.endsWith("\n") ? p.content + "\n" : p.content;
     writeFileSync(dest, content);
   }
-  const afterResult = scan(root);
+  // Never make motion worse: a file whose fix creates a new problem (a hover
+  // that now snaps, a layout jump, a surface that now pops) goes back to how
+  // it was, whatever the model intended.
+  let afterResult = scan(root);
+  const reverted = [];
+  for (const p of proposed) {
+    const was = new Set(result.findings.filter((f) => f.path === p.path && REGRESSIONS.has(f.rule)).map(findingKey));
+    const worse = afterResult.findings.find((f) => f.path === p.path && REGRESSIONS.has(f.rule) && !was.has(findingKey(f)));
+    if (!worse) continue;
+    writeFileSync(join(root, p.path), originals.get(p.path));
+    reverted.push({ path: p.path, why: worse.message });
+  }
+  if (reverted.length) {
+    afterResult = scan(root);
+    for (const r of reverted) console.log(c.yellow("↺ ") + `Left ${r.path} as it was: the fix would have introduced a problem (${r.why.slice(0, 120)}).`);
+  }
+  const kept = proposed.filter((p) => !reverted.some((r) => r.path === p.path));
+  report.reverted = reverted.map((r) => r.path);
+  if (!kept.length) {
+    console.log(c.yellow("No changes kept: every proposed fix would have made something worse. Nothing else was changed."));
+    return done(0, "no-changes", "the proposed fixes would have made the motion worse, so none were kept");
+  }
   const after = afterResult.score;
   const changes = describeChanges(result, afterResult, { mode });
   report.after = after;
-  report.applied = proposed.map((p) => p.path);
+  report.applied = kept.map((p) => p.path);
   report.changes = changes;
-  console.log(c.green("✓ ") + `Applied ${proposed.length} files. Motion score ${result.score} to ${after}.`);
+  // Progress in the files this run touched; on a big project the overall
+  // score moves only as more files are fixed.
+  const touched = new Set(kept.map((p) => p.path));
+  const beforeHere = result.findings.filter((f) => touched.has(f.path)).length;
+  const afterHere = afterResult.findings.filter((f) => touched.has(f.path)).length;
+  report.fixedFindings = Math.max(0, beforeHere - afterHere);
+  console.log(c.green("✓ ") + `Applied ${kept.length} file${kept.length === 1 ? "" : "s"}: fixed ${report.fixedFindings} of ${beforeHere} findings in them. Motion score ${result.score} to ${after}` +
+    (after <= result.score && plan.remaining.length ? ` (the score covers the whole project, so it climbs as the remaining ${plan.remaining.length} files get fixed).` : "."));
   if (changes.groups.length || changes.remaining.length) console.log("\n" + c.bold("What changed") + "\n" + changesText(changes) + "\n");
+  const left = plan.remaining.length + (plan.paths.length - paths.length);
+  if (left) {
+    const infoNote = plan.remainingInfoOnly ? ` (${plan.remainingInfoOnly} of them only have hand-rolled components the library could replace)` : "";
+    console.log(c.dim(`${left} more file${left === 1 ? " has" : "s have"} findings${infoNote}. Run fix again to continue: each run takes the most important files next and counts as one fix.`));
+  }
 
   if (!pr) {
     console.log(c.dim("Review with git diff. Re-run with --pr to open a pull request."));
     return done(0, "applied");
   }
-  const code = await openPr(root, result, proposed, { ...opts, yes, mode, after, changes, summary: data.summary || "" });
+  const code = await openPr(root, result, kept, { ...opts, yes, mode, after, changes, summary: data.summary || "" });
   return done(code, code === 0 && report.pr ? "pr" : code === 0 ? "applied" : "pr-failed", code === 0 ? null : "could not push the fixes or open the pull request");
 }
 

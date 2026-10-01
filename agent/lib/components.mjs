@@ -103,7 +103,7 @@ export function analyzeComponents(files) {
   const surfaces = new Set(components.filter((x) => !x.name.endsWith(" backdrop")).map((x) => x.recipe + "|" + x.path));
   const listed = components.filter((x) => !(x.name.endsWith(" backdrop") && surfaces.has(x.recipe + "|" + x.path)));
   listed.sort((a, b) => a.path.localeCompare(b.path) || a.line - b.line);
-  return { components: listed, findings };
+  return { components: listed, findings, transitionAll: transitionAllProps(parsed) };
 }
 
 // ── Recognition ───────────────────────────────────────────────────────────
@@ -1025,4 +1025,47 @@ function tailwindMotion(cls, f, line, recipe) {
     scaleSrc: { path: f.path, line, via: null }, closeScaleSrc: { path: f.path, line, via: null },
     distance: slide ? parseInt(slide[1], 10) * 4 : null, blur: null, layout: [], animated: [], origin: list.some((c) => /^origin-/.test(c)), loops: [], hover: false,
   };
+}
+
+// For every "transition: all", the properties that element's states really
+// change (hover, focus, open, closing...), so the fix can name exactly those.
+const STATE_PSEUDO = /:(hover|focus-visible|focus-within|focus|active|checked|open|popover-open)\b/g;
+const STATE_ATTR = /\[(data-state|data-open|data-closing|aria-expanded|aria-selected|aria-checked|aria-pressed|open)[^\]]*\]/g;
+function stateless(sel) {
+  return sel
+    .replace(STATE_PSEUDO, "")
+    .replace(STATE_ATTR, "")
+    .replace(/\.([A-Za-z0-9_-]+)/g, (m, c) => (OPEN_CLASSES.has(c) || CLOSING_CLASSES.has(c) ? "" : m))
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function transitionAllProps(parsed) {
+  const changes = new Map();
+  for (const pf of parsed) {
+    for (const r of pf.rules) {
+      if (r.media.some((m) => /prefers-reduced-motion/i.test(m))) continue;
+      for (const sel of splitList(r.selector)) {
+        const base = stateless(sel);
+        if (base === sel.replace(/\s+/g, " ").trim()) continue; // not a state rule
+        if (!changes.has(base)) changes.set(base, new Set());
+        for (const d of r.decls) {
+          if (d.prop.startsWith("--") || NON_MOTION_PROPS.has(d.prop) || LAYOUT_PROPS.has(d.prop)) continue;
+          changes.get(base).add(d.prop);
+        }
+      }
+    }
+  }
+  const out = [];
+  for (const pf of parsed) {
+    for (const r of pf.rules) {
+      for (const d of r.decls) {
+        if (d.prop !== "transition" || !/^\s*all\b/.test(d.value)) continue;
+        const props = new Set();
+        for (const sel of splitList(r.selector)) for (const p of changes.get(stateless(sel)) || []) props.add(p);
+        out.push({ path: pf.path, line: pf.lineOf(d.index), props: [...props] });
+      }
+    }
+  }
+  return out;
 }
