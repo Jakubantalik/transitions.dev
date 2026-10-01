@@ -7,7 +7,8 @@
 //   KV  LICENSES  key: license key,        value: {"plan":"free"|"team","quota":10|200,"active":true}
 //   KV  USAGE     key: "<license>:<YYYY-MM>", value: "<count>"
 //                 also "<license>:d:<YYYY-MM-DD>" (free daily) and
-//                 "global:free:<YYYY-MM>" (free-tier budget fuse)
+//                 "global:free:<YYYY-MM>" (free-tier budget fuse) and
+//                 "<license>:<YYYY-MM>:bonus" (extra fixes granted for that month)
 //   KV  RECIPES   key: "recipe:<slug>",    value: {"slug","tier","variants":{css,react,...}}
 //                 populated by pack-recipes.mjs (free + Pro recipe sources)
 //   var FREE_GLOBAL_MONTHLY   total free-tier fixes across all users per month
@@ -61,7 +62,7 @@ async function handleLicense(request, env, ctx) {
   const isFree = record.plan === "free";
   const month = new Date().toISOString().slice(0, 7);
   const used = parseInt((await env.USAGE.get(`${license}:${month}`)) || "0", 10);
-  const quota = record.quota || (isFree ? QUOTAS.free : QUOTAS.paid);
+  const quota = (record.quota || (isFree ? QUOTAS.free : QUOTAS.paid)) + await monthBonus(env, license, month);
   logEvent(env, ctx, { event: "license", record });
   return json({ plan: record.plan, modes: isFree ? ["polish"] : ["polish", "revamp"], used, quota });
 }
@@ -97,7 +98,7 @@ async function handleFix(request, env, ctx) {
   const month = new Date().toISOString().slice(0, 7);
   const usageKey = `${license}:${month}`;
   const used = parseInt((await env.USAGE.get(usageKey)) || "0", 10);
-  const quota = record.quota || (isFree ? QUOTAS.free : QUOTAS.paid);
+  const quota = (record.quota || (isFree ? QUOTAS.free : QUOTAS.paid)) + await monthBonus(env, license, month);
   if (used >= quota) {
     logEvent(env, ctx, { event: "fix_blocked", record, ...shape, status: "quota" });
     return json({ error: "quota exceeded", used, quota }, 429);
@@ -199,6 +200,14 @@ function keepAlive(work, ctx) {
     encodeBody: "manual",
     headers: { "content-type": "application/json", "x-ta-stream": "1", "cache-control": "no-store, no-transform", "content-encoding": "identity" },
   });
+}
+
+// Extra fixes granted to one license for one month (support goodwill). Kept
+// beside the usage counter so it expires with it and never touches the
+// license record the billing webhook rewrites.
+async function monthBonus(env, license, month) {
+  const n = parseInt((await env.USAGE.get(`${license}:${month}:bonus`)) || "0", 10);
+  return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
 const MAX_RECIPES = 6;
