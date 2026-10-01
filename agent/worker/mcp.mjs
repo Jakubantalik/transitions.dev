@@ -11,6 +11,7 @@
 // Metering: pro-tier recipe fetches count against a monthly allowance
 // (generous; it protects the content, not the margin - serving KV is free).
 
+import { logEvent } from "./events.mjs";
 import { BASE_RULES, MODE_RULES, SCAN_INSTRUCTIONS } from "./guidance.mjs";
 
 const PROTOCOL = "2025-06-18";
@@ -50,7 +51,7 @@ const TOOLS = [
   },
 ];
 
-export async function handleMcp(request, env) {
+export async function handleMcp(request, env, ctx) {
   let msg;
   try { msg = await request.json(); } catch { return rpcError(null, -32700, "parse error"); }
   const { id, method, params = {} } = msg;
@@ -72,15 +73,17 @@ export async function handleMcp(request, env) {
     case "tools/list":
       return rpcResult(id, { tools: TOOLS });
     case "tools/call":
-      return toolCall(id, params, request, env);
+      return toolCall(id, params, request, env, ctx);
     default:
       return rpcError(id, -32601, `method not found: ${method}`);
   }
 }
 
-async function toolCall(id, params, request, env) {
+async function toolCall(id, params, request, env, ctx) {
   const name = params.name;
   const args = params.arguments || {};
+  const logged = logMcp(request, env, ctx, name, args);
+  if (ctx?.waitUntil) ctx.waitUntil(logged);
   try {
     if (name === "scan_instructions") return toolText(id, SCAN_INSTRUCTIONS);
     if (name === "fix_guidance") {
@@ -148,4 +151,18 @@ function rpcError(id, code, message) {
     status: 200,
     headers: { "content-type": "application/json" },
   });
+}
+
+// Which tools people's own AIs call, and for get_recipe which recipe. The key
+// is optional on MCP, so anonymous calls are kept too (email NULL).
+async function logMcp(request, env, ctx, name, args) {
+  try {
+    const license = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    const record = license ? await env.LICENSES.get(license, { type: "json" }) : null;
+    const slug = name === "get_recipe" ? String(args.slug || "").toLowerCase().replace(/[^a-z0-9-]/g, "") : "";
+    logEvent(env, ctx, { event: "mcp", record, mode: name === "fix_guidance" ? (args.mode === "revamp" ? "revamp" : "polish") : null,
+      detail: slug ? `${name}:${slug}` : name });
+  } catch (e) {
+    console.error("[events] mcp log failed:", e?.message);
+  }
 }

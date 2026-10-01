@@ -12,7 +12,7 @@
   />
   <meta
     name="keywords"
-    content="Transitions Pro, UI transitions, CSS transitions, web animations, motion design, Pro skill, Refine tool, frontend, AI coding agent, copy paste transitions"
+    content="Transitions Pro, UI transitions, CSS transitions, web animations, motion design, Pro skill, frontend, AI coding agent, copy paste transitions"
   />
   <meta name="author" content="Transitions.dev" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -1009,16 +1009,14 @@
       line-height: 24.2px;
       color: var(--text-muted);
     }
-    /* House inline-link style (same as the homepage): darker than the body
-       copy, underlined at rest with a softened line that solidifies on hover. */
+    /* Hero links: darker than the body copy, no underline at rest; the
+       underline only appears on hover. */
     .subtitle a {
       color: var(--text);
-      text-decoration: underline;
+      text-decoration: none;
       text-underline-offset: 2px;
-      text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
-      transition: text-decoration-color 180ms ease;
     }
-    .subtitle a:hover { text-decoration-color: currentColor; }
+    .subtitle a:hover { text-decoration: underline; }
 
     /* ─── Cards grid ──────────────────────────────────────────── */
     .cards {
@@ -1622,8 +1620,7 @@
       transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1), opacity 150ms ease;
       transform-origin: center;
     }
-    .footer-brand-logo:hover { opacity: 1; transform: scale(1.02); }
-    .footer-brand-logo:hover .brand-mark { transform: rotate(60deg); }
+    .footer-brand-logo:hover { opacity: 1; }
     @media (prefers-reduced-motion: reduce) {
       .footer-brand-logo { transition: opacity 150ms ease; }
       .footer-brand-logo:hover { transform: none; }
@@ -3682,7 +3679,6 @@
       transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
       transform-origin: center;
     }
-    .brand:hover .brand-mark { transform: rotate(60deg); }
     @media (prefers-reduced-motion: reduce) {
       .brand, .brand-mark { transition: none; }
       .brand:hover, .brand:hover .brand-mark { transform: none; }
@@ -3824,6 +3820,58 @@
     .tl-set-back-ic { display: flex; flex: none; color: #696969; transform: scaleX(-1); }
     html[data-theme="dark"] .tl-set-back-ic { color: #8b8b8b; }
     .tl-set-back-title { flex: 1; min-width: 0; }
+    /* ⋮ menu Feedback page (same as libraries.dev): the menu widens for the
+       form while the slide carries the height. Logic lives in pro-client.js. */
+    .tl-set-slide .t-page[data-page-id="4"] { --t-page-from-x: var(--page-slide-distance); }
+    .tl-set-slide[data-page="4"] .t-page[data-page-id="4"] {
+      opacity: 1; pointer-events: auto; transform: translateX(0); filter: blur(0); }
+    .tl-menu.t-dropdown.is-open {
+      transition: transform var(--dropdown-open-dur) var(--dropdown-ease), opacity var(--dropdown-open-dur) var(--dropdown-ease),
+        width var(--p4-dur, 300ms) var(--p4-ease, cubic-bezier(0.22, 1, 0.36, 1)); }
+    .tl-menu.is-feedback { width: 320px; }
+    .pm-feedback { display: flex; flex-direction: column; gap: 8px; padding: 2px; }
+    .pm-feedback-input, .pm-feedback-email {
+      width: 100%; box-sizing: border-box; display: block; padding: 0 12px;
+      font-family: var(--font-sans); font-size: 13px; line-height: 1.4; color: #0f0f0f;
+      background: #fff; border: 1px solid #dcdcdc; border-radius: 12px; outline: none;
+      transition: border-color 120ms ease; }
+    .pm-feedback-input { min-height: 130px; padding-top: 10px; padding-bottom: 10px; resize: none; }
+    .pm-feedback-email { height: 40px; }
+    .pm-feedback-input::placeholder, .pm-feedback-email::placeholder { color: #828282; }
+    .pm-feedback-input:focus, .pm-feedback-email:focus { border-color: #585858; }
+    .pm-feedback-input.is-error, .pm-feedback-email.is-error { border-color: #e23014; }
+    html[data-theme="dark"] .pm-feedback-input, html[data-theme="dark"] .pm-feedback-email { background: #151517; color: #f2f2f2; border-color: #3a3a3d; }
+    html[data-theme="dark"] .pm-feedback-input:focus, html[data-theme="dark"] .pm-feedback-email:focus { border-color: #a5a5a5; }
+    html[data-theme="dark"] .pm-feedback-input.is-error, html[data-theme="dark"] .pm-feedback-email.is-error { border-color: #e23014; }
+    .pm-feedback-btn {
+      width: 100%; height: 40px; border: 0; border-radius: 26px; background: #17181c; color: #fff;
+      font-family: var(--font-sans); font-size: 13px; line-height: 13px; font-weight: 500; cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), scale 120ms cubic-bezier(0.22, 1, 0.36, 1), opacity 120ms ease; }
+    .pm-feedback-btn:hover { background: #2a2a2a; }
+    .pm-feedback-btn:not([disabled]):active { scale: 0.96; background: #000; }
+    .pm-feedback-btn[disabled] { opacity: 0.6; cursor: default; }
+    .pm-feedback-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+    html[data-theme="dark"] .pm-feedback-btn { background: #f2f2f2; color: #111; }
+    html[data-theme="dark"] .pm-feedback-btn:hover { background: #e8e8e8; }
+    html[data-theme="dark"] .pm-feedback-btn:not([disabled]):active { background: #d8d8d8; }
+    .pm-feedback-note { margin: -2px 0 0; padding: 0 2px; font-size: 13px; line-height: 1.4; color: #4d4d4d; }
+    .pm-feedback-note[hidden] { display: none; }
+    .pm-feedback-note[data-kind="ok"] { color: #16a34a; }
+    .pm-feedback-note[data-kind="err"] { color: #d62b11; }
+    .pm-feedback-note a { color: inherit; font-weight: 500; }
+    .pm-feedback-input.is-shaking, .pm-feedback-email.is-shaking { animation: pm-shake 280ms linear; }
+    @keyframes pm-shake {
+      0% { transform: translateX(0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      28.57% { transform: translateX(6px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      57.14% { transform: translateX(-6px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      78.57% { transform: translateX(4px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      100% { transform: translateX(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tl-menu.t-dropdown.is-open { transition: none !important; }
+      .pm-feedback-input, .pm-feedback-email { animation: none !important; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .t-dropdown, .tl-set-slide, .tl-set-slide .t-page { transition: none !important; }
     }
@@ -4219,6 +4267,66 @@
     /* Cards stretch to the tallest sibling; the CTA pins to the bottom so
        all three buttons sit on one line. */
     .pro-price-grid .pro-price-cta { margin-top: auto; }
+    /* "New" badge on the Business card (Figma 1673:35894): a light pill
+       with a hairline ring, the label filled with the Figma wash and
+       animated with the agent title's colour drift and hue turn
+       (title-pro-hue). */
+    .pro-price-plan-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .pro-new-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 50px;
+      background:
+        linear-gradient(90deg, rgba(167, 167, 167, 0.06), rgba(167, 167, 167, 0.06)),
+        #ffffff;
+      /* Figma 1673:35894: a soft drop plus a 6% hairline, a darker bottom
+         edge and a light grey ring, all inset over the fill */
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.1),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1);
+      /* keeps the plan row at the name's height, so prices align */
+      margin: -2px 0;
+    }
+    html[data-theme="dark"] .pro-new-badge {
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.3);
+    }
+    .pro-new-badge-text {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 16px;
+      white-space: nowrap;
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+      background-image:
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 29 16' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87 -1.1 1.9937 -1.6875 23.522 19)'><stop stop-color='rgba(3,246,51,1)' offset='0'/><stop stop-color='rgba(10,170,51,0.5)' offset='0.5'/><stop stop-color='rgba(16,94,51,0)' offset='1'/></radialGradient></defs></svg>"),
+        url("data:image/svg+xml;utf8,<svg viewBox='0 0 29 16' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.3211 -1.904e-8 4.8968e-8 2.5625 1.6111 8)'><stop stop-color='rgba(228,0,0,1)' offset='0'/><stop stop-color='rgba(228,0,0,0)' offset='1'/></radialGradient></defs></svg>"),
+        linear-gradient(90deg, rgba(14, 132, 229, 0.73), rgba(14, 132, 229, 0.73)),
+        linear-gradient(90deg, #e02d2d, #e02d2d);
+      background-size: 180% 180%, 180% 180%, 100% 100%, 100% 100%;
+      background-repeat: no-repeat;
+      animation:
+        title-pro-hue 4s linear infinite,
+        pro-new-drift 5s ease-in-out infinite;
+    }
+    @keyframes pro-new-drift {
+      0%, 100% { background-position: 100% 100%, 0% 50%, 0 0, 0 0; }
+      25%      { background-position: 0% 100%, 50% 0%, 0 0, 0 0; }
+      50%      { background-position: 0% 0%, 100% 50%, 0 0, 0 0; }
+      75%      { background-position: 100% 0%, 50% 100%, 0 0, 0 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pro-new-badge-text { animation: none; }
+    }
     .pro-price-plan-name {
       font-family: var(--font-sans);
       font-size: 18px;
@@ -4368,8 +4476,27 @@
     .plan-cmp td:first-child { color: var(--text-muted); }
     .plan-cmp tr + tr { border-top: 1px solid var(--card-border); }
     .plan-cmp .cmp-yes { color: #30a46c; }
+    /* Figma 1673:35902: a green disc with a white 10px check. */
+    .cmp-check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 20px;
+      background: #35ba00;
+      vertical-align: middle;
+      box-shadow:
+        0 1px 1px 0 rgba(0, 0, 0, 0.1),
+        0 1px 4px 0 rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+        inset 0 -1px 1px 0 rgba(0, 0, 0, 0.09);
+    }
+    .cmp-check svg { width: 10px; height: 10px; display: block; }
     .plan-cmp .cmp-no { color: var(--text-faint); }
     .cmp-info { position: relative; display: inline-flex; margin-left: 6px; vertical-align: middle; margin-top: -2px; }
+    /* The info dot sits right after its sentence, wrapping with the text. */
+    .pro-feature-text { display: block; min-width: 0; }
     .cmp-info-btn {
       border: 0; padding: 0; width: 16px; height: 16px; border-radius: 50%;
       display: inline-flex; align-items: center; justify-content: center;
@@ -4496,16 +4623,26 @@
     /* Balanced wrapping: two-line features break at even widths instead of
        leaving a one-word orphan on the second line. */
     .pro-feature { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 20px; color: var(--text); text-wrap: balance; }
+    /* Figma 1673:35906: a faint tinted disc with a 5% hairline and a
+       10px check. */
     .pro-feature-check {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       flex: none;
-      color: var(--text);
+      border-radius: 20px;
+      background: rgba(210, 210, 210, 0.2);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      color: #242424;
     }
     .pro-feature-check svg { width: 10px; height: 10px; display: block; }
+    html[data-theme="dark"] .pro-feature-check {
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      color: #ededed;
+    }
     .pro-price-cta {
       display: flex;
       align-items: center;
@@ -5227,6 +5364,14 @@
   <!-- Analytics: GoatCounter (privacy-friendly, no cookies). -->
   <script data-goatcounter="https://jakub.goatcounter.com/count"
           async src="//gc.zgo.at/count.js"></script>
+  <style>
+    /* Five nav pills: between the phone breakpoint and ~820px the top bar
+       drops the wordmark beside the mark so the pills clear the right
+       cluster. */
+    @media (min-width: 640px) and (max-width: 819px) {
+      .site-nav .brand-word { display: none; }
+    }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -5249,6 +5394,7 @@
           <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
           <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
+          <a class="nav-pill nav-pill--active" href="/pro.html" data-nav="pricing" aria-current="page">Pricing</a>
           </nav>
         </div>
         <div class="site-nav-right">
@@ -5303,9 +5449,28 @@
                       <span class="tl-menu-chevr" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
                     </span>
                   </div>
+                  <div class="tl-menu-item" id="pm-feedback" role="menuitem" tabindex="0">
+                    <span class="tl-menu-item-label">Feedback</span>
+                    <span class="tl-menu-trail">
+                      <span class="tl-menu-chevr" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
+                    </span>
+                  </div>
                   <a class="tl-menu-item" id="pm-support" href="mailto:jakubja@gmail.com" role="menuitem">
                     <span class="tl-menu-item-label">Support</span>
                   </a>
+                </div>
+                <div class="t-page" data-page-id="4">
+                  <button type="button" class="tl-set-back" id="pm-fb-back">
+                    <span class="tl-set-back-ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
+                    <span class="tl-set-back-title">Feedback</span>
+                  </button>
+                  <div class="tl-menu-divider"></div>
+                  <form class="pm-feedback" id="pm-feedback-form" novalidate>
+                    <textarea class="pm-feedback-input" rows="6" maxlength="2000" placeholder="Share your feedback, idea or comment" aria-label="Your feedback"></textarea>
+                    <input type="email" class="pm-feedback-email" maxlength="200" placeholder="Email (optional)" aria-label="Your email (optional)" autocomplete="email" spellcheck="false" />
+                    <p class="pm-feedback-note" role="status" hidden></p>
+                    <button type="submit" class="pm-feedback-btn">Send feedback</button>
+                  </form>
                 </div>
                 <div class="t-page" data-page-id="3">
                   <button type="button" class="tl-set-back" id="pm-back">
@@ -5365,7 +5530,7 @@
     <header class="header">
       <h1 class="title">Pricing</h1>
       <p class="subtitle">
-        36+ production-ready transitions, the <a href="/skill.html">Pro skill</a> for your agent,<br />
+        43+ production-ready transitions, the <a href="/skill.html">Pro skill</a> for your agent,<br />
         and the <a href="/agent.html">Transitions Agent</a> that scans your app, scores its motion,<br />
         and fixes it as pull requests.
       </p>
@@ -5426,9 +5591,10 @@
           </div>
           <div class="pro-price-divider"></div>
           <ul class="pro-feature-list">
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Core transitions library with copy-ready snippets</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Free Transitions skill for Claude Code, Cursor and Codex</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Free Agent: unlimited motion scans, 10 hosted polish fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-1">i</button><span class="cmp-tip" id="tip-free-agent-1" role="tooltip">The Free Agent: unlimited motion scans and score, the GitHub Action score comment on pull requests, 10 hosted polish fixes a month, and free recipe sources for your own AI over MCP.</span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Core transitions library with copy-ready snippets</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Free Transitions skill for Claude Code, Cursor and Codex</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Agent: unlimited motion scans, 10 hosted polish fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-1">i</button><span class="cmp-tip" id="tip-free-agent-1" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Agent for personal use</span></li>
           </ul>
           <a class="pro-price-cta" href="#" data-plan="free">Start free</a>
         </div>
@@ -5447,18 +5613,18 @@
           </div>
           <div class="pro-price-divider"></div>
           <ul class="pro-feature-list">
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>36+ production-ready transitions ready for React, Next.js, Typescript</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Refine tool with Pro transitions skill</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Free Agent included<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-2">i</button><span class="cmp-tip" id="tip-free-agent-2" role="tooltip">The Free Agent: unlimited motion scans and score, the GitHub Action score comment on pull requests, 10 hosted polish fixes a month, and free recipe sources for your own AI over MCP.</span></span></li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Every future transition, free</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license, unlimited projects</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>For solo builders and freelancers</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>43+ production-ready transitions ready for React, Next.js, Typescript</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Agent included<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-2">i</button><span class="cmp-tip" id="tip-free-agent-2" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Every future transition, free</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Commercial license, unlimited projects</li>
           </ul>
           <a class="pro-price-cta" href="#" data-plan="solo">Get Pro</a>
         </div>
 
         <div class="pro-price-card" data-plan-card="team">
-          <div class="pro-price-plan-name">Business</div>
+          <div class="pro-price-plan-row"><div class="pro-price-plan-name">Business</div><span class="pro-new-badge"><span class="pro-new-badge-text">New</span></span></div>
           <div class="pro-price-head">
             <div class="pro-price-amount">
               <span class="pro-price-value p9-number" data-price-value aria-live="polite"><span class="p9-static">$</span><span class="p9-digits"><span class="p9-char" data-stagger="1">5</span><span class="p9-char" data-stagger="2">9</span></span></span>
@@ -5471,11 +5637,13 @@
           </div>
           <div class="pro-price-divider"></div>
           <ul class="pro-feature-list">
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Everything in Pro, for 5 seats, +$9/mo per extra seat</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Full Agent included: 200 hosted fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the full Agent?" aria-describedby="tip-full-agent">i</button><span class="cmp-tip" id="tip-full-agent" role="tooltip">The Full Agent: 200 hosted fixes a month, polish + revamp modes with rewrites from the Pro recipe library, fix pull requests from CI with one secret, and the full recipe library for your own AI over MCP.</span></span></li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Polish + revamp modes, grounded in the Pro recipes</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>GitHub Action with pull-request motion gate</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4" /></svg></span>Commercial license for the whole team</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>For companies and teams</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Everything in Pro, for 5 seats, +$9/mo per extra seat</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Full Agent included: 200 hosted fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the full Agent?" aria-describedby="tip-full-agent">i</button><span class="cmp-tip" id="tip-full-agent" role="tooltip">200 fixes a month, polish and revamp modes, and fix pull requests from CI.</span></span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Polish + revamp modes, grounded in the Pro recipes</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>GitHub Action with pull-request motion gate</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Commercial license for the whole team</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Priority support</li>
           </ul>
           <a class="pro-price-cta" href="#" data-plan="team">Get Business</a>
         </div>
@@ -5503,12 +5671,12 @@
           <table class="plan-cmp">
             <tr><th></th><th>Free Agent</th><th>Full Agent</th></tr>
             <tr><td>Motion scans + score</td><td>Unlimited</td><td>Unlimited</td></tr>
-            <tr><td>GitHub Action: PR score + merge gate</td><td class="cmp-yes">&#10003;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>GitHub Action: PR score + merge gate</td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td></tr>
             <tr><td>Hosted fixes</td><td>10 / month</td><td>200 / month</td></tr>
-            <tr><td>Fix modes</td><td>Polish</td><td>Polish + Revamp<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is revamp?" aria-describedby="cmp-tip-revamp">i</button><span class="cmp-tip" id="cmp-tip-revamp" role="tooltip">Revamp does everything polish does, and where a finding matches a transitions.dev recipe it rewrites the motion with the recipe's real source: proper enter and exit states, keyframes, and easing.</span></span></td></tr>
-            <tr><td>Rewrites from the Pro recipe library</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Fix modes</td><td>Polish</td><td>Polish + Revamp<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is revamp?" aria-describedby="cmp-tip-revamp">i</button><span class="cmp-tip" id="cmp-tip-revamp" role="tooltip">Polish, plus rewrites motion with real recipe source where one fits.</span></span></td></tr>
+            <tr><td>Rewrites from the Pro recipe library</td><td class="cmp-no">&#8212;</td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td></tr>
             <tr><td>Recipe sources for your own AI (MCP)</td><td>Free recipes</td><td>Full library incl. Pro</td></tr>
-            <tr><td>Fix pull requests from CI, one secret</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Fix pull requests from CI, one secret</td><td class="cmp-no">&#8212;</td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td></tr>
             <tr><td>Use</td><td>Personal use</td><td>Commercial, whole team</td></tr>
           </table>
           <p class="plan-modal-note">Full Agent comes with the Business plan. More detail on the <a href="/agent.html">Agent page</a>.</p>
@@ -5516,9 +5684,9 @@
         <div data-cmp-panel="skill">
           <table class="plan-cmp">
             <tr><th></th><th>Free skill</th><th>Pro skill</th></tr>
-            <tr><td>Transitions included</td><td>Core set</td><td>All 36+</td></tr>
+            <tr><td>Transitions included</td><td>Core set</td><td>All 43+</td></tr>
             <tr><td>Variants</td><td>CSS</td><td>CSS + React + TypeScript</td></tr>
-            <tr><td>Every future transition</td><td class="cmp-no">&#8212;</td><td class="cmp-yes">&#10003;</td></tr>
+            <tr><td>Every future transition</td><td class="cmp-no">&#8212;</td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td></tr>
             <tr><td>Works with</td><td colspan="2">Claude Code, Cursor and Codex</td></tr>
             <tr><td>License</td><td>MIT core transitions</td><td>Commercial, unlimited projects</td></tr>
           </table>
@@ -5532,8 +5700,8 @@
     <!-- ─── Customer logos (Figma 2626:1382) ───────────────────────
          Logos are normalized to a near-black glyph on transparency so a
          single asset serves both themes: dark mode just inverts them. -->
-    <section class="pro-section pro-customers" aria-label="Customers who use Transitions Pro">
-      <p class="pro-customers-label">Customers who use Transitions Pro</p>
+    <section class="pro-section pro-customers" aria-label="Used by designers and engineers at">
+      <p class="pro-customers-label">Used by designers and engineers at</p>
       <div class="pro-customers-row">
         <img class="pro-customer-logo" src="assets/customers/higgsfield.png" alt="Higgsfield" style="--logo-h: 26px" loading="lazy" decoding="async" />
         <img class="pro-customer-logo" src="assets/customers/mercado-libre.png" alt="Mercado Libre" style="--logo-h: 34px" loading="lazy" decoding="async" />
@@ -5594,7 +5762,7 @@
       <div class="pro-bento">
         <div class="pro-bento-card pro-bento-card--tall">
           <h3 class="pro-bento-title">Full library access</h3>
-          <p class="pro-bento-desc">36+ polished transitions <span class="dim">ready to drop into any project: modals, dropdowns, panels, badges, and more. Every one includes React and TypeScript snippets, in the Skill and the npm package.</span></p>
+          <p class="pro-bento-desc">43+ polished transitions <span class="dim">ready to drop into any project: modals, dropdowns, panels, badges, and more. Every one includes React and TypeScript snippets, in the Skill and the npm package.</span></p>
           <!-- Live mini-cards (Figma 2332:3194): each is a real homepage
                card scaled 0.709×, meta text removed so the stage sits
                with an equal 12px pad on every side. Card stack fully
@@ -5711,7 +5879,8 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p>Transitions Pro is a collection of the most essential UI transitions for web apps: 36+ polished, production-ready recipes, each with React and TypeScript variants. Copy and paste the CSS into any project, or let your AI agent apply them through the Pro skill. It also unlocks the Refine tool wired to the Pro recipes.</p>
+            <p>Transitions Pro is a collection of the most essential UI transitions for web apps: 43+ polished, production-ready recipes, each with React and TypeScript variants. Copy and paste the CSS into any project, or let your AI agent apply them through the Pro skill. It also unlocks the Refine tool wired to the Pro recipes.</p>
+            <p>For teams there is <strong>Business</strong>: $59/mo for 5 Pro seats in one organization, plus the Full Transitions Agent. It scans and fixes your motion with 200 hosted fixes a month, in both polish and revamp modes, and can gate pull requests on GitHub.</p>
           </div></div>
         </div>
 
@@ -5722,16 +5891,6 @@ description: Production-ready CSS
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
             <p>The free site showcases the core transitions with copy-ready snippets, and the Free Agent scans any codebase for missing or janky motion (<code>npx transitions-agent</code>). Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-dev add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan. Business adds the Full Agent on top: hosted AI fixes as pull requests, grounded in the Pro recipe library.</p>
-          </div></div>
-        </div>
-
-        <div class="t-acc" data-open="false">
-          <button class="t-acc-head" type="button" aria-expanded="false">
-            <span>Do I need an AI agent to use it?</span>
-            <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
-          </button>
-          <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p>No. Every transition ships as self-contained, copy-ready CSS that works in any project. The Pro skill and Refine tool are optional accelerators for agent-driven workflows. They plug into <a href="https://transitions.dev/refine" target="_blank" rel="noopener">Cursor, Claude Code, Codex</a> and similar tools.</p>
           </div></div>
         </div>
 
@@ -5761,7 +5920,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p>New transitions added to the library, improvements to the Pro skill, and Refine tool updates are all included while your plan is active, at no extra charge.</p>
+            <p>New transitions added to the library, and improvements to the Pro skill are all included while your plan is active, at no extra charge.</p>
           </div></div>
         </div>
 
@@ -6213,7 +6372,6 @@ description: Production-ready CSS
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
-        { group: "Pages", label: "Refine tool", hint: "Live motion tuning", href: "/refine.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -6641,7 +6799,7 @@ description: Production-ready CSS
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=36" defer></script>
+  <script src="assets/pro-client.js?v=42" defer></script>
 
   <!-- Plan comparison modal behavior (recipe: skill 06-modal state dance). -->
   <script>
@@ -6689,5 +6847,6 @@ description: Production-ready CSS
       });
     })();
   </script>
+  <script src="assets/brand-mark.js?v=4" defer></script>
 </body>
 </html>

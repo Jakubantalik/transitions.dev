@@ -15,6 +15,11 @@ kv_namespaces = [
 ]
 
 # Route under the existing API host, next to the transitions-pro endpoints.
+# Usage history (agent_events). Same D1 database as the accounts API
+# (transitions-pro); migration 0008 creates the table.
+d1_databases = [
+  { binding = "DB", database_name = "transitions_pro", database_id = "04a8aded-c8aa-4f30-88f0-1cd8a9106dab" },
+]
 routes = [{ pattern = "api.transitions.dev/v1/agent/*", zone_name = "transitions.dev" }]
 
 # Budget fuse: total free-tier fixes per month across all free users.

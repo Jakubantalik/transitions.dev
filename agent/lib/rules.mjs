@@ -2,6 +2,9 @@
 //   { rule, severity, path, line, message, snippet?, recipe? }
 // severity: "major" | "warn" | "minor" | "info"
 import { lineOf } from "./walk.mjs";
+import { DURATION_TOKENS } from "./catalog.mjs";
+
+const SCALE_MS = new Set(DURATION_TOKENS.map((t) => t.ms));
 
 const CSSISH = new Set([".css", ".scss", ".less", ".html", ".vue", ".svelte", ".jsx", ".tsx", ".js", ".mjs", ".ts"]);
 const STYLESHEET = new Set([".css", ".scss", ".less"]);
@@ -252,8 +255,9 @@ export function runRules(files) {
     });
   }
 
-  // inconsistent-durations (project-level)
-  const unique = [...new Set(durations.map((d) => d.ms))].sort((a, b) => a - b);
+  // inconsistent-durations (project-level). Values on the shared token scale
+  // are the consistent ones, so moving onto it never counts against a project.
+  const unique = [...new Set(durations.map((d) => d.ms))].filter((ms) => !SCALE_MS.has(ms)).sort((a, b) => a - b);
   if (unique.length > 5) {
     findings.push({
       rule: "inconsistent-durations",

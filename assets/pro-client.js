@@ -51,10 +51,13 @@
   function writeAuthCache() {
     try {
       var prev = readAuthCache();
-      if (prev && !!prev.a === !!state.authenticated && !!prev.p === !!state.pro) return;
+      if (prev && !!prev.a === !!state.authenticated && !!prev.p === !!state.pro &&
+          (prev.e || null) === (state.email || null)) return;
       localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({
         a: !!state.authenticated,
         p: !!state.pro,
+        // The avatar is the email's initial, so the optimistic paint needs it.
+        e: state.authenticated ? state.email : null,
         t: Date.now(),
       }));
     } catch (e) {}
@@ -158,6 +161,7 @@
         state.name = me.name || null;
         state.pro = !!(me.entitlements && me.entitlements.pro);
         state.lifetime = !!me.lifetime;
+        state.business = !!me.business;
         state.subscription = me.subscription || null;
         state.billing = !!me.billing;
         state.resolved = true;
@@ -218,6 +222,7 @@
         moved = !!c.a !== !!state.authenticated || !!c.p !== !!state.pro;
         state.authenticated = !!c.a;
         state.pro = !!c.p;
+        state.email = c.e || null;
         paintAuth();
         document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
       } catch (err) {}
@@ -292,10 +297,38 @@
         signout.remove();
       }
     }
+    // The 3-dot "More" button becomes the user's avatar while signed in, as on
+    // Libraries.dev: the menu behind it stays the same and already reads
+    // Account / Sign out in this state. The dots stay in the DOM; the class
+    // hides them and shows the email's initial.
+    var moreBtn = document.getElementById("more-btn");
+    if (moreBtn) {
+      injectAvatarStyle();
+      var initial = moreBtn.querySelector(".nav-avatar-initial");
+      if (state.authenticated && state.email) {
+        if (!initial) {
+          initial = document.createElement("span");
+          initial.className = "nav-avatar-initial";
+          initial.setAttribute("aria-hidden", "true");
+          moreBtn.appendChild(initial);
+        }
+        initial.textContent = state.email.charAt(0);
+        moreBtn.classList.add("icon-btn--avatar");
+        moreBtn.setAttribute("aria-label", "Account menu");
+        moreBtn.setAttribute("title", state.email);
+      } else {
+        moreBtn.classList.remove("icon-btn--avatar");
+        moreBtn.setAttribute("aria-label", "More");
+        moreBtn.removeAttribute("title");
+        if (initial) initial.remove();
+      }
+    }
     // Pro-page nav pill (replaces "Get Pro" there): Sign in -> Account.
+    // Signed in, the avatar button is the way to the account, so the pill hides.
     var navSigninLabel = document.querySelector("#nav-signin-btn .pill-label");
     if (navSigninLabel) {
-      navSigninLabel.textContent = state.authenticated ? "Account" : "Sign in";
+      navSigninLabel.textContent = "Sign in";
+      document.getElementById("nav-signin-btn").style.display = state.authenticated ? "none" : "";
     }
     // "Get Pro" nav pill (every page except /pro): once the visitor is signed
     // in AND entitled there is nothing left to sell, so the pill becomes a
@@ -312,6 +345,8 @@
       getPro.setAttribute("href", entitled ? "account.html" : "/pro.html");
       getPro.setAttribute("data-state", entitled ? "account" : "get-pro");
       getPro.setAttribute("aria-label", entitled ? "Account" : "Get Transitions Pro");
+      // Entitled: nothing left to sell and the avatar covers the account.
+      getPro.style.display = entitled ? "none" : "";
     }
     // Same swap in the mobile menu.
     var mobilePro = document.querySelector(".mobile-menu-link--pro");
@@ -320,6 +355,9 @@
       mobilePro.textContent = mobileEntitled ? "Account" : "Get Pro";
       mobilePro.setAttribute("href", mobileEntitled ? "account.html" : "/pro.html");
       mobilePro.setAttribute("data-state", mobileEntitled ? "account" : "get-pro");
+      // Entitled: the avatar and the Sign in CTA already lead to the account.
+      var mobileProItem = mobilePro.closest("li") || mobilePro;
+      mobileProItem.style.display = mobileEntitled ? "none" : "";
     }
     // Footer "Sign in" link (present on every page): label follows auth state.
     var footerLink = document.getElementById("footer-signin");
@@ -328,11 +366,18 @@
     }
     // CTAs reflect entitlement: entitled users manage their plan instead of
     // buying. Only the paid cards switch; "Start free" stays as it is.
+    // A plain Pro subscriber is offered the upgrade: checkout reuses their
+    // Stripe customer and the webhook retires the Pro subscription, prorated.
     if (state.pro) {
-      document.querySelectorAll('.pro-price-cta[data-plan="solo"], .pro-price-cta[data-plan="team"]').forEach(function (c) {
-        c.textContent = "Manage subscription";
-        c.setAttribute("data-action", "portal");
-      });
+      var soloCta = document.querySelector('.pro-price-cta[data-plan="solo"]');
+      var teamCta = document.querySelector('.pro-price-cta[data-plan="team"]');
+      if (state.business) {
+        if (teamCta) { teamCta.textContent = "Manage subscription"; teamCta.setAttribute("data-action", "portal"); }
+        if (soloCta) { soloCta.textContent = "Included in Business"; soloCta.setAttribute("data-action", "portal"); }
+      } else {
+        if (soloCta) { soloCta.textContent = "Manage subscription"; soloCta.setAttribute("data-action", "portal"); }
+        if (teamCta) { teamCta.textContent = "Upgrade to Business"; teamCta.setAttribute("data-action", "upgrade"); }
+      }
     }
   }
 
@@ -341,11 +386,19 @@
     return (billing && billing.getAttribute("data-billing")) || "monthly";
   }
 
-  // Free plan has no checkout: the Agent signup happens in the terminal.
-  var FREE_SIGNUP_CMD = "npx transitions-agent signup you@email.com";
-  function startFree() {
-    try { navigator.clipboard.writeText(FREE_SIGNUP_CMD); } catch (e) { /* clipboard optional */ }
-    notify("Run in your terminal: " + FREE_SIGNUP_CMD + " (copied). Your free Agent key arrives by email.");
+  // Free plan has no checkout: "Start free" creates the account (email + code)
+  // and emails the free Agent key. A visitor who is already signed in has an
+  // account, so it takes them there.
+  function startFree(ctaEl) {
+    if (state.authenticated) { location.href = "account.html"; return; }
+    openAuthModal({ mode: "signup", plan: "free", cta: ctaEl });
+  }
+
+  // Paid plans: a signed-out visitor creates the account first, then goes to
+  // Stripe for the plan they picked; a signed-in one goes straight to Stripe.
+  function startPaid(plan, ctaEl) {
+    if (state.authenticated) { startCheckout(plan, ctaEl); return; }
+    openAuthModal({ mode: "signup", plan: plan, cta: ctaEl });
   }
 
   function setBusy(el, busy) {
@@ -364,7 +417,7 @@
   }
 
   function startCheckout(plan, ctaEl) {
-    if (plan === "free") { startFree(); return; }
+    if (plan === "free") { startFree(ctaEl); return Promise.resolve(); }
     // Business (team) → per-seat subscription (buyer adjusts the seat count on
     // Stripe Checkout). The billing toggle carries monthly / annual / lifetime;
     // lifetime exists for Pro only — Business includes the hosted Agent, which
@@ -382,7 +435,10 @@
     setBusy(cta, true);
     var promo = urlPromoCode();
     if (promo) payload.code = promo;
-    apiJSON("/checkout", "POST", payload)
+    // Prefill Stripe with the signed-in email so the purchase lands on this
+    // account instead of whatever address gets typed at checkout.
+    if (state.authenticated && state.email) payload.email = state.email;
+    return apiJSON("/checkout", "POST", payload)
       .then(function (data) {
         if (data && data.url) location.href = data.url;
         // A blocked market carries its own explanation — showing "unavailable"
@@ -420,10 +476,13 @@
 
   // Send a magic-link email. Optional deviceCode ties the login to a device-activate
   // flow; optional inviteToken makes signing in also accept a team invitation.
-  function magicLink(email, deviceCode, inviteToken) {
+  // `signup` lets a new address through: the create-account modal sends it,
+  // the sign-in modal does not (so a mistyped checkout email is still caught).
+  function magicLink(email, deviceCode, inviteToken, signup) {
     var body = { email: (email || "").trim() };
     if (deviceCode) body.device_code = deviceCode;
     if (inviteToken) body.invite_token = inviteToken;
+    if (signup) body.signup = true;
     return apiJSON("/auth/magic-link", "POST", body);
   }
 
@@ -437,7 +496,7 @@
     return apiJSON("/auth/from-checkout", "POST", { session_id: sessionId });
   }
 
-  function signIn() { openAuthModal(); }
+  function signIn(opts) { openAuthModal(opts); }
 
   function notify(msg) { window.alert(msg); }
 
@@ -481,6 +540,40 @@
   // Replaces the old prompt()/alert() flow. Injected once, reused across pages.
   var modalEl = null, lastFocus = null;
 
+  // What the open modal is for. "signin" is the returning-user box; "signup"
+  // creates an account for the plan the visitor picked on the pricing page,
+  // then either finishes (free) or hands over to Stripe Checkout (Pro,
+  // Business). Both share the same email -> code steps.
+  var authCtx = { mode: "signin", plan: null, cta: null };
+  var PLAN_NAMES = { free: "Free", solo: "Pro", team: "Business" };
+
+  function stepCopy(step, email) {
+    var signup = authCtx.mode === "signup";
+    var plan = authCtx.plan;
+    if (step === "code") {
+      return {
+        title: "Enter one-time password",
+        sub: "We sent it to " + (email || "your inbox") + ".",
+        btn: signup ? (plan && plan !== "free" ? "Continue to checkout" : "Create account") : "Verify",
+      };
+    }
+    if (step === "done") {
+      return {
+        title: "You’re all set",
+        sub: "You’re signed in. Your free Agent key is on its way to " + (email || "your inbox") + ".",
+      };
+    }
+    if (!signup) {
+      return { title: "Sign in", sub: "Enter the email you signed up with.", btn: "Send code" };
+    }
+    // Sign-up header copy (Figma 1674:35924).
+    return {
+      title: "Get Started.",
+      sub: "Make your motion UI better",
+      btn: plan && plan !== "free" ? "Continue to " + PLAN_NAMES[plan] : "Continue",
+    };
+  }
+
   function ensureAuthModal() {
     if (modalEl) return modalEl;
     injectModalStyle();
@@ -492,144 +585,190 @@
       '<div class="tp-modal-backdrop" data-tp-close></div>' +
       '<div class="tp-modal-card" role="dialog" aria-modal="true" aria-labelledby="tp-modal-title">' +
         '<button type="button" class="tp-modal-x" aria-label="Close" data-tp-close>&times;</button>' +
-        // Two steps, one question each: ask for the email, then ask for the code.
-        // Both forms used to sit on screen together, so the card presented two
-        // inputs and two buttons at once and left the user deciding which they
-        // were meant to use.
-        '<p class="tp-modal-intro" id="tp-modal-title">Enter your email address' +
-          '<span class="tp-modal-intro-muted" data-step-sub>The one you used at checkout.</span></p>' +
-        '<form class="tp-modal-form" novalidate>' +
+        // One question per screen: the email, then the code, then (free
+        // sign-up only) a short confirmation.
+        // Sign-up header mark (Figma 1674:35924, ar-cube-3): the brand cube.
+        '<span class="tp-modal-mark" aria-hidden="true" hidden><svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.85265L15.5409 3.84441L14.5604 5.58756L13 4.70985V7H11V4.70985L9.43962 5.58756L8.45909 3.84441L12 1.85265ZM17.3613 4.86837L21 6.91515V11H19V9.23205L17.0359 10.366L16.0359 8.63397L17.9804 7.51132L16.3807 6.61152L17.3613 4.86837ZM7.61925 6.61152L6.01961 7.51132L7.9641 8.63397L6.9641 10.366L5 9.23205L5 11H3L3 6.91515L6.63873 4.86837L7.61925 6.61152ZM5 13V14.7679L6.9641 13.634L7.9641 15.366L6.0196 16.4887L7.61925 17.3885L6.63873 19.1316L3 17.0848V13H5ZM21 13V17.0848L17.3613 19.1316L16.3807 17.3885L17.9804 16.4887L16.0359 15.366L17.0359 13.634L19 14.7679V13H21ZM13 17V19.2902L14.5604 18.4124L15.5409 20.1556L12 22.1473L8.45908 20.1556L9.43961 18.4124L11 19.2902V17H13Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M15.0981 11.366L13 12.5774V15H11V12.5774L8.90192 11.366L9.90192 9.63397L12 10.8453L14.0981 9.63397L15.0981 11.366Z" fill="currentColor"/></svg></span>' +
+        '<p class="tp-modal-intro" id="tp-modal-title"><span data-step-title>Sign in</span>' +
+          '<span class="tp-modal-intro-muted" data-step-sub></span></p>' +
+        '<form class="tp-modal-form tp-modal-email-form" novalidate>' +
           '<div class="tp-modal-field">' +
             '<input class="tp-modal-input" id="tp-modal-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" aria-label="Email address" />' +
             '<p class="tp-modal-error" role="alert" hidden>Please enter a valid email.</p>' +
           '</div>' +
-          '<button class="tp-modal-btn" type="submit">Send code</button>' +
-          '<button class="tp-modal-btn tp-modal-btn--ghost" type="button" data-tp-close>Back</button>' +
+          '<button class="tp-modal-btn" type="submit">Continue</button>' +
         '</form>' +
         '<form class="tp-modal-form tp-modal-code-form" novalidate hidden>' +
           '<div class="tp-modal-field">' +
             '<input class="tp-modal-input" id="tp-modal-code" type="text" name="code" placeholder="XXXX-XXXX" autocomplete="one-time-code" spellcheck="false" inputmode="text" style="text-transform:uppercase" aria-label="One-time code" />' +
-            '<p class="tp-modal-error" role="alert" hidden>That code didn\u2019t work \u2014 check it and try again.</p>' +
+            '<p class="tp-modal-error" role="alert" hidden>That code didn’t work. Check it and try again.</p>' +
           '</div>' +
           '<button class="tp-modal-btn" type="submit">Verify</button>' +
           '<button class="tp-modal-btn tp-modal-btn--ghost" type="button" data-tp-restart>Use a different email</button>' +
         '</form>' +
+        '<div class="tp-modal-form tp-modal-done" hidden>' +
+          '<button class="tp-modal-btn" type="button" data-tp-close>Done</button>' +
+        '</div>' +
         '<p class="tp-modal-note" role="status" hidden></p>' +
-        '<p class="tp-modal-foot">No access? <a href="pro.html">Get Pro</a></p>' +
+        '<p class="tp-modal-foot" data-foot></p>' +
       "</div>";
     document.body.appendChild(modalEl);
 
     modalEl.addEventListener("click", function (e) {
       if (e.target.hasAttribute("data-tp-close")) closeAuthModal();
+      // Footer switch between "Sign in" and "Create an account". Switching to
+      // sign-up from the plain sign-in box starts the free plan.
+      var sw = e.target.closest("[data-tp-switch]");
+      if (sw) {
+        e.preventDefault();
+        var toSignup = sw.getAttribute("data-tp-switch") === "signup";
+        authCtx = { mode: toSignup ? "signup" : "signin", plan: toSignup ? (authCtx.plan || "free") : authCtx.plan, cta: authCtx.cta };
+        setModalNote(modalEl.querySelector(".tp-modal-note"), "", "");
+        showStep("email");
+      }
     });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && !modalEl.hasAttribute("hidden")) closeAuthModal();
     });
 
-    // Step control. The card shows exactly one form at a time; the heading and
-    // sub-line change with it so the user is answering one question per screen.
-    var emailForm = modalEl.querySelector(".tp-modal-form:not(.tp-modal-code-form)");
+    var emailForm = modalEl.querySelector(".tp-modal-email-form");
     var codeFormEl = modalEl.querySelector(".tp-modal-code-form");
-    var titleEl = modalEl.querySelector(".tp-modal-intro");
+    var doneEl = modalEl.querySelector(".tp-modal-done");
+    var titleEl = modalEl.querySelector("[data-step-title]");
+    var subEl = modalEl.querySelector("[data-step-sub]");
+    var footEl = modalEl.querySelector("[data-foot]");
+    var markEl = modalEl.querySelector(".tp-modal-mark");
     function showStep(step, email) {
-      var code = step === "code";
-      emailForm.hidden = code;
-      codeFormEl.hidden = !code;
-      titleEl.firstChild.nodeValue = code ? "Enter one-time password" : "Enter your email address";
-      var sub = titleEl.querySelector("[data-step-sub]");
-      if (sub) sub.textContent = code
-        ? "We sent it to " + (email || "your inbox") + "."
-        : "The one you used at checkout.";
-      var focusEl = modalEl.querySelector(code ? "#tp-modal-code" : "#tp-modal-email");
+      var copy = stepCopy(step, email);
+      emailForm.hidden = step !== "email";
+      codeFormEl.hidden = step !== "code";
+      doneEl.hidden = step !== "done";
+      titleEl.textContent = copy.title;
+      subEl.textContent = copy.sub;
+      // The cube heads the sign-up screen only.
+      markEl.hidden = !(authCtx.mode === "signup" && step === "email");
+      if (copy.btn) {
+        var btn = (step === "code" ? codeFormEl : emailForm).querySelector(".tp-modal-btn");
+        btn.textContent = copy.btn;
+        btn.setAttribute("data-label", copy.btn);
+      }
+      // The footer offers the other door, and only on the email step.
+      footEl.hidden = step !== "email";
+      footEl.innerHTML = authCtx.mode === "signup"
+        ? 'Already have an account? <button type="button" data-tp-switch="signin">Sign in</button>'
+        : 'New here? <button type="button" data-tp-switch="signup">Create an account</button>';
+      var focusEl = step === "email" ? modalEl.querySelector("#tp-modal-email")
+        : step === "code" ? modalEl.querySelector("#tp-modal-code")
+        : doneEl.querySelector(".tp-modal-btn");
       setTimeout(function () { if (focusEl) focusEl.focus(); }, 0);
     }
     modalEl.__showStep = showStep;
 
     // "Use a different email" returns to step one rather than closing, so a
     // typo in the address costs one click instead of restarting the flow.
-    var restart = modalEl.querySelector("[data-tp-restart]");
-    if (restart) {
-      restart.addEventListener("click", function () {
-        var note = modalEl.querySelector(".tp-modal-note");
-        setModalNote(note, "", "");
-        codeFormEl.querySelector(".tp-modal-error").hidden = true;
-        codeFormEl.querySelector(".tp-modal-input").value = "";
-        showStep("email");
-      });
-    }
+    modalEl.querySelector("[data-tp-restart]").addEventListener("click", function () {
+      setModalNote(modalEl.querySelector(".tp-modal-note"), "", "");
+      codeFormEl.querySelector(".tp-modal-error").hidden = true;
+      codeFormEl.querySelector(".tp-modal-input").value = "";
+      showStep("email");
+    });
 
     var input = modalEl.querySelector("#tp-modal-email");
-    var errEl = modalEl.querySelector(".tp-modal-error");
+    var errEl = emailForm.querySelector(".tp-modal-error");
+    function shake(el) {
+      // Replay the shake from a clean baseline (remove, reflow, add).
+      el.classList.remove("is-shaking");
+      void el.offsetWidth;
+      el.classList.add("is-shaking");
+      setTimeout(function () { el.classList.remove("is-shaking"); }, 300);
+    }
     function setError(on) {
       input.classList.toggle("is-error", on);
       errEl.hidden = !on;
-      if (on) {
-        // Replay the shake from a clean baseline (remove → reflow → add).
-        input.classList.remove("is-shaking");
-        void input.offsetWidth;
-        input.classList.add("is-shaking");
-        setTimeout(function () { input.classList.remove("is-shaking"); }, 300);
-      }
+      if (on) shake(input);
     }
     input.addEventListener("input", function () { setError(false); });
 
-    modalEl.querySelector(".tp-modal-form").addEventListener("submit", function (e) {
+    emailForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      var btn = modalEl.querySelector(".tp-modal-btn");
+      var btn = emailForm.querySelector(".tp-modal-btn");
+      var label = btn.getAttribute("data-label") || btn.textContent;
       var note = modalEl.querySelector(".tp-modal-note");
       var email = input.value.trim();
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setError(true); input.focus(); return; }
       setError(false);
-      btn.disabled = true; btn.textContent = "Sending…";
-      magicLink(email)
+      btn.disabled = true; btn.textContent = "Sending code…";
+      magicLink(email, null, null, authCtx.mode === "signup")
         .then(function (data) {
           // apiJSON resolves on any status, so a refusal arrives here, not in
-          // .catch — without this the modal promised an email that was never
-          // sent.
+          // .catch.
           if (data && data.error === "no_plan") {
+            footEl.hidden = false;
             setModalNote(note,
-              "No Transitions.dev plan is attached to that email.\n" +
-              "Bought Pro with a different address? Try that one — otherwise pick a plan to get started.",
+              "No Transitions.dev account uses that email. Signed up with a different address? Try that one, or create an account below.",
               "err");
             return;
           }
-          // The step itself already says an email was sent and to which address;
-          // a second confirmation line only competes with it.
+          if (data && data.error) {
+            setModalNote(note, "Couldn’t send the code. Please try again.", "err");
+            return;
+          }
           setModalNote(note, "", "");
-          if (modalEl.__showStep) modalEl.__showStep("code", email);
+          showStep("code", email);
         })
-        .catch(function () { setModalNote(note, "Couldn’t send the link. Please try again.", "err"); })
-        .finally(function () { btn.disabled = false; btn.textContent = "Send code"; });
+        .catch(function () { setModalNote(note, "Couldn’t send the code. Please try again.", "err"); })
+        .finally(function () { btn.disabled = false; btn.textContent = label; });
     });
 
-    // Typed-code path: signs this browser in even when the emailed link was
-    // opened elsewhere (mail apps often open links in their own in-app browser).
-    var codeForm = modalEl.querySelector(".tp-modal-code-form");
-    codeForm.addEventListener("submit", function (e) {
+    // Typed code: opens the session in THIS browser, so the visitor is signed
+    // in the moment it verifies, with no link to click.
+    codeFormEl.addEventListener("submit", function (e) {
       e.preventDefault();
-      var cInput = codeForm.querySelector("input");
-      var cErr = codeForm.querySelector(".tp-modal-error");
-      var cBtn = codeForm.querySelector(".tp-modal-btn");
+      var cInput = codeFormEl.querySelector("input");
+      var cErr = codeFormEl.querySelector(".tp-modal-error");
+      var cBtn = codeFormEl.querySelector(".tp-modal-btn");
+      var label = cBtn.getAttribute("data-label") || cBtn.textContent;
       var note = modalEl.querySelector(".tp-modal-note");
       var code = cInput.value.trim();
-      if (!code) { cErr.hidden = false; cInput.focus(); return; }
+      var email = input.value.trim();
+      if (!code) { cErr.hidden = false; shake(cInput); cInput.focus(); return; }
       cErr.hidden = true;
       cBtn.disabled = true; cBtn.textContent = "Signing in…";
-      apiJSON("/auth/code", "POST", { email: input.value.trim(), code: code })
+      var keepBusy = false;
+      apiJSON("/auth/code", "POST", { email: email, code: code })
         .then(function (r) {
-          if (r && r.ok) {
-            setModalNote(note, "Signed in.", "ok");
-            return refreshMe().then(function () { closeAuthModal(); });
+          if (!(r && r.ok)) {
+            cErr.textContent = r && r.error === "too_many_attempts"
+              ? "Too many tries. Request a fresh code and use that one."
+              : "That code didn’t work. Check it and try again.";
+            cErr.hidden = false;
+            shake(cInput);
+            return;
           }
-          cErr.textContent = r && r.error === "too_many_attempts"
-            ? "Too many tries — request a fresh link and use its new code."
-            : "That code didn’t work — check it and try again.";
-          cErr.hidden = false;
-          cInput.classList.remove("is-shaking"); void cInput.offsetWidth; cInput.classList.add("is-shaking");
-          setTimeout(function () { cInput.classList.remove("is-shaking"); }, 300);
+          return refreshMe().then(function () {
+            var plan = authCtx.plan;
+            if (authCtx.mode !== "signup") { closeAuthModal(); return; }
+            if (plan === "free") {
+              // The free plan includes the Agent: email its key now, the same
+              // thing `npx transitions-agent signup` does from the terminal.
+              apiJSON("/agent/signup", "POST", { email: email }).catch(function () {});
+              showStep("done", email);
+              return;
+            }
+            // Already on Pro and picked Pro again: nothing to buy. The card's
+            // CTA now reads "Manage subscription".
+            if (plan === "solo" && state.pro) { closeAuthModal(); return; }
+            keepBusy = true;
+            cBtn.textContent = "Opening checkout…";
+            return startCheckout(plan, authCtx.cta).then(function () {
+              // Checkout navigates away on success; anything else leaves the
+              // visitor signed in on the pricing page with the error shown.
+              setTimeout(function () { cBtn.disabled = false; cBtn.textContent = label; closeAuthModal(); }, 1200);
+            });
+          });
         })
         .catch(function () { cErr.hidden = false; })
-        .finally(function () { cBtn.disabled = false; cBtn.textContent = "Verify"; });
+        .finally(function () { if (!keepBusy) { cBtn.disabled = false; cBtn.textContent = label; } });
     });
     return modalEl;
   }
@@ -639,17 +778,26 @@
     note.setAttribute("data-kind", kind || "");
   }
 
-  function openAuthModal() {
+  // opts: { mode: "signin" | "signup", plan: "free" | "solo" | "team", cta }
+  function openAuthModal(opts) {
+    opts = opts || {};
+    authCtx = {
+      mode: opts.mode === "signup" ? "signup" : "signin",
+      plan: opts.plan || null,
+      cta: opts.cta || null,
+    };
     var m = ensureAuthModal();
     lastFocus = document.activeElement;
     setModalNote(m.querySelector(".tp-modal-note"), "", "");
+    var codeInput = m.querySelector("#tp-modal-code");
+    if (codeInput) codeInput.value = "";
     if (m.__showStep) m.__showStep("email");
     m.classList.remove("is-closing");
     m.removeAttribute("hidden");
     // Reflow so the enter transition plays from the closed (scale .96 / opacity 0) state.
     void m.offsetWidth;
     m.classList.add("is-open");
-    var input = m.querySelector(".tp-modal-input");
+    var input = m.querySelector("#tp-modal-email");
     setTimeout(function () { input.focus(); }, 0);
   }
 
@@ -695,12 +843,16 @@
       ".tp-modal-x:active{scale:.9}" +
       ".tp-modal-intro{margin:0;font-size:16px;line-height:24.2px;font-weight:400;padding-right:20px}" +
       ".tp-modal-intro-muted{color:#8a8a8a;display:block}" +
+      ".tp-modal-mark{display:block;width:24px;height:24px;color:#1d1d1d;margin-bottom:-9px}" +
+      ".tp-modal-mark[hidden]{display:none}" +
+      ".tp-modal-mark svg{display:block;width:24px;height:24px}" +
+      'html[data-theme="dark"] .tp-modal-mark{color:#f2f2f2}' +
       ".tp-modal-form{display:flex;flex-direction:column;gap:12px}" +
       // An author display rule outranks the UA [hidden] style, so every element
       // this modal toggles needs its own companion rule. Without it the code
       // form was permanently on screen: the card showed two inputs and two
       // submit buttons at once, and the "step" it advanced to was already there.
-      ".tp-modal-form[hidden],.tp-modal-note[hidden],.tp-modal-error[hidden]{display:none}" +
+      ".tp-modal-form[hidden],.tp-modal-note[hidden],.tp-modal-error[hidden],.tp-modal-foot[hidden]{display:none}" +
       ".tp-modal-field{display:flex;flex-direction:column;gap:6px}" +
       ".tp-modal-label{font-size:13px;line-height:1.4;color:#4d4d4d}" +
       'html[data-theme="dark"] .tp-modal-label{color:#b5b5b5}' +
@@ -735,6 +887,8 @@
       ".tp-modal-foot{margin:0;font-size:13px;line-height:16px;color:#17181c}" +
       ".tp-modal-foot a{color:inherit;font-weight:500;text-decoration:none}" +
       ".tp-modal-foot a:hover{text-decoration:underline}" +
+      ".tp-modal-foot button{border:0;background:none;padding:0;font:inherit;font-weight:500;color:inherit;cursor:pointer}" +
+      ".tp-modal-foot button:hover{text-decoration:underline}" +
       'html[data-theme="dark"] .tp-modal-foot{color:#e5e5e5}' +
       // Error-state-shake (transitions-dev 12) on invalid submit.
       ".tp-modal-input.is-shaking{animation:tp-shake 280ms linear}" +
@@ -748,6 +902,32 @@
       ".tp-modal-card,.tp-modal-backdrop,.tp-modal-btn,.tp-modal-x{transition:none!important}" +
       ".tp-modal-input{animation:none!important;transform:none!important}}";
     document.head.appendChild(s);
+  }
+
+  // Signed-in avatar on the 3-dot "More" button, same as Libraries.dev
+  // (Figma 1425:38996): a raised white chip with the email's initial in light
+  // mode, a #2a2a2a chip in dark. Injected here because every page that loads
+  // this client carries its own copy of the nav CSS.
+  function injectAvatarStyle() {
+    if (document.getElementById("tp-avatar-base")) return;
+    var st = document.createElement("style");
+    st.id = "tp-avatar-base";
+    st.textContent =
+      ".icon-btn.icon-btn--avatar{background:#fff;color:#17181c;" +
+      "box-shadow:0 1px 3px 0 rgba(0,0,0,.04),inset 0 0 0 1px rgba(0,0,0,.06)," +
+      "inset 0 -1px 0 0 rgba(0,0,0,.1),inset 0 0 0 1px rgba(196,196,196,.1)}" +
+      ".icon-btn.icon-btn--avatar:hover{background:#fafafa}" +
+      ".icon-btn.icon-btn--avatar:active{background:#f1f1f1}" +
+      'html[data-theme="dark"] .icon-btn.icon-btn--avatar{background:#2a2a2a;color:#e8e8e8;' +
+      "box-shadow:0 1px 3px 0 rgba(0,0,0,.04),inset 0 1px 0 0 rgba(255,255,255,.04)," +
+      "inset 0 0 0 1px rgba(0,0,0,.06),inset 0 -1px 0 0 rgba(0,0,0,.06),inset 0 0 0 1px rgba(196,196,196,.1)}" +
+      'html[data-theme="dark"] .icon-btn.icon-btn--avatar:hover{background:#323232}' +
+      'html[data-theme="dark"] .icon-btn.icon-btn--avatar:active{background:#262626}' +
+      ".icon-btn.icon-btn--avatar svg{display:none!important}" +
+      ".nav-avatar-initial{display:none;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;" +
+      "font-size:12px;font-weight:500;line-height:13px;text-transform:uppercase}" +
+      ".icon-btn--avatar .nav-avatar-initial{display:block}";
+    document.head.appendChild(st);
   }
 
   // Inject a "Pro" badge into any card tagged data-pro="true". Purely visual — the base
@@ -787,6 +967,127 @@
     document.head.appendChild(style);
   }
 
+  // ⋮ menu Feedback page (same as libraries.dev). The page scripts own the
+  // menu's open/close and the Appearance page; this adds page 4, a note
+  // form behind a back button. Watching the slide's data-page keeps the
+  // menu's width and the form's note in step however the page changes
+  // (back button, menu close, Appearance).
+  function wireFeedback() {
+    var slide = document.getElementById("pm-slide");
+    var menu = document.getElementById("more-menu");
+    var item = document.getElementById("pm-feedback");
+    var back = document.getElementById("pm-fb-back");
+    var form = document.getElementById("pm-feedback-form");
+    if (!slide || !menu || !item || !form) return;
+    var input = form.querySelector(".pm-feedback-input");
+    var emailEl = form.querySelector(".pm-feedback-email");
+    var note = form.querySelector(".pm-feedback-note");
+    var btn = form.querySelector(".pm-feedback-btn");
+    var sending = false;
+    var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    function syncHeight() {
+      var active = slide.querySelector('.t-page[data-page-id="' + slide.getAttribute("data-page") + '"]');
+      if (active) slide.style.height = active.offsetHeight + "px";
+    }
+    function setPage(page) { slide.setAttribute("data-page", page); syncHeight(); }
+    function setNote(kind, html) {
+      if (!html) { note.hidden = true; note.removeAttribute("data-kind"); note.innerHTML = ""; }
+      else { note.hidden = false; note.setAttribute("data-kind", kind); note.innerHTML = html; }
+      syncHeight();
+    }
+    new MutationObserver(function () {
+      var onForm = slide.getAttribute("data-page") === "4";
+      menu.classList.toggle("is-feedback", onForm);
+      // Leaving the form keeps an unsent draft but drops any note or error.
+      if (!onForm) {
+        input.classList.remove("is-error");
+        if (emailEl) emailEl.classList.remove("is-error");
+        if (!note.hidden) setNote(null, "");
+      }
+    }).observe(slide, { attributes: true, attributeFilter: ["data-page"] });
+
+    function open() {
+      setPage("4");
+      // A signed-in visitor's address is known, so a reply can reach them.
+      if (emailEl && !emailEl.value && state.email) emailEl.value = state.email;
+      input.focus({ preventScroll: true });
+    }
+    function shake(el) {
+      el.classList.add("is-error");
+      el.classList.remove("is-shaking");
+      void el.offsetWidth;
+      el.classList.add("is-shaking");
+      el.addEventListener("animationend", function () { el.classList.remove("is-shaking"); }, { once: true });
+    }
+    function send() {
+      if (sending) return;
+      var message = input.value.trim();
+      if (!message) {
+        shake(input);
+        setNote("err", "Write a few words first.");
+        input.focus();
+        return;
+      }
+      var email = emailEl ? emailEl.value.trim() : "";
+      if (email && !EMAIL_RE.test(email)) {
+        shake(emailEl);
+        setNote("err", "That email doesn't look right.");
+        emailEl.focus();
+        return;
+      }
+      sending = true;
+      btn.disabled = true;
+      btn.textContent = "Sending…";
+      setNote(null, "");
+      api("/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message, page: location.href, email: email || undefined })
+      })
+        .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+        .then(function () {
+          input.value = "";
+          setNote("ok", "Sent. Thank you!");
+          setTimeout(function () {
+            var moreBtn = document.getElementById("more-btn");
+            if (menu.classList.contains("is-open") && moreBtn) moreBtn.click();
+          }, 1400);
+        })
+        .catch(function () {
+          var subject = encodeURIComponent("Feedback on Transitions.dev");
+          var body = encodeURIComponent(message + "\n\nFrom " + location.href);
+          setNote("err", 'Could not send. <a href="mailto:jakubja@gmail.com?subject=' + subject + "&body=" + body + '">Email it instead</a>.');
+        })
+        .then(function () {
+          sending = false;
+          btn.disabled = false;
+          btn.textContent = "Send feedback";
+        });
+    }
+
+    item.addEventListener("click", function (e) { e.preventDefault(); open(); });
+    item.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
+    });
+    if (back) back.addEventListener("click", function () { setPage("1"); item.focus({ preventScroll: true }); });
+    form.addEventListener("submit", function (e) { e.preventDefault(); send(); });
+    [input, emailEl].forEach(function (el) {
+      if (!el) return;
+      el.addEventListener("input", function () {
+        el.classList.remove("is-error");
+        if (note.getAttribute("data-kind") === "err") setNote(null, "");
+      });
+    });
+    if (emailEl) emailEl.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); send(); }
+    });
+    // ⌘/Ctrl+Enter sends; Escape bubbles to the page's menu handler.
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); }
+    });
+  }
+
   function wire() {
     document.querySelectorAll(".pro-price-cta[data-plan]").forEach(function (cta) {
       cta.addEventListener("click", function (e) {
@@ -794,8 +1095,8 @@
         if (cta.getAttribute("aria-disabled") === "true") return;
         var plan = cta.getAttribute("data-plan");
         if (cta.getAttribute("data-action") === "portal") startPortal();
-        else if (plan === "free") startFree();
-        else startCheckout(plan, cta);
+        else if (plan === "free") startFree(cta);
+        else startPaid(plan, cta);
       });
     });
     var signin = document.getElementById("pm-signin");
@@ -843,6 +1144,7 @@
     if (cached) {
       state.authenticated = !!cached.a;
       state.pro = !!cached.p;
+      state.email = cached.e || null;
       paintAuth();
       // Page gates (detail paywall, index badges) listen for pro:me — without
       // this they stayed locked until /me answered, so a returning Pro user saw
@@ -853,6 +1155,7 @@
     }
     mountProBadges();
     wireProCopy();
+    wireFeedback();
     refreshMe();
     refreshGeo();
   }

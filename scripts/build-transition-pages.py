@@ -30,7 +30,6 @@ STATIC_PAGES = [
     ("/library.html", "0.9", "weekly"),
     ("/pro.html", "0.9", "weekly"),
     ("/skill.html", "0.8", "monthly"),
-    ("/refine.html", "0.8", "monthly"),
     ("/detail.html", "0.7", "weekly"),
     ("/transitions/", "0.9", "weekly"),
 ]

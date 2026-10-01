@@ -16,8 +16,17 @@ const CAPS = {
 
 export function scan(root) {
   const files = collectFiles(root);
-  const { components, findings: componentFindings } = analyzeComponents(files);
+  const { components, findings: componentFindings, transitionAll } = analyzeComponents(files);
   const findings = merge(runRules(files), componentFindings, components);
+  // Say exactly what "transition: all" should become, from what the states change.
+  const allAt = new Map((transitionAll || []).map((t) => [t.path + ":" + t.line, t.props]));
+  for (const f of findings) {
+    const props = f.rule === "transition-all" && allAt.get(f.path + ":" + f.line);
+    if (props && props.length) {
+      f.props = props;
+      f.message = `"transition: all" animates every property, layout included. Replace it with exactly the properties this element's states change: ${props.join(", ")}.`;
+    }
+  }
 
   const perRule = {};
   let penalty = 0;

@@ -1,0 +1,92 @@
+Transitions.dev License
+Copyright (c) 2026 Jakub Antalik / Transitions.dev
+
+Summary: you (and any coding agent working for you) may use the transitions
+and skills in this repository in unlimited personal and commercial projects,
+modify them freely, and ship them to your users. The tooling is MIT. The one
+restriction is that you may not redistribute the transitions library itself
+as a competing product.
+
+This repository contains two kinds of material under two licenses.
+
+-------------------------------------------------------------------------------
+1. Transitions and skills
+-------------------------------------------------------------------------------
+
+Covers: the transitions/ directory, the skills/ directory (including the
+transitions-dev and transitions-polish agent skills), and every transition
+snippet (CSS, React, TypeScript) published on transitions.dev.
+
+Permission is granted, free of charge, to any person or automated agent
+obtaining these transitions to:
+
+  - use them in unlimited personal and commercial projects;
+  - copy, paste, and modify them freely;
+  - ship them to end users as part of your own product or website;
+  - install and run the skills in any coding agent (Claude Code, Cursor,
+    GitHub Copilot, Codex, Gemini CLI, and others) to apply the transitions
+    to your code.
+
+Restriction: you may not redistribute the library itself. You may not
+repackage, resell, or publish the collection (or a substantial part of it) as
+a competing transitions library, template pack, or component kit. Use the
+transitions in your products, not as a product of their own.
+
+Full terms: https://transitions.dev/terms.html
+
+-------------------------------------------------------------------------------
+Paid plans (Pro transitions and Agent features)
+-------------------------------------------------------------------------------
+
+The free transitions and skills in this repository need no plan, for anyone,
+including companies. The paid plans cover the Pro transitions and the paid
+Transitions Agent features:
+
+  - Pro: for solo builders and freelancers. Licenses one individual who
+    pays for it personally, including work that individual delivers to
+    their own clients as an independent freelancer.
+  - Business: for companies and teams. Required when the Pro transitions or
+    paid Agent features are used by or on behalf of a company or other
+    organization, even by a single person (for example, one designer at a
+    company). Each person using them needs a seat.
+
+Which plan applies: if a company or organization pays for the plan, or
+reimburses someone for it, the plan must be Business. A Pro plan paid for
+with a company card, expensed, or bought for use at an employer is outside
+the Pro license.
+
+Once you have access under either plan, the use rights and the
+redistribution restriction in section 1 apply to the Pro transitions too.
+
+-------------------------------------------------------------------------------
+2. Tooling: MIT License
+-------------------------------------------------------------------------------
+
+Covers: the agent/, cli/, cli-legacy/, refine/, build/, and scripts/
+directories (including the transitions-agent and transitions-dev packages
+and the Refine tool).
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-------------------------------------------------------------------------------
+Everything else
+-------------------------------------------------------------------------------
+
+The transitions.dev website design, branding, and logo are not covered by
+either license above. All rights reserved.
