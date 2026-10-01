@@ -619,6 +619,7 @@
         state.selected = null;
         renderInspector();
       }
+      $("empty").textContent = "No one matches.";
       $("empty").hidden = rows.length > 0;
       $("rows").innerHTML = rows.map(function (p) {
         var tags = [];
@@ -805,7 +806,14 @@
 
     applyTheme();
     var saved = load(TOKEN_KEY);
-    if (saved) { $("gate").hidden = true; open(saved); } else showGate();
+    if (saved) {
+      // Show the shell while Stripe is read, instead of a blank page.
+      $("gate").hidden = true;
+      $("app").hidden = false;
+      $("empty").textContent = "Loading customers…";
+      $("empty").hidden = false;
+      open(saved);
+    } else showGate();
   })();
   </script>
 </body>
