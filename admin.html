@@ -175,6 +175,38 @@
     .agent-main { color: var(--c-text); }
     .agent-sub { font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
 
+    /* ─── Daily view ────────────────────────────────────────── */
+    .view-seg { margin-right: 4px; }
+    .periods { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--c-line); }
+    .period { padding: 14px 16px; border-right: 1px solid var(--c-line); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .period:last-child { border-right: none; }
+    .period-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .period-title { font-size: 13px; line-height: 16px; font-weight: 500; color: var(--c-text); }
+    .period-date { font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
+    .period dl { grid-template-columns: 1fr auto; row-gap: 6px; }
+    .period dt { font-size: 12px; }
+    .period dd { text-align: right; font-variant-numeric: tabular-nums; }
+    .period dd.big { font-size: 20px; line-height: 24px; font-weight: 500; }
+    .day-chart { padding: 14px 16px 10px; border-bottom: 1px solid var(--c-line); }
+    .day-chart svg { display: block; width: 100%; height: 100px; }
+    .day-chart .free { fill: var(--c-sec-a); }
+    .day-chart .paid { fill: #26953b; }
+    html[data-theme="dark"] .day-chart .paid { fill: #64d378; }
+    .axis-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; line-height: 12px; color: var(--c-text-faint); }
+    .legend { display: flex; gap: 14px; margin-top: 8px; font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+    .day-table td { height: 40px; }
+    .day-table td.zero { color: var(--c-text-faint); }
+    .day-table tr.is-today td:first-child { font-weight: 500; }
+    .mini { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+    .mini .plan { height: 20px; padding: 0 7px; font-size: 11px; }
+    .day-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px 0 10px; border-radius: 36px; background: var(--c-blue-bg); color: var(--c-blue); font-size: 12px; font-weight: 500; }
+    .day-chip button { border: none; background: transparent; color: inherit; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; padding: 0; }
+    .day-chip button:hover { background: var(--c-blue-bg-h); }
+    @media (max-width: 1100px) { .periods { grid-template-columns: repeat(2, minmax(0, 1fr)); } .period:nth-child(2) { border-right: none; } .period:nth-child(-n+2) { border-bottom: 1px solid var(--c-line); } }
+    @media (max-width: 860px) { .day-table .col-agentday { display: none; } }
+
     /* ─── Toolbar ───────────────────────────────────────────── */
     .toolbar { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--c-line); flex-wrap: wrap; }
     .field {
@@ -355,6 +387,10 @@
           <h1>Customers</h1>
           <p id="subtitle">Loading…</p>
         </div>
+        <div class="seg view-seg" id="view-seg" role="tablist" aria-label="View">
+          <button type="button" role="tab" class="seg-btn is-active" data-view="people" aria-selected="true">People</button>
+          <button type="button" role="tab" class="seg-btn" data-view="daily" aria-selected="false">Daily</button>
+        </div>
         <button type="button" class="btn-sec" id="export-btn" title="Download the current view as CSV">
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5v7.5m0 0L5 7m3 3 3-3M3 12.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span>Export CSV</span>
@@ -376,17 +412,19 @@
 
       <div class="stats" id="stats"></div>
       <div id="agent-band"></div>
+      <div id="daily-view" hidden></div>
 
-      <div class="toolbar">
+      <div class="toolbar" id="people-toolbar">
         <label class="field">
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
           <input type="search" id="search" placeholder="Search name, email, company" aria-label="Search" />
           <span class="kbd">/</span>
         </label>
         <div class="seg" id="filters" role="tablist" aria-label="Filter by plan"></div>
+        <span id="day-filter"></span>
       </div>
 
-      <div class="crm-body">
+      <div class="crm-body" id="people-body">
         <div class="table-wrap">
           <table>
             <thead>
@@ -445,7 +483,7 @@
     var PAYING = { business: 1, pro: 1, lifetime: 1, sponsor: 1 };
 
     var $ = function (id) { return document.getElementById(id); };
-    var state = { data: null, filter: "all", q: "", sort: "created", dir: -1, selected: null };
+    var state = { data: null, filter: "all", q: "", sort: "created", dir: -1, selected: null, view: "people", day: null };
 
     function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
     function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -510,7 +548,7 @@
 
     /* ─── Fetch ─────────────────────────────────────────────── */
     function fetchCrm(token) {
-      return fetch(API + "/admin/crm", { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
+      return fetch(API + "/admin/crm?tz=" + new Date().getTimezoneOffset(), { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
         .then(function (r) {
           if (r.status === 403 || r.status === 401) throw new Error("forbidden");
           if (!r.ok) throw new Error("http " + r.status);
@@ -549,9 +587,15 @@
     }
 
     /* ─── Render ────────────────────────────────────────────── */
+    function localDay(isoStr) {
+      if (!isoStr) return "";
+      var d = new Date(isoStr);
+      return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    }
     function visible() {
       var q = state.q.trim().toLowerCase();
       var rows = state.data.people.filter(function (p) {
+        if (state.day && localDay(p[state.day.field]) !== state.day.date) return false;
         if (state.filter === "paying" && !PAYING[p.plan]) return false;
         if (state.filter === "agent" && !hasAgent(p)) return false;
         if (state.filter === "agent-fix" && !hasAgentFix(p)) return false;
@@ -738,7 +782,109 @@
         });
       });
     }
-    function render() { renderStats(); renderAgent(); renderFilters(); renderRows(); renderInspector(); }
+    /* ─── Daily ─────────────────────────────────────────────── */
+    var PAID_ORDER = ["business", "lifetime", "pro", "sponsor"];
+    function fmtDate(ymd, withDay) {
+      var d = new Date(ymd + "T12:00:00");
+      return d.toLocaleDateString("en-US", withDay ? { weekday: "short", month: "short", day: "numeric" } : { month: "short", day: "numeric" });
+    }
+    function sumDays(days) {
+      var t = { new_people: 0, new_free: 0, new_paid: 0, renewals: 0, churned: 0, agent_keys: 0, agent_signups: 0, agent_fixes: 0, agent_blocked: 0, paid_by: {}, revenue: {} };
+      days.forEach(function (d) {
+        for (var k in t) if (typeof t[k] === "number") t[k] += d[k] || 0;
+        for (var p in d.paid_by) t.paid_by[p] = (t.paid_by[p] || 0) + d.paid_by[p];
+        for (var c in d.revenue) t.revenue[c] = (t.revenue[c] || 0) + d.revenue[c];
+      });
+      return t;
+    }
+    function paidChips(by) {
+      return PAID_ORDER.filter(function (k) { return by[k]; }).map(function (k) {
+        return '<span class="plan plan--' + k + '">' + by[k] + " " + esc(PLAN_LABEL[k]) + "</span>";
+      }).join("");
+    }
+    function renderDaily() {
+      var days = state.data.daily || [];
+      var el = $("daily-view");
+      if (!days.length) { el.innerHTML = '<div class="empty">No daily data yet.</div>'; return; }
+      var periods = [
+        { title: "Today", date: fmtDate(days[0].date, true), t: sumDays(days.slice(0, 1)) },
+        { title: "Yesterday", date: days[1] ? fmtDate(days[1].date, true) : "", t: sumDays(days.slice(1, 2)) },
+        { title: "Last 7 days", date: days[6] ? fmtDate(days[6].date) + " to today" : "", t: sumDays(days.slice(0, 7)) },
+        { title: "Last 30 days", date: days[29] ? fmtDate(days[29].date) + " to today" : "", t: sumDays(days.slice(0, 30)) }
+      ];
+      var line = function (k, v) { return "<dt>" + esc(k) + "</dt><dd>" + v + "</dd>"; };
+      var html = '<div class="periods">' + periods.map(function (p) {
+        var t = p.t;
+        return '<div class="period"><div class="period-head"><span class="period-title">' + esc(p.title) + '</span><span class="period-date">' + esc(p.date) + "</span></div><dl>" +
+          '<dt>New people</dt><dd class="big">' + t.new_people + "</dd>" +
+          line("Free", t.new_free) +
+          line("New paying", t.new_paid ? '<span class="mini">' + paidChips(t.paid_by) + "</span>" : "0") +
+          line("Revenue", esc(paidText(t.revenue) || "$0")) +
+          line("Renewals", t.renewals) +
+          line("Churned", t.churned) +
+          line("Agent signups", t.agent_signups + (t.agent_keys > t.agent_signups ? ' <span class="muted">+' + (t.agent_keys - t.agent_signups) + " keys</span>" : "")) +
+          line("Agent fixes", t.agent_fixes) +
+          "</dl></div>";
+      }).join("") + "</div>";
+
+      // 30-day chart: new free and new paying people per day, oldest left.
+      var chartDays = days.slice(0, 30).reverse();
+      var max = Math.max.apply(null, chartDays.map(function (d) { return d.new_free + d.new_paid; }).concat([1]));
+      var W = 30 * 20, H = 100;
+      var bars = chartDays.map(function (d, i) {
+        var hf = Math.round(d.new_free / max * H), hp = Math.round(d.new_paid / max * H);
+        var x = i * 20 + 3, tip = esc(fmtDate(d.date, true) + ": " + d.new_free + " free, " + d.new_paid + " paying");
+        return '<g><title>' + tip + "</title>" +
+          (hf ? '<rect class="free" x="' + x + '" y="' + (H - hf - hp) + '" width="14" height="' + hf + '" rx="2"/>' : "") +
+          (hp ? '<rect class="paid" x="' + x + '" y="' + (H - hp) + '" width="14" height="' + hp + '" rx="2"/>' : "") +
+          (!hf && !hp ? '<rect class="free" x="' + x + '" y="' + (H - 2) + '" width="14" height="2" rx="1"/>' : "") + "</g>";
+      }).join("");
+      // Labels live outside the stretched SVG so the text keeps its shape.
+      var labels = [0, 7, 14, 21, 29].map(function (i) { return "<span>" + esc(fmtDate(chartDays[i].date)) + "</span>"; }).join("");
+      html += '<div class="day-chart"><svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" role="img" aria-label="New people per day, last 30 days">' + bars + "</svg>" +
+        '<div class="axis-row">' + labels + "</div>" +
+        '<div class="legend"><span><i style="background:var(--c-sec-a)"></i>New free</span><span><i class="paid-swatch" style="background:#26953b"></i>New paying</span><span>Max ' + max + " a day</span></div></div>";
+
+      // Day by day, newest first.
+      var cell = function (n, extra) { return '<td class="num tnum' + (n ? "" : " zero") + (extra ? " " + extra : "") + '">' + (n || "0") + "</td>"; };
+      html += '<div class="table-wrap"><table class="day-table"><thead><tr>' +
+        '<th>Day</th><th class="num">New</th><th class="num">Free</th><th>New paying</th><th class="num">Revenue</th><th class="num">Renewals</th><th class="num">Churned</th>' +
+        '<th class="num col-agentday">Agent signups</th><th class="num col-agentday">Agent fixes</th><th class="num col-agentday">Agent active</th></tr></thead><tbody>' +
+        days.map(function (d, i) {
+          return '<tr data-day="' + esc(d.date) + '"' + (i === 0 ? ' class="is-today"' : "") + ' title="Show who joined this day">' +
+            "<td>" + esc(i === 0 ? "Today" : i === 1 ? "Yesterday" : fmtDate(d.date, true)) + "</td>" +
+            cell(d.new_people) + cell(d.new_free) +
+            "<td>" + (d.new_paid ? '<span class="mini">' + paidChips(d.paid_by) + "</span>" : '<span class="muted">0</span>') + "</td>" +
+            '<td class="num tnum' + (paidText(d.revenue) ? "" : " zero") + '">' + esc(paidText(d.revenue) || "$0") + "</td>" +
+            cell(d.renewals) + cell(d.churned) +
+            cell(d.agent_signups, "col-agentday") + cell(d.agent_fixes, "col-agentday") + cell(d.agent_active, "col-agentday") +
+            "</tr>";
+        }).join("") + "</tbody></table></div>";
+      el.innerHTML = html;
+    }
+    function setView(v) {
+      state.view = v;
+      document.querySelectorAll("#view-seg .seg-btn").forEach(function (b) {
+        var on = b.getAttribute("data-view") === v;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      var daily = v === "daily";
+      $("daily-view").hidden = !daily;
+      $("agent-band").hidden = daily;
+      $("people-toolbar").hidden = daily;
+      $("people-body").hidden = daily;
+      $("export-btn").hidden = daily;
+      if (daily && state.data) renderDaily();
+    }
+    function renderDayFilter() {
+      var el = $("day-filter");
+      if (!state.day) { el.innerHTML = ""; return; }
+      el.innerHTML = '<span class="day-chip">Joined ' + esc(fmtDate(state.day.date, true)) +
+        '<button type="button" id="day-clear" aria-label="Clear day filter"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></span>';
+      $("day-clear").addEventListener("click", function () { state.day = null; renderDayFilter(); renderRows(); });
+    }
+    function render() { renderStats(); renderAgent(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); }
     function select(email) {
       state.selected = state.selected === email ? null : email;
       document.querySelectorAll("#rows tr").forEach(function (tr) { tr.classList.toggle("selected", tr.getAttribute("data-email") === state.selected); });
@@ -790,6 +936,19 @@
       if (t) open(t);
     });
     $("search").addEventListener("input", function (e) { state.q = e.target.value; renderRows(); });
+    $("view-seg").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-view]");
+      if (b) setView(b.getAttribute("data-view"));
+    });
+    // A day row opens People filtered to who joined that day.
+    $("daily-view").addEventListener("click", function (e) {
+      var tr = e.target.closest("tr[data-day]");
+      if (!tr) return;
+      state.day = { date: tr.getAttribute("data-day"), field: "created_at" };
+      state.filter = "all";
+      setView("people");
+      renderFilters(); renderDayFilter(); renderRows();
+    });
     $("filters").addEventListener("click", function (e) {
       var b = e.target.closest("[data-filter]");
       if (!b) return;
