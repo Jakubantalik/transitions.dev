@@ -1,0 +1,2958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+
+  <title>Profile | Transitions.dev Community</title>
+  <meta
+    name="description"
+    content="Components built and published to the Transitions.dev Community."
+  />
+  <meta name="author" content="Transitions.dev" />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="googlebot" content="index, follow" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="theme-color" content="#fdfdfd" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#070707" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-title" content="Transitions.dev" />
+  <meta name="application-name" content="Transitions.dev" />
+
+  <link rel="canonical" href="https://transitions.dev/profile.html" />
+  <link rel="alternate" hreflang="en" href="https://transitions.dev/profile.html" />
+  <link rel="alternate" hreflang="x-default" href="https://transitions.dev/profile.html" />
+
+  <link rel="icon" href="assets/favicon-light-mode.png?v=4" type="image/png" sizes="any" />
+  <link rel="icon" href="assets/favicon-light-mode.png?v=4" media="(prefers-color-scheme: light)" type="image/png" />
+  <link rel="icon" href="assets/favicon-darkmode.png?v=4" media="(prefers-color-scheme: dark)" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/favicon-light-mode.png?v=4" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:url" content="https://transitions.dev/profile.html" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:title" content="Profile Community" />
+  <meta property="og:description" content="Components built and published to the Transitions.dev Community." />
+  <meta property="og:image" content="https://transitions.dev/assets/og-pro.jpg" />
+  <meta property="og:image:secure_url" content="https://transitions.dev/assets/og-pro.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Profile Community" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Profile Community" />
+  <meta name="twitter:description" content="Components built and published to the Transitions.dev Community." />
+  <meta name="twitter:image" content="https://transitions.dev/assets/og-pro.jpg" />
+  <meta name="twitter:image:alt" content="Profile Community" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <!-- Preload the Saans display face (hero title) so it's fetched before
+       first paint, paired with font-display: optional this removes the
+       fallback→Saans flash/reflow. -->
+  <link
+    rel="preload"
+    as="font"
+    type="font/woff2"
+    href="assets/fonts/Saans-Medium.woff2"
+    crossorigin
+  />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://transitions.dev/#website",
+          "url": "https://transitions.dev/",
+          "name": "Transitions.dev",
+          "description": "Collection of the most essential UI transitions for web apps. Copy and paste them, or use them with your coding agent via the skill.",
+          "inLanguage": "en"
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://transitions.dev/profile.html#webpage",
+          "url": "https://transitions.dev/profile.html",
+          "name": "Profile | Transitions.dev Community",
+          "isPartOf": { "@id": "https://transitions.dev/#website" },
+          "inLanguage": "en",
+          "primaryImageOfPage": {
+            "@type": "ImageObject",
+            "url": "https://transitions.dev/assets/og-pro.jpg",
+            "width": 1200,
+            "height": 630
+          }
+        }
+      ]
+    }
+  </script>
+  <script>
+    // Apply theme before first paint to avoid FOUC: a manually chosen theme,
+    // persisted to localStorage by the toggle (see end of <body>), wins over
+    // system preference so it carries across reloads and other pages.
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
+    /* Saans - used for the hero eyebrow + title (Medium / 500). */
+    @font-face {
+      font-family: "Saans";
+      src: url("assets/fonts/Saans-Medium.woff2") format("woff2"),
+           url("assets/fonts/Saans-Medium.woff") format("woff");
+      font-weight: 500;
+      font-style: normal;
+      /* optional (not swap): the browser waits a brief block period for the
+         preloaded font, then renders Saans with no late swap. */
+      font-display: optional;
+    }
+
+    /* ============================================================ */
+    /* Design tokens, light (default) and dark                      */
+    /* ============================================================ */
+    :root {
+      color-scheme: light;
+
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --text-subtle: #767676;
+      --text-faint: #8f8f8f;
+      --text-footer-name: #4a4a4a;
+
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+      /* Horizontal inset for card title block + copy control */
+      --card-pad-x: 20px;
+
+      /* Opaque equivalent of rgba(194, 194, 194, 0.1) over #ffffff
+         (≈ #f9f9f9). Kept opaque on purpose so the stage doesn't pick
+         up the card's hover tint through a translucent fill. */
+      --stage-bg: #f9f9f9;
+      --stage-border: rgba(0, 0, 0, 0.04);
+
+      /* Framework badges (React / TS / Next). Solid bg so the React
+         logo's knock-out cutouts blend into the chip in both themes. */
+      --pro-badge-bg: #e7e7e7;
+      --pro-badge-fg: #0d0d0d;
+
+      --chip-bg: #f4f4f4;
+      --chip-bg-hover: #f1f1f1;
+      --chip-bg-pressed: #eae9e9;
+
+      --animate-bg: rgba(243, 243, 243, 0.9);
+      --animate-bg-tint: #bfc0cb;
+      --animate-bg-hover: #eae9e9;
+      --animate-text: #17181c;
+
+      --copy-bg: rgba(255, 255, 255, 0.9);
+      --copy-bg-tint: #bfc0cb;
+      --copy-bg-hover: #f1f1f1;
+      --copy-bg-pressed: #eae9e9;
+
+      --surface-bg: #ffffff;
+      --skeleton: #eeeeef;
+      --muted: #5e6073;
+
+      /* Inner "material" surface (Figma: node 221:2895)
+         used by dropdowns, panels, and resize cards inside demo cards */
+      --material-bg: #ffffff;
+      --material-shadow:
+        0 4px 42px 0 rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(0, 0, 0, 0.06);
+
+      --icon-color: #0d0d0d;
+      --icon-color-muted: rgba(13, 13, 13, 0.6);
+
+      --label-mono: #5e6073;
+
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, monospace;
+
+      /* ========================================================== */
+      /* Prototype transition knobs (copied per prototype)          */
+      /* ========================================================== */
+
+      /* P1, Notification badge */
+      --p1-pos-open-dur: 260ms;
+      --p1-scale-open-dur: 500ms;
+      --p1-scale-close-dur: 180ms;
+      --p1-opacity-open-dur: 400ms;
+      --p1-opacity-close-dur: 180ms;
+      --p1-blur: 2px;
+      --p1-distance-x: -8.2px;
+      --p1-distance-y: 12.4px;
+      --p1-bounce: 1.36;
+      --p1-ease-pos-open: cubic-bezier(0.22, 1, 0.36, 1);
+      --p1-ease-scale-open: cubic-bezier(0.34, 1.36, 0.64, 1);
+      --p1-ease-close: cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* P2, Menu dropdown */
+      --p2-open-dur: 250ms;
+      --p2-close-dur: 150ms;
+      --p2-pre-scale: 0.97;
+      --p2-closing-scale: 0.99;
+      /* Origin-aware: anchor the scale where the trigger sits so the
+         menu visually "grows" from the trigger (top center = button
+         sits directly above the menu). */
+      --p2-origin: top center;
+      --p2-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P3, Panel reveal */
+      --p3-open-dur: 400ms;
+      --p3-close-dur: 350ms;
+      --p3-panel-height: 187px;
+      /* Movement trajectory = 50% of the panel height. The panel
+         also fades opacity 0 ↔ 1 AND cross-blurs 2px ↔ 0 over the
+         same timing, so the shortened travel still reads as a full
+         open / close. */
+      --p3-translate-y: calc(var(--p3-panel-height) * 0.5);
+      --p3-blur: 2px;
+      /* Gutter inside clip so box-shadow isn’t cropped.
+         Top needs enough room for the 42px-blur shadow (blur 42 − offset 4 ≈ 38px reach);
+         sides/bottom stay slim so the stack still fits the 260px stage. */
+      /* Clip fills the full 260px stage (top:0, bottom:0) so no bare stage
+         strip shows below the panel when it's open. Top pad still sized so
+         resting panel is pushed below the button and the 38px top-reach drop
+         shadow has room above the panel. */
+      --p3-clip-pad-top: 54px;
+      --p3-clip-pad: 14px;
+      /* Vertical offset when panel is open. Positive = lift the panel
+         higher in the stage; negative = push it lower. */
+      --p3-open-lift: -28px;
+      --p3-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* Figma 213:1375, Light Mode / Shadow 25.
+         Left/right/bottom of the panel are flush with the stage, where
+         `.card-stage::after` already draws a ring, so we only draw
+         the top edge here, plus the drop shadows. The top hairline is
+         drawn as an *outer* shadow (0 -1px) instead of an inset one so
+         it sits on the stage background (for contrast with other
+         material surfaces like the dropdown / modal rings) rather
+         than over the panel's own white fill where it would be barely
+         visible. */
+      --p3-shadow:
+        0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        0 2px 6px 0 rgba(0, 0, 0, 0.05),
+        0 4px 42px 0 rgba(0, 0, 0, 0.06);
+
+      /* P4, Card resize */
+      --p4-dur: 300ms;
+      --p4-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P22, Toast open/close (bento live preview) */
+      --p22-open-dur:  350ms;
+      --p22-close-dur: 250ms;
+      --p22-distance:  16px;
+      --p22-blur:      2px;
+      --p22-scale:     0.97;
+      --p22-ease:      cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* PRO2, Card stack hover (bento live preview) */
+      --pro2-open-dur:   410ms;
+      --pro2-open-ease:  cubic-bezier(0.31, 2.34, 0.64, 1);
+      --pro2-close-dur:  360ms;
+      --pro2-close-ease: cubic-bezier(0.34, 1.5, 0.64, 1);
+      --pro2-scale-dur:  610ms;
+      --pro2-scale-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --pro2-scale:      1.04;
+      --pro2-spread:     1.42;
+      --pro2-rotation:   1;
+
+      /* PRO3, Organic shimmer (bento live preview) */
+      --pro3-shimmer-dur:     3000ms;
+      --pro3-sweep-ease:      ease-out;
+      --pro3-band-span:       26%;
+      --pro3-shimmer-opacity: 1;
+      --pro3-glow-blur:       20px;
+      --pro3-glow-strength:   0.7;
+      --pro3-ring-strength:   1;
+
+      /* P5, Hamburger ↔ Close */
+      --p5-dur: 200ms;
+      --p5-blur: 2px;
+      --p5-start-scale: 0.25;
+      --p5-ease: ease-in-out;
+
+      /* P6, Text enter/exit */
+      --p6-dur: 150ms;
+      --p6-enter-delay: 0ms;
+      --p6-translate-y: 4px;
+      --p6-blur: 2px;
+      --p6-ease: ease-in-out;
+
+      /* P7, Modal open/close */
+      --p7-open-dur: 250ms;
+      --p7-close-dur: 150ms;
+      --p7-scale: 0.96;
+      --p7-scale-close: 0.96;
+      --p7-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* Detail-modal motion tokens. Defaults to the P7 modal timing
+         so desktop is unchanged. Mobile overrides these to the P3
+         "Panel reveal" timing inside its own @media block, which lets
+         the JS close-timer pick the right wait via getComputedStyle. */
+      --proto-modal-open-dur:  var(--p7-open-dur);
+      --proto-modal-close-dur: var(--p7-close-dur);
+      --proto-modal-ease:      var(--p7-ease);
+
+      /* P8, Page slide */
+      --p8-slide-dur: 200ms;
+      --p8-fade-dur: 200ms;
+      --p8-distance: 8px;
+      --p8-blur: 3px;
+      --p8-stagger: 0ms;
+      --p8-exit-enabled: 1;
+      --p8-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --p8-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P9, Number pop-in */
+      --p9-dur: 500ms;
+      --p9-distance: 8px;
+      --p9-stagger: 70ms;
+      --p9-blur: 2px;
+      --p9-bounce: 1.45;
+      --p9-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
+      --p9-dir-x: 0;
+      --p9-dir-y: 1;
+
+      /* P10, Success check (appear / disappear).
+         Entry composes 5 sub-transitions in parallel (fade, rotate,
+         blur, Y-bob, stroke-draw). Exit deliberately uses only 3
+         (fade, blur, stroke-undraw) so the disappearance reads as a
+         soft fade-away rather than a full reverse of the entrance. */
+      --p10-opacity-dur: 550ms;
+      --p10-rotate-dur: 550ms;
+      --p10-rotate-from: 80deg;
+      --p10-bob-dur:     450ms;
+      --p10-y-amount:    40px;
+      --p10-blur-dur:    500ms;
+      --p10-blur-from:   10px;
+      /* Exit uses its own (softer) blur amount so the disappearance
+         reads as a gentle fade rather than a full reverse of entry. */
+      --p10-blur-out-from: 4px;
+      --p10-path-dur:    550ms;
+      --p10-path-delay:  80ms;
+      --p10-out-dur:     500ms;
+      --p10-ease-out:     cubic-bezier(0.22, 1, 0.36, 1);
+      --p10-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
+      --p10-ease-rotate:  cubic-bezier(0.22, 1, 0.36, 1);
+      --p10-ease-bob:     cubic-bezier(0.34, 1.35, 0.64, 1);
+      --p10-ease-path:    cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P11, Avatar group hover spring.
+         Each neighbor at distance d from the hovered avatar lifts by
+         --p11-lift * pow(--p11-falloff, d). Lift uses --p11-ease-in
+         (clean) and the return uses --p11-ease-out (bouncy spring). */
+      --p11-lift:    -4px;
+      --p11-dur:     320ms;
+      --p11-ease-in:  cubic-bezier(0.22, 1, 0.36, 1);
+      --p11-ease-out: cubic-bezier(0.34, 3.85, 0.64, 1);
+      --p11-scale:   1.05;
+      --p11-falloff: 0.45;
+
+      /* P12, Input shake on error.
+         Four-phase translateX with a per-segment cubic-bezier per
+         keyframe stop (80 + 80 + 60 + 60 = 280ms total). After the
+         shake we hold --p12-revert-hold then fade border + message
+         back to neutral over --p12-revert-dur. */
+      --p12-shake-distance:  6px;
+      --p12-shake-overshoot: 4px;
+      --p12-shake-dur-a:     80ms;
+      --p12-shake-dur-b:     60ms;
+      --p12-shake-ease:      cubic-bezier(0.22, 1, 0.36, 1);
+      --p12-error-border:    #e23014;
+      --p12-error-text:      #d62b11;
+      --p12-revert-hold:     3000ms;
+      --p12-revert-dur:      280ms;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --text-subtle: #767676;
+      --text-faint: #8f8f8f;
+      --text-footer-name: #e9e9e9;
+
+      --card-bg: #181818;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+
+      --stage-bg: #131313;
+      --stage-border: rgba(255, 255, 255, 0.02);
+
+      --pro-badge-bg: #2a2a2a;
+      --pro-badge-fg: #ededed;
+
+      --chip-bg: rgba(255, 255, 255, 0.07);
+      --chip-bg-hover: rgba(255, 255, 255, 0.1);
+      --chip-bg-pressed: rgba(255, 255, 255, 0.08);
+
+      /* Animate button, Figma icons 232:3561 (dark states).
+         Translucent white overlays on the card surface:
+           default 4%, hover 6%, clicked 8%, disabled 4% + 50% text. */
+      --animate-bg: rgba(255, 255, 255, 0.04);
+      --animate-bg-tint: transparent;
+      --animate-bg-hover: rgba(255, 255, 255, 0.06);
+      --animate-bg-pressed: rgba(255, 255, 255, 0.08);
+      --animate-text: #e3e3e3;
+      --animate-text-disabled: rgba(227, 227, 227, 0.5);
+
+      --copy-bg: rgba(255, 255, 255, 0.08);
+      --copy-bg-tint: transparent;
+      --copy-bg-hover: rgba(255, 255, 255, 0.10);
+      --copy-bg-pressed: rgba(255, 255, 255, 0.10);
+
+      --surface-bg: #181818;
+      --skeleton: rgba(238, 238, 239, 0.1);
+      --muted: #767676;
+
+      --material-bg: #181818;
+      --material-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.08);
+
+      --icon-color: #ededed;
+      --icon-color-muted: rgba(237, 237, 237, 0.6);
+
+      --label-mono: #5e6073;
+    }
+
+    * { box-sizing: border-box; }
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100dvh;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* ─── Cross-browser text anti-aliasing ───────────────────── */
+    html {
+      -webkit-font-smoothing: antialiased;           /* Safari, Chrome (macOS/iOS) */
+      -moz-osx-font-smoothing: grayscale;            /* Firefox (macOS) */
+      font-smooth: always;                           /* legacy non-standard */
+      text-rendering: optimizeLegibility;            /* Firefox, Safari, Chrome */
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    /* ─── Skip link ───────────────────────────────────────────── */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 16px;
+      z-index: 200;
+      padding: 12px 20px;
+      border-radius: 8px;
+      background: var(--text);
+      color: var(--bg);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 16px; }
+
+    /* ─── Main container ──────────────────────────────────────── */
+    .app {
+      position: relative;
+      max-width: 1240px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 24px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ─── Top bar (absolute action buttons) ──────────────────── */
+    .top-bar {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 50px;
+      background: var(--chip-bg);
+      color: var(--icon-color);
+      cursor: pointer;
+      text-decoration: none;
+      padding: 0;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .icon-btn:hover { background: var(--chip-bg-hover); }
+    .icon-btn:active { background: var(--chip-bg-pressed); }
+    .icon-btn:focus-visible {
+      outline: 2px solid var(--icon-color);
+      outline-offset: 2px;
+    }
+
+    .icon-btn svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+      fill: currentColor;
+      color: var(--icon-color-muted);
+      transition: color 0.15s ease;
+    }
+    .icon-btn svg.icon-x {
+      width: 16px;
+      height: 17px;
+    }
+    .icon-btn:hover svg { color: var(--icon-color); }
+
+    /* Mirrors the P5 "Icon swap" prototype architecture: both icons
+       live permanently in the DOM stacked on top of each other, and
+       the swap is driven by toggling a single `data-active` attribute
+       on the wrapper. This way both icons start their transitions in
+       the same frame, no per-click image decode, no asymmetric
+       enter/exit pacing. The `--p5-*` tokens are reused directly so
+       any future tweak to the prototype carries over automatically. */
+    .theme-icon-stack {
+      position: relative;
+      display: inline-flex;
+      width: 16px;
+      height: 16px;
+    }
+    .theme-icon {
+      position: absolute;
+      inset: 0;
+      width: 16px;
+      height: 16px;
+      display: block;
+      transform-origin: center;
+      pointer-events: none;
+      user-select: none;
+      transition:
+        opacity   var(--p5-dur) var(--p5-ease),
+        filter    var(--p5-dur) var(--p5-ease),
+        transform var(--p5-dur) var(--p5-ease);
+      /* Default = inactive (hidden) state, matches P5 morph-out. */
+      opacity: 0;
+      transform: scale(var(--p5-start-scale));
+    }
+    .theme-icon-moon { filter: blur(var(--p5-blur)); }
+    /* Sun is filtered to white in both states; only the blur amount
+       changes, so the inversion can't briefly reveal native colors. */
+    .theme-icon-sun  { filter: brightness(0) invert(1) blur(var(--p5-blur)); }
+
+    /* Active icon = visible at rest. */
+    .theme-icon-stack[data-active="moon"] .theme-icon-moon,
+    .theme-icon-stack[data-active="sun"]  .theme-icon-sun {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    .theme-icon-stack[data-active="moon"] .theme-icon-moon { filter: blur(0); }
+    .theme-icon-stack[data-active="sun"]  .theme-icon-sun  { filter: brightness(0) invert(1); }
+
+    .theme-toggle:hover .theme-icon-stack[data-active="moon"] .theme-icon-moon,
+    .theme-toggle:hover .theme-icon-stack[data-active="sun"]  .theme-icon-sun {
+      opacity: 1;
+    }
+
+    /* Suppresses the entry animation on first paint so the resting
+       icon doesn't appear to "fly in" when the page loads. */
+    .theme-icon-stack.no-anim .theme-icon { transition: none; }
+
+    /* ─── Site nav (shared bar: logo + menu + actions) ─────────── */
+    /* Mirrors the /index.html + /refine.html top bar. Lives as the first
+       child of .app so the brand lines up with the page content column. */
+    .site-nav {
+      position: relative;
+      z-index: 50;
+      width: 100%;
+    }
+    .site-nav-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 0;
+    }
+    .site-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      min-width: 0;
+    }
+    .site-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 35px;
+      padding: 5px 0;
+      text-decoration: none;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      color: var(--icon-color);
+    }
+    /* Natural 18×20.295 ratio centered in the 24px box (Figma vector
+       inset 7.72%/12.5%), not stretched edge-to-edge. */
+    .brand-mark svg { width: 18px; height: 20.295px; display: block; }
+    .brand-word {
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .brand-word-dim { color: var(--text-muted); }
+
+    /* Tertiary text pills, quiet by default, soft tint when active. */
+    .site-nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      padding: 0 13px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 16px;
+      color: var(--text-muted);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-pill:hover { color: var(--text); background: rgba(0, 0, 0, 0.03); }
+    html[data-theme="dark"] .nav-pill:hover { background: rgba(255, 255, 255, 0.06); }
+    .nav-pill--active {
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.03);
+    }
+    html[data-theme="dark"] .nav-pill--active { background: rgba(255, 255, 255, 0.06); }
+    .nav-pill:focus-visible {
+      outline: 2px solid var(--icon-color);
+      outline-offset: 2px;
+    }
+
+    /* ─── Mobile hamburger (logram-style two-line → ✕ morph) ────── */
+    /* Hidden on desktop; the media query below flips it to inline-flex
+       and hides the .site-nav-menu pills. */
+    .nav-burger { display: none; }
+    .nav-burger-box {
+      position: relative;
+      width: 16px;
+      height: 16px;
+      display: block;
+      color: var(--icon-color-muted);
+      transition: color 0.15s ease;
+    }
+    .nav-burger:hover .nav-burger-box { color: var(--icon-color); }
+    .nav-burger-line {
+      position: absolute;
+      left: 1px;
+      right: 1px;
+      height: 1.5px;
+      border-radius: 2px;
+      background: currentColor;
+      transform-origin: center;
+      /* Slide to centre (top), then rotate into the ✕. Calm ease-out. */
+      transition:
+        top 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) 0.05s;
+    }
+    .nav-burger-line--top { top: 5px; }
+    .nav-burger-line--bottom { top: 9.5px; }
+    .nav-burger[aria-expanded="true"] .nav-burger-line {
+      /* Centre line of a 16px box with a 1.5px bar = (16 − 1.5)/2. */
+      top: 7.25px;
+      /* Rotate fires first on open so the lines cross as they meet. */
+      transition:
+        top 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .nav-burger[aria-expanded="true"] .nav-burger-line--top { transform: rotate(45deg); }
+    .nav-burger[aria-expanded="true"] .nav-burger-line--bottom { transform: rotate(-45deg); }
+
+    /* ─── Mobile menu overlay + blurred backdrop ───────────────── */
+    /* Backdrop: white @ 90% with a 20px blur (per design). Sits below
+       the menu list but above page content; the top bar stays clickable
+       on top of it (.site-nav-inner z-index). */
+    .mobile-menu-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.9);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear 0.35s;
+    }
+    html[data-theme="dark"] .mobile-menu-backdrop {
+      background: rgba(18, 18, 18, 0.9);
+    }
+    body.menu-open .mobile-menu-backdrop {
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s;
+    }
+    body.menu-closing .mobile-menu-backdrop {
+      opacity: 0;
+      visibility: visible;
+      transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      padding: 88px 30px calc(40px + env(safe-area-inset-bottom, 0px));
+      visibility: hidden;
+      pointer-events: none;
+      transition: visibility 0s linear 0.4s;
+    }
+    body.menu-open .mobile-menu,
+    body.menu-closing .mobile-menu {
+      visibility: visible;
+      transition: visibility 0s;
+    }
+    body.menu-open .mobile-menu { pointer-events: auto; }
+    .mobile-menu-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .mobile-menu-link {
+      display: inline-block;
+      font-family: var(--font-sans);
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+      /* Closed = pre-entrance (down + blurred + invisible). Opening
+         flips to resting; the stagger lands the eye top-to-bottom. */
+      opacity: 0;
+      transform: translateY(12px);
+      filter: blur(3px);
+      transition:
+        opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .mobile-menu-link--2 { transition-delay: 40ms; }
+    .mobile-menu-link--3 { transition-delay: 80ms; }
+    .mobile-menu-link--4 { transition-delay: 120ms; }
+    .mobile-menu-link--5 { transition-delay: 160ms; }
+    .mobile-menu-link--6 { transition-delay: 200ms; }
+    /* "Get Pro" reads as the accent CTA in the list (Figma 2332:82664). */
+    .mobile-menu-link--pro { color: #0053e3; }
+    html[data-theme="dark"] .mobile-menu-link--pro { color: #7cd4ff; }
+    body.menu-open .mobile-menu-link {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+    /* Exit decouples from the stagger: one quiet 200ms fade in place,
+       no Y-return / blur, so closing doesn't replay the reveal. */
+    body.menu-closing .mobile-menu-link {
+      opacity: 0;
+      transform: translateY(0);
+      filter: blur(0);
+      transition:
+        opacity 0.2s ease,
+        transform 0s linear,
+        filter 0s linear;
+      transition-delay: 0s;
+    }
+
+    /* Sign in, full-width pill pinned to the bottom (Figma 2332:82680). */
+    .mobile-menu-cta {
+      margin-top: auto;
+      width: 100%;
+      height: 44px;
+      border: 0;
+      border-radius: 26px;
+      background: #f5f5f5;
+      color: #17181c;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      opacity: 0;
+      transform: translateY(12px);
+      filter: blur(3px);
+      transition: background 0.15s ease;
+    }
+    .mobile-menu-cta:hover { background: #ededed; }
+    html[data-theme="dark"] .mobile-menu-cta { background: rgba(255, 255, 255, 0.06); color: #fbfbfb; }
+    html[data-theme="dark"] .mobile-menu-cta:hover { background: rgba(255, 255, 255, 0.1); }
+    body.menu-open .mobile-menu-cta {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+      transition:
+        opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1) 160ms,
+        transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) 160ms,
+        filter 0.5s cubic-bezier(0.22, 1, 0.36, 1) 160ms,
+        background 0.15s ease;
+    }
+    body.menu-closing .mobile-menu-cta {
+      opacity: 0;
+      transform: translateY(0);
+      filter: blur(0);
+      transition: opacity 0.2s ease;
+    }
+    /* When the menu is open, Get Pro lives in the list, drop the
+       duplicate pill from the top bar (Figma menu-open state). */
+    body.menu-open .nav-get-pro { display: none; }
+    body.menu-open { overflow: hidden; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .nav-burger-line,
+      .mobile-menu-backdrop,
+      .mobile-menu,
+      .mobile-menu-link,
+      .mobile-menu-cta {
+        transition: none !important;
+      }
+    }
+
+    /* ─── Header (Figma demo page + border-beam vertical rhythm) ─ */
+    .header {
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 48px;
+      padding-bottom: 20px;
+      text-align: center;
+    }
+
+    .header-icon-wrap {
+      position: relative;
+      width: 136px;
+      height: 140px;
+      margin-top: -43px;
+      margin-bottom: -27px;
+      overflow: visible;
+    }
+
+    .header-icon-img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 136px;
+      height: 140px;
+      display: block;
+      user-select: none;
+      transform-origin: center;
+      transition:
+        filter 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Hover pose is gated to pointer-capable devices so iOS Safari's
+       sticky-hover doesn't pin the icon into the hover state after a
+       tap (which would leave it permanently rotated/saturated until
+       the user taps elsewhere). On touch devices `.is-tapped` is the
+       only trigger and is added/removed by JS, the existing 500ms
+       transition on `.header-icon-img` interpolates both directions. */
+    @media (hover: hover) {
+      .header-icon-wrap:hover .header-icon-img {
+        filter: hue-rotate(60deg) saturate(1.6);
+        transform: rotate(8deg) scale(1.06);
+      }
+    }
+    .header-icon-wrap.is-tapped .header-icon-img {
+      filter: hue-rotate(60deg) saturate(1.6);
+      transform: rotate(8deg) scale(1.06);
+    }
+
+    html[data-theme="dark"] .header-icon-img--light,
+    html:not([data-theme="dark"]) .header-icon-img--dark {
+      display: none;
+    }
+
+    html:not([data-theme="dark"]) .header-icon-img--light,
+    html[data-theme="dark"] .header-icon-img--dark {
+      display: block;
+    }
+
+    /* Hero Saans display title, mirrors /refine.html. */
+    .title {
+      margin-top: 9px;
+      font-family: "Saans", var(--font-sans);
+      font-size: 36px;
+      font-weight: 500;
+      line-height: 34px;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      margin-top: 16px;
+      max-width: 560px;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 24.2px;
+      color: var(--text-muted);
+    }
+    /* Hero links: darker than the body copy, no underline at rest; the
+       underline only appears on hover. */
+    .subtitle a {
+      color: var(--text);
+      text-decoration: none;
+      text-underline-offset: 2px;
+    }
+    .subtitle a:hover { text-decoration: underline; }
+
+    /* ─── Cards grid ──────────────────────────────────────────── */
+    .cards {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 320px);
+      justify-content: center;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ─── Card ────────────────────────────────────────────────── */
+    .card {
+      position: relative;
+      width: 320px;
+      height: 344px;
+      min-height: 344px;
+      max-height: 344px;
+      /* overflow stays `visible` so the copy tooltip can extend
+         slightly past the card's rounded corners when the label
+         swaps to its wider "Copied" state. The stage clips its
+         own content via `.card-stage { overflow: hidden }`. */
+      border-radius: 24px;
+      background-color: var(--card-bg);
+      box-shadow:
+        var(--card-shadow),
+        inset 0 0 0 1px var(--card-border),
+        inset 0 -1px 0 0 var(--card-border);
+      transition: box-shadow 0.15s ease, background-color 0.2s ease;
+    }
+
+    .card:hover {
+      background-color: color-mix(in srgb, var(--card-bg) 99%, #000 1%);
+    }
+
+    html[data-theme="dark"] .card {
+      background-color: #181818;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.07);
+    }
+    html[data-theme="dark"] .card:hover {
+      background-color: color-mix(in srgb, #181818 99.5%, #fff 0.5%);
+    }
+
+    .card-stage {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      width: 296px;
+      max-width: calc(100% - 24px);
+      height: 260px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--stage-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Ring rendered on a pseudo so it draws on top of descendants
+       (e.g. the P3 panel material) instead of being occluded by them. */
+    .card-stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px var(--stage-border);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    html[data-theme="dark"] .card-stage {
+      background: #131313;
+    }
+    html[data-theme="dark"] .card-stage::after {
+      box-shadow: inset 0 0 0 1px rgba(191, 192, 203, 0.08);
+    }
+
+    .card-meta {
+      position: absolute;
+      left: var(--card-pad-x);
+      bottom: 20px;
+      width: calc(100% - 2 * var(--card-pad-x) - 44px);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 18px;
+      color: var(--text);
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 13px;
+      color: var(--text-subtle);
+    }
+
+    html[data-theme="dark"] .card-title { color: #ededed; }
+    html[data-theme="dark"] .card-subtitle { color: #767676; }
+
+    .card-copy {
+      position: absolute;
+      right: var(--card-pad-x);
+      bottom: 16px;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 24px;
+      padding: 0;
+      cursor: pointer;
+      background-color: var(--copy-bg-tint);
+      background-image: linear-gradient(90deg, var(--copy-bg) 0%, var(--copy-bg) 100%);
+      color: var(--icon-color-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html[data-theme="dark"] .card-copy {
+      background-color: transparent;
+      background-image: none;
+      background: var(--copy-bg);
+    }
+
+    .card-copy:hover {
+      background-color: var(--copy-bg-tint);
+      background-image: linear-gradient(90deg, var(--copy-bg-hover) 0%, var(--copy-bg-hover) 100%);
+      color: var(--icon-color);
+    }
+    html[data-theme="dark"] .card-copy:hover {
+      background-image: none;
+      background: var(--copy-bg-hover);
+      color: var(--icon-color);
+    }
+
+    .card-copy:active {
+      background-color: var(--copy-bg-tint);
+      background-image: linear-gradient(90deg, var(--copy-bg-pressed) 0%, var(--copy-bg-pressed) 100%);
+      color: var(--icon-color);
+    }
+    html[data-theme="dark"] .card-copy:active {
+      background-image: none;
+      background: var(--copy-bg-pressed);
+      color: var(--icon-color);
+    }
+
+    .card-copy:focus-visible {
+      outline: 2px solid var(--icon-color);
+      outline-offset: 2px;
+    }
+
+    .card-copy svg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      display: block;
+      transform-origin: center;
+      will-change: opacity, transform, filter;
+      transition:
+        opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .card-copy .icon-copy {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      filter: blur(0);
+    }
+    .card-copy .icon-check {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.25);
+      filter: blur(4px);
+      color: currentColor;
+    }
+    .card-copy[data-copied="true"] .icon-copy {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.25);
+      filter: blur(4px);
+    }
+    .card-copy[data-copied="true"] .icon-check {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      filter: blur(0);
+    }
+
+    /* ─── Copy-button tooltip ──────────────────────────────── */
+    /* Centered above the copy button in every state. The parent
+       card's `overflow: hidden` is lifted (see `.card`) so the
+       wider "Copied" state can breathe past the card edge without
+       getting clipped by the rounded-corner mask. */
+    .card-copy-tooltip {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(100% + 8px);
+      box-sizing: border-box;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 12px;
+      border-radius: 40px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
+      letter-spacing: 0;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear 150ms;
+
+      /* Light theme, white pill with soft shadow (Figma 246:3650). */
+      background: #ffffff;
+      color: #17181c;
+      box-shadow:
+        0 2px 8px 0 rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 1px 1px 0 rgba(0, 0, 0, 0.04);
+    }
+
+    html[data-theme="dark"] .card-copy-tooltip {
+      /* Dark theme, near-black pill with a glow-like shadow and
+         layered inset borders (Figma 246:3653). */
+      background: #181818;
+      color: #e3e3e3;
+      box-shadow:
+        0 1px 16px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.08);
+    }
+
+    /* Hover / focus reveal is gated to pointer-capable devices so
+       iOS Safari's "sticky hover" doesn't keep the tooltip visible
+       after a tap, on touch, the tooltip only shows in the Copied
+       state (block further below). The 50ms delay before fade-in
+       prevents quick pointer flyovers from flashing the tooltip.
+       Clicking overrides the delay so the "Copied" confirmation
+       shows instantly. */
+    @media (hover: hover) {
+      .card-copy:hover .card-copy-tooltip,
+      .card-copy:focus-visible .card-copy-tooltip,
+      .card-copy[data-copied="true"] .card-copy-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 150ms cubic-bezier(0.22, 1, 0.36, 1) 50ms,
+          visibility 0s linear 50ms;
+      }
+      .card-copy[data-copied="true"] .card-copy-tooltip {
+        transition:
+          opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+          visibility 0s linear;
+      }
+    }
+    .card-copy-tooltip .tt-text {
+      display: inline-flex;
+      align-items: baseline;
+      line-height: 16px;
+    }
+
+    /* Animated segment that swaps "y" ⟷ "ied" with a 2px cross blur.
+       Its width animates between two widths measured on init (exposed
+       as --tt-w-a / --tt-w-b custom properties by the init script).
+       .tt-a stays in normal flow so the container has a real text
+       baseline for the parent's `align-items: baseline`; .tt-b is
+       absolutely positioned on top so both glyphs share the same
+       top-left anchor and cross-blur in place. */
+    .card-copy-tooltip .tt-swap {
+      position: relative;
+      display: inline-block;
+      vertical-align: baseline;
+      line-height: 16px;
+      width: var(--tt-w-a, auto);
+      transition: width 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .card-copy-tooltip .tt-swap[data-state="copied"] {
+      width: var(--tt-w-b, auto);
+    }
+
+    .card-copy-tooltip .tt-label {
+      white-space: pre;
+      transition:
+        opacity 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 180ms cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: opacity, filter;
+    }
+
+    .card-copy-tooltip .tt-a {
+      display: inline-block;
+    }
+
+    .card-copy-tooltip .tt-b {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .card-copy-tooltip .tt-swap .tt-a { opacity: 1; filter: blur(0); }
+    .card-copy-tooltip .tt-swap .tt-b { opacity: 0; filter: blur(2px); }
+    .card-copy-tooltip .tt-swap[data-state="copied"] .tt-a {
+      opacity: 0;
+      filter: blur(2px);
+    }
+    .card-copy-tooltip .tt-swap[data-state="copied"] .tt-b {
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    /* Touch-only devices: tooltip only appears in the Copied state
+       (triggered from JS on tap), stays stable, then fades out.
+       - text swap / label transitions are killed so the tooltip
+         fades in already reading "Copied" instead of cross-blurring
+         from "Copy code" mid-reveal.
+       - .tt-swap width is pinned to the Copied width (--tt-w-b)
+         in every state so the pill is born at the final size and
+         never snaps between widths when the attribute flips.
+       This block MUST come after the base .tt-swap / .tt-label rules
+       above, equal-specificity selectors are resolved by source
+       order, so placing the override earlier silently lets the base
+       `width: var(--tt-w-a)` / `transition: width 240ms` win. */
+    @media (hover: none) {
+      .card-copy[data-copied="true"] .card-copy-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+          visibility 0s linear;
+      }
+      .card-copy-tooltip .tt-swap {
+        width: var(--tt-w-b, auto);
+        transition: none;
+      }
+      .card-copy-tooltip .tt-label {
+        transition: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card-copy-tooltip,
+      .card-copy-tooltip .tt-swap,
+      .card-copy-tooltip .tt-label {
+        transition: none !important;
+      }
+    }
+
+    /* ─── Animate button (centered inside stage bottom) ──────── */
+    /* Same reset as prototypes `.btn`: no native button chrome. */
+    .btn-animate {
+      appearance: none;
+      -webkit-appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 20px;
+      height: 36px;
+      padding: 6px 12px;
+      border: 0;
+      border-radius: 40px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 16px;
+      color: var(--animate-text);
+      background-color: var(--animate-bg-tint);
+      background-image: linear-gradient(90deg, var(--animate-bg) 0%, var(--animate-bg) 100%);
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.15s ease, filter 0.15s ease;
+      z-index: 5;
+      flex-shrink: 0;
+    }
+    html[data-theme="dark"] .btn-animate {
+      background-color: transparent;
+      background-image: none;
+      background: var(--animate-bg);
+    }
+
+    .btn-animate:hover { filter: brightness(0.98); }
+    html[data-theme="dark"] .btn-animate:hover {
+      background: var(--animate-bg-hover);
+      filter: none;
+    }
+    html[data-theme="dark"] .btn-animate:active {
+      background: var(--animate-bg-pressed);
+      filter: none;
+    }
+    html[data-theme="dark"] .btn-animate:disabled {
+      background: var(--animate-bg);
+      color: var(--animate-text-disabled);
+      cursor: not-allowed;
+    }
+    html[data-theme="dark"] .btn-animate:disabled:hover {
+      background: var(--animate-bg);
+      color: var(--animate-text-disabled);
+    }
+    .btn-animate:active { filter: brightness(0.95); }
+    .btn-animate:focus-visible {
+      outline: 2px solid var(--animate-text);
+      outline-offset: 2px;
+    }
+
+    /* ─── Footer (Figma 2332:3466) ────────────────────────────── */
+    .footer {
+      /* Matches the homepage card grid's rendered width (320px × 3 +
+         24px × 2 gaps = 1008px) so the footer's edges line up with the
+         content above it, site-wide. */
+      width: 100%;
+      max-width: 1008px;
+      margin: 112px auto 0;
+      padding: 0 0 40px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 18.2px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 260px;
+    }
+    .footer-brand-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.7;
+      text-decoration: none;
+      color: var(--text);
+      /* Same hover as the top-bar brand link: mark spins, whole
+         lockup gets a touch of scale (transitions live on the
+         shared .brand-mark rule; only the trigger + scale live here). */
+      transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1), opacity 150ms ease;
+      transform-origin: center;
+    }
+    .footer-brand-logo:hover { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      .footer-brand-logo { transition: opacity 150ms ease; }
+      .footer-brand-logo:hover { transform: none; }
+      .footer-brand-logo:hover .brand-mark { transform: none; }
+    }
+    .footer-tagline {
+      margin: 0;
+      color: var(--text-muted);
+    }
+    .footer-cols {
+      display: flex;
+      gap: 56px;
+    }
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .footer-col-title {
+      margin: 0 0 2px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .footer-col a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 150ms var(--ease-smooth-out);
+    }
+    .footer-col a:hover { color: var(--text); }
+    .footer-credit { margin: 0; }
+    .footer-muted { color: var(--text-faint); }
+    .footer-name {
+      color: var(--text-footer-name);
+      text-decoration: none;
+      margin-left: 4px;
+    }
+    .footer-name:hover {
+      color: #0d0d0d;
+      text-decoration: none;
+    }
+    html[data-theme="dark"] .footer-name:hover {
+      color: #ffffff;
+      text-decoration: none;
+    }
+    @media (max-width: 720px) {
+      .footer-top { flex-direction: column; gap: 32px; }
+      .footer-cols { gap: 40px; flex-wrap: wrap; row-gap: 32px; }
+    }
+
+    /* ============================================================ */
+    /* Responsive, mirrors border-beam demo breakpoints            */
+    /* ============================================================ */
+    @media (max-width: 1100px) {
+      .cards { grid-template-columns: repeat(2, 320px); }
+    }
+
+    @media (max-width: 740px) {
+      .cards { grid-template-columns: 320px; gap: 16px; }
+      /* Mobile re-layout uses CSS grid so the left divider can occupy
+         only the text row instead of stretching across the button row.
+         `.course-cta-inner` is `display: contents` here so its
+         children participate directly in the grid:
+           [ divider ] [ text   ]   ← row 1
+                       [ button ]   ← row 2
+         Re-enable .course-cta-inner as a flex container on desktop
+         (it stays unchanged outside this @media block). */
+      .course-cta {
+        display: grid;
+        grid-template-columns: 2px 1fr;
+        column-gap: 10px;
+        row-gap: 16px;
+        align-items: start;
+        max-width: 320px;
+        margin: 56px auto;
+      }
+      .course-cta-divider {
+        grid-column: 1;
+        grid-row: 1;
+        align-self: stretch;
+        height: auto;
+        width: 2px;
+      }
+      .course-cta-inner {
+        display: contents;
+      }
+      .course-cta-text {
+        grid-column: 2;
+        grid-row: 1;
+        max-width: none;
+      }
+      /* Span both columns on row 2 so the pill's left edge lines up
+         with the divider's left edge (not with the text in column 2).
+         `justify-self: start` keeps the pill at its intrinsic content
+         width, without it grid items would stretch to fill the row. */
+      .course-cta-button {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-self: start;
+        margin-left: 0;
+      }
+    }
+
+    @media (max-width: 639px) {
+      .app { padding: 0 12px 48px; }
+      /* Collapse the inline nav pills into the hamburger; the GitHub
+         pill keeps its live star count (the metric people came for). */
+      .site-nav-menu { display: none; }
+      .nav-burger { display: inline-flex; }
+      .header {
+        height: auto;
+        min-height: 180px;
+        /* The bar now lives in normal flow (no absolute overlap to
+           clear), so the hero just needs a small gap below it. */
+        padding-top: 24px;
+        padding-bottom: 32px;
+        justify-content: flex-end;
+      }
+      .title { font-size: 26px; line-height: 32px; }
+      .subtitle { font-size: 15px; line-height: 22px; }
+      /* Let the subtitle wrap naturally on narrow viewports;
+         the desktop layout uses a hardcoded <br/> after "that" which
+         produces awkward extra breaks on mobile. */
+      .subtitle br { display: none; }
+      /* Cards span the full available width (viewport − 12px margins)
+         instead of the fixed 320px desktop width. */
+      .cards { grid-template-columns: 1fr; }
+      /* Compensate for mobile browsers down-sampling the backing
+         buffer used by `filter: blur()`. The same numeric radius
+         reads visually smaller on phones (especially alongside
+         animated transforms), so we lift the blur vars ~2× here.
+         Scoped to `.cards` rather than `:root` so `getComputedStyle`
+         on <html> (used by the snippet builder) still returns the
+         desktop defaults, the copied CSS stays identical regardless
+         of the device the user copied from. */
+      .cards {
+        --p1-blur: 4px;
+        --p3-blur: 4px;
+        --p5-blur: 4px;
+        --p6-blur: 4px;
+        --p9-blur: 3.5px;
+      }
+      .card { width: 100%; }
+      /* Stage stretches to equal 12px insets on both sides so the
+         prototype area follows the wider card instead of leaving a
+         large right-side gap. All inner prototypes are flex-centered
+         or auto-centered, so widening the stage is safe. */
+      .card-stage {
+        right: 12px;
+        width: auto;
+        max-width: none;
+      }
+      /* P8 modal is absolutely positioned with a fixed left offset that
+         only centers it inside the default 296px stage. Re-center it
+         within the wider mobile stage without introducing a transform
+         (the page transitions inside rely on a clean baseline). */
+      .p8-modal {
+        left: 50%;
+        margin-left: -130px;
+      }
+      .footer { padding: 0 0 24px; }
+    }
+
+    /* ─── Reduced motion ─────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 1ms !important;
+        animation-duration: 1ms !important;
+      }
+      .bell-badge,
+      .bell-badge-inner,
+      .p5-icon-wrap .icon,
+      .p6-text,
+      .p9-char,
+      .p10-check,
+      .p11-avatar,
+      .p12-input,
+      .course-cta-arrow {
+        transform: none !important;
+        filter: none !important;
+      }
+      .p10-check svg path { stroke-dashoffset: 0 !important; }
+    }
+
+    /* ============================================================ */
+    /* Pro page, tokens                                            */
+    /* ============================================================ */
+    :root {
+      --accent:            #0073e5;
+      --accent-hover:      #0064c8;
+      --accent-soft:       rgba(0, 115, 229, 0.09);
+      --accent-soft-hover: rgba(0, 115, 229, 0.15);
+
+      --ease-smooth-out:   cubic-bezier(0.22, 1, 0.36, 1);
+      --blur-small:        2px;
+
+      /* FAQ accordion (transitions-dev P21) */
+      --p21-expand-dur:    250ms;
+      --p21-collapse-dur:  250ms;
+      --p21-chevron-dur:   250ms;
+      --p21-ease:          var(--ease-smooth-out);
+      --acc-expand:        var(--p21-expand-dur);
+      --acc-collapse:      var(--p21-collapse-dur);
+      --acc-chevron:       var(--p21-chevron-dur);
+      --acc-ease:          var(--p21-ease);
+      --faq-border:        #eeeeee;
+
+      --menu-shadow:
+        0 4px 42px 0 rgba(0, 0, 0, 0.08),
+        0 2px 6px 0 rgba(0, 0, 0, 0.06),
+        0 0 0 1px rgba(0, 0, 0, 0.06);
+    }
+    html[data-theme="dark"] {
+      --accent:            #55cfff;
+      --accent-hover:      #74d8ff;
+      --accent-soft:       rgba(85, 207, 255, 0.12);
+      --accent-soft-hover: rgba(85, 207, 255, 0.2);
+      --faq-border:        rgba(255, 255, 255, 0.08);
+      --menu-shadow:
+        0 4px 42px 0 rgba(0, 0, 0, 0.5),
+        0 2px 6px 0 rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    /* ── Top-bar: Search / Get Pro (exact Figma) ───────────────── */
+    .nav-search {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 36px; padding: 0 12px; border: 0; border-radius: 50px;
+      background: rgba(0, 0, 0, 0.03); color: #838383;
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: background 150ms var(--ease-smooth-out);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-search:hover { background: rgba(0, 0, 0, 0.06); }
+    html[data-theme="dark"] .nav-search { background: rgba(255, 255, 255, 0.05); color: #9a9a9a; }
+    html[data-theme="dark"] .nav-search:hover { background: rgba(255, 255, 255, 0.09); }
+    .nav-search svg { width: 16px; height: 16px; flex: none; }
+    .nav-search-label { line-height: 16px; }
+    .nav-search-kbd { font-size: 11px; line-height: 16px; color: rgba(131, 131, 131, 0.7); margin-left: 2px; }
+    html[data-theme="dark"] .nav-search-kbd { color: rgba(154, 154, 154, 0.7); }
+
+    .nav-get-pro {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 36px; padding: 0 16px; border: 0; border-radius: 50px;
+      background: rgba(0, 115, 255, 0.08); color: #0053e3;
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+      text-decoration: none; white-space: nowrap; cursor: pointer;
+      transition: background 150ms var(--ease-smooth-out);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-get-pro:hover { background: rgba(0, 115, 255, 0.14); }
+    html[data-theme="dark"] .nav-get-pro { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
+    html[data-theme="dark"] .nav-get-pro:hover { background: rgba(85, 207, 255, 0.22); }
+
+    /* ── 3-dot dropdown, exact Refine tool component ──────────── */
+    :root {
+      --dropdown-open-dur: 250ms; --dropdown-close-dur: 150ms;
+      --dropdown-pre-scale: 0.97; --dropdown-closing-scale: 0.99;
+      --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --tl-menu-line: #f0f0f0;
+    }
+    html[data-theme="dark"] { --tl-menu-line: #262626; }
+    .pm-anchor { position: relative; display: inline-flex; }
+    .tl-menu {
+      position: absolute; top: calc(100% + 6px); right: 0; width: 240px; box-sizing: border-box;
+      background: #fff; border-radius: 12px; padding: 6px; box-shadow: var(--menu-shadow); z-index: 120;
+    }
+    html[data-theme="dark"] .tl-menu { background: #202020;
+      box-shadow: var(--menu-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.03); }
+    .t-dropdown {
+      transform-origin: top right; transform: scale(var(--dropdown-pre-scale)); opacity: 0; pointer-events: none;
+      transition: transform var(--dropdown-open-dur) var(--dropdown-ease), opacity var(--dropdown-open-dur) var(--dropdown-ease);
+      will-change: transform, opacity;
+    }
+    .t-dropdown.is-open { transform: scale(1); opacity: 1; pointer-events: auto; }
+    .t-dropdown.is-closing { transform: scale(var(--dropdown-closing-scale)); opacity: 0; pointer-events: none;
+      transition: transform var(--dropdown-close-dur) var(--dropdown-ease), opacity var(--dropdown-close-dur) var(--dropdown-ease); }
+    .tl-menu-item { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 8px;
+      border-radius: 8px; font-size: 13px; font-weight: 400; line-height: 16px; color: #1b1b1b; cursor: pointer;
+      text-decoration: none; transition: background 0.1s ease, box-shadow 0.1s ease; }
+    .tl-menu-item:hover { background: #f4f4f5; }
+    .tl-menu-item:active { background: #ededee; }
+    html[data-theme="dark"] .tl-menu-item { color: #fbfbfb; }
+    html[data-theme="dark"] .tl-menu-item:hover { background: rgba(255, 255, 255, 0.04); }
+    html[data-theme="dark"] .tl-menu-item:active { background: rgba(255, 255, 255, 0.06); }
+    .tl-menu-item-label { flex: 1; min-width: 0; display: flex; align-items: center; }
+    .tl-menu-trail { display: flex; align-items: center; gap: 4px; flex: none; }
+    .tl-menu-value { font-size: 11px; line-height: 14px; color: #8b8b8b; }
+    .tl-menu-chevr { display: flex; flex: none; color: #696969; }
+    html[data-theme="dark"] .tl-menu-chevr { color: #8b8b8b; }
+    .tl-menu-check { display: flex; flex: none; color: #1b1b1b; }
+    html[data-theme="dark"] .tl-menu-check { color: #fbfbfb; }
+    .tl-menu-chevr svg, .tl-menu-check svg, .tl-set-back-ic svg { width: 16px; height: 16px; display: block; }
+    .pm-theme-opt .tl-menu-check { visibility: hidden; }
+    .pm-theme-opt[aria-checked="true"] .tl-menu-check { visibility: visible; }
+    .tl-menu-divider { height: 1px; background: var(--tl-menu-line); margin: 6px -6px; }
+    .tl-set-slide { position: relative; margin-left: -6px; margin-right: -6px; overflow: hidden;
+      --page-slide-dur: 250ms; --page-fade-dur: 250ms; --page-slide-distance: 8px; --page-blur: 3px;
+      --page-slide-ease: cubic-bezier(0.22, 1, 0.36, 1); --page-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      transition: height var(--page-slide-dur) var(--page-slide-ease); }
+    .tl-set-slide .t-page[data-page-id="1"] { --t-page-from-x: calc(var(--page-slide-distance) * -1); }
+    .tl-set-slide .t-page[data-page-id="3"] { --t-page-from-x: var(--page-slide-distance); }
+    .tl-set-slide .t-page { position: absolute; top: 0; left: 0; right: 0; box-sizing: border-box;
+      padding-left: 6px; padding-right: 6px; opacity: 0; pointer-events: none;
+      transform: translateX(var(--t-page-from-x, 0px)); filter: blur(var(--page-blur));
+      transition: opacity var(--page-fade-dur) var(--page-fade-ease), transform var(--page-slide-dur) var(--page-slide-ease), filter var(--page-slide-dur) var(--page-slide-ease);
+      will-change: opacity, transform, filter; }
+    .tl-set-slide[data-page="1"] .t-page[data-page-id="1"],
+    .tl-set-slide[data-page="3"] .t-page[data-page-id="3"] {
+      opacity: 1; pointer-events: auto; transform: translateX(0); filter: blur(0); }
+    .tl-set-back { display: flex; align-items: center; gap: 4px; width: 100%; box-sizing: border-box;
+      min-height: 32px; padding: 0 8px 0 4px; border: none; background: transparent; border-radius: 8px;
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500; line-height: 16px; color: #1b1b1b;
+      cursor: pointer; text-align: left; transition: background 0.1s ease; }
+    .tl-set-back:hover { background: #f4f4f5; }
+    html[data-theme="dark"] .tl-set-back { color: #fbfbfb; }
+    html[data-theme="dark"] .tl-set-back:hover { background: rgba(255, 255, 255, 0.04); }
+    .tl-set-back-ic { display: flex; flex: none; color: #696969; transform: scaleX(-1); }
+    html[data-theme="dark"] .tl-set-back-ic { color: #8b8b8b; }
+    .tl-set-back-title { flex: 1; min-width: 0; }
+    /* ⋮ menu Feedback page (same as libraries.dev): the menu widens for the
+       form while the slide carries the height. Logic lives in pro-client.js. */
+    .tl-set-slide .t-page[data-page-id="4"] { --t-page-from-x: var(--page-slide-distance); }
+    .tl-set-slide[data-page="4"] .t-page[data-page-id="4"] {
+      opacity: 1; pointer-events: auto; transform: translateX(0); filter: blur(0); }
+    .tl-menu.t-dropdown.is-open {
+      transition: transform var(--dropdown-open-dur) var(--dropdown-ease), opacity var(--dropdown-open-dur) var(--dropdown-ease),
+        width var(--p4-dur, 300ms) var(--p4-ease, cubic-bezier(0.22, 1, 0.36, 1)); }
+    .tl-menu.is-feedback { width: 320px; }
+    .pm-feedback { display: flex; flex-direction: column; gap: 8px; padding: 2px; }
+    .pm-feedback-input, .pm-feedback-email {
+      width: 100%; box-sizing: border-box; display: block; padding: 0 12px;
+      font-family: var(--font-sans); font-size: 13px; line-height: 1.4; color: #0f0f0f;
+      background: #fff; border: 1px solid #dcdcdc; border-radius: 12px; outline: none;
+      transition: border-color 120ms ease; }
+    .pm-feedback-input { min-height: 130px; padding-top: 10px; padding-bottom: 10px; resize: none; }
+    .pm-feedback-email { height: 40px; }
+    .pm-feedback-input::placeholder, .pm-feedback-email::placeholder { color: #828282; }
+    .pm-feedback-input:focus, .pm-feedback-email:focus { border-color: #585858; }
+    .pm-feedback-input.is-error, .pm-feedback-email.is-error { border-color: #e23014; }
+    html[data-theme="dark"] .pm-feedback-input, html[data-theme="dark"] .pm-feedback-email { background: #151517; color: #f2f2f2; border-color: #3a3a3d; }
+    html[data-theme="dark"] .pm-feedback-input:focus, html[data-theme="dark"] .pm-feedback-email:focus { border-color: #a5a5a5; }
+    html[data-theme="dark"] .pm-feedback-input.is-error, html[data-theme="dark"] .pm-feedback-email.is-error { border-color: #e23014; }
+    .pm-feedback-btn {
+      width: 100%; height: 40px; border: 0; border-radius: 26px; background: #17181c; color: #fff;
+      font-family: var(--font-sans); font-size: 13px; line-height: 13px; font-weight: 500; cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), scale 120ms cubic-bezier(0.22, 1, 0.36, 1), opacity 120ms ease; }
+    .pm-feedback-btn:hover { background: #2a2a2a; }
+    .pm-feedback-btn:not([disabled]):active { scale: 0.96; background: #000; }
+    .pm-feedback-btn[disabled] { opacity: 0.6; cursor: default; }
+    .pm-feedback-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+    html[data-theme="dark"] .pm-feedback-btn { background: #f2f2f2; color: #111; }
+    html[data-theme="dark"] .pm-feedback-btn:hover { background: #e8e8e8; }
+    html[data-theme="dark"] .pm-feedback-btn:not([disabled]):active { background: #d8d8d8; }
+    .pm-feedback-note { margin: -2px 0 0; padding: 0 2px; font-size: 13px; line-height: 1.4; color: #4d4d4d; }
+    .pm-feedback-note[hidden] { display: none; }
+    .pm-feedback-note[data-kind="ok"] { color: #16a34a; }
+    .pm-feedback-note[data-kind="err"] { color: #d62b11; }
+    .pm-feedback-note a { color: inherit; font-weight: 500; }
+    .pm-feedback-input.is-shaking, .pm-feedback-email.is-shaking { animation: pm-shake 280ms linear; }
+    @keyframes pm-shake {
+      0% { transform: translateX(0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      28.57% { transform: translateX(6px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      57.14% { transform: translateX(-6px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      78.57% { transform: translateX(4px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      100% { transform: translateX(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tl-menu.t-dropdown.is-open { transition: none !important; }
+      .pm-feedback-input, .pm-feedback-email { animation: none !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .t-dropdown, .tl-set-slide, .tl-set-slide .t-page { transition: none !important; }
+    }
+
+    /* ── Command palette (⌘K) ──────────────────────────────────── */
+    .cmdk-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 14vh 16px 16px;
+      background: rgba(15, 15, 15, 0.28);
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms var(--ease-smooth-out);
+    }
+    html[data-theme="dark"] .cmdk-overlay { background: rgba(0, 0, 0, 0.5); }
+    .cmdk-overlay[data-open="true"] { opacity: 1; pointer-events: auto; }
+    .cmdk-panel {
+      width: 100%;
+      max-width: 560px;
+      background: var(--card-bg);
+      border-radius: 14px;
+      box-shadow: var(--menu-shadow);
+      overflow: hidden;
+      /* transitions.dev skill Modal open/close (P7): scale + fade,
+         250ms open / 150ms close, smooth-out ease. */
+      transform-origin: center;
+      transform: scale(var(--p7-scale)); opacity: 0;
+      transition:
+        transform var(--p7-close-dur) var(--p7-ease),
+        opacity   var(--p7-close-dur) var(--p7-ease);
+      will-change: transform, opacity;
+    }
+    .cmdk-overlay[data-open="true"] .cmdk-panel {
+      transform: scale(1); opacity: 1;
+      transition:
+        transform var(--p7-open-dur) var(--p7-ease),
+        opacity   var(--p7-open-dur) var(--p7-ease);
+    }
+    .cmdk-search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--faq-border);
+    }
+    .cmdk-search svg { width: 18px; height: 18px; flex: none; color: var(--text-muted); }
+    .cmdk-input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: none;
+      background: none;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 22px;
+    }
+    .cmdk-input::placeholder { color: var(--text-faint); }
+    .cmdk-esc {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 6px;
+      background: var(--chip-bg);
+      color: var(--text-faint);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    html[data-theme="dark"] .cmdk-esc { background: rgba(255, 255, 255, 0.08); }
+    .cmdk-list { max-height: 340px; overflow-y: auto; padding: 6px; }
+    .cmdk-group-label {
+      padding: 10px 8px 4px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--text-faint);
+      text-transform: uppercase;
+    }
+    .cmdk-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 0 10px;
+      border: 0;
+      width: 100%;
+      background: none;
+      border-radius: 9px;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cmdk-item:hover,
+    .cmdk-item[data-active="true"] { background: var(--chip-bg-hover); }
+    .cmdk-item-ic { display: inline-flex; flex: none; color: var(--text-muted); }
+    .cmdk-item-ic svg { width: 16px; height: 16px; display: block; }
+    .cmdk-item-label { flex: 1; min-width: 0; }
+    .cmdk-item-hint { flex: none; color: var(--text-faint); font-size: 12px; }
+    .cmdk-empty { padding: 24px 12px; text-align: center; color: var(--text-faint); font-size: 14px; }
+    @media (prefers-reduced-motion: reduce) {
+      .pm-menu, .pm-track, .cmdk-overlay, .cmdk-panel { transition: none !important; }
+    }
+
+    /* ── Pro layout spacing ────────────────────────────────────── */
+    .pro-section { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+    .pro-section-title { text-align: center; font-family: "Saans", var(--font-sans); font-size: 30px; font-weight: 500; letter-spacing: -0.01em; color: var(--text); margin: 0 0 40px; }
+    .pro-block { margin-bottom: 96px; }
+    /* Search collapses to an icon-only circle before the nav pills
+       (Transitions/Skill/Refine tool, fixed-width, never wrap) start
+       overlapping it, that overlap begins ~837px, so collapse at 900px
+       for a safety margin. */
+    @media (max-width: 900px) {
+      .nav-search-label, .nav-search-kbd { display: none; }
+      .nav-search { width: 36px; padding: 0; gap: 0; justify-content: center; }
+      .site-nav-right #gh-stars-btn,
+      .site-nav-right a[href*="x.com"] { display: none; }
+      .site-nav-right { gap: 8px; }
+    }
+    @media (max-width: 640px) {
+      .pro-section { padding: 0 16px; }
+      .pro-section-title { font-size: 23px; margin-bottom: 28px; }
+      .pro-block { margin-bottom: 64px; }
+      .pro-price-wrap { margin-bottom: 32px; }
+      .cmdk-overlay { padding: 8vh 12px 12px; }
+      /* Parity bar: let the sentence wrap to two centred lines instead
+         of clipping off the right edge. */
+      .pro-ppp-bar { white-space: normal; height: auto; min-height: 28px; padding: 5px 14px; }
+      /* The "2 months free" / "pay once" notes sit to the RIGHT of the
+         billing toggle on desktop (left:100%), which reaches past a phone
+         viewport and gives the whole page a horizontal scroll. Drop them
+         under the toggle instead. */
+      .pro-annual-note {
+        left: 50%;
+        top: calc(100% + 6px);
+        transform: translateX(-50%);
+        margin-left: 0;
+      }
+      .pro-billing { margin-bottom: 34px; }
+    }
+    /* Mobile top bar: brand icon + Search icon + GitHub + X + Sign in
+       + burger. The 3-dot menu collapses into the menus/footer. */
+    @media (max-width: 639px) {
+      /* Scoped to the top bar, the footer keeps its full wordmark. */
+      .site-nav .brand-word { display: none; }
+      #more-anchor { display: none; }
+      /* With the nav pills collapsed into the burger the bar has room
+         again, bring the GitHub and X buttons back (they hide at
+         640-900px only to avoid overlapping the pills). */
+      .site-nav-right #gh-stars-btn,
+      .site-nav-right a[href*="x.com"] { display: inline-flex; }
+      .nav-get-pro,
+      #nav-signin-btn { height: 34px; padding: 0 12px; }
+    }
+    @media (max-width: 380px) {
+      .nav-get-pro,
+      #nav-signin-btn { padding: 0 10px; font-size: 13px; }
+    }
+  </style>
+
+  <!-- Analytics: GoatCounter (privacy-friendly, no cookies). -->
+  <script data-goatcounter="https://jakub.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
+  <style>
+    /* Five nav pills: between the phone breakpoint and ~820px the top bar
+       drops the wordmark beside the mark so the pills clear the right
+       cluster. */
+    @media (min-width: 640px) and (max-width: 819px) {
+      .site-nav .brand-word { display: none; }
+    }
+  </style>
+  <style>
+    /* Pill variant of .icon-btn: gains horizontal padding + a label.
+       Stays 36px tall, mirrors the .icon-btn fills so it tracks
+       theme changes automatically. */
+    .icon-btn-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 36px;
+      width: auto;
+      min-width: 36px;
+      padding: 0 13px;
+      border: 0;
+      border-radius: 50px;
+      background: var(--chip-bg);
+      color: var(--icon-color-muted);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .icon-btn-pill:hover { background: var(--chip-bg-hover); color: var(--icon-color); }
+    .icon-btn-pill:active { background: var(--chip-bg-pressed); }
+    .icon-btn-pill:focus-visible {
+      outline: 2px solid var(--icon-color);
+      outline-offset: 2px;
+    }
+    /* Height-capped so non-square icons (e.g. the 14×16 "Skill" book)
+       keep their native aspect ratio; the 16×16 GitHub mark still
+       renders at exactly 16×16. */
+    .icon-btn-pill svg {
+      width: auto;
+      height: 16px;
+      max-width: 16px;
+      display: block;
+      color: inherit;
+      transition: color 0.15s ease;
+    }
+    .icon-btn-pill .pill-label {
+      display: inline-block;
+      color: inherit;
+    }
+    /* While stars are loading we still reserve a glyph so the pill
+       does not visually "pop" wider when the count arrives. */
+    .icon-btn-pill[data-loading="true"] .pill-label {
+      opacity: 0.5;
+    }
+    .nav-get-pro {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 36px; padding: 0 16px; border: 0; border-radius: 50px;
+      background: rgba(0, 115, 255, 0.08); color: #0053e3;
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+      text-decoration: none; white-space: nowrap; cursor: pointer;
+      transition: background 150ms var(--nav-ease); -webkit-tap-highlight-color: transparent;
+    }
+    .nav-get-pro:hover { background: rgba(0, 115, 255, 0.14); }
+    html[data-theme="dark"] .nav-get-pro { background: rgba(85, 207, 255, 0.14); color: #7cd4ff; }
+    html[data-theme="dark"] .nav-get-pro:hover { background: rgba(85, 207, 255, 0.22); }
+    /* Signed in with Pro: nothing left to buy, so the pill drops the accent
+       and reads as a plain Account link (same grey as the GitHub pill). */
+    .nav-get-pro[data-state="account"] { background: var(--chip-bg); color: var(--text); }
+    .nav-get-pro[data-state="account"]:hover { background: var(--chip-bg-hover); }
+    html[data-theme="dark"] .nav-get-pro[data-state="account"] { background: var(--chip-bg); color: var(--text); }
+    html[data-theme="dark"] .nav-get-pro[data-state="account"]:hover { background: var(--chip-bg-hover); }
+    @media (max-width: 900px) {
+      .nav-get-pro-word { display: none; }
+      .site-nav-right #gh-stars-btn { display: none; }
+    }
+    @media (max-width: 639px) {
+      .nav-get-pro { height: 34px; padding: 0 12px; }
+      .site-nav-right #gh-stars-btn { display: inline-flex; }
+    }
+    @media (max-width: 380px) {
+      .nav-get-pro { padding: 0 10px; font-size: 13px; }
+    }
+    /* Six nav pills (Community joined the bar): compact the right-hand
+       controls up to 1040px, and tighten the pills just above the phone
+       breakpoint, so the bar never overlaps itself. */
+    @media (min-width: 640px) and (max-width: 1040px) {
+      .nav-search-label, .nav-search-kbd { display: none; }
+      .nav-search { width: 36px; padding: 0; gap: 0; justify-content: center; }
+      .nav-get-pro-word { display: none; }
+      .site-nav-right #gh-stars-btn,
+      .site-nav-right a[href*="x.com"] { display: none; }
+      .site-nav-right { gap: 8px; }
+    }
+    @media (min-width: 640px) and (max-width: 800px) {
+      .site-nav .brand-word { display: none; }
+      .site-nav-left { gap: 16px; }
+      .site-nav-menu { gap: 2px; }
+      .nav-pill { padding: 0 9px; }
+    }
+  </style>
+  <link rel="stylesheet" href="assets/community/community.css?v=5" />
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <main id="main" class="app">
+    <header class="site-nav">
+      <div class="site-nav-inner">
+        <div class="site-nav-left">
+          <a class="brand" href="/" aria-label="Transitions.dev home">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 18 20.2947" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M9 0L12.5409 1.99176L11.5604 3.73491L10 2.8572V5.14735H8V2.8572L6.43962 3.73491L5.45909 1.99176L9 0ZM14.3613 3.01571L18 5.0625V9.14735H16V7.3794L14.0359 8.51337L13.0359 6.78132L14.9804 5.65867L13.3807 4.75886L14.3613 3.01571ZM4.61925 4.75887L3.01961 5.65867L4.9641 6.78132L3.9641 8.51337L2 7.3794L2 9.14735H0L1.54972e-06 5.0625L3.63873 3.01572L4.61925 4.75887ZM2 11.1473V12.9153L3.9641 11.7813L4.9641 13.5134L3.01961 14.636L4.61925 15.5358L3.63873 17.279L3.57628e-07 15.2322V11.1473H2ZM18 11.1473V15.2322L14.3613 17.279L13.3807 15.5358L14.9804 14.636L13.0359 13.5134L14.0359 11.7813L16 12.9153V11.1473H18ZM10 15.1473V17.4375L11.5604 16.5598L12.5409 18.3029L9 20.2947L5.45908 18.3029L6.43961 16.5598L8 17.4375V15.1473H10Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12.0981 9.51337L10 10.7247V13.1474H8V10.7247L5.90192 9.51337L6.90192 7.78132L9 8.99265L11.0981 7.78132L12.0981 9.51337Z" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
+          </a>
+          <nav class="site-nav-menu" aria-label="Primary">
+          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <a class="nav-pill nav-pill--active" href="/community.html" data-nav="community">Community</a>
+          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
+          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
+          <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
+          <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
+          </nav>
+        </div>
+        <div class="site-nav-right">
+          <!-- Search → opens the ⌘K command palette. -->
+          <button type="button" class="nav-search" id="nav-search-btn" aria-label="Search (⌘K)">
+            <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="7" cy="7" r="5" />
+              <path d="M14 14l-3.5-3.5" />
+            </svg>
+            <span class="nav-search-label">Search</span>
+            <span class="nav-search-kbd" id="nav-search-kbd">⌘K</span>
+          </button>
+          <!-- No Sign in pill here: signing in lives in the 3-dot menu. -->
+          <a class="nav-get-pro" href="/pro.html"><span class="nav-get-pro-label"><span class="nav-get-pro-word">Get </span>Pro</span></a>
+          <!-- GitHub pill, shows live stargazer count fetched once per
+               session from the public GitHub API. Falls back silently to
+               "—" on network / rate-limit errors so the link still works. -->
+          <a
+            class="icon-btn-pill"
+            id="gh-stars-btn"
+            href="https://github.com/Jakubantalik/transitions.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub repository, star count"
+            data-loading="true"
+          >
+            <svg aria-hidden="true" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+            <span class="pill-label" id="gh-stars-count">—</span>
+          </a>
+          <!-- 3-dot menu, same dropdown pattern as the Refine tool.
+               Appearance opens a theme sub-page (Light / Dark / System). -->
+          <div class="pm-anchor" id="more-anchor">
+            <button type="button" class="icon-btn" id="more-btn" aria-label="More" aria-haspopup="menu" aria-expanded="false">
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.66667 8C6.66667 7.26362 7.26362 6.66667 8 6.66667C8.73638 6.66667 9.33333 7.26362 9.33333 8C9.33333 8.73638 8.73638 9.33333 8 9.33333C7.26362 9.33333 6.66667 8.73638 6.66667 8Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.66667 3.33333C6.66667 2.59695 7.26362 2 8 2C8.73638 2 9.33333 2.59695 9.33333 3.33333C9.33333 4.06971 8.73638 4.66667 8 4.66667C7.26362 4.66667 6.66667 4.06971 6.66667 3.33333Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.66667 12.6667C6.66667 11.9303 7.26362 11.3333 8 11.3333C8.73638 11.3333 9.33333 11.9303 9.33333 12.6667C9.33333 13.403 8.73638 14 8 14C7.26362 14 6.66667 13.403 6.66667 12.6667Z" fill="currentColor"/>
+              </svg>
+            </button>
+            <div class="tl-menu t-dropdown" id="more-menu" data-origin="top-right" role="menu" aria-label="More options">
+              <div class="tl-set-slide" id="pm-slide" data-page="1">
+                <div class="t-page" data-page-id="1">
+                  <div class="tl-menu-item" id="pm-signin" role="menuitem" tabindex="0">
+                    <span class="tl-menu-item-label">Sign in</span>
+                  </div>
+                  <div class="tl-menu-divider"></div>
+                  <div class="tl-menu-item" id="pm-appearance" role="menuitem" tabindex="0">
+                    <span class="tl-menu-item-label">Appearance</span>
+                    <span class="tl-menu-trail">
+                      <span class="tl-menu-value" id="pm-appearance-value">System</span>
+                      <span class="tl-menu-chevr" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
+                    </span>
+                  </div>
+                  <div class="tl-menu-item" id="pm-feedback" role="menuitem" tabindex="0">
+                    <span class="tl-menu-item-label">Feedback</span>
+                    <span class="tl-menu-trail">
+                      <span class="tl-menu-chevr" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
+                    </span>
+                  </div>
+                  <a class="tl-menu-item" id="pm-support" href="mailto:jakubja@gmail.com" role="menuitem">
+                    <span class="tl-menu-item-label">Support</span>
+                  </a>
+                </div>
+                <div class="t-page" data-page-id="4">
+                  <button type="button" class="tl-set-back" id="pm-fb-back">
+                    <span class="tl-set-back-ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
+                    <span class="tl-set-back-title">Feedback</span>
+                  </button>
+                  <div class="tl-menu-divider"></div>
+                  <form class="pm-feedback" id="pm-feedback-form" novalidate>
+                    <textarea class="pm-feedback-input" rows="6" maxlength="2000" placeholder="Share your feedback, idea or comment" aria-label="Your feedback"></textarea>
+                    <input type="email" class="pm-feedback-email" maxlength="200" placeholder="Email (optional)" aria-label="Your email (optional)" autocomplete="email" spellcheck="false" />
+                    <p class="pm-feedback-note" role="status" hidden></p>
+                    <button type="submit" class="pm-feedback-btn">Send feedback</button>
+                  </form>
+                </div>
+                <div class="t-page" data-page-id="3">
+                  <button type="button" class="tl-set-back" id="pm-back">
+                    <span class="tl-set-back-ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(8,8) rotate(-90) translate(-3.75,-2.25)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.21967 0.21967C0.512563 -0.0732233 0.987437 -0.0732233 1.28033 0.21967L3.75 2.68934L6.21967 0.21967C6.51256 -0.0732233 6.98744 -0.0732233 7.28033 0.21967C7.57322 0.512563 7.57322 0.987437 7.28033 1.28033L4.28033 4.28033C3.98744 4.57322 3.51256 4.57322 3.21967 4.28033L0.21967 1.28033C-0.0732233 0.987437 -0.0732233 0.512563 0.21967 0.21967Z" fill="currentColor"/></g></svg></span>
+                    <span class="tl-set-back-title">Appearance</span>
+                  </button>
+                  <div class="tl-menu-divider"></div>
+                  <div class="tl-menu-item pm-theme-opt" data-theme-pref="light" role="menuitemradio" tabindex="0">
+                    <span class="tl-menu-item-label">Light</span>
+                    <span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </div>
+                  <div class="tl-menu-item pm-theme-opt" data-theme-pref="dark" role="menuitemradio" tabindex="0">
+                    <span class="tl-menu-item-label">Dark</span>
+                    <span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </div>
+                  <div class="tl-menu-item pm-theme-opt" data-theme-pref="system" role="menuitemradio" tabindex="0">
+                    <span class="tl-menu-item-label">System</span>
+                    <span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Mobile-only: morphs from two lines into an ✕, opens the
+               full-screen menu + blurred backdrop below. -->
+          <button
+            type="button"
+            class="icon-btn nav-burger"
+            id="nav-burger"
+            aria-label="Open menu"
+            aria-expanded="false"
+            aria-controls="mobile-menu"
+          >
+            <span class="nav-burger-box" aria-hidden="true">
+              <span class="nav-burger-line nav-burger-line--top"></span>
+              <span class="nav-burger-line nav-burger-line--bottom"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Full-screen mobile menu. The backdrop is a sibling so it can
+           cover the whole viewport while the top bar stays on top. -->
+      <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
+      <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
+        <ul class="mobile-menu-list">
+          <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+        </ul>
+        <button type="button" class="mobile-menu-cta" id="mobile-signin">Sign in</button>
+      </nav>
+    </header>
+
+    <section class="pf" id="pf" aria-live="polite">
+      <header class="pf-head" id="pf-head">
+        <div class="pf-avatar" id="pf-avatar" aria-hidden="true"></div>
+        <h1 class="pf-name" id="pf-name">&nbsp;</h1>
+        <div class="pf-handle" id="pf-handle"></div>
+        <p class="pf-bio" id="pf-bio" hidden></p>
+        <div class="pf-stats" id="pf-stats" hidden></div>
+        <div class="pf-actions" id="pf-actions" hidden>
+          <a class="cm-btn cm-btn--primary" href="studio.html">New component</a>
+          <button type="button" class="cm-btn" id="pf-edit">Edit profile</button>
+        </div>
+        <form class="pf-form" id="pf-form" hidden novalidate>
+          <label>Name<input id="pf-in-name" type="text" maxlength="60" autocomplete="name" /></label>
+          <label>Handle<input id="pf-in-handle" type="text" maxlength="24" autocomplete="off" spellcheck="false" /></label>
+          <label>Bio<textarea id="pf-in-bio" rows="3" maxlength="200"></textarea></label>
+          <p class="pf-form-err" id="pf-form-err" hidden></p>
+          <div class="pf-form-row">
+            <button type="button" class="cm-btn cm-btn--ghost" id="pf-cancel">Cancel</button>
+            <button type="submit" class="cm-btn cm-btn--primary">Save</button>
+          </div>
+        </form>
+      </header>
+      <div class="cm-feed" style="margin-top:40px">
+        <div class="cards" id="pf-grid"></div>
+      </div>
+    </section>
+    <footer class="footer">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a class="footer-brand-logo" href="/" aria-label="Transitions.dev home">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 18 20.2947" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M9 0L12.5409 1.99176L11.5604 3.73491L10 2.8572V5.14735H8V2.8572L6.43962 3.73491L5.45909 1.99176L9 0ZM14.3613 3.01571L18 5.0625V9.14735H16V7.3794L14.0359 8.51337L13.0359 6.78132L14.9804 5.65867L13.3807 4.75886L14.3613 3.01571ZM4.61925 4.75887L3.01961 5.65867L4.9641 6.78132L3.9641 8.51337L2 7.3794L2 9.14735H0L1.54972e-06 5.0625L3.63873 3.01572L4.61925 4.75887ZM2 11.1473V12.9153L3.9641 11.7813L4.9641 13.5134L3.01961 14.636L4.61925 15.5358L3.63873 17.279L3.57628e-07 15.2322V11.1473H2ZM18 11.1473V15.2322L14.3613 17.279L13.3807 15.5358L14.9804 14.636L13.0359 13.5134L14.0359 11.7813L16 12.9153V11.1473H18ZM10 15.1473V17.4375L11.5604 16.5598L12.5409 18.3029L9 20.2947L5.45908 18.3029L6.43961 16.5598L8 17.4375V15.1473H10Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12.0981 9.51337L10 10.7247V13.1474H8V10.7247L5.90192 9.51337L6.90192 7.78132L9 8.99265L11.0981 7.78132L12.0981 9.51337Z" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
+          </a>
+          <p class="footer-tagline">Collection of the most essential UI transitions for web apps</p>
+        </div>
+        <nav class="footer-cols" aria-label="Footer">
+          <div class="footer-col">
+            <p class="footer-col-title">Site</p>
+            <a href="/">Home</a>
+            <a href="detail.html?t=card-resize">Transitions</a>
+            <a href="/community.html">Community</a>
+            <a href="/skill.html">Skill</a>
+            <a href="/agent.html">Agent</a>
+            <a href="/pro.html">Get Pro</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-title">Docs</p>
+            <a href="/skill.html">Introduction</a>
+            <a href="/skill.html#installation">Installation</a>
+            <a href="/skill.html">Accessibility</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-title">Legal &amp; Account</p>
+            <a href="/pro.html" id="footer-signin">Sign in</a>
+            <a href="/terms.html">Terms</a>
+            <a href="/privacy.html">Privacy</a>
+            <a href="mailto:jakubja@gmail.com">Contact</a>
+          </div>
+        </nav>
+      </div>
+      <p class="footer-credit"><span class="footer-muted">Created by</span><a class="footer-name" href="https://x.com/jakubantalik" target="_blank" rel="noopener noreferrer">Jakub Antalik</a></p>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      /* Theme control lives in the 3-dot menu (Appearance), see the
+         dedicated script block below. */
+
+      /* ── Live GitHub stars ─────────────────────────────────────
+         Fetches the repo's stargazer count from the public API
+         (no auth needed; ~60 req/hr/IP for anon, which is plenty
+         for a single page visit). Cached in sessionStorage so
+         soft-navigations within the same tab don't re-hit the API
+         and so users on flaky networks don't see the placeholder
+         flash. Falls back to shields.io when GitHub rate-limits,
+         then stale cache, then a neutral "Star" label, the link
+         always works. */
+      var STAR_CACHE_KEY = "tdev:gh-stars";
+      var STAR_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+      var STAR_REPO = "Jakubantalik/transitions.dev";
+      var pill = document.getElementById("gh-stars-btn");
+      var countEl = document.getElementById("gh-stars-count");
+
+      function formatStars(n) {
+        if (n == null || !Number.isFinite(n)) return "";
+        if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "k";
+        return String(n);
+      }
+
+      function paintStars(n) {
+        if (!pill || !countEl) return;
+        countEl.textContent = formatStars(n);
+        pill.removeAttribute("data-loading");
+        pill.setAttribute(
+          "aria-label",
+          "GitHub repository, " + (n === 1 ? "1 star" : n + " stars")
+        );
+      }
+
+      function readStarCache(allowStale) {
+        try {
+          var cached = sessionStorage.getItem(STAR_CACHE_KEY);
+          if (!cached) return null;
+          var parsed = JSON.parse(cached);
+          if (!parsed || !Number.isFinite(parsed.n)) return null;
+          if (allowStale || Date.now() - parsed.t < STAR_CACHE_TTL) return parsed.n;
+        } catch (e) {}
+        return null;
+      }
+
+      function saveStarCache(n) {
+        try {
+          sessionStorage.setItem(
+            STAR_CACHE_KEY,
+            JSON.stringify({ n: n, t: Date.now() })
+          );
+        } catch (e) {}
+      }
+
+      function releaseStarLoading(fallbackLabel) {
+        if (!pill || !pill.hasAttribute("data-loading")) return;
+        if (countEl && fallbackLabel) countEl.textContent = fallbackLabel;
+        pill.removeAttribute("data-loading");
+      }
+
+      function parseShieldsStars(data) {
+        if (!data) return null;
+        var raw = data.message != null ? data.message : data.value;
+        if (raw == null) return null;
+        raw = String(raw).replace(/,/g, "");
+        if (/^\d+(?:\.\d+)?k$/i.test(raw)) {
+          return Math.round(parseFloat(raw) * 1000);
+        }
+        var n = parseInt(raw, 10);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      var freshCache = readStarCache(false);
+      if (freshCache != null) paintStars(freshCache);
+
+      function fetchGitHubStars() {
+        if (!window.fetch) {
+          var stale = readStarCache(true);
+          if (stale != null) paintStars(stale);
+          else releaseStarLoading("Star");
+          return;
+        }
+
+        fetch("https://api.github.com/repos/" + STAR_REPO, {
+          headers: { Accept: "application/vnd.github+json" }
+        })
+          .then(function (r) {
+            if (!r.ok) throw new Error("github " + r.status);
+            return r.json();
+          })
+          .then(function (data) {
+            if (!data || !Number.isFinite(data.stargazers_count)) {
+              throw new Error("github parse");
+            }
+            paintStars(data.stargazers_count);
+            saveStarCache(data.stargazers_count);
+          })
+          .catch(function () {
+            /* GitHub anon API is easy to rate-limit (403). shields.io
+               uses a separate pool and returns { message: "604" }. */
+            return fetch(
+              "https://img.shields.io/github/stars/" + STAR_REPO + ".json"
+            )
+              .then(function (r) {
+                if (!r.ok) throw new Error("shields " + r.status);
+                return r.json();
+              })
+              .then(function (data) {
+                var n = parseShieldsStars(data);
+                if (n == null) throw new Error("shields parse");
+                paintStars(n);
+                saveStarCache(n);
+              });
+          })
+          .catch(function () {
+            var stale = readStarCache(true);
+            if (stale != null) paintStars(stale);
+            else releaseStarLoading("Star");
+          });
+      }
+
+      fetchGitHubStars();
+
+      /* ── Copy buttons ──────────────────────────────────────────
+         Each .card-copy declares the source via data-copy-target
+         (CSS selector) or data-copy-text (literal string). On
+         success we flip [data-copied] for 1.6s so the icon swap
+         (copy ⇄ check) plays. */
+      /* Build the same "Copy code" / "Copied" tooltip used on the
+         index cards. The swap slot is measured once so its width can
+         animate cleanly between both labels. */
+      (function initCopyTooltips() {
+        var buttons = document.querySelectorAll(".card-copy");
+        if (!buttons.length) return;
+
+        buttons.forEach(function (btn) {
+          if (btn.querySelector(".card-copy-tooltip")) return;
+
+          var tt = document.createElement("span");
+          tt.className = "card-copy-tooltip";
+          tt.setAttribute("role", "tooltip");
+          tt.setAttribute("aria-hidden", "true");
+          tt.innerHTML =
+            '<span class="tt-text">' +
+              '<span class="tt-stem">Cop</span>' +
+              '<span class="tt-swap" data-state="copy">' +
+                '<span class="tt-label tt-a">y code</span>' +
+                '<span class="tt-label tt-b">ied</span>' +
+              '</span>' +
+            '</span>';
+          btn.appendChild(tt);
+
+          var swap = tt.querySelector(".tt-swap");
+          var labels = swap.querySelectorAll(".tt-label");
+          var prevVis = tt.style.visibility;
+          var prevOp = tt.style.opacity;
+          tt.style.visibility = "hidden";
+          tt.style.opacity = "0";
+          tt.style.display = "inline-flex";
+
+          var widths = [];
+          labels.forEach(function (lbl) {
+            var prevPos = lbl.style.position;
+            var prevDisp = lbl.style.display;
+            lbl.style.position = "static";
+            lbl.style.display = "inline-block";
+            widths.push(lbl.getBoundingClientRect().width);
+            lbl.style.position = prevPos;
+            lbl.style.display = prevDisp;
+          });
+
+          tt.style.visibility = prevVis;
+          tt.style.opacity = prevOp;
+          tt.style.display = "";
+
+          swap.style.setProperty("--tt-w-a", widths[0] + "px");
+          swap.style.setProperty("--tt-w-b", widths[1] + "px");
+        });
+      })();
+
+      var copyBtns = document.querySelectorAll(".card-copy[data-copy-target], .card-copy[data-copy-text]");
+
+      function fallbackCopy(text) {
+        return new Promise(function (resolve, reject) {
+          try {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "fixed";
+            ta.style.top = "-1000px";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+
+      function doCopy(text) {
+        if (!text) return Promise.reject(new Error("nothing to copy"));
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(text).catch(function () {
+            return fallbackCopy(text);
+          });
+        }
+        return fallbackCopy(text);
+      }
+
+      copyBtns.forEach(function (btn) {
+        btn.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          var text = btn.getAttribute("data-copy-text");
+          if (!text) {
+            var sel = btn.getAttribute("data-copy-target");
+            if (sel) {
+              var src = document.querySelector(sel);
+              if (src) text = src.textContent.trim();
+            }
+          }
+          if (!text) return;
+          doCopy(text).then(function () {
+            btn.setAttribute("data-copied", "true");
+            var swap = btn.querySelector(".tt-swap");
+            if (swap) swap.setAttribute("data-state", "copied");
+            clearTimeout(btn._copyT);
+            clearTimeout(btn._copySwapT);
+            var isTouch =
+              window.matchMedia &&
+              window.matchMedia("(hover: none)").matches;
+            var dwell = isTouch ? 2000 : 1600;
+            btn._copyT = setTimeout(function () {
+              btn.removeAttribute("data-copied");
+              btn._copySwapT = setTimeout(function () {
+                if (swap) swap.setAttribute("data-state", "copy");
+              }, 200);
+            }, dwell);
+          });
+        });
+      });
+
+      /* ── Smooth-scroll the "Get started" CTA to #installation ── */
+      document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+        a.addEventListener("click", function (ev) {
+          var id = a.getAttribute("href").slice(1);
+          if (!id) return;
+          var target = document.getElementById(id);
+          if (!target) return;
+          ev.preventDefault();
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+    })();
+  </script>
+
+  <!-- Pro page: theme (3-state), FAQ, 3-dot menu, command palette, pricing. -->
+  <script>
+    (function () {
+      var html = document.documentElement;
+      var isMac = /mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent || "");
+
+      /* ── Theme: Light / Dark / System (System = follow OS) ─────
+         Persisted to localStorage("tdev:theme"); absence = System.
+         Controlled from the 3-dot menu's Appearance sub-page. */
+      var pmValue = document.getElementById("pm-appearance-value");
+      var themeOpts = document.querySelectorAll(".pm-theme-opt");
+      var mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+      function storedPref() { try { return localStorage.getItem("tdev:theme"); } catch (e) { return null; } }
+      function currentPref() { return storedPref() || "system"; }
+      function systemDark() { return mq ? mq.matches : false; }
+      function applyTheme(pref) {
+        var dark = pref === "dark" || (pref === "system" && systemDark());
+        if (dark) html.setAttribute("data-theme", "dark");
+        else html.removeAttribute("data-theme");
+        if (pmValue) pmValue.textContent = pref === "system" ? "System" : (pref === "dark" ? "Dark" : "Light");
+        themeOpts.forEach(function (o) {
+          o.setAttribute("aria-checked", o.getAttribute("data-theme-pref") === pref ? "true" : "false");
+        });
+      }
+      function setThemePref(pref) {
+        try {
+          if (pref === "system") localStorage.removeItem("tdev:theme");
+          else localStorage.setItem("tdev:theme", pref);
+        } catch (e) {}
+        applyTheme(pref);
+      }
+      applyTheme(currentPref());
+      if (mq) {
+        var mqListener = function () { if (currentPref() === "system") applyTheme("system"); };
+        if (mq.addEventListener) mq.addEventListener("change", mqListener);
+        else if (mq.addListener) mq.addListener(mqListener);
+      }
+
+      /* ── FAQ accordion (transitions-dev P21) ─────────────────── */
+      document.querySelectorAll(".faq-list .t-acc").forEach(function (acc) {
+        var head = acc.querySelector(".t-acc-head");
+        if (!head) return;
+        head.addEventListener("click", function () {
+          var open = acc.getAttribute("data-open") === "true";
+          acc.setAttribute("data-open", String(!open));
+          head.setAttribute("aria-expanded", String(!open));
+        });
+      });
+
+      /* ── 3-dot menu, exact Refine tool dropdown behavior ──────
+         .t-dropdown plays the menu-dropdown scale/opacity open+close;
+         .tl-set-slide pages between the main menu and the Appearance
+         sub-page (08-page-side-by-side), height following the active
+         page so the surface resizes smoothly. */
+      var moreBtn = document.getElementById("more-btn");
+      var moreMenu = document.getElementById("more-menu");
+      var pmSlide = document.getElementById("pm-slide");
+      var MENU_CLOSE_MS = 150;
+      var menuOpen = false, menuCloseT = null;
+      function syncSlideHeight() {
+        if (!pmSlide) return;
+        var page = pmSlide.getAttribute("data-page");
+        var active = pmSlide.querySelector('.t-page[data-page-id="' + page + '"]');
+        if (active) pmSlide.style.height = active.offsetHeight + "px";
+      }
+      function setView(page) {
+        if (!pmSlide) return;
+        pmSlide.setAttribute("data-page", page);
+        syncSlideHeight();
+      }
+      function openMenu() {
+        if (menuOpen) return;
+        menuOpen = true;
+        clearTimeout(menuCloseT);
+        if (moreBtn) moreBtn.setAttribute("aria-expanded", "true");
+        moreMenu.classList.remove("is-closing");
+        setView("1");
+        void moreMenu.offsetWidth; // commit the closed "from" frame, then enter
+        moreMenu.classList.add("is-open");
+      }
+      function closeMenu() {
+        if (!menuOpen) return;
+        menuOpen = false;
+        if (moreBtn) moreBtn.setAttribute("aria-expanded", "false");
+        moreMenu.classList.remove("is-open");
+        moreMenu.classList.add("is-closing");
+        menuCloseT = setTimeout(function () {
+          moreMenu.classList.remove("is-closing");
+          setView("1");
+        }, MENU_CLOSE_MS);
+      }
+      if (moreBtn) moreBtn.addEventListener("click", function (e) { e.stopPropagation(); if (menuOpen) closeMenu(); else openMenu(); });
+      document.addEventListener("click", function (e) {
+        if (menuOpen && moreMenu && !moreMenu.contains(e.target) && !(moreBtn && moreBtn.contains(e.target))) closeMenu();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && menuOpen) { closeMenu(); if (moreBtn) moreBtn.focus(); }
+      });
+      var pmAppearance = document.getElementById("pm-appearance");
+      var pmBack = document.getElementById("pm-back");
+      if (pmAppearance) pmAppearance.addEventListener("click", function () { setView("3"); });
+      if (pmBack) pmBack.addEventListener("click", function () { setView("1"); });
+      themeOpts.forEach(function (o) {
+        o.addEventListener("click", function () {
+          setThemePref(o.getAttribute("data-theme-pref"));
+          setView("1");
+        });
+      });
+      var pmSignin = document.getElementById("pm-signin");
+      if (pmSignin) pmSignin.addEventListener("click", function () { closeMenu(); });
+      var pmSupport = document.getElementById("pm-support");
+      if (pmSupport) pmSupport.addEventListener("click", function () { closeMenu(); });
+      window.addEventListener("resize", function () { if (menuOpen) syncSlideHeight(); });
+
+      /* ── Command palette (⌘K) ─────────────────────────────────
+         A searchable combobox styled to the site. Opens on the
+         Search button or ⌘K / Ctrl+K; filters items live; ↑/↓
+         to move, Enter to activate, Esc to close. */
+      var searchBtn = document.getElementById("nav-search-btn");
+      var searchKbd = document.getElementById("nav-search-kbd");
+      if (searchKbd) searchKbd.textContent = isMac ? "⌘K" : "Ctrl K";
+
+      // The library's transitions, searchable; each jumps to its card on the home page.
+      var TRANSITION_NAMES = [
+        "Card resize", "Number pop-in", "Notification badge", "Text states swap",
+        "Menu dropdown", "Modal open/close", "Panel reveal", "Page side-by-side",
+        "Icon swap", "Success check", "Avatar group hover", "Error state shake",
+        "Input clear with dissolve", "Skeleton loader and reveal", "Texts reveal", "Tabs sliding",
+        "Shimmer text", "Tooltip open/close", "3D tilt", "Dropdown menu morph", "Accordion"
+      ];
+      var CMD_ITEMS = [
+        { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
+        { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
+        { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
+        { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
+        { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
+        { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
+      ].concat(TRANSITION_NAMES.map(function (n) {
+        var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        return { group: "Transitions", label: n, hint: "Transition", href: "detail.html?t=" + slug, ic: "motion" };
+      })).concat([
+        { group: "Actions", label: "Get Pro access", href: "mailto:jakubja@gmail.com?subject=Transitions%20Pro%20access", ic: "pro" },
+        { group: "Actions", label: "View on GitHub", href: "https://github.com/Jakubantalik/transitions.dev", ext: true, ic: "github" },
+        { group: "Actions", label: "Contact support", href: "mailto:jakubja@gmail.com", ic: "mail" },
+        { group: "Actions", label: "Toggle dark mode", action: "theme", ic: "moon" }
+      ]);
+      var CMD_IC = {
+        grid: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.33333 8L7.76149 11.2141C7.84894 11.2578 7.89267 11.2797 7.93853 11.2883C7.97916 11.2959 8.02084 11.2959 8.06147 11.2883C8.10733 11.2797 8.15106 11.2578 8.23851 11.2141L14.6667 8M1.33333 11.3333L7.76149 14.5474C7.84894 14.5911 7.89267 14.613 7.93853 14.6216C7.97916 14.6292 8.02084 14.6292 8.06147 14.6216C8.10733 14.613 8.15106 14.5911 8.23851 14.5474L14.6667 11.3333M7.76149 7.88074L2.76442 5.38221C2.30381 5.1519 2.07351 5.03675 1.9996 4.88093C1.93529 4.74533 1.93529 4.58801 1.9996 4.4524C2.07351 4.29658 2.30381 4.18143 2.76442 3.95112L7.76149 1.45259C7.84894 1.40886 7.89267 1.387 7.93853 1.37839C7.97916 1.37077 8.02084 1.37077 8.06147 1.37839C8.10733 1.387 8.15106 1.40886 8.23851 1.45259L13.2356 3.95112C13.6962 4.18143 13.9265 4.29658 14.0004 4.4524C14.0647 4.58801 14.0647 4.74533 14.0004 4.88093C13.9265 5.03675 13.6962 5.1519 13.2356 5.38221L8.23851 7.88074C8.15106 7.92447 8.10733 7.94633 8.06147 7.95494C8.02084 7.96256 7.97916 7.96256 7.93853 7.95494C7.89267 7.94633 7.84894 7.92447 7.76149 7.88074Z"/></svg>',
+        spark: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.196 8.86766L11.5622 8.77611C12.4742 8.54812 12.9302 8.43412 13.0364 8.25291C13.128 8.09674 13.128 7.90326 13.0364 7.74709C12.9302 7.56588 12.4742 7.45188 11.5622 7.22389L11.196 7.13233C10.5188 6.96302 10.1801 6.87837 9.90461 6.70206C9.66088 6.5461 9.4539 6.33912 9.29794 6.09539C9.12163 5.81985 9.03697 5.48123 8.86766 4.80399L8.77611 4.43779C8.54812 3.52581 8.43412 3.06982 8.25291 2.96357C8.09674 2.87199 7.90326 2.87199 7.74709 2.96357C7.56588 3.06982 7.45188 3.52581 7.22389 4.43779L7.13233 4.80399C6.96302 5.48123 6.87837 5.81985 6.70206 6.09539C6.5461 6.33912 6.33912 6.5461 6.09539 6.70206C5.81985 6.87837 5.48123 6.96303 4.80399 7.13233L4.43779 7.22389C3.52581 7.45188 3.06982 7.56588 2.96357 7.74709C2.87199 7.90326 2.87199 8.09674 2.96357 8.25291C3.06982 8.43412 3.52581 8.54812 4.43779 8.77611L4.80399 8.86766C5.48123 9.03697 5.81985 9.12163 6.09539 9.29794C6.33912 9.4539 6.5461 9.66088 6.70206 9.90461C6.87837 10.1801 6.96303 10.5188 7.13233 11.196L7.22389 11.5622C7.45188 12.4742 7.56588 12.9302 7.74709 13.0364C7.90326 13.128 8.09674 13.128 8.25291 13.0364C8.43412 12.9302 8.54812 12.4742 8.77611 11.5622L8.86766 11.196C9.03697 10.5188 9.12163 10.1801 9.29794 9.90461C9.4539 9.66088 9.66088 9.4539 9.90461 9.29794C10.1801 9.12163 10.5188 9.03697 11.196 8.86766Z"/></svg>',
+        wand: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.66667 9.33333L6.66667 7.33333M10.0069 2.33333V1.33333M12.6331 3.37377L13.3402 2.66667M12.6331 8.66667L13.3402 9.37377M7.34023 3.37377L6.63313 2.66667M13.6736 6H14.6736M4.08758 13.9124L10.2458 7.75425C10.5098 7.49024 10.6418 7.35823 10.6912 7.20601C10.7347 7.07212 10.7347 6.92788 10.6912 6.79399C10.6418 6.64177 10.5098 6.50976 10.2458 6.24575L9.75425 5.75425C9.49024 5.49024 9.35823 5.35823 9.20601 5.30877C9.07212 5.26527 8.92788 5.26527 8.79399 5.30877C8.64177 5.35823 8.50976 5.49024 8.24575 5.75425L2.08758 11.9124C1.82357 12.1764 1.69156 12.3084 1.6421 12.4607C1.5986 12.5946 1.5986 12.7388 1.6421 12.8727C1.69156 13.0249 1.82357 13.1569 2.08758 13.4209L2.57909 13.9124C2.8431 14.1764 2.9751 14.3084 3.12732 14.3579C3.26122 14.4014 3.40545 14.4014 3.53934 14.3579C3.69156 14.3084 3.82357 14.1764 4.08758 13.9124Z"/></svg>',
+        pro: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.52176 2.3022C7.67541 1.99091 7.75224 1.83526 7.85654 1.78553C7.94729 1.74227 8.05271 1.74227 8.14346 1.78553C8.24776 1.83526 8.32459 1.99091 8.47824 2.3022L9.93603 5.25551C9.98139 5.34742 10.0041 5.39337 10.0372 5.42904C10.0666 5.46063 10.1018 5.48623 10.1409 5.50441C10.185 5.52494 10.2357 5.53235 10.3371 5.54717L13.598 6.0238C13.9414 6.07399 14.1131 6.09908 14.1925 6.18295C14.2616 6.25592 14.2942 6.35619 14.281 6.45584C14.2659 6.57038 14.1416 6.69145 13.893 6.93358L11.5343 9.23094C11.4608 9.30255 11.424 9.33836 11.4003 9.38097C11.3793 9.41869 11.3658 9.46013 11.3606 9.503C11.3547 9.55141 11.3634 9.60199 11.3808 9.70315L11.9373 12.9481C11.996 13.2903 12.0253 13.4614 11.9702 13.563C11.9222 13.6513 11.8369 13.7133 11.738 13.7316C11.6244 13.7527 11.4707 13.6719 11.1634 13.5103L8.24824 11.9772C8.15741 11.9294 8.112 11.9056 8.06415 11.8962C8.02179 11.8879 7.97821 11.8879 7.93585 11.8962C7.888 11.9056 7.84259 11.9294 7.75176 11.9772L4.8366 13.5103C4.52927 13.6719 4.3756 13.7527 4.26197 13.7316C4.16311 13.7133 4.0778 13.6513 4.02981 13.563C3.97466 13.4614 4.00401 13.2903 4.06271 12.9481L4.61925 9.70315C4.6366 9.60199 4.64527 9.55141 4.6394 9.503C4.6342 9.46013 4.62073 9.41869 4.59973 9.38097C4.576 9.33836 4.53924 9.30255 4.46571 9.23094L2.10703 6.93358C1.85843 6.69145 1.73413 6.57038 1.71901 6.45584C1.70585 6.35619 1.73836 6.25592 1.80749 6.18295C1.88695 6.09908 2.05864 6.07399 2.40202 6.0238L5.66286 5.54717C5.76427 5.53235 5.81498 5.52494 5.85913 5.50441C5.89823 5.48623 5.93343 5.46063 5.96278 5.42904C5.99593 5.39337 6.01861 5.34742 6.06397 5.25551L7.52176 2.3022Z"/></svg>',
+        github: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>',
+        mail: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.33333 4.66667L6.77661 8.47696C7.21739 8.78551 7.43778 8.93978 7.67751 8.99954C7.88926 9.05232 8.11074 9.05232 8.32249 8.99954C8.56222 8.93978 8.78261 8.78551 9.22339 8.47696L14.6667 4.66667M4.53333 13.3333H11.4667C12.5868 13.3333 13.1468 13.3333 13.5746 13.1153C13.951 12.9236 14.2569 12.6176 14.4487 12.2413C14.6667 11.8135 14.6667 11.2534 14.6667 10.1333V5.86667C14.6667 4.74656 14.6667 4.18651 14.4487 3.75869C14.2569 3.38236 13.951 3.0764 13.5746 2.88465C13.1468 2.66667 12.5868 2.66667 11.4667 2.66667H4.53333C3.41323 2.66667 2.85318 2.66667 2.42535 2.88465C2.04903 3.0764 1.74307 3.38236 1.55132 3.75869C1.33333 4.18651 1.33333 4.74656 1.33333 5.86667V10.1333C1.33333 11.2534 1.33333 11.8135 1.55132 12.2413C1.74307 12.6176 2.04903 12.9236 2.42535 13.1153C2.85318 13.3333 3.41323 13.3333 4.53333 13.3333Z"/></svg>',
+        moon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13 9.5A5.5 5.5 0 016.5 3a5.5 5.5 0 106.5 6.5z"/></svg>',
+        motion: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.6666 4.85183L7.99998 7.99998M7.99998 7.99998L2.33331 4.85183M7.99998 7.99998L8 14.3333M14 10.7057V5.2943C14 5.06587 14 4.95165 13.9663 4.84979C13.9366 4.75967 13.8879 4.67695 13.8236 4.60716C13.7509 4.52827 13.651 4.4728 13.4514 4.36186L8.51802 1.62112C8.32895 1.51608 8.23442 1.46356 8.1343 1.44297C8.0457 1.42475 7.95431 1.42475 7.8657 1.44297C7.76559 1.46356 7.67105 1.51608 7.48198 1.62112L2.54865 4.36186C2.34896 4.4728 2.24912 4.52827 2.17642 4.60716C2.11211 4.67695 2.06343 4.75967 2.03366 4.84979C2 4.95166 2 5.06587 2 5.2943V10.7057C2 10.9341 2 11.0483 2.03366 11.1502C2.06343 11.2403 2.11211 11.3231 2.17642 11.3928C2.24912 11.4717 2.34897 11.5272 2.54865 11.6381L7.48198 14.3789C7.67105 14.4839 7.76559 14.5364 7.8657 14.557C7.95431 14.5752 8.0457 14.5752 8.1343 14.557C8.23442 14.5364 8.32895 14.4839 8.51802 14.3789L13.4514 11.6381C13.651 11.5272 13.7509 11.4717 13.8236 11.3928C13.8879 11.3231 13.9366 11.2403 13.9663 11.1502C14 11.0483 14 10.9341 14 10.7057Z"/></svg>'
+      };
+
+      var overlay = document.createElement("div");
+      overlay.className = "cmdk-overlay";
+      overlay.setAttribute("data-open", "false");
+      overlay.setAttribute("role", "dialog");
+      overlay.setAttribute("aria-modal", "true");
+      overlay.setAttribute("aria-label", "Search");
+      overlay.innerHTML =
+        '<div class="cmdk-panel">' +
+          '<div class="cmdk-search">' +
+            '<svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="M14 14l-3.5-3.5"/></svg>' +
+            '<input class="cmdk-input" type="text" placeholder="Search pages and actions…" aria-label="Search" autocomplete="off" spellcheck="false" />' +
+            '<span class="cmdk-esc">esc</span>' +
+          '</div>' +
+          '<div class="cmdk-list" role="listbox"></div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      var cmdInput = overlay.querySelector(".cmdk-input");
+      var cmdList = overlay.querySelector(".cmdk-list");
+      var cmdActive = 0;
+      var cmdFiltered = [];
+
+      function cmdRender() {
+        var q = (cmdInput.value || "").trim().toLowerCase();
+        cmdFiltered = CMD_ITEMS.filter(function (it) {
+          return !q || (it.label + " " + (it.hint || "") + " " + it.group).toLowerCase().indexOf(q) >= 0;
+        });
+        if (cmdActive >= cmdFiltered.length) cmdActive = 0;
+        if (!cmdFiltered.length) {
+          cmdList.innerHTML = '<div class="cmdk-empty">No results</div>';
+          return;
+        }
+        var htmlStr = "", lastGroup = null;
+        cmdFiltered.forEach(function (it, i) {
+          if (it.group !== lastGroup) {
+            htmlStr += '<div class="cmdk-group-label">' + it.group + '</div>';
+            lastGroup = it.group;
+          }
+          htmlStr +=
+            '<button type="button" class="cmdk-item" role="option" data-i="' + i + '" data-active="' + (i === cmdActive ? "true" : "false") + '">' +
+              '<span class="cmdk-item-ic">' + (CMD_IC[it.ic] || "") + '</span>' +
+              '<span class="cmdk-item-label">' + it.label + '</span>' +
+              (it.hint ? '<span class="cmdk-item-hint">' + it.hint + '</span>' : '') +
+            '</button>';
+        });
+        cmdList.innerHTML = htmlStr;
+      }
+
+      function cmdSetActive(i) {
+        cmdActive = (i + cmdFiltered.length) % cmdFiltered.length;
+        cmdList.querySelectorAll(".cmdk-item").forEach(function (el) {
+          var on = parseInt(el.getAttribute("data-i"), 10) === cmdActive;
+          el.setAttribute("data-active", on ? "true" : "false");
+          if (on) el.scrollIntoView({ block: "nearest" });
+        });
+      }
+
+      function cmdRun(it) {
+        if (!it) return;
+        cmdClose();
+        if (it.action === "theme") {
+          var cur = currentPref();
+          var isDark = cur === "dark" || (cur === "system" && systemDark());
+          setThemePref(isDark ? "light" : "dark");
+          return;
+        }
+        if (it.ext) { window.open(it.href, "_blank", "noopener"); return; }
+        window.location.href = it.href;
+      }
+
+      function cmdOpen() {
+        overlay.setAttribute("data-open", "true");
+        cmdInput.value = "";
+        cmdActive = 0;
+        cmdRender();
+        setTimeout(function () { cmdInput.focus(); }, 20);
+      }
+      function cmdClose() {
+        overlay.setAttribute("data-open", "false");
+        if (searchBtn) searchBtn.blur();
+      }
+
+      if (searchBtn) searchBtn.addEventListener("click", cmdOpen);
+      overlay.addEventListener("click", function (e) { if (e.target === overlay) cmdClose(); });
+      cmdInput.addEventListener("input", function () { cmdActive = 0; cmdRender(); });
+      cmdInput.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowDown") { e.preventDefault(); cmdSetActive(cmdActive + 1); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); cmdSetActive(cmdActive - 1); }
+        else if (e.key === "Enter") { e.preventDefault(); cmdRun(cmdFiltered[cmdActive]); }
+        else if (e.key === "Escape") { e.preventDefault(); cmdClose(); }
+      });
+      cmdList.addEventListener("click", function (e) {
+        var item = e.target.closest(".cmdk-item");
+        if (!item) return;
+        cmdRun(cmdFiltered[parseInt(item.getAttribute("data-i"), 10)]);
+      });
+      cmdList.addEventListener("mousemove", function (e) {
+        var item = e.target.closest(".cmdk-item");
+        if (item) cmdSetActive(parseInt(item.getAttribute("data-i"), 10));
+      });
+      document.addEventListener("keydown", function (e) {
+        if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+          e.preventDefault();
+          if (overlay.getAttribute("data-open") === "true") cmdClose(); else cmdOpen();
+        }
+      });
+
+    })();
+  </script>
+
+  <!-- Bento "Full library access": live mini-prototypes (stack photos +
+       Animate toggles for card-resize / toast). -->
+  <script>
+    (function initMobileMenu() {
+      var burger = document.getElementById("nav-burger");
+      var backdrop = document.getElementById("mobile-menu-backdrop");
+      var menu = document.getElementById("mobile-menu");
+      if (!burger || !backdrop || !menu) return;
+
+      var CLOSE_MS = 300;
+      var closeTimer = null;
+      var isOpen = false;
+
+      function open() {
+        if (isOpen) return;
+        isOpen = true;
+        clearTimeout(closeTimer);
+        document.body.classList.remove("menu-closing");
+        // Reflow so the pre-entrance state is committed before .menu-open
+        // flips it, guarantees the stagger replays every time.
+        void document.body.offsetHeight;
+        document.body.classList.add("menu-open");
+        burger.setAttribute("aria-expanded", "true");
+        burger.setAttribute("aria-label", "Close menu");
+      }
+
+      function close() {
+        if (!isOpen) return;
+        isOpen = false;
+        document.body.classList.remove("menu-open");
+        document.body.classList.add("menu-closing");
+        burger.setAttribute("aria-expanded", "false");
+        burger.setAttribute("aria-label", "Open menu");
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(function () {
+          document.body.classList.remove("menu-closing");
+        }, CLOSE_MS);
+      }
+
+      burger.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (isOpen) close(); else open();
+      });
+      backdrop.addEventListener("click", close);
+      menu.addEventListener("click", function (e) {
+        if (e.target.closest(".mobile-menu-link, .mobile-menu-cta")) close();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && isOpen) close();
+      });
+      // Leaving the mobile breakpoint hides the burger; drop any open
+      // state so desktop never inherits the locked scroll / overlay.
+      window.addEventListener("resize", function () {
+        if (isOpen && window.innerWidth > 639) {
+          document.body.classList.remove("menu-open", "menu-closing");
+          burger.setAttribute("aria-expanded", "false");
+          burger.setAttribute("aria-label", "Open menu");
+          isOpen = false;
+        }
+      });
+    })();
+  </script>
+  <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
+  <script src="assets/pro-client.js?v=43" defer></script>
+
+  <script src="assets/community/community.js?v=5" defer></script>
+  <script src="assets/community/profile.js?v=5" defer></script>
+  <script src="assets/brand-mark.js?v=4" defer></script>
+</body>
+</html>
