@@ -2379,25 +2379,6 @@
       .site-nav .brand-word { display: none; }
     }
   </style>
-  <style>
-    /* Six nav pills (Community joined the bar): compact the right-hand
-       controls up to 1040px, and tighten the pills just above the phone
-       breakpoint, so the bar never overlaps itself. */
-    @media (min-width: 640px) and (max-width: 1040px) {
-      .nav-search-label, .nav-search-kbd { display: none; }
-      .nav-search { width: 36px; padding: 0; gap: 0; justify-content: center; }
-      .nav-get-pro-word { display: none; }
-      .site-nav-right #gh-stars-btn,
-      .site-nav-right a[href*="x.com"] { display: none; }
-      .site-nav-right { gap: 8px; }
-    }
-    @media (min-width: 640px) and (max-width: 800px) {
-      .site-nav .brand-word { display: none; }
-      .site-nav-left { gap: 16px; }
-      .site-nav-menu { gap: 2px; }
-      .nav-pill { padding: 0 9px; }
-    }
-  </style>
 </head>
 <body>
   <!-- Site top-nav (UI chrome): data-tl-ui + outside #root so the Refine scanner skips it. -->
@@ -2415,7 +2396,6 @@
         </a>
         <nav class="site-nav-menu" aria-label="Primary">
           <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
-          <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
           <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
           <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>

@@ -6135,10 +6135,6 @@
     html[data-theme="dark"] .detail-prompt:active { background: rgba(255, 255, 255, 0.14); }
     .detail-prompt:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
     .detail-prompt-label { display: inline-block; }
-    .detail-actions { display: flex; align-items: center; gap: 8px; }
-    a.detail-prompt { text-decoration: none; }
-    .detail-remix[hidden] { display: none; }
-    .detail-remix svg { width: 16px; height: 16px; margin-right: 8px; flex: none; }
     /* Locked on Pro transitions for non-Pro viewers: muted, no copy,
        tooltip on hover (same pill as the card copy tooltip). */
     .detail-prompt { position: relative; }
@@ -6831,25 +6827,6 @@
       .site-nav .brand-word { display: none; }
     }
   </style>
-  <style>
-    /* Six nav pills (Community joined the bar): compact the right-hand
-       controls up to 1040px, and tighten the pills just above the phone
-       breakpoint, so the bar never overlaps itself. */
-    @media (min-width: 640px) and (max-width: 1040px) {
-      .nav-search-label, .nav-search-kbd { display: none; }
-      .nav-search { width: 36px; padding: 0; gap: 0; justify-content: center; }
-      .nav-get-pro-word { display: none; }
-      .site-nav-right #gh-stars-btn,
-      .site-nav-right a[href*="x.com"] { display: none; }
-      .site-nav-right { gap: 8px; }
-    }
-    @media (min-width: 640px) and (max-width: 800px) {
-      .site-nav .brand-word { display: none; }
-      .site-nav-left { gap: 16px; }
-      .site-nav-menu { gap: 2px; }
-      .nav-pill { padding: 0 9px; }
-    }
-  </style>
 </head>
 <body class="is-detail">
   <a href="#main" class="skip-link">Skip to content</a>
@@ -6869,7 +6846,6 @@
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
           <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
-          <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
           <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
           <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
@@ -6997,11 +6973,10 @@
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
           <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html">Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/skill.html">Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <a class="mobile-menu-cta" id="mobile-signin" href="/pro.html">Sign in</a>
       </nav>
@@ -7051,13 +7026,6 @@
               <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="css" aria-selected="false">CSS</button>
               <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="react" aria-selected="false">React</button>
             </div>
-            <div class="detail-actions">
-            <!-- Free transitions only: opens the React source in the Studio
-                 as a new Community component. -->
-            <a class="detail-prompt detail-remix" id="detail-remix" href="studio.html" hidden>
-              <svg aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Remix
-            </a>
             <button type="button" class="detail-prompt" data-prompt-target="#agent-prompt" aria-label="Copy agent prompt">
               <span class="detail-prompt-ico" aria-hidden="true">
                 <svg class="icon-copy" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -7068,7 +7036,6 @@
               <span class="detail-prompt-label">Copy prompt</span>
               <span class="detail-prompt-tip" role="tooltip">Available with Pro plan</span>
             </button>
-            </div>
           </div>
         </header>
 
@@ -8789,7 +8756,6 @@ jobs:
             <p class="footer-col-title">Site</p>
             <a href="/">Home</a>
             <a href="detail.html?t=card-resize">Transitions</a>
-            <a href="/community.html">Community</a>
             <a href="/skill.html">Skill</a>
             <a href="/agent.html">Agent</a>
             <a href="/pro.html">Get Pro</a>
@@ -14112,11 +14078,6 @@ export function Surface({ open, children }) {
               loadProCode(it);
             }
             applyPaywall(it.pro);
-            var remixEl = document.getElementById("detail-remix");
-            if (remixEl) {
-              remixEl.hidden = !!it.pro || !it.key;
-              remixEl.href = "studio.html?lib=" + encodeURIComponent(it.slug);
-            }
             // Flag the stage so the dedicated corner Pro badge shows only
             // for Pro transitions.
             if (stage) stage.setAttribute("data-pro", it.pro ? "true" : "false");
@@ -15865,8 +15826,6 @@ export function Surface({ open, children }) {
       var CMD_ITEMS = [
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
-        { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
-        { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
@@ -17151,7 +17110,7 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: unlocks Pro code for entitled viewers (fires pro:me). -->
-  <script src="assets/pro-client.js?v=43" defer></script>
+  <script src="assets/pro-client.js?v=42" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
 </body>
 </html>

@@ -11,11 +11,6 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://transitions.dev/community.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
     <loc>https://transitions.dev/pro.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>

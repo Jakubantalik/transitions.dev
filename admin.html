@@ -137,18 +137,6 @@
     .btn-sec:active { scale: 0.96; }
     .btn-sec svg, .btn-accent svg { width: 14px; height: 14px; display: block; }
 
-    /* ─── Community moderation ──────────────────────────────── */
-    .mod-panel { margin-top: 16px; }
-    .mod-list { display: flex; flex-direction: column; }
-    .mod-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--c-line2); font-size: 13px; line-height: 18px; }
-    .mod-row:last-child { border-bottom: 0; }
-    .mod-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-    .mod-main a { color: var(--c-text); font-weight: 500; text-decoration: none; }
-    .mod-main a:hover { text-decoration: underline; }
-    .mod-meta { color: var(--c-text-mut2); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mod-flag { padding: 1px 6px; border-radius: 999px; background: rgba(226, 48, 20, 0.1); color: #d02c12; font-size: 11px; font-weight: 500; }
-    .mod-empty { padding: 20px 14px; color: var(--c-text-mut2); font-size: 13px; }
-
     /* ─── Stats ─────────────────────────────────────────────── */
     .stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-bottom: 1px solid var(--c-line); }
     .stat { padding: 14px 16px; border-right: 1px solid var(--c-line); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -447,19 +435,6 @@
         <aside class="inspector" id="inspector" hidden aria-label="Person details"></aside>
       </div>
     </section>
-
-    <!-- Community: reported and hidden components. Hiding takes a component
-         out of every public list; restoring clears its reports. -->
-    <section class="crm-panel mod-panel" aria-labelledby="mod-title">
-      <div class="crm-head">
-        <div class="crm-title">
-          <h1 id="mod-title">Community moderation</h1>
-          <p id="mod-sub">Reported, hidden and recent components</p>
-        </div>
-        <div class="seg" id="mod-filters" role="tablist" aria-label="Moderation filter"></div>
-      </div>
-      <div class="mod-list" id="mod-list"></div>
-    </section>
   </main>
 
   <script>
@@ -571,7 +546,6 @@
         $("gate").hidden = true;
         $("app").hidden = false;
         render();
-        loadMod();
       }).catch(function (e) {
         showGate(e.message === "forbidden" ? "That token was not accepted." : "Could not reach the API. Try again.");
       }).then(function () { btn.disabled = false; btn.textContent = "Open"; });
@@ -988,57 +962,6 @@
       if (e.key === "Escape") { toggleMenu(false); if (state.selected) select(null); }
     });
     if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
-
-    /* ─── Community moderation ─────────────────────────────── */
-    var MOD_FILTERS = [{ id: "reported", label: "Reported" }, { id: "hidden", label: "Hidden" }, { id: "recent", label: "Recent" }];
-    var modFilter = "reported";
-    function modCall(path, body) {
-      var token = load(TOKEN_KEY);
-      return fetch(API + path, {
-        method: body ? "POST" : "GET",
-        headers: body ? { Authorization: "Bearer " + token, "content-type": "application/json" } : { Authorization: "Bearer " + token },
-        body: body ? JSON.stringify(body) : undefined,
-        cache: "no-store",
-      }).then(function (r) { return r.json(); });
-    }
-    function renderModFilters() {
-      $("mod-filters").innerHTML = MOD_FILTERS.map(function (f) {
-        return '<button type="button" role="tab" class="seg-btn' + (f.id === modFilter ? " is-active" : "") + '" data-mod="' + f.id + '" aria-selected="' + (f.id === modFilter) + '">' + f.label + "</button>";
-      }).join("");
-    }
-    function loadMod() {
-      if (!load(TOKEN_KEY)) return;
-      renderModFilters();
-      $("mod-list").innerHTML = '<div class="mod-empty">Loading…</div>';
-      modCall("/admin/community?filter=" + modFilter).then(function (r) {
-        var items = (r && r.items) || [];
-        if (!items.length) { $("mod-list").innerHTML = '<div class="mod-empty">Nothing here.</div>'; return; }
-        $("mod-list").innerHTML = items.map(function (c) {
-          return '<div class="mod-row">' +
-            '<div class="mod-main"><a href="/studio.html?id=' + encodeURIComponent(c.id) + '" target="_blank" rel="noopener">' + esc(c.title) + "</a>" +
-            '<span class="mod-meta">@' + esc(c.handle || "?") + " · " + esc(c.email || "") + " · " + esc(c.mode) + " · " + (c.likes_count || 0) + " likes" +
-            (c.reasons ? " · " + esc(c.reasons) : "") + "</span></div>" +
-            (c.reports ? '<span class="mod-flag">' + c.reports + (c.reports === 1 ? " report" : " reports") + "</span>" : "") +
-            (c.hidden ? '<span class="mod-flag">Hidden</span>' : "") +
-            '<button type="button" class="btn-sec" data-hide="' + esc(c.id) + '" data-hidden="' + (c.hidden ? 1 : 0) + '">' + (c.hidden ? "Restore" : "Hide") + "</button>" +
-            "</div>";
-        }).join("");
-      }).catch(function () { $("mod-list").innerHTML = '<div class="mod-empty">Could not load community items.</div>'; });
-    }
-    $("mod-filters").addEventListener("click", function (e) {
-      var b = e.target.closest("[data-mod]");
-      if (!b) return;
-      modFilter = b.getAttribute("data-mod");
-      loadMod();
-    });
-    $("mod-list").addEventListener("click", function (e) {
-      var b = e.target.closest("[data-hide]");
-      if (!b) return;
-      var hide = b.getAttribute("data-hidden") !== "1";
-      b.disabled = true;
-      modCall("/admin/community/hide", { id: b.getAttribute("data-hide"), hidden: hide }).then(loadMod, loadMod);
-    });
-    $("refresh-btn").addEventListener("click", loadMod);
 
     applyTheme();
     var saved = load(TOKEN_KEY);

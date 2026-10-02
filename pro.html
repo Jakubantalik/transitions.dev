@@ -5372,25 +5372,6 @@
       .site-nav .brand-word { display: none; }
     }
   </style>
-  <style>
-    /* Six nav pills (Community joined the bar): compact the right-hand
-       controls up to 1040px, and tighten the pills just above the phone
-       breakpoint, so the bar never overlaps itself. */
-    @media (min-width: 640px) and (max-width: 1040px) {
-      .nav-search-label, .nav-search-kbd { display: none; }
-      .nav-search { width: 36px; padding: 0; gap: 0; justify-content: center; }
-      .nav-get-pro-word { display: none; }
-      .site-nav-right #gh-stars-btn,
-      .site-nav-right a[href*="x.com"] { display: none; }
-      .site-nav-right { gap: 8px; }
-    }
-    @media (min-width: 640px) and (max-width: 800px) {
-      .site-nav .brand-word { display: none; }
-      .site-nav-left { gap: 16px; }
-      .site-nav-menu { gap: 2px; }
-      .nav-pill { padding: 0 9px; }
-    }
-  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -5410,7 +5391,6 @@
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
           <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
-          <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
           <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
           <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
@@ -5538,11 +5518,10 @@
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
           <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/agent.html">Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/skill.html">Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <button type="button" class="mobile-menu-cta" id="mobile-signin">Sign in</button>
       </nav>
@@ -5976,7 +5955,6 @@ description: Production-ready CSS
             <p class="footer-col-title">Site</p>
             <a href="/">Home</a>
             <a href="detail.html?t=card-resize">Transitions</a>
-            <a href="/community.html">Community</a>
             <a href="/skill.html">Skill</a>
             <a href="/agent.html">Agent</a>
             <a href="/pro.html">Get Pro</a>
@@ -6392,8 +6370,6 @@ description: Production-ready CSS
       var CMD_ITEMS = [
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
-        { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
-        { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
@@ -6823,7 +6799,7 @@ description: Production-ready CSS
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=43" defer></script>
+  <script src="assets/pro-client.js?v=42" defer></script>
 
   <!-- Plan comparison modal behavior (recipe: skill 06-modal state dance). -->
   <script>

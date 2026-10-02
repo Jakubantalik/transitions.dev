@@ -80,7 +80,6 @@
     approveDevice: approveDevice,
     mountBadges: mountProBadges,
     openSignIn: signIn,
-    joinCommunity: joinCommunity,
     fetchContent: fetchProContent,
     logout: logout,
     signInFromCheckout: signInFromCheckout,
@@ -551,12 +550,6 @@
   function stepCopy(step, email) {
     var signup = authCtx.mode === "signup";
     var plan = authCtx.plan;
-    // Community: one door for new and returning members, since a free
-    // account is all a like, a remix or a publish needs.
-    if (plan === "community") {
-      if (step === "code") return { title: "Enter one-time password", sub: "We sent it to " + (email || "your inbox") + ".", btn: "Continue" };
-      return { title: "Join the Community", sub: "Free account to build, publish and like components.", btn: "Continue" };
-    }
     if (step === "code") {
       return {
         title: "Enter one-time password",
@@ -629,7 +622,7 @@
       if (sw) {
         e.preventDefault();
         var toSignup = sw.getAttribute("data-tp-switch") === "signup";
-        authCtx = { mode: toSignup ? "signup" : "signin", plan: toSignup ? (authCtx.plan || "free") : authCtx.plan, cta: authCtx.cta, onDone: authCtx.onDone };
+        authCtx = { mode: toSignup ? "signup" : "signin", plan: toSignup ? (authCtx.plan || "free") : authCtx.plan, cta: authCtx.cta };
         setModalNote(modalEl.querySelector(".tp-modal-note"), "", "");
         showStep("email");
       }
@@ -660,7 +653,7 @@
         btn.setAttribute("data-label", copy.btn);
       }
       // The footer offers the other door, and only on the email step.
-      footEl.hidden = step !== "email" || authCtx.plan === "community";
+      footEl.hidden = step !== "email";
       footEl.innerHTML = authCtx.mode === "signup"
         ? 'Already have an account? <button type="button" data-tp-switch="signin">Sign in</button>'
         : 'New here? <button type="button" data-tp-switch="signup">Create an account</button>';
@@ -755,14 +748,6 @@
           return refreshMe().then(function () {
             var plan = authCtx.plan;
             if (authCtx.mode !== "signup") { closeAuthModal(); return; }
-            // Community: back to whatever the visitor was doing (a like, a
-            // publish, an AI draft), which the caller resumes in onDone.
-            if (plan === "community") {
-              var done = authCtx.onDone;
-              closeAuthModal();
-              if (typeof done === "function") done();
-              return;
-            }
             if (plan === "free") {
               // The free plan includes the Agent: email its key now, the same
               // thing `npx transitions-agent signup` does from the terminal.
@@ -793,22 +778,13 @@
     note.setAttribute("data-kind", kind || "");
   }
 
-  // Community actions need an account. Signed in: run `onDone` now.
-  // Otherwise open the community sign-in, which creates the account when the
-  // address is new and runs `onDone` once the code verifies.
-  function joinCommunity(onDone) {
-    if (state.authenticated) { if (typeof onDone === "function") onDone(); return; }
-    openAuthModal({ mode: "signup", plan: "community", onDone: onDone });
-  }
-
-  // opts: { mode: "signin" | "signup", plan: "free" | "solo" | "team" | "community", cta, onDone }
+  // opts: { mode: "signin" | "signup", plan: "free" | "solo" | "team", cta }
   function openAuthModal(opts) {
     opts = opts || {};
     authCtx = {
       mode: opts.mode === "signup" ? "signup" : "signin",
       plan: opts.plan || null,
       cta: opts.cta || null,
-      onDone: opts.onDone || null,
     };
     var m = ensureAuthModal();
     lastFocus = document.activeElement;
