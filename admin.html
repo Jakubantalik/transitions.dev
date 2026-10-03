@@ -522,13 +522,30 @@
     }
 
     /* ─── Fetch ─────────────────────────────────────────────── */
-    function fetchCrm(token) {
-      return fetch(API + "/admin/crm?tz=" + new Date().getTimezoneOffset(), { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
+    // The API answers from its saved copy at once; "stale" means a rebuild
+    // has started on the server, and fresh=1 (refresh button) waits for one.
+    function fetchCrm(token, fresh) {
+      return fetch(API + "/admin/crm?tz=" + new Date().getTimezoneOffset() + (fresh ? "&fresh=1" : ""), { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
         .then(function (r) {
           if (r.status === 403 || r.status === 401) throw new Error("forbidden");
           if (!r.ok) throw new Error("http " + r.status);
-          return r.json();
+          var cache = r.headers.get("x-crm-cache");
+          return r.json().then(function (data) { data._stale = cache === "stale"; return data; });
         });
+    }
+    // After a stale copy, pick up the server's rebuild when it lands.
+    var pollT = null;
+    function pollFresh(token, tries) {
+      clearTimeout(pollT);
+      if (!tries) { state.data._stale = false; renderStats(); return; }
+      pollT = setTimeout(function () {
+        fetchCrm(token).then(function (data) {
+          if (data.generated_at === state.data.generated_at) return pollFresh(token, tries - 1);
+          data._stale = false;
+          state.data = data;
+          render();
+        }).catch(function () { pollFresh(token, tries - 1); });
+      }, 5000);
     }
     function showGate(msg) {
       $("app").hidden = true;
@@ -546,6 +563,7 @@
         $("gate").hidden = true;
         $("app").hidden = false;
         render();
+        if (data._stale) pollFresh(token, 12);
       }).catch(function (e) {
         showGate(e.message === "forbidden" ? "That token was not accepted." : "Could not reach the API. Try again.");
       }).then(function () { btn.disabled = false; btn.textContent = "Open"; });
@@ -555,7 +573,8 @@
       if (!token) return showGate();
       var btn = $("refresh-btn");
       btn.classList.add("is-spinning");
-      fetchCrm(token).then(function (data) { state.data = data; render(); })
+      clearTimeout(pollT);
+      fetchCrm(token, true).then(function (data) { state.data = data; render(); })
         .catch(function (e) { if (e.message === "forbidden") { store(TOKEN_KEY, null); showGate("The saved token no longer works."); } })
         .then(function () { btn.classList.remove("is-spinning"); });
     }
@@ -610,7 +629,9 @@
         return '<div class="stat"><span class="stat-label">' + (s.dot ? '<span class="dot" style="background:' + s.dot + '"></span>' : "") + esc(s.label) +
           '</span><span class="stat-value">' + esc(s.value) + '</span><span class="stat-sub">' + esc(s.sub || "") + "</span></div>";
       }).join("");
-      $("subtitle").textContent = "Accounts and Stripe customers · updated " + new Date(d.generated_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      var age = (Date.now() - new Date(d.generated_at).getTime()) / 1000;
+      $("subtitle").textContent = "Accounts and Stripe customers · updated " + (age < 60 ? "just now" : ago(d.generated_at)) +
+        (d._stale ? " · refreshing…" : "");
     }
     function renderAgent() {
       var a = state.data.agent;
