@@ -453,6 +453,77 @@
     } catch (e) { return null; }
   }
 
+  // Terms version the buyer accepts at checkout (bump with terms.html).
+  var TERMS_VERSION = "2026-10-03";
+
+  // EU consumer law: digital content that starts at once is only exempt from
+  // the 14-day withdrawal right if the buyer asks for immediate access and
+  // acknowledges losing the right, before paying. This asks, and the API
+  // records the answer on the Stripe session and in the confirmation email.
+  // Resolves true to continue, false to stop.
+  function confirmPurchase(plan, billingKind) {
+    return new Promise(function (resolve) {
+      if (!document.getElementById("tp-buy-css")) {
+        var css = document.createElement("style");
+        css.id = "tp-buy-css";
+        css.textContent =
+          ".tp-buy{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.32);opacity:0;transition:opacity 200ms cubic-bezier(.22,1,.36,1)}" +
+          ".tp-buy.is-open{opacity:1}" +
+          ".tp-buy-card{width:100%;max-width:440px;box-sizing:border-box;padding:22px;border-radius:20px;background:var(--card-bg,#fff);color:var(--text,#0d0d0d);" +
+          "box-shadow:0 20px 60px rgba(0,0,0,.25);font:14px/20px var(--font-sans,Inter,system-ui,sans-serif);transform:translateY(8px) scale(.98);transition:transform 250ms cubic-bezier(.22,1,.36,1)}" +
+          ".tp-buy.is-open .tp-buy-card{transform:none}" +
+          ".tp-buy h2{margin:0 0 8px;font-size:17px;line-height:24px;font-weight:500}" +
+          ".tp-buy p{margin:0 0 12px;color:var(--text-muted,#6c6c6c);font-size:13px;line-height:19px}" +
+          ".tp-buy a{color:inherit;text-decoration:underline;text-underline-offset:2px}" +
+          ".tp-buy label{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;font-size:13px;line-height:19px;cursor:pointer}" +
+          ".tp-buy input{margin:3px 0 0;flex:none;accent-color:var(--accent,#0073e5)}" +
+          ".tp-buy-row{display:flex;justify-content:flex-end;gap:8px}" +
+          ".tp-buy button{height:36px;padding:0 16px;border:0;border-radius:40px;font:500 13px/16px var(--font-sans,Inter,system-ui,sans-serif);cursor:pointer}" +
+          ".tp-buy-no{background:var(--chip-bg,#f4f4f4);color:var(--text,#0d0d0d)}" +
+          ".tp-buy-go{background:var(--text,#0d0d0d);color:var(--bg,#fff)}" +
+          ".tp-buy-go:disabled{opacity:.4;cursor:default}" +
+          "@media (prefers-reduced-motion: reduce){.tp-buy,.tp-buy-card{transition:none}}";
+        document.head.appendChild(css);
+      }
+      var lifetime = billingKind === "lifetime" && plan !== "team";
+      var wrap = document.createElement("div");
+      wrap.className = "tp-buy";
+      wrap.innerHTML =
+        '<div class="tp-buy-card" role="dialog" aria-modal="true" aria-labelledby="tp-buy-title">' +
+          '<h2 id="tp-buy-title">Before you pay</h2>' +
+          "<p>" + (lifetime
+            ? "Lifetime is a one-time payment."
+            : "Your plan renews automatically each " + (billingKind === "annual" ? "year" : "month") + " until you cancel, which you can do any time from your account.") +
+            " VAT is added at checkout where it applies, and Stripe shows the full amount before you confirm.</p>" +
+          '<label><input type="checkbox" class="tp-buy-ok" /><span>I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and want access to start right away. ' +
+            'I understand that I lose my 14-day <a href="/terms.html#withdrawal" target="_blank" rel="noopener">right of withdrawal</a> once access begins.</span></label>' +
+          '<div class="tp-buy-row"><button type="button" class="tp-buy-no">Cancel</button>' +
+          '<button type="button" class="tp-buy-go" disabled>Continue to payment</button></div>' +
+        "</div>";
+      document.body.appendChild(wrap);
+      var ok = wrap.querySelector(".tp-buy-ok");
+      var go = wrap.querySelector(".tp-buy-go");
+      var last = document.activeElement;
+      var done = false;
+      function finish(v) {
+        if (done) return;
+        done = true;
+        document.removeEventListener("keydown", onKey, true);
+        wrap.classList.remove("is-open");
+        setTimeout(function () { wrap.remove(); if (last && last.focus) last.focus(); }, 200);
+        resolve(v);
+      }
+      function onKey(e) { if (e.key === "Escape") { e.stopPropagation(); finish(false); } }
+      document.addEventListener("keydown", onKey, true);
+      ok.addEventListener("change", function () { go.disabled = !ok.checked; });
+      go.addEventListener("click", function () { if (ok.checked) finish(true); });
+      wrap.querySelector(".tp-buy-no").addEventListener("click", function () { finish(false); });
+      wrap.addEventListener("mousedown", function (e) { if (e.target === wrap) finish(false); });
+      requestAnimationFrame(function () { wrap.classList.add("is-open"); });
+      setTimeout(function () { ok.focus(); }, 30);
+    });
+  }
+
   function startCheckout(plan, ctaEl) {
     if (plan === "free") { startFree(ctaEl); return Promise.resolve(); }
     // Business (team) → per-seat subscription (buyer adjusts the seat count on
@@ -469,6 +540,15 @@
       payload = { plan: billingKind === "annual" ? "yearly" : "monthly" };
     }
     var cta = ctaEl || document.querySelector('.pro-price-cta[data-plan="' + (plan || "solo") + '"]');
+    return confirmPurchase(plan, billingKind).then(function (agreed) {
+      if (!agreed) return;
+      // What the buyer agreed to, recorded with the order.
+      payload.consent = { terms: TERMS_VERSION, immediate_access: true, withdrawal_waiver: true };
+      return toCheckout(payload, cta);
+    });
+  }
+
+  function toCheckout(payload, cta) {
     setBusy(cta, true);
     var promo = urlPromoCode();
     if (promo) payload.code = promo;

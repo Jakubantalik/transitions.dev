@@ -49,17 +49,8 @@
   <meta name="twitter:image" content="https://transitions.dev/assets/og-pro.jpg" />
   <meta name="twitter:image:alt" content="Studio: build and remix interactive components" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    rel="preload"
-    as="style"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-  />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/inter-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
   <!-- Preload the Saans display face (hero title) so it's fetched before
        first paint, paired with font-display: optional this removes the
        fallback→Saans flash/reflow. -->
@@ -2132,7 +2123,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
-  <link rel="stylesheet" href="assets/community/community.css?v=46" />
+  <link rel="stylesheet" href="assets/community/community.css?v=48" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -2417,7 +2408,7 @@
 
           <div class="st-panel-body st-panel-body--chat" data-panel-body="agent">
             <div class="st-chat-log" id="st-chat-log" aria-live="polite">
-              <p class="st-chat-empty" id="st-chat-empty">Describe what you want and the agent builds it, or changes the current component: “make the hover springier”, “add a dark glass look”, “turn it into a toggle”.</p>
+              <p class="st-chat-empty" id="st-chat-empty">Describe what you want and the AI agent builds it, or changes the current component: “make the hover springier”, “add a dark glass look”, “turn it into a toggle”.</p>
             </div>
             <!-- What the agent reads besides the request: skills and libraries. -->
             <div class="st-context">
@@ -3147,9 +3138,9 @@
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
   <script src="assets/pro-client.js?v=45" defer></script>
 
-  <script src="assets/community/community.js?v=46" defer></script>
-  <script src="assets/community/controls.js?v=46" defer></script>
-  <script src="assets/community/studio.js?v=46" defer></script>
+  <script src="assets/community/community.js?v=48" defer></script>
+  <script src="assets/community/controls.js?v=48" defer></script>
+  <script src="assets/community/studio.js?v=48" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
 </body>
 </html>

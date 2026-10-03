@@ -2144,3 +2144,53 @@ html[data-theme="dark"] .cm-lib-thumb img.is-dark { display: block; }
   .st-ds-spin { animation-duration: 1.6s; }
   .st-dots i { animation: none; }
 }
+
+/* Moderation notice for the author (statement of reasons + review). */
+.st-mod {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 10px 12px 10px 16px;
+  border-radius: 14px;
+  background: rgba(255, 149, 0, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 149, 0, 0.25);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 18px;
+}
+.st-mod[hidden] { display: none; }
+.st-mod p { margin: 0; text-wrap: pretty; }
+.st-mod b { font-weight: 500; }
+.st-mod .cm-btn { flex: none; }
+
+/* AI label in the credit line and on cards (EU AI Act transparency). */
+.st-ai-tag, .cm-ai-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--chip-bg);
+  color: var(--text-muted);
+  font: 500 11px/16px var(--font-sans);
+  vertical-align: 1px;
+}
+
+/* Report form (DSA notice). */
+.st-report { gap: 14px; }
+.st-report .st-field select {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--pg-control-bg);
+  color: var(--pg-title);
+  font: 13px/18px var(--font-sans);
+}
+.st-report-check { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 18px; color: var(--pg-title); cursor: pointer; }
+.st-report-check input { margin: 2px 0 0; accent-color: var(--accent); }
+.st-report-note { margin: 0; font-size: 12px; line-height: 16px; color: var(--pg-label); }
+

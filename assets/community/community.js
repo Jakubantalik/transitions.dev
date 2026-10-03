@@ -85,7 +85,10 @@
     update: function (id, c) { return call("/community/c/" + encodeURIComponent(id), "POST", c); },
     remove: function (id) { return call("/community/c/" + encodeURIComponent(id) + "/delete", "POST", {}); },
     like: function (id, liked) { return call("/community/c/" + encodeURIComponent(id) + "/like", "POST", { liked: liked }); },
-    report: function (id, reason) { return call("/community/c/" + encodeURIComponent(id) + "/report", "POST", { reason: reason }); },
+    // A notice under the EU Digital Services Act: { category, reason, good_faith }.
+    report: function (id, notice) { return call("/community/c/" + encodeURIComponent(id) + "/report", "POST", notice); },
+    // The author of a hidden component asks for a review.
+    appeal: function (id, message) { return call("/community/c/" + encodeURIComponent(id) + "/appeal", "POST", { message: message }); },
     // images: [{ media_type, data }] from attachments().items(); onEvent gets
     // the agent's progress ({ type: "status", phase, text, lines? } and
     // { type: "thought", text } pieces of its plan) while it works.
@@ -307,11 +310,32 @@
   }
 
   // ── Sandbox document ────────────────────────────────────────────────────────
+  // The stage fonts, Inter and Roboto Mono, are self-hosted (assets/fonts) like
+  // on the rest of the site, so a preview never contacts Google. The frame runs
+  // at an opaque origin, so the font URLs are absolute (this site's origin) and
+  // font-src allows exactly that origin.
+  var FONT_BASE = location.origin + "/assets/fonts/";
+  var FONT_SUBSETS = [
+    ["latin-ext", "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, " +
+      "U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF"],
+    ["latin", "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, " +
+      "U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"],
+  ];
+  function fontFaces(family, file, weights) {
+    return weights.map(function (w) {
+      return FONT_SUBSETS.map(function (s) {
+        return "@font-face{font-family:'" + family + "';font-style:normal;font-weight:" + w + ";font-display:swap;" +
+          "src:url('" + FONT_BASE + file + "-" + s[0] + ".woff2') format('woff2');unicode-range:" + s[1] + "}";
+      }).join("");
+    }).join("");
+  }
+  var FONT_CSS = fontFaces("Inter", "inter", [400, 500, 600]) + fontFaces("Roboto Mono", "roboto-mono", [400, 500]);
+
   var CSP = [
     "default-src 'none'",
     "script-src 'unsafe-inline' 'unsafe-eval' blob: https://esm.sh",
-    "style-src 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src data: https://fonts.gstatic.com",
+    "style-src 'unsafe-inline'",
+    "font-src data: " + location.origin,
     "img-src data: blob: https://images.unsplash.com",
     "media-src data: blob:",
     "connect-src https://esm.sh",
@@ -376,8 +400,8 @@
       '<!doctype html><html data-theme="' + (theme || "light") + '"><head><meta charset="utf-8">' +
       '<meta http-equiv="Content-Security-Policy" content="' + CSP + '">' +
       '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-      // The stage font, Inter, as on the site.
-      '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap">' +
+      // The stage font, Inter, as on the site (self-hosted, see FONT_CSS).
+      "<style>" + FONT_CSS + "</style>" +
       "<style>" + STAGE_CSS + "</style><script>" + BRIDGE + "</script>";
     if (c.mode === "react") {
       compiled = gateImports(compiled);
@@ -549,6 +573,8 @@
     var subHtml = !opts.hideAuthor && a.handle && c.published && !c.hidden
       ? '<a class="card-subtitle cm-sub" href="' + esc(profileUrl(a.handle)) + '">' + esc(sub) + "</a>"
       : '<div class="card-subtitle cm-sub">' + esc(sub) + "</div>";
+    // AI Act transparency: work the Studio's agent built or changed says so.
+    if (c.ai) subHtml = subHtml.replace(/<\/(a|div)>$/, ' <span class="cm-ai-tag" title="Built or changed with the Studio\'s AI agent">AI-assisted</span></$1>');
     el.innerHTML =
       '<div class="card-stage cm-stage" data-cm-stage></div>' +
       '<div class="card-meta cm-meta">' +
@@ -1011,6 +1037,11 @@
     invalid_design_system_name: "Give the design system a name (up to 60 characters).",
     empty_design_system: "Add the design system’s values first.",
     design_system_pro: "Custom design systems need a Pro or Business plan.",
+    report_reason: "Say what is wrong with it.",
+    report_good_faith: "Confirm the report is accurate and complete.",
+    appeal_message: "Tell us why it should be visible again.",
+    appeal_open: "You already asked for a review. We will email you the outcome.",
+    not_hidden: "This component is not hidden.",
     design_system_missing: "That design system was deleted. Pick another one in the Design system tab.",
   };
   function errorText(code) { return ERRORS[code] || "Something went wrong. Please try again."; }

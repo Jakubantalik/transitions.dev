@@ -96,7 +96,7 @@
   };
 
   function snapshot() {
-    return { title: S.title, description: S.description, mode: S.mode, html: S.files.html, css: S.files.css, js: S.files.js };
+    return { title: S.title, description: S.description, mode: S.mode, html: S.files.html, css: S.files.css, js: S.files.js, ai: !!S.ai };
   }
   function isStarter() {
     var st = STARTER[S.mode];
@@ -624,10 +624,113 @@
         parts.push("Remix of " + link(C.studioUrl({ id: S.remix.id }), S.remix.title) + (S.remix.handle ? " by " + link(C.profileUrl(S.remix.handle), "@" + S.remix.handle) : ""));
       }
     }
+    if (S.ai) parts.push('<span class="st-ai-tag" title="Built or changed with the Studio\'s AI agent (Claude, by Anthropic)">AI-assisted</span>');
     $("st-credit").innerHTML = parts.join(" · ");
   }
 
+  // The author's view of a moderation decision: the statement of reasons and
+  // a way to ask for a review (EU Digital Services Act).
+  function paintModeration() {
+    var el = $("st-mod");
+    var show = S.owner && S.hidden;
+    if (!show) { if (el) el.hidden = true; return; }
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "st-mod";
+      el.id = "st-mod";
+      el.setAttribute("role", "status");
+      document.querySelector(".st-work").before(el);
+    }
+    el.hidden = false;
+    el.innerHTML = '<p><b>Hidden from the Community.</b> ' + C.esc(S.hiddenReason || "") + "</p>" +
+      '<button type="button" class="cm-btn" id="st-appeal">Ask for a review</button>';
+    $("st-appeal").addEventListener("click", function () {
+      C.ask({
+        title: "Ask for a review",
+        body: "Tell us why it should be visible again. A person reviews it and emails you the outcome.",
+        placeholder: "What we got wrong",
+        max: 1000,
+        ok: "Send",
+      }).then(function (message) {
+        if (!message) return;
+        C.api.appeal(S.id, message).then(function (r) {
+          C.toast(r.error ? C.errorText(r.error) : "Sent. We will email you the outcome.", r.error ? "err" : undefined);
+        });
+      });
+    });
+  }
+
+  // A report is a notice under the EU Digital Services Act: what kind of
+  // problem, why, and a good-faith statement. The account says who sent it.
+  function reportDialog() {
+    return new Promise(function (resolve) {
+      var last = document.activeElement;
+      var wrap = document.createElement("div");
+      wrap.className = "st-dialog cm-ask";
+      wrap.innerHTML =
+        '<form class="st-dialog-card cm-ask-card st-report" role="dialog" aria-modal="true" aria-labelledby="st-report-title" novalidate>' +
+          '<h2 id="st-report-title">Report this component</h2>' +
+          '<label class="st-field"><span>What is wrong</span><select class="cm-ask-input st-report-cat">' +
+            '<option value="illegal">Illegal content</option>' +
+            '<option value="ip">Copyright or stolen work</option>' +
+            '<option value="harmful">Harmful or abusive content</option>' +
+            '<option value="spam">Spam or misleading</option>' +
+            '<option value="other" selected>Something else</option>' +
+          "</select></label>" +
+          '<label class="st-field"><span>Why</span><textarea class="cm-ask-input st-report-why" rows="3" maxlength="500" placeholder="Explain what breaks the rules or the law, and where"></textarea></label>' +
+          '<label class="st-report-check"><input type="checkbox" class="st-report-ok" /> <span>I believe the information in this report is accurate and complete.</span></label>' +
+          '<p class="st-report-note">We email you a receipt and our decision. The author is not told who reported it.</p>' +
+          '<div class="cm-ask-row"><button type="button" class="cm-btn cm-btn--ghost" data-no>Cancel</button>' +
+          '<button type="submit" class="cm-btn cm-btn--primary" disabled>Report</button></div>' +
+        "</form>";
+      document.body.appendChild(wrap);
+      var form = wrap.querySelector("form");
+      var why = wrap.querySelector(".st-report-why");
+      var ok = wrap.querySelector(".st-report-ok");
+      var submit = wrap.querySelector("[type=submit]");
+      function sync() { submit.disabled = !why.value.trim() || !ok.checked; }
+      why.addEventListener("input", sync);
+      ok.addEventListener("change", sync);
+      var done = false;
+      function finish(v) {
+        if (done) return;
+        done = true;
+        wrap.classList.remove("is-open");
+        document.removeEventListener("keydown", onKey, true);
+        setTimeout(function () { wrap.remove(); if (last && last.focus) last.focus(); }, 200);
+        resolve(v);
+      }
+      function onKey(e) { if (e.key === "Escape") { e.stopPropagation(); finish(null); } }
+      document.addEventListener("keydown", onKey, true);
+      wrap.addEventListener("mousedown", function (e) { if (e.target === wrap) finish(null); });
+      wrap.querySelector("[data-no]").addEventListener("click", function () { finish(null); });
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (submit.disabled) return;
+        finish({ category: wrap.querySelector(".st-report-cat").value, reason: why.value.trim(), good_faith: true });
+      });
+      requestAnimationFrame(function () { wrap.classList.add("is-open"); });
+      setTimeout(function () { wrap.querySelector(".st-report-cat").focus(); }, 30);
+    });
+  }
+
+  // Publishing makes the component and your profile public, so say exactly
+  // what others will see before the first time (GDPR: transparency, nothing
+  // public without your action).
+  function confirmPublish() {
+    if (S.published) return Promise.resolve(true);
+    var p = meProfile;
+    var who = p ? (p.display_name ? p.display_name + " (@" + p.handle + ")" : "@" + p.handle) : "your profile";
+    return C.confirm({
+      title: "Publish to the Community?",
+      body: "Anyone can see it, open its code and remix it. It shows " + who + (p && p.avatar_url ? " and your profile photo" : "") +
+        ". Change your name on your profile or account page. You can unpublish or delete it at any time.",
+      ok: "Publish",
+    });
+  }
+
   function paintHeader() {
+    paintModeration();
     titleEl.value = S.title;
     titleEl.readOnly = !S.owner;
     paintCredit();
@@ -689,6 +792,11 @@
     S.likes = c.likes || 0;
     S.liked = !!c.liked;
     S.remix = opts.remix || (c.remix ? { kind: c.remix.kind, id: c.remix.id, title: c.remix.source && c.remix.source.title, handle: c.remix.source && c.remix.source.handle } : null);
+    // AI-assisted travels with the code (a remix of AI work stays labelled);
+    // moderation state is the author's alone.
+    S.ai = !!c.ai;
+    S.hidden = !opts.asNew && !!c.hidden;
+    S.hiddenReason = opts.asNew ? "" : c.hidden_reason || "";
     S.file = S.mode === "react" ? "js" : "html";
     S.dirty = false;
     loadedCss = S.files.css;
@@ -798,7 +906,10 @@
     });
   }
   $("st-save").addEventListener("click", function () { save(undefined, this); });
-  $("st-publish").addEventListener("click", function () { save(true, this); });
+  $("st-publish").addEventListener("click", function () {
+    var btn = this;
+    confirmPublish().then(function (ok) { if (ok) save(true, btn); });
+  });
   document.addEventListener("keydown", function (e) {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
       e.preventDefault();
@@ -927,10 +1038,10 @@
       });
     } else if (act === "report") {
       C.withAccount(function () {
-        C.ask({ title: "Report this component", body: "What is wrong with it?", placeholder: "Spam, stolen work, harmful content…", ok: "Report" }).then(function (reason) {
-          if (reason == null) return;
-          C.api.report(S.id, reason || "unspecified").then(function (r) {
-            C.toast(r.error ? C.errorText(r.error) : "Thanks. We will take a look.", r.error ? "err" : undefined);
+        reportDialog().then(function (rep) {
+          if (!rep) return;
+          C.api.report(S.id, rep).then(function (r) {
+            C.toast(r.error ? C.errorText(r.error) : "Thanks. We emailed you a receipt and will tell you what we decide.", r.error ? "err" : undefined);
           });
         });
       });
@@ -1852,6 +1963,7 @@
         if (!S.owner) remixOf({ id: S.id, title: S.title, mode: S.mode, html: S.files.html, css: S.files.css, js: S.files.js, author: S.author });
         if (fresh || S.title === "Untitled") S.title = c.title || S.title;
         if (c.description) S.description = c.description;
+        S.ai = true;
         S.mode = c.mode === "react" ? "react" : "html";
         S.files = { html: c.html || "", css: c.css || "", js: c.js || "" };
         S.file = S.mode === "react" ? "js" : "html";

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+
+  <title>Legal notice | Transitions.dev</title>
+  <meta
+    name="description"
+    content="How Transitions.dev handles your data: what we collect for accounts and Pro, who processes it (Stripe, Resend, Cloudflare), and your rights under GDPR."
+  />
+  <meta name="author" content="Transitions.dev" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#fdfdfd" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#070707" media="(prefers-color-scheme: dark)" />
+
+  <link rel="canonical" href="https://transitions.dev/imprint.html" />
+
+  <link rel="icon" href="assets/favicon-light-mode.png?v=4" type="image/png" sizes="any" />
+  <link rel="icon" href="assets/favicon-light-mode.png?v=4" media="(prefers-color-scheme: light)" type="image/png" />
+  <link rel="icon" href="assets/favicon-darkmode.png?v=4" media="(prefers-color-scheme: dark)" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/favicon-light-mode.png?v=4" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Transitions.dev" />
+  <meta property="og:url" content="https://transitions.dev/imprint.html" />
+  <meta property="og:title" content="Legal notice | Transitions.dev" />
+  <meta property="og:description" content="What we collect, who processes it, and your rights." />
+
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+
+  <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --text-subtle: #767676;
+      --text-faint: #8f8f8f;
+      --text-footer-name: #4a4a4a;
+      --rule: rgba(0, 0, 0, 0.08);
+      --code-bg: rgba(0, 0, 0, 0.04);
+      --code-text: #3a3a3a;
+      --link: #0d0d0d;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, monospace;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --text-subtle: #767676;
+      --text-faint: #8f8f8f;
+      --text-footer-name: #e9e9e9;
+      --rule: rgba(255, 255, 255, 0.1);
+      --code-bg: rgba(255, 255, 255, 0.08);
+      --code-text: #d6d6d6;
+      --link: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 16px;
+      z-index: 200;
+      padding: 12px 20px;
+      border-radius: 8px;
+      background: var(--text);
+      color: var(--bg);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 16px; }
+
+    .wrap {
+      max-width: 680px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 24px;
+    }
+
+    .doc-head { padding: 80px 0 0; }
+    .eyebrow {
+      margin: 0 0 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--text-muted);
+    }
+    .eyebrow a { color: inherit; text-decoration: none; }
+    .eyebrow a:hover { color: var(--text); }
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      text-wrap: balance;
+    }
+    .updated { margin: 12px 0 0; font-size: 13px; color: var(--text-faint); }
+    .lede {
+      margin: 28px 0 0;
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--text-muted);
+      text-wrap: pretty;
+    }
+
+    section { padding: 36px 0 0; }
+    section + section { margin-top: 36px; border-top: 1px solid var(--rule); }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    p {
+      margin: 0 0 14px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      text-wrap: pretty;
+    }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text); font-weight: 600; }
+    a { color: var(--link); }
+
+    ul { margin: 0 0 14px; padding-left: 20px; }
+    li {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    li strong { color: var(--text); }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.86em;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--code-bg);
+      color: var(--code-text);
+    }
+
+    /* Processor table */
+    .proc {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 4px 0 14px;
+      font-size: 14px;
+    }
+    .proc th, .proc td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .proc th {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .proc td { color: var(--text-muted); }
+    .proc td:first-child { color: var(--text); font-weight: 500; white-space: nowrap; }
+    .proc-scroll { overflow-x: auto; }
+
+    /* ─── Footer ─── */
+    .footer {
+      width: 100%;
+      max-width: 1008px;
+      margin: 96px auto 0;
+      padding: 0 0 40px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 18.2px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    .footer-top { display: flex; justify-content: space-between; gap: 48px; flex-wrap: wrap; }
+    .footer-brand { display: flex; flex-direction: column; gap: 10px; max-width: 260px; }
+    .footer-brand-logo {
+      display: inline-flex; align-items: center; gap: 4px; opacity: 0.7;
+      text-decoration: none; color: var(--text);
+      transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1), opacity 150ms ease;
+      transform-origin: center;
+    }
+    .footer-brand-logo:hover { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      .footer-brand-logo { transition: opacity 150ms ease; }
+      .footer-brand-logo:hover { transform: none; }
+      .footer-brand-logo:hover .brand-mark { transform: none; }
+    }
+    .brand-mark {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; color: var(--icon-color, var(--text));
+      transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .brand-mark svg { width: 18px; height: 20.295px; display: block; }
+    .brand-word { font-size: 15px; font-weight: 500; line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
+    .brand-word-dim { color: var(--text-muted); }
+    .footer-tagline { margin: 0; color: var(--text-muted); }
+    .footer-cols { display: flex; gap: 56px; }
+    .footer-col { display: flex; flex-direction: column; gap: 8px; }
+    .footer-col-title { margin: 0 0 2px; font-weight: 500; color: var(--text-muted); }
+    .footer-col a { color: var(--text-muted); text-decoration: none; transition: color 150ms ease; }
+    .footer-col a:hover { color: var(--text); }
+    .footer-credit { margin: 0; }
+    .footer-muted { color: var(--text-faint); }
+    .footer-name { color: var(--text-footer-name); text-decoration: none; margin-left: 4px; }
+    .footer-name:hover { color: #0d0d0d; text-decoration: none; }
+    html[data-theme="dark"] .footer-name:hover { color: #ffffff; text-decoration: none; }
+    @media (max-width: 720px) {
+      .footer-top { flex-direction: column; gap: 32px; }
+      .footer-cols { gap: 40px; flex-wrap: wrap; row-gap: 32px; }
+    }
+    @media (max-width: 600px) {
+      .doc-head { padding-top: 56px; }
+      h1 { font-size: 28px; }
+    }
+    /* Legal pages: sub-headings, placeholders still to fill, the model form. */
+    .doc-head + section h3, section h3 { margin: 18px 0 6px; font-size: 15px; line-height: 22px; font-weight: 500; color: var(--text); }
+    .todo { padding: 0 4px; border-radius: 4px; background: rgba(255, 196, 0, 0.35); color: var(--text); }
+    .model-form { margin: 0 0 14px; padding: 12px 16px; border-radius: 12px; background: var(--chip-bg); color: var(--text-muted); font-size: 14px; line-height: 21px; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <main id="main">
+    <div class="wrap">
+      <header class="doc-head">
+        <p class="eyebrow"><a href="/">Transitions.dev</a></p>
+        <h1>Legal notice</h1>
+        <p class="updated">Last updated 3 October 2026</p>
+        <p class="lede">Who runs Transitions.dev and how to reach us.</p>
+      </header>
+
+      <section>
+        <h2>Operator</h2>
+        <p>
+          <strong>Jakub Antalik</strong><br />
+          Sole trader (fyzická osoba podnikající), registered in the Czech Trade Register<br />
+          <span class="todo">[street and number]</span><br />
+          <span class="todo">[postcode] [city]</span>, Czech Republic
+        </p>
+        <ul>
+          <li><strong>IČO (company ID):</strong> <span class="todo">[company ID]</span></li>
+          <li><strong>VAT ID (DIČ):</strong> <span class="todo">[CZ VAT ID, or "not a VAT payer"]</span></li>
+          <li><strong>Trade licensing office:</strong> <span class="todo">[e.g. Úřad městské části Praha X, živnostenský odbor]</span></li>
+          <li><strong>Email:</strong> <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Contact point</h2>
+        <p>
+          For questions about the service, your account, your data, content on the site, and for
+          authorities and the European Commission under the Digital Services Act, write to
+          <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>. We answer in English or Czech.
+        </p>
+      </section>
+
+      <section>
+        <h2>Consumer disputes</h2>
+        <p>
+          The competent body for out-of-court resolution of consumer disputes is the Czech Trade
+          Inspection Authority (Česká obchodní inspekce), Štěpánská 567/15, 120 00 Praha 2,
+          <a href="https://adr.coi.cz" target="_blank" rel="noopener">adr.coi.cz</a>. It also
+          supervises consumer protection. Personal data protection is supervised by the Office for
+          Personal Data Protection (<a href="https://uoou.gov.cz" target="_blank" rel="noopener">uoou.gov.cz</a>).
+        </p>
+      </section>
+
+      <section>
+        <h2>More</h2>
+        <ul>
+          <li><a href="/terms.html">Terms &amp; License</a></li>
+          <li><a href="/privacy.html">Privacy Policy</a></li>
+        </ul>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-top">
+          <div class="footer-brand">
+            <a class="footer-brand-logo" href="/" aria-label="Transitions.dev home">
+              <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 18 20.2947" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M9 0L12.5409 1.99176L11.5604 3.73491L10 2.8572V5.14735H8V2.8572L6.43962 3.73491L5.45909 1.99176L9 0ZM14.3613 3.01571L18 5.0625V9.14735H16V7.3794L14.0359 8.51337L13.0359 6.78132L14.9804 5.65867L13.3807 4.75886L14.3613 3.01571ZM4.61925 4.75887L3.01961 5.65867L4.9641 6.78132L3.9641 8.51337L2 7.3794L2 9.14735H0L1.54972e-06 5.0625L3.63873 3.01572L4.61925 4.75887ZM2 11.1473V12.9153L3.9641 11.7813L4.9641 13.5134L3.01961 14.636L4.61925 15.5358L3.63873 17.279L3.57628e-07 15.2322V11.1473H2ZM18 11.1473V15.2322L14.3613 17.279L13.3807 15.5358L14.9804 14.636L13.0359 13.5134L14.0359 11.7813L16 12.9153V11.1473H18ZM10 15.1473V17.4375L11.5604 16.5598L12.5409 18.3029L9 20.2947L5.45908 18.3029L6.43961 16.5598L8 17.4375V15.1473H10Z" fill="currentColor"/>
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12.0981 9.51337L10 10.7247V13.1474H8V10.7247L5.90192 9.51337L6.90192 7.78132L9 8.99265L11.0981 7.78132L12.0981 9.51337Z" fill="currentColor"/>
+                </svg>
+              </span>
+              <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
+            </a>
+            <p class="footer-tagline">Collection of the most essential UI transitions for web apps</p>
+          </div>
+          <nav class="footer-cols" aria-label="Footer">
+            <div class="footer-col">
+              <p class="footer-col-title">Site</p>
+              <a href="/">Home</a>
+              <a href="/">Transitions</a>
+              <a href="/skill.html">Skill</a>
+              <a href="/agent.html">Agent</a>
+              <a href="/pro.html">Get Pro</a>
+            </div>
+            <div class="footer-col">
+              <p class="footer-col-title">Docs</p>
+              <a href="/skill.html">Introduction</a>
+              <a href="/skill.html#installation">Installation</a>
+              <a href="/skill.html">Accessibility</a>
+            </div>
+            <div class="footer-col">
+              <p class="footer-col-title">Legal &amp; Account</p>
+              <a href="/pro.html" id="footer-signin">Sign in</a>
+              <a href="/terms.html">Terms</a>
+              <a href="/privacy.html">Privacy</a>
+              <a href="/imprint.html">Legal notice</a>
+              <a href="mailto:jakubja@gmail.com">Contact</a>
+            </div>
+          </nav>
+        </div>
+        <p class="footer-credit"><span class="footer-muted">Created by</span><a class="footer-name" href="https://x.com/jakubantalik" target="_blank" rel="noopener noreferrer">Jakub Antalik</a></p>
+      </footer>
+    </div>
+  </main>
+  <script src="assets/brand-mark.js?v=4" defer></script>
+</body>
+</html>

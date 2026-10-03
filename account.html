@@ -53,17 +53,8 @@
   <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
   <meta name="twitter:image:alt" content="Transitions Pro: The essential UI transitions for web apps" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    rel="preload"
-    as="style"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-  />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/inter-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
   <!-- Preload the Saans display face (hero title) so it's fetched before
        first paint — paired with font-display: optional this removes the
        fallback→Saans flash/reflow. -->
@@ -5256,6 +5247,7 @@
             <a href="/pro.html" id="footer-signin">Sign in</a>
             <a href="/terms.html">Terms</a>
             <a href="/privacy.html">Privacy</a>
+            <a href="/imprint.html">Legal notice</a>
             <a href="mailto:jakubja@gmail.com">Contact</a>
           </div>
         </nav>
@@ -6462,7 +6454,7 @@
         TP.logout(true).then(function () { location.href = "/"; });
       });
       el("acc-delete").addEventListener("click", function () {
-        if (!window.confirm("Delete your account permanently? This cancels your subscription and can't be undone. Files you've already downloaded keep working.")) return;
+        if (!window.confirm("Delete your account permanently? This cancels your subscription and removes your account, Community profile, components, likes, skills, design systems, profile photo, Agent key and usage history right away. It can't be undone. Invoices stay with Stripe because tax law requires it. Files you've already downloaded keep working.")) return;
         var btn = el("acc-delete"); btn.disabled = true;
         fetch(TP.apiBase + "/account/delete", { method: "POST", credentials: "include" })
           .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
