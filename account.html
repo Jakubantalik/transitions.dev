@@ -4661,6 +4661,34 @@
       gap: 12px; min-height: 48px;
     }
     .settings-label { font-size: 13px; color: var(--text); }
+    /* Name fields: the row-btn surface, as text inputs. */
+    .settings-input {
+      width: 220px; max-width: 58%; height: 32px; padding: 0 12px;
+      border: 0; border-radius: 10px; outline: none;
+      background: rgba(0, 0, 0, 0.04); color: var(--text);
+      font-family: var(--font-sans); font-size: 13px;
+      box-shadow: inset 0 0 0 1px transparent;
+      transition: background 120ms ease, box-shadow 120ms ease;
+    }
+    .settings-input::placeholder { color: var(--text-muted, #6c6c6c); opacity: 0.7; }
+    .settings-input:hover { background: rgba(0, 0, 0, 0.06); }
+    .settings-input:focus { background: transparent; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18); }
+    html[data-theme="dark"] .settings-input { background: rgba(255, 255, 255, 0.07); }
+    html[data-theme="dark"] .settings-input:hover { background: rgba(255, 255, 255, 0.1); }
+    html[data-theme="dark"] .settings-input:focus { background: transparent; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22); }
+    /* Photo: the nav avatar chip, larger, with Upload / Remove beside it. */
+    .acc-photo { display: inline-flex; align-items: center; gap: 8px; }
+    .acc-avatar {
+      position: relative; flex: none; display: grid; place-items: center;
+      width: 36px; height: 36px; margin-right: 4px; border-radius: 50%; overflow: hidden;
+      background: #fff; color: #17181c;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.06), inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+      font-family: var(--font-sans); font-size: 14px; font-weight: 500; text-transform: uppercase;
+    }
+    html[data-theme="dark"] .acc-avatar { background: #2a2a2a; color: #e8e8e8; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
+    .acc-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .acc-avatar img[hidden] { display: none; }
+    .acc-photo[aria-busy="true"] .acc-avatar { opacity: 0.5; }
     .settings-value { font-size: 13px; color: var(--text-muted, #6c6c6c); }
 
     .account-note { margin: 16px 0 0; font-size: 13px; line-height: 1.4; }
@@ -5054,6 +5082,27 @@
           </div>
 
           <div class="settings-list">
+            <div class="settings-row">
+              <span class="settings-label">Photo</span>
+              <span class="acc-photo">
+                <span class="acc-avatar" aria-hidden="true"><img id="acc-avatar-img" alt="" hidden /><span id="acc-avatar-initial"></span></span>
+                <button type="button" class="row-btn" id="acc-photo-upload">Upload</button>
+                <button type="button" class="row-btn" id="acc-photo-remove" hidden>Remove</button>
+                <input type="file" id="acc-photo-file" accept="image/png,image/jpeg,image/webp" hidden />
+              </span>
+            </div>
+            <div class="settings-row">
+              <label class="settings-label" for="acc-first">First name</label>
+              <input class="settings-input" id="acc-first" type="text" maxlength="40" autocomplete="given-name" placeholder="First name" />
+            </div>
+            <div class="settings-row">
+              <label class="settings-label" for="acc-last">Last name</label>
+              <input class="settings-input" id="acc-last" type="text" maxlength="40" autocomplete="family-name" placeholder="Last name" />
+            </div>
+            <div class="settings-row">
+              <span class="settings-label">Email</span>
+              <span class="settings-value" id="acc-email"></span>
+            </div>
             <div class="settings-row" id="acc-cancel-row">
               <span class="settings-label">Cancel plan</span>
               <button type="button" class="row-btn" id="acc-cancel">Cancel</button>
@@ -5061,14 +5110,6 @@
             <div class="settings-row" id="acc-payment-row">
               <span class="settings-label">Payment</span>
               <button type="button" class="row-btn" id="acc-portal">Manage in Stripe</button>
-            </div>
-            <div class="settings-row" id="acc-name-row" hidden>
-              <span class="settings-label">Name</span>
-              <span class="settings-value" id="acc-name"></span>
-            </div>
-            <div class="settings-row">
-              <span class="settings-label">Email</span>
-              <span class="settings-value" id="acc-email"></span>
             </div>
             <div class="settings-row">
               <span class="settings-label">Log out of all devices</span>
@@ -5986,7 +6027,7 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=43" defer></script>
+  <script src="assets/pro-client.js?v=45" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;
@@ -6036,6 +6077,96 @@
         b.addEventListener("click", function () { showTab(b.getAttribute("data-acc-tab")); });
       });
 
+      // ── Profile: first and last name, and a photo ──────────────
+      // Names save when a field loses focus (or on Enter); the photo is
+      // scaled to 256px square here and uploaded, and both repaint the nav
+      // avatar through TransitionsPro.setProfile.
+      var savedName = { first: null, last: null };
+      function paintProfile(s) {
+        var first = el("acc-first"), last = el("acc-last");
+        // Never set? Start from the name on the receipt (Stripe checkout),
+        // split at the first space; it saves once a field is left.
+        var f = s.firstName || "", l = s.lastName || "";
+        if (!f && !l && s.name) { var at = s.name.indexOf(" "); f = at < 0 ? s.name : s.name.slice(0, at); l = at < 0 ? "" : s.name.slice(at + 1); }
+        if (document.activeElement !== first) first.value = f;
+        if (document.activeElement !== last) last.value = l;
+        savedName = { first: s.firstName || "", last: s.lastName || "" };
+        var img = el("acc-avatar-img");
+        if (s.avatar) { if (img.getAttribute("src") !== s.avatar) img.src = s.avatar; img.hidden = false; }
+        else { img.hidden = true; img.removeAttribute("src"); }
+        el("acc-avatar-initial").textContent = ((s.firstName || s.email || "?").charAt(0));
+        el("acc-photo-remove").hidden = !s.avatar;
+      }
+      function postJSON(path, body) {
+        return fetch(TP.apiBase + path, {
+          method: "POST", credentials: "include",
+          headers: { "content-type": "application/json" }, body: JSON.stringify(body || {}),
+        }).then(function (r) { return r.json().catch(function () { return {}; }); });
+      }
+      function saveName() {
+        var first = el("acc-first").value.replace(/\s+/g, " ").trim();
+        var last = el("acc-last").value.replace(/\s+/g, " ").trim();
+        if (first === savedName.first && last === savedName.last) return;
+        savedName = { first: first, last: last };
+        postJSON("/account/profile", { first_name: first, last_name: last }).then(function (r) {
+          if (!r || !r.ok) { setNote("acc-note", "Couldn't save your name. Please try again.", "err"); return; }
+          TP.setProfile({ first_name: r.first_name, last_name: r.last_name, name: r.name });
+          setNote("acc-note", "Name saved.", "ok");
+        }).catch(function () { setNote("acc-note", "Couldn't save your name. Please try again.", "err"); });
+      }
+      ["acc-first", "acc-last"].forEach(function (id) {
+        el(id).addEventListener("blur", saveName);
+        el(id).addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } });
+      });
+
+      // Center-cropped 256px square; WebP where the browser can write it.
+      function squareImage(file) {
+        return new Promise(function (resolve, reject) {
+          var url = URL.createObjectURL(file);
+          var img = new Image();
+          img.onload = function () {
+            var side = Math.min(img.naturalWidth, img.naturalHeight);
+            var cv = document.createElement("canvas");
+            cv.width = cv.height = 256;
+            var g = cv.getContext("2d");
+            g.fillStyle = "#ffffff";
+            g.fillRect(0, 0, 256, 256);
+            g.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 256, 256);
+            URL.revokeObjectURL(url);
+            var out = cv.toDataURL("image/webp", 0.88);
+            if (out.indexOf("data:image/webp") !== 0) out = cv.toDataURL("image/jpeg", 0.88);
+            resolve({ media_type: out.slice(5, out.indexOf(";")), data: out.slice(out.indexOf(",") + 1) });
+          };
+          img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("unreadable")); };
+          img.src = url;
+        });
+      }
+      el("acc-photo-upload").addEventListener("click", function () { el("acc-photo-file").click(); });
+      el("acc-photo-file").addEventListener("change", function () {
+        var f = this.files && this.files[0];
+        this.value = "";
+        if (!f) return;
+        if (!/^image\/(png|jpeg|webp)$/.test(f.type)) { setNote("acc-note", "Use a PNG, JPEG or WebP image.", "err"); return; }
+        var box = document.querySelector(".acc-photo");
+        box.setAttribute("aria-busy", "true");
+        squareImage(f).then(function (im) { return postJSON("/account/avatar", im); }).then(function (r) {
+          box.removeAttribute("aria-busy");
+          if (!r || !r.ok) { setNote("acc-note", r && r.error === "image_too_large" ? "That image is too large." : "Couldn't upload the photo. Please try again.", "err"); return; }
+          TP.setProfile({ avatar_url: r.avatar_url });
+          setNote("acc-note", "Photo updated.", "ok");
+        }).catch(function () {
+          box.removeAttribute("aria-busy");
+          setNote("acc-note", "Couldn't read that image.", "err");
+        });
+      });
+      el("acc-photo-remove").addEventListener("click", function () {
+        postJSON("/account/avatar/delete").then(function (r) {
+          if (!r || !r.ok) { setNote("acc-note", "Couldn't remove the photo. Please try again.", "err"); return; }
+          TP.setProfile({ avatar_url: null });
+          setNote("acc-note", "Photo removed.", "ok");
+        });
+      });
+
       function paint(s) {
         var authed = !!(s && s.authenticated);
         // Only claim "signed out" once /me has actually answered — while auth
@@ -6048,10 +6179,7 @@
           return;
         }
         el("acc-email").textContent = s.email || "—";
-        // Name comes from the billing details at checkout, and some payment
-        // methods send none. Hide the row rather than show an empty value.
-        el("acc-name").textContent = s.name || "";
-        el("acc-name-row").hidden = !s.name;
+        paintProfile(s);
         var sub = s.subscription || null;
         var yearly = sub && sub.interval === "year";
         if (s.lifetime) {

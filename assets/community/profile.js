@@ -12,7 +12,15 @@
     profile = r.profile;
     var p = r.profile;
     var name = p.display_name || p.handle;
-    $("pf-avatar").textContent = C.initials(p);
+    // The account picture when there is one, the initial otherwise.
+    var av = $("pf-avatar");
+    av.textContent = C.initials(p);
+    if (p.avatar_url) {
+      var img = document.createElement("img");
+      img.src = C.apiUrl(p.avatar_url);
+      img.alt = "";
+      av.appendChild(img);
+    }
     $("pf-name").textContent = name;
     $("pf-handle").textContent = "@" + p.handle;
     $("pf-bio").textContent = p.bio || "";
@@ -20,7 +28,7 @@
     var st = r.stats || {};
     $("pf-stats").innerHTML =
       "<span><strong>" + (st.components || 0) + "</strong> " + (st.components === 1 ? "component" : "components") + "</span>" +
-      "<span><strong>" + (st.likes || 0) + "</strong> " + (st.likes === 1 ? "like" : "likes") + "</span>";
+      "<span><strong>" + (st.views || 0) + "</strong> " + (st.views === 1 ? "view" : "views") + "</span>";
     $("pf-stats").hidden = false;
     $("pf-actions").hidden = !r.owner;
     document.title = name + " (@" + p.handle + ") | Transitions.dev Community";

@@ -2132,7 +2132,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
-  <link rel="stylesheet" href="assets/community/community.css?v=5" />
+  <link rel="stylesheet" href="assets/community/community.css?v=46" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -2295,19 +2295,36 @@
       <h1 class="title">Build it, share it, and get inspired</h1>
       <p class="subtitle">Transitions Community is a place where you can be creative, tweak current components or build components from scratch.</p>
 
-      <!-- Composer (Figma 1696:36087): prompt above, + menu left, Agent output menu and send right. -->
+      <!-- Composer (Figma 1696:36087): attached images on top, the prompt, then
+           + and Remix on the left, the Agent menu and send on the right.
+           Wrapped in the libraries.dev border beam (pulse-outside, beam.js). -->
+      <div class="cm-beam" id="cm-beam">
       <form class="cm-composer" id="cm-composer" novalidate>
         <label class="sr-only" for="cm-prompt">Describe a component</label>
+        <div class="cm-imgs" id="cm-imgs" aria-label="Attached images" hidden></div>
         <textarea id="cm-prompt" rows="1" maxlength="2000" placeholder="Tell me what do you want to build"></textarea>
+        <input type="file" id="cm-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden />
         <div class="cm-composer-row">
           <div class="st-menu-anchor">
             <button type="button" class="cm-round" id="cm-plus" aria-label="More ways to start" aria-haspopup="menu" aria-expanded="false">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             </button>
-            <div class="st-menu st-menu--left" id="cm-plus-menu" role="menu">
-              <a role="menuitem" id="cm-scratch" href="studio.html?mode=html">Start from scratch<span>Blank component in the Studio</span></a>
-              <a role="menuitem" href="studio.html?pick=library">Remix a library transition<span>Start from one of the 32 free ones</span></a>
+            <div class="tl-menu t-dropdown tl-menu--left" id="cm-plus-menu" role="menu" aria-label="More ways to start">
+              <button type="button" class="tl-menu-item" role="menuitem" id="cm-upload"><span class="tl-menu-item-label">Upload image</span></button>
+              <a class="tl-menu-item" role="menuitem" id="cm-scratch" href="studio.html?mode=html"><span class="tl-menu-item-label">Start from scratch</span></a>
             </div>
+          </div>
+          <!-- Remix: picks a library transition to start from (Agent pill styling). -->
+          <div class="cm-remix" id="cm-remix">
+            <button type="button" class="cm-remix-btn" id="cm-remix-btn" aria-haspopup="dialog">
+              <span class="cm-remix-thumb" id="cm-remix-thumb" aria-hidden="true" hidden></span>
+              <span class="cm-remix-key">Remix:</span>
+              <span class="cm-remix-val" id="cm-remix-val">Pick one</span>
+              <svg class="cm-remix-chev" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg>
+            </button>
+            <button type="button" class="cm-remix-clear" id="cm-remix-clear" aria-label="Stop remixing" hidden>
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
           </div>
           <span class="cm-grow"></span>
           <div class="st-menu-anchor">
@@ -2315,11 +2332,12 @@
               <span id="cm-agent-label">Agent</span>
               <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg>
             </button>
-            <div class="st-menu" id="cm-agent-menu" role="menu">
-              <p class="st-menu-label">Agent builds in</p>
-              <button type="button" role="menuitemradio" data-mode="html" aria-checked="true">HTML/CSS<span>Markup, styles, a script</span></button>
-              <button type="button" role="menuitemradio" data-mode="react" aria-checked="false">React<span>One TSX component</span></button>
-              <p class="st-menu-note" id="cm-quota" hidden></p>
+            <div class="tl-menu t-dropdown" id="cm-agent-menu" role="menu" aria-label="Agent">
+              <p class="tl-menu-group">Agent builds in</p>
+              <button type="button" class="tl-menu-item" role="menuitemradio" data-mode="html" aria-checked="true"><span class="tl-menu-item-label">HTML/CSS</span><span class="tl-menu-trail"><span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></button>
+              <button type="button" class="tl-menu-item" role="menuitemradio" data-mode="react" aria-checked="false"><span class="tl-menu-item-label">React</span><span class="tl-menu-trail"><span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></button>
+              <div class="tl-menu-divider" id="cm-quota-rule" hidden></div>
+              <p class="tl-menu-note" id="cm-quota" hidden></p>
             </div>
           </div>
           <button type="submit" class="cm-round cm-send" id="cm-send" aria-label="Build with the agent" disabled>
@@ -2328,14 +2346,17 @@
           </button>
         </div>
       </form>
+      </div>
     </header>
 
     <section class="cm-feed" aria-labelledby="cm-feed-title">
       <div class="cm-feed-head">
         <h2 id="cm-feed-title">Recently built</h2>
-        <div class="cm-seg" id="cm-sort" role="tablist" aria-label="Sort" style="--seg-n:2;--seg-i:0">
-          <button type="button" role="tab" data-sort="recent" aria-selected="true">Recent</button>
-          <button type="button" role="tab" data-sort="popular" aria-selected="false">Popular</button>
+        <!-- The detail page's tab component (sliding pill). -->
+        <div class="proto-modal-tabs cm-sort" id="cm-sort" role="tablist" aria-label="Sort">
+          <span class="proto-modal-tabs-indicator" aria-hidden="true"></span>
+          <button type="button" class="proto-modal-tab" role="tab" data-sort="recent" aria-selected="true">Recent</button>
+          <button type="button" class="proto-modal-tab" role="tab" data-sort="popular" aria-selected="false">Popular</button>
         </div>
       </div>
       <div class="cards" id="cm-grid" aria-live="polite"></div>
@@ -2973,10 +2994,11 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=43" defer></script>
+  <script src="assets/pro-client.js?v=45" defer></script>
 
-  <script src="assets/community/community.js?v=5" defer></script>
-  <script src="assets/community/feed.js?v=5" defer></script>
+  <script src="assets/community/community.js?v=46" defer></script>
+  <script src="assets/community/beam.js?v=46" defer></script>
+  <script src="assets/community/feed.js?v=46" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
 </body>
 </html>

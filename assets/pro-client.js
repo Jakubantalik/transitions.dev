@@ -52,12 +52,14 @@
     try {
       var prev = readAuthCache();
       if (prev && !!prev.a === !!state.authenticated && !!prev.p === !!state.pro &&
-          (prev.e || null) === (state.email || null)) return;
+          (prev.e || null) === (state.email || null) && (prev.v || null) === (state.avatar || null)) return;
       localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({
         a: !!state.authenticated,
         p: !!state.pro,
-        // The avatar is the email's initial, so the optimistic paint needs it.
+        // The avatar is the picture, or the email's initial without one, so
+        // the optimistic paint needs both.
         e: state.authenticated ? state.email : null,
+        v: state.authenticated ? state.avatar || null : null,
         t: Date.now(),
       }));
     } catch (e) {}
@@ -67,6 +69,8 @@
   }
 
   function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  // The API answers with paths (/avatar/...); resolve them against its base.
+  function apiUrl(u) { return !u ? null : u.charAt(0) === "/" ? API_BASE + u : u; }
 
   // Expose a tiny global so other page scripts (index gallery, activate page) can use it.
   window.TransitionsPro = {
@@ -87,6 +91,16 @@
     refreshGeo: refreshGeo,
     get ppp() { return state.ppp; },
     get team() { return team; },
+    // The account page saved a name or picture: repaint the nav and tell the page.
+    setProfile: function (p) {
+      if ("first_name" in p) state.firstName = p.first_name || null;
+      if ("last_name" in p) state.lastName = p.last_name || null;
+      if ("name" in p) state.name = p.name || null;
+      if ("avatar_url" in p) state.avatar = apiUrl(p.avatar_url);
+      writeAuthCache();
+      paintAuth();
+      document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
+    },
   };
 
   // ── Purchasing-power parity ───────────────────────────────────────────────────
@@ -160,6 +174,9 @@
         state.authenticated = !!me.authenticated;
         state.email = me.email || null;
         state.name = me.name || null;
+        state.firstName = me.first_name || null;
+        state.lastName = me.last_name || null;
+        state.avatar = apiUrl(me.avatar_url);
         state.pro = !!(me.entitlements && me.entitlements.pro);
         state.lifetime = !!me.lifetime;
         state.business = !!me.business;
@@ -224,6 +241,7 @@
         state.authenticated = !!c.a;
         state.pro = !!c.p;
         state.email = c.e || null;
+        state.avatar = c.v || null;
         paintAuth();
         document.dispatchEvent(new CustomEvent("pro:me", { detail: state }));
       } catch (err) {}
@@ -260,6 +278,9 @@
     state.pro = false;
     state.email = null;
     state.name = null;
+    state.firstName = null;
+    state.lastName = null;
+    state.avatar = null;
     state.lifetime = false;
     state.billing = false;
     state.subscription = null;
@@ -314,14 +335,29 @@
           moreBtn.appendChild(initial);
         }
         initial.textContent = state.email.charAt(0);
+        // The account picture, when the user set one (account page).
+        var pic = moreBtn.querySelector(".nav-avatar-img");
+        if (state.avatar) {
+          if (!pic) {
+            pic = document.createElement("img");
+            pic.className = "nav-avatar-img";
+            pic.alt = "";
+            pic.setAttribute("aria-hidden", "true");
+            moreBtn.appendChild(pic);
+          }
+          if (pic.getAttribute("src") !== state.avatar) pic.src = state.avatar;
+        } else if (pic) pic.remove();
+        moreBtn.classList.toggle("icon-btn--pic", !!state.avatar);
         moreBtn.classList.add("icon-btn--avatar");
         moreBtn.setAttribute("aria-label", "Account menu");
         moreBtn.setAttribute("title", state.email);
       } else {
-        moreBtn.classList.remove("icon-btn--avatar");
+        moreBtn.classList.remove("icon-btn--avatar", "icon-btn--pic");
         moreBtn.setAttribute("aria-label", "More");
         moreBtn.removeAttribute("title");
         if (initial) initial.remove();
+        var oldPic = moreBtn.querySelector(".nav-avatar-img");
+        if (oldPic) oldPic.remove();
       }
     }
     // Pro-page nav pill (replaces "Get Pro" there): Sign in -> Account.
@@ -950,7 +986,11 @@
       ".icon-btn.icon-btn--avatar svg{display:none!important}" +
       ".nav-avatar-initial{display:none;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;" +
       "font-size:12px;font-weight:500;line-height:13px;text-transform:uppercase}" +
-      ".icon-btn--avatar .nav-avatar-initial{display:block}";
+      ".icon-btn--avatar .nav-avatar-initial{display:block}" +
+      ".nav-avatar-img{display:none}" +
+      ".icon-btn--avatar.icon-btn--pic{overflow:hidden;padding:0}" +
+      ".icon-btn--avatar.icon-btn--pic .nav-avatar-initial{display:none}" +
+      ".icon-btn--avatar.icon-btn--pic .nav-avatar-img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}";
     document.head.appendChild(st);
   }
 
@@ -1169,6 +1209,7 @@
       state.authenticated = !!cached.a;
       state.pro = !!cached.p;
       state.email = cached.e || null;
+      state.avatar = cached.v || null;
       paintAuth();
       // Page gates (detail paywall, index badges) listen for pro:me — without
       // this they stayed locked until /me answered, so a returning Pro user saw
