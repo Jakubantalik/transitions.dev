@@ -8,8 +8,9 @@ own product or website. You may install and run this skill in any coding
 agent to apply the transitions to your code.
 
 Restriction: you may not repackage, resell, or publish the collection (or a
-substantial part of it) as a competing transitions library, template pack,
-or component kit. Use the transitions in your products, not as a product of
+substantial part of it) as a competing transitions library, motion pack,
+or animation kit. Using the transitions inside templates and themes you
+sell is allowed; see the full terms. Use the transitions in your products, not as a product of
 their own.
 
 This skill is free for everyone, including companies, and needs no plan.
