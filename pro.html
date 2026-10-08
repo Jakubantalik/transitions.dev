@@ -4,6 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
+  <!-- Gift links (?code=…&redeem=1) go straight to checkout: hide the page
+       behind a short "Opening checkout" note until pro-client.js redirects. -->
+  <script>
+    try { var q = new URLSearchParams(location.search); if (q.get("redeem") && q.get("code")) document.documentElement.setAttribute("data-redeem", ""); } catch (e) {}
+  </script>
+  <style>
+    html[data-redeem] body > * { visibility: hidden; }
+    html[data-redeem] body::after {
+      content: "Opening checkout…"; position: fixed; inset: 0; display: grid; place-items: center;
+      font: 400 14px/20px Inter, system-ui, sans-serif; color: #6c6c6c; visibility: visible;
+    }
+  </style>
 
   <title>Transitions Pro: The essential UI transitions for web apps</title>
   <meta
@@ -7045,7 +7057,7 @@ description: Production-ready CSS
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=59" defer></script>
+  <script src="assets/pro-client.js?v=60" defer></script>
 
   <!-- Plan comparison modal behavior (recipe: skill 06-modal state dance). -->
   <script>

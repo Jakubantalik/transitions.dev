@@ -678,13 +678,15 @@
     if (state.authenticated && state.email) payload.email = state.email;
     return apiJSON("/checkout", "POST", payload)
       .then(function (data) {
-        if (data && data.url) location.href = data.url;
+        if (data && data.url) { location.href = data.url; return; }
+        // No checkout: show the page again (a gift link hides it while it loads).
+        document.documentElement.removeAttribute("data-redeem");
         // A blocked market carries its own explanation — showing "unavailable"
         // would read as an outage rather than a deliberate limit.
-        else if (data && data.message) notify(data.message);
+        if (data && data.message) notify(data.message);
         else notify("Checkout is unavailable right now" + (data && data.error ? " (" + data.error + ")" : "") + ".");
       })
-      .catch(function () { notify("Couldn't start checkout. Please try again."); })
+      .catch(function () { document.documentElement.removeAttribute("data-redeem"); notify("Couldn't start checkout. Please try again."); })
       .finally(function () { setBusy(cta, false); });
   }
 
