@@ -1402,6 +1402,8 @@
       "inset 0 -1px 0 0 rgba(0,0,0,0.06),inset 0 0 0 1px rgba(196,196,196,0.1)}" +
       'html[data-theme="dark"] .nav-new-badge{background:rgba(0,115,255,0.16);color:rgba(122,168,255,0.95)}' +
       ".nav-products-name:has(.nav-new-badge){display:inline-flex;align-items:center}" +
+      // Mobile menu links are inline-block text: center the badge on the line.
+      ".mobile-menu-link:has(>.nav-new-badge){display:inline-flex;align-items:center}" +
       // A pill ending in the badge: the right padding equals the badge's gap from the top.
       ".nav-pill:has(>.nav-new-badge){padding-right:9px}";
     document.head.appendChild(style);

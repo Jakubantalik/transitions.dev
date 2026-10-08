@@ -2518,7 +2518,11 @@ html[data-theme="dark"] .pf-avatar {
 @media (max-width: 639px) {
   .cm-hero { padding-top: 32px; }
   .cm-hero .title { font-size: 34px; line-height: 40px; }
+  /* The beam wraps the composer: the space goes on the wrapper, or the
+     glow is drawn around the margin too and sits above the box. */
   .cm-composer { margin-top: 32px; }
+  .cm-beam { margin-top: 32px; }
+  .cm-beam .cm-composer { margin-top: 0; }
   .cm-feed { max-width: none; margin-top: 44px; }
   .cm-feed .cards { justify-content: stretch; }
   .st { margin-top: 4px; }
@@ -2944,7 +2948,8 @@ html[data-theme="dark"] .t-tt { box-shadow: 0 1px 16px 0 rgba(0, 0, 0, 0.4), ins
   backdrop-filter: blur(10px);
 }
 html[data-theme="dark"] .st-wall { background: rgba(19, 19, 19, 0.55); }
-.st-wall-title { margin: 0; font: 500 24px/32px "Saans", var(--font-sans); letter-spacing: -0.12px; color: var(--text); text-wrap: balance; }
+/* The Builder title's type (.cm-hero .title at its phone size). */
+.st-wall-title { margin: 0; font: 500 34px/40px "Saans", var(--font-sans); letter-spacing: -0.17px; color: var(--text); text-wrap: balance; }
 .st-wall-sub { margin: 6px 0 0; font-size: 13px; line-height: 20px; color: #6c6c6c; text-wrap: pretty; }
 html[data-theme="dark"] .st-wall-sub { color: #9a9a9a; }
 .st-wall-actions { display: flex; align-items: center; gap: 8px; }
