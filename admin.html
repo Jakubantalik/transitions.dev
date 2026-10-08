@@ -207,6 +207,25 @@
     @media (max-width: 1100px) { .periods { grid-template-columns: repeat(2, minmax(0, 1fr)); } .period:nth-child(2) { border-right: none; } .period:nth-child(-n+2) { border-bottom: 1px solid var(--c-line); } }
     @media (max-width: 860px) { .day-table .col-agentday { display: none; } }
 
+    /* Range picker in the header: the Refine tool's select. */
+    .range-select {
+      appearance: none; -webkit-appearance: none; height: 32px; border: none; border-radius: 8px; cursor: pointer;
+      padding: 0 30px 0 12px; font-size: 13px; font-weight: 500; line-height: 16px; color: var(--c-text-strong);
+      background: #f7f7f7 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none'%3E%3Cpath d='M5.5 6.75 8 9.25l2.5-2.5' stroke='%23696969' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 8px center;
+      transition: background-color 0.12s ease;
+    }
+    .range-select:hover { background-color: var(--c-sec-h); }
+    .range-select:focus-visible { outline: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14); }
+    html[data-theme="dark"] .range-select { background-color: rgba(255, 255, 255, 0.04); }
+    html[data-theme="dark"] .range-select:hover { background-color: rgba(255, 255, 255, 0.06); }
+    html[data-theme="dark"] .range-select:focus-visible { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); }
+    .range-select.is-set { color: var(--c-blue); background-color: var(--c-blue-bg); }
+
+    /* Makers view: Builder drafts and credits replace the Agent columns. */
+    .col-builder { display: none; }
+    table.is-makers .col-builder { display: table-cell; }
+    table.is-makers .col-agent, table.is-makers .col-fixes { display: none; }
+
     /* ─── Toolbar ───────────────────────────────────────────── */
     .toolbar { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--c-line); flex-wrap: wrap; }
     .field {
@@ -387,6 +406,13 @@
           <h1>Customers</h1>
           <p id="subtitle">Loading…</p>
         </div>
+        <select class="range-select" id="range" aria-label="Joined within">
+          <option value="0">All time</option>
+          <option value="1">Last 24 hours</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
         <div class="seg view-seg" id="view-seg" role="tablist" aria-label="View">
           <button type="button" role="tab" class="seg-btn is-active" data-view="people" aria-selected="true">People</button>
           <button type="button" role="tab" class="seg-btn" data-view="daily" aria-selected="false">Daily</button>
@@ -435,6 +461,8 @@
                 <th data-sort="plan">Plan<span class="arrow"></span></th>
                 <th data-sort="agent" class="col-agent">Motion Agent<span class="arrow"></span></th>
                 <th data-sort="fixes" class="num col-fixes" title="Hosted Agent fixes">Fixes<span class="arrow"></span></th>
+                <th data-sort="builder_drafts" class="num col-builder" title="Builder drafts that finished (failed ones in the tooltip)">Drafts<span class="arrow"></span></th>
+                <th data-sort="builder_credits" class="num col-builder" title="Builder credits spent (1 credit = $0.01 of AI)">Credits<span class="arrow"></span></th>
                 <th data-sort="community" class="col-community" title="Community components and Builder drafts">Community<span class="arrow"></span></th>
                 <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
                 <th data-sort="created" class="col-signup">Joined<span class="arrow"></span></th>
@@ -486,7 +514,7 @@
     var PAYING = { business: 1, pro: 1, lifetime: 1, sponsor: 1 };
 
     var $ = function (id) { return document.getElementById(id); };
-    var state = { data: null, filter: "all", q: "", sort: "created", dir: -1, selected: null, view: "people", day: null };
+    var state = { data: null, filter: "all", q: "", sort: "created", dir: -1, selected: null, view: "people", day: null, range: 0 };
 
     function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
     function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -526,7 +554,8 @@
     function planBadge(plan) { return '<span class="plan plan--' + esc(plan) + '">' + esc(PLAN_LABEL[plan] || plan) + "</span>"; }
     var SRC_LABEL = { stripe: "from Stripe", team: "team name", domain: "email domain" };
     var KEY_SOURCE = { cli: "CLI signup", browser: "browser signup", account: "account page", purchase: "with a purchase" };
-    function isMaker(p) { var c = p.community; return !!(c && (c.made || c.drafts)); }
+    // Anyone who used the Builder (even if every draft failed) or made a component.
+    function isMaker(p) { var c = p.community; return !!(c && (c.made || c.drafts || c.failed)); }
     function hasAgent(p) { return !!(p.agent && (p.agent.key || p.agent.last_used)); }
     // At least one hosted fix: this or last month's counter (from before the
     // history existed) or any fix in the history.
@@ -615,9 +644,20 @@
       var d = new Date(isoStr);
       return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
     }
+    // Header range: people who joined within the last N days (0 = all time).
+    function inRange(p) {
+      return !state.range || (p.created_at && Date.now() - new Date(p.created_at).getTime() <= state.range * 864e5);
+    }
+    function ranged() { return state.data.people.filter(inRange); }
+    function planCounts(list) {
+      var c = {};
+      list.forEach(function (p) { c[p.plan] = (c[p.plan] || 0) + 1; });
+      return c;
+    }
     function visible() {
       var q = state.q.trim().toLowerCase();
       var rows = state.data.people.filter(function (p) {
+        if (!inRange(p)) return false;
         if (state.day && localDay(p[state.day.field]) !== state.day.date) return false;
         if (state.filter === "paying" && !PAYING[p.plan]) return false;
         if (state.filter === "agent" && !hasAgent(p)) return false;
@@ -634,6 +674,8 @@
         plan: function (p) { return PLAN_ORDER[p.plan]; },
         paid: function (p) { return paidTotal(p.paid); },
         fixes: function (p) { return fixCount(p); },
+        builder_drafts: function (p) { var c = p.community; return c ? (c.drafts || 0) + (c.failed || 0) / 1e3 : -1; },
+        builder_credits: function (p) { var c = p.community; return c ? (c.credits || 0) + (c.drafts || 0) / 1e4 : -1; },
         community: function (p) { var c = p.community; return c ? c.pending * 1e6 + c.live * 1e3 + c.made + c.drafts / 1e3 : -1; },
         agent: function (p) { var a = p.agent; return a ? (a.fixes_month * 1e6 + (a.fixes_total || 0) * 1e3 + (a.last_used ? 1 : 0) + (a.key ? 0.5 : 0)) : -1; },
         created: function (p) { return p.created_at || ""; },
@@ -646,16 +688,19 @@
       });
     }
     function renderStats() {
-      var d = state.data, c = d.counts || {};
+      var d = state.data, list = ranged(), c = planCounts(list), total = list.length;
       var paying = (c.business || 0) + (c.pro || 0) + (c.lifetime || 0) + (c.sponsor || 0);
-      var rev = paidText(d.revenue) || "$0";
+      var revMap = {};
+      list.forEach(function (p) { for (var k in p.paid) revMap[k] = (revMap[k] || 0) + p.paid[k]; });
+      var rev = paidText(revMap) || "$0";
+      var span = state.range ? (state.range === 1 ? "last 24 hours" : "last " + state.range + " days") : "";
       var cells = [
-        { label: "People", value: d.total, sub: (c.free || 0) + " free" },
-        { label: "Paying", value: paying, sub: d.total ? Math.round(paying / d.total * 100) + "% of all" : "" },
+        { label: span ? "Joined, " + span : "People", value: total, sub: (c.free || 0) + " free" },
+        { label: "Paying", value: paying, sub: total ? Math.round(paying / total * 100) + "% of " + (span ? "them" : "all") : "" },
         { label: "Business", value: c.business || 0, dot: "#a830fd" },
         { label: "Pro", value: c.pro || 0, dot: "#3097fd" },
         { label: "Lifetime", value: c.lifetime || 0, dot: "#26953b", sub: (c.churned || 0) + " churned" },
-        { label: "Revenue, all time", value: rev, sub: "net of refunds" }
+        { label: span ? "Revenue from them" : "Revenue, all time", value: rev, sub: "net of refunds" }
       ];
       $("stats").innerHTML = cells.map(function (s) {
         return '<div class="stat"><span class="stat-label">' + (s.dot ? '<span class="dot" style="background:' + s.dot + '"></span>' : "") + esc(s.label) +
@@ -735,13 +780,13 @@
         }).join("") + "</div>";
     }
     function renderFilters() {
-      var c = state.data.counts || {};
+      var list = ranged(), c = planCounts(list);
       var count = {
-        all: state.data.total,
+        all: list.length,
         paying: (c.business || 0) + (c.pro || 0) + (c.lifetime || 0) + (c.sponsor || 0),
-        agent: state.data.people.filter(hasAgent).length,
-        "agent-fix": state.data.people.filter(hasAgentFix).length,
-        makers: state.data.people.filter(isMaker).length
+        agent: list.filter(hasAgent).length,
+        "agent-fix": list.filter(hasAgentFix).length,
+        makers: list.filter(isMaker).length
       };
       $("filters").innerHTML = FILTERS.map(function (f) {
         var n = f.id in count ? count[f.id] : (c[f.id] || 0);
@@ -751,6 +796,7 @@
     }
     function renderRows() {
       var rows = visible();
+      document.querySelector("#people-body table").classList.toggle("is-makers", state.filter === "makers");
       // The detail panel follows the list: a person filtered out closes it.
       if (state.selected && !rows.some(function (p) { return p.email === state.selected; })) {
         state.selected = null;
@@ -781,6 +827,15 @@
             var n = fixCount(p);
             return '<td class="num tnum col-fixes"' + (n ? ' title="' + esc(plural(p.agent.fixes_month || 0, "fix", "fixes") + " this month") + '"' : "") + ">" +
               (n ? esc(n) : '<span class="muted">·</span>') + "</td>";
+          })() +
+          (function () {
+            var c = p.community || {};
+            var tip = esc(plural(c.drafts || 0, "draft") + (c.failed ? ", " + c.failed + " failed" : "") +
+              (c.tokens_in || c.tokens_out ? ", " + tok((c.tokens_in || 0) + (c.tokens_out || 0)) + " tokens" : ""));
+            return '<td class="num tnum col-builder" title="' + tip + '">' + (c.drafts || c.failed
+                ? esc(num(c.drafts || 0)) + (c.failed ? ' <span class="muted">+' + c.failed + "</span>" : "")
+                : '<span class="muted">·</span>') + "</td>" +
+              '<td class="num tnum col-builder">' + (c.credits ? esc(num(c.credits)) : '<span class="muted">' + (c.drafts ? "0" : "·") + "</span>") + "</td>";
           })() +
           (function () {
             var c = p.community;
@@ -1036,6 +1091,16 @@
       if (t) open(t);
     });
     $("search").addEventListener("input", function (e) { state.q = e.target.value; renderRows(); });
+    $("range").addEventListener("change", function (e) {
+      state.range = parseInt(e.target.value, 10) || 0;
+      e.target.classList.toggle("is-set", !!state.range);
+      store("tdev:crm-range", state.range ? String(state.range) : null);
+      renderStats(); renderFilters(); renderRows();
+    });
+    (function () {
+      var r = parseInt(load("tdev:crm-range"), 10) || 0;
+      if (r) { state.range = r; $("range").value = String(r); $("range").classList.add("is-set"); }
+    })();
     $("view-seg").addEventListener("click", function (e) {
       var b = e.target.closest("[data-view]");
       if (b) setView(b.getAttribute("data-view"));
@@ -1053,6 +1118,9 @@
       var b = e.target.closest("[data-filter]");
       if (!b) return;
       state.filter = b.getAttribute("data-filter");
+      // Makers opens on who spent the most; other filters drop that sort.
+      if (state.filter === "makers") { state.sort = "builder_credits"; state.dir = -1; }
+      else if (/^builder_/.test(state.sort)) { state.sort = "created"; state.dir = -1; }
       renderFilters(); renderRows();
     });
     document.querySelector("thead").addEventListener("click", function (e) {
