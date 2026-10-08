@@ -1677,6 +1677,20 @@
     document.head.appendChild(st);
   }
 
-  if (document.readyState !== "loading") wire();
-  else document.addEventListener("DOMContentLoaded", wire);
+  // Gift links: /pro.html?code=CODE&redeem=1 (or redeem=yearly) go straight
+  // to Stripe Checkout for Pro with the code applied, no plan pick and no
+  // purchase dialog. A 100% code checks out at $0 without a card; the
+  // success page then signs the new account in.
+  function redeemFromUrl() {
+    var params;
+    try { params = new URLSearchParams(location.search); } catch (e) { return; }
+    var redeem = params.get("redeem");
+    if (!redeem || !urlPromoCode()) return;
+    var cta = document.querySelector('.pro-price-cta[data-plan="solo"]');
+    toCheckout({ plan: redeem === "yearly" ? "yearly" : "monthly" }, cta);
+  }
+
+  function boot() { wire(); redeemFromUrl(); }
+  if (document.readyState !== "loading") boot();
+  else document.addEventListener("DOMContentLoaded", boot);
 })();
