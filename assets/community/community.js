@@ -34,12 +34,14 @@
   // POST that answers with newline-delimited JSON: progress events go to
   // onEvent as they arrive, the { type: "result" } line resolves. Early
   // refusals (sign-in, quota, validation) still answer with plain JSON.
-  function stream(path, body, onEvent) {
+  // signal: an AbortSignal; aborting resolves { error: "stopped" }.
+  function stream(path, body, onEvent, signal) {
     return fetch(API + path, {
       method: "POST",
       credentials: "include",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
+      signal: signal,
     }).then(function (r) {
       if ((r.headers.get("content-type") || "").indexOf("ndjson") < 0 || !r.body) {
         return r.text().then(function (t) {
@@ -71,7 +73,7 @@
           return pump();
         });
       })();
-    }).catch(function () { return { error: "network" }; });
+    }).catch(function (e) { return { error: e && e.name === "AbortError" ? "stopped" : "network" }; });
   }
 
   var api = {
@@ -93,8 +95,9 @@
     // the agent's progress ({ type: "status", phase, text, lines? } and
     // { type: "thought", text } pieces of its plan) while it works.
     // target: the element picked with Select ({ selector, tag, text, html }).
-    generate: function (prompt, mode, current, context, images, onEvent, target) {
-      return stream("/community/generate", { prompt: prompt, mode: mode, current: current || null, context: context || [], images: images || [], target: target || null }, onEvent);
+    // agent: "sonnet" (default) or "opus" (Pro and Business subscriptions).
+    generate: function (prompt, mode, current, context, images, onEvent, target, agent, signal) {
+      return stream("/community/generate", { prompt: prompt, mode: mode, current: current || null, context: context || [], images: images || [], target: target || null, agent: agent || "sonnet" }, onEvent, signal);
     },
     skills: function () { return call("/community/skills"); },
     saveSkill: function (skill) { return call("/community/skills", "POST", skill); },
@@ -329,7 +332,12 @@
       }).join("");
     }).join("");
   }
-  var FONT_CSS = fontFaces("Inter", "inter", [400, 500, 600]) + fontFaces("Roboto Mono", "roboto-mono", [400, 500]);
+  // Inter Variable 4.0 (rsms.me/inter, SIL OFL 1.1), Latin subsets: weight
+  // 100 to 900 and the optical size axis, so 550 renders as 550 and text needs
+  // no letter-spacing. "Inter" points at the same files, so a component that
+  // names Inter gets it too.
+  var FONT_CSS = fontFaces("Inter Variable", "inter-variable", ["100 900"]) + fontFaces("Inter", "inter-variable", ["100 900"]) +
+    fontFaces("Roboto Mono", "roboto-mono", [400, 500]);
 
   var CSP = [
     "default-src 'none'",
@@ -346,19 +354,74 @@
   // Matches the library card stage, so a preview blends into the card.
   var STAGE_CSS =
     ":root{--stage-bg:#f9f9f9;--stage-fg:#0d0d0d;--stage-muted:#6c6c6c;--stage-border:rgba(0,0,0,.08);" +
-    "--stage-surface:#fff;--stage-accent:#0073e5;--stage-on-accent:#fff;color-scheme:light}" +
+    "--stage-surface:#fff;--stage-accent:#17181c;--stage-on-accent:#fff;color-scheme:light}" +
     "html[data-theme=dark]{--stage-bg:#131313;--stage-fg:#f2f2f2;--stage-muted:rgba(202,202,202,.7);" +
-    "--stage-border:rgba(255,255,255,.08);--stage-surface:#1d1d1d;--stage-accent:#55cfff;--stage-on-accent:#04131a;color-scheme:dark}" +
+    "--stage-border:rgba(255,255,255,.08);--stage-surface:#1d1d1d;--stage-accent:#ffffff;--stage-on-accent:#0d0d0d;color-scheme:dark}" +
     "html,body{margin:0;height:100%}" +
     "body{background:var(--stage-bg);color:var(--stage-fg);display:grid;place-items:center;overflow:hidden;" +
-    "font:14px/1.45 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;" +
-    "-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}";
+    "font:400 13px/20px 'Inter Variable',Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-optical-sizing:auto;font-feature-settings:'liga' 1,'calt' 1;letter-spacing:0;" +
+    "-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}" +
+    // Form controls do not inherit the font in browsers (a button falls back
+    // to Arial), so they take the stage's, at zero specificity.
+    ":where(button,input,select,textarea,optgroup){font:inherit;letter-spacing:inherit}";
 
   // Reports errors (and, in the studio, console output) to the page, and
   // follows the site's light/dark switch without a reload.
   var BRIDGE =
-    "(function(){function s(m){try{m.__tdev=1;parent.postMessage(m,'*')}catch(e){}}" +
+    "(function(){function s(m){try{m.__tdev=1;parent.postMessage(m,'*')}catch(e){}if(m.type==='ready'){setTimeout(size,60);setTimeout(size,700);setTimeout(function(){try{layout()}catch(e){}},900)}}" +
+    // The content's height, for cards that size to their component; full:
+    // the content fills the frame (a library card's own stage), so the
+    // height says nothing.
+    // Invisible layers (a closed dialog's backdrop) do not count, and a
+    // wrapper that only fills the frame to center its content is looked
+    // through (3 levels), so the height is the visible component's own.
+    "function size(){var t=1e9,b=-1e9,l=1e9,rr=-1e9;function m(list,d){[].forEach.call(list,function(c){" +
+    "if(/^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(c.tagName)||c.hasAttribute('data-tdev'))return;var cs=getComputedStyle(c);" +
+    "if(cs.display==='none'||cs.visibility==='hidden'||+cs.opacity===0)return;var r=c.getBoundingClientRect();if(!r.width&&!r.height)return;" +
+    "if(d<3&&c.children.length&&r.height>=innerHeight-4&&r.width>=innerWidth-4){m(c.children,d+1);return}" +
+    "t=Math.min(t,r.top);b=Math.max(b,r.bottom);l=Math.min(l,r.left);rr=Math.max(rr,r.right)})}m(document.body.children,0);if(b<t)return;var h=Math.round(b-t);" +
+    // Filling the frame both ways, exactly, is a stage of its own (a library
+    // card); a component larger than the frame overflows it and is fitted.
+    "var w=Math.round(rr-l);s({type:'size',h:h,w:w,full:Math.abs(h-innerHeight)<=4&&Math.abs(w-innerWidth)<=4})}" +
     "window.__tdevSend=s;" +
+    // Layout check (Studio): visible text that runs under a button, a link or
+    // a switch (not a field: labels inside inputs are on purpose), and text
+    // that crowds the ring of a donut chart it sits in. Measured on the text
+    // itself (clipped by any overflow:hidden ancestor), after load and after
+    // each click, sent as short lines.
+    "var LAY=[];function lv(e){for(var x=e;x&&x!==document.documentElement;x=x.parentElement){var c=getComputedStyle(x);" +
+    "if(c.display==='none'||c.visibility==='hidden'||+c.opacity===0||x.hasAttribute('inert')||x.hasAttribute('data-tdev'))return false}return true}" +
+    "function lc(e,r){for(var x=e;x&&x!==document.body;x=x.parentElement){var c=getComputedStyle(x);if(c.overflowX!=='visible'||c.overflowY!=='visible'){var b=x.getBoundingClientRect();" +
+    "r={l:Math.max(r.l,b.left),t:Math.max(r.t,b.top),r:Math.min(r.r,b.right),b:Math.min(r.b,b.bottom)}}}return r}" +
+    "function layout(){var ctl=[].filter.call(document.querySelectorAll('button,a[href],[role=button],[role=switch]'),function(c){var b=c.getBoundingClientRect();return b.width>0&&b.height>0&&lv(c)});" +
+    // Stroked circles 24px and up (ring and donut charts): center and the
+    // inner radius of the ring, the radius less half the stroke.
+    "var rings=[];[].forEach.call(document.querySelectorAll('svg circle'),function(c){var cs=getComputedStyle(c),sw=parseFloat(cs.strokeWidth)||0;if(!sw||cs.stroke==='none'||!lv(c))return;" +
+    "var b=c.getBoundingClientRect();if(b.width<24)return;var R=b.width/2,k=R/(c.r.baseVal.value||R),x=b.left+R,y=b.top+b.height/2,inn=R-sw*k/2;" +
+    "if(!rings.some(function(o){return Math.abs(o.x-x)<1&&Math.abs(o.y-y)<1&&Math.abs(o.in-inn)<1}))rings.push({x:x,y:y,in:inn})});" +
+    "var w=document.createTreeWalker(document.body,4),n,rg=document.createRange(),add=0;while((n=w.nextNode())){var t=n.nodeValue.trim();if(!t)continue;var el=n.parentElement;" +
+    "if(!el||el.closest('script,style,[data-tdev]')||!lv(el))continue;rg.selectNodeContents(n);var q=rg.getBoundingClientRect();var r=lc(el,{l:q.left,t:q.top,r:q.right,b:q.bottom});if(r.r-r.l<1||r.b-r.t<1)continue;" +
+    "for(var i=0;i<ctl.length;i++){var c=ctl[i];if(c.contains(el))continue;var b=c.getBoundingClientRect();var ix=Math.min(r.r,b.right)-Math.max(r.l,b.left),iy=Math.min(r.b,b.bottom)-Math.max(r.t,b.top);" +
+    "if(ix>2&&iy>2){var nm=(c.getAttribute('aria-label')||c.textContent||c.tagName.toLowerCase()).trim().replace(/\\s+/g,' ').slice(0,30);" +
+    "var line='The text “'+t.replace(/\\s+/g,' ').slice(0,40)+'” runs under the “'+nm+'” '+(c.tagName==='A'?'link':c.tagName==='BUTTON'?'button':'control')+' ('+Math.round(ix)+'px). Let the text column shrink (flex: 1; min-width: 0) and wrap or truncate it with an ellipsis.';" +
+    "if(LAY.indexOf(line)<0&&LAY.length<8){LAY.push(line);add++}break}}" +
+    // Text inside a ring chart's hole: its farthest corner must stay clear
+    // of the ring.
+    "for(var j=0;j<rings.length;j++){var g=rings[j],cx=(r.l+r.r)/2,cy=(r.t+r.b)/2;if(Math.hypot(cx-g.x,cy-g.y)>g.in)continue;" +
+    "var d=Math.max(Math.hypot(r.l-g.x,r.t-g.y),Math.hypot(r.r-g.x,r.t-g.y),Math.hypot(r.l-g.x,r.b-g.y),Math.hypot(r.r-g.x,r.b-g.y));" +
+    "if(g.in-d<6){var ln='The text “'+t.replace(/\\s+/g,' ').slice(0,40)+'” inside the chart sits '+Math.max(0,Math.round(g.in-d))+'px from its ring. Keep 12px clear: make the hole bigger, the ring thinner or the text smaller.';" +
+    "if(LAY.indexOf(ln)<0&&LAY.length<8){LAY.push(ln);add++}}}}" +
+    // Sample text cut off with an ellipsis at the component's own width: too
+    // much information, so the agent shortens or drops it.
+    "[].forEach.call(document.body.querySelectorAll('*'),function(e){if(e.closest('[data-tdev]')||e.scrollWidth<=e.clientWidth+1)return;var c=getComputedStyle(e);" +
+    "if(c.textOverflow!=='ellipsis'||c.overflowX==='visible'||!lv(e))return;var tx=(e.textContent||'').trim().replace(/\\s+/g,' ');if(!tx)return;" +
+    "var lt='The text “'+tx.slice(0,48)+'” is cut off with an ellipsis. Shorten or drop it: too much information for the space (an ellipsis is only for content of unknown length).';" +
+    "if(LAY.indexOf(lt)<0&&LAY.length<8){LAY.push(lt);add++}});" +
+    "if(add||!layout.sent){layout.sent=1;s({type:'layout',issues:LAY.slice()})}}" +
+    "addEventListener('click',function(){setTimeout(layout,700)},true);" +
+    // A click on the empty stage (not on the component) opens the card, as
+    // on a library card. Pages that do not care ignore it.
+    "addEventListener('click',function(e){if(e.target===document.body||e.target===document.documentElement)s({type:'open'})});" +
     "addEventListener('error',function(e){s({type:'error',message:String(e.message||'Error'),line:e.lineno||0})});" +
     "addEventListener('unhandledrejection',function(e){var r=e.reason;s({type:'error',message:String(r&&r.message||r)})});" +
     "['log','warn','error'].forEach(function(k){var o=console[k];console[k]=function(){try{s({type:'console',level:k," +
@@ -531,7 +594,7 @@
       var c = lazy.get(en.target);
       if (!c) return;
       if (en.isIntersecting) {
-        if (!en.target.querySelector("iframe.cm-frame")) mountPreview(en.target, c);
+        if (!en.target.querySelector("iframe.cm-frame")) mountPreview(en.target, c, { onMessage: sizer(en.target, c) });
       } else {
         unmountPreview(en.target);
       }
@@ -540,8 +603,64 @@
 
   function lazyPreview(host, c) {
     lazy.set(host, c);
-    if (io) io.observe(host); else mountPreview(host, c);
+    if (io) io.observe(host); else mountPreview(host, c, { onMessage: sizer(host, c) });
   }
+
+  // Adaptive cards: the library card's look, with a stage as tall as its
+  // component needs: its height plus 48px above and below, from 180 to 420 px
+  // (the card adds 84 px for its padding and title). Kept once known, also
+  // across remounts. The grid packs them as masonry (4px rows, community.css).
+  var STAGE_MIN = 180, STAGE_MAX = 420, STAGE_PAD = 96, CARD_CHROME = 84, ROW = 4, GAP = 16;
+  var sizes = {};
+  function setCardHeight(card, h) {
+    card.style.setProperty("--cm-h", h + "px");
+    card.style.gridRowEnd = "span " + Math.ceil((h + GAP) / ROW);
+  }
+  function sizer(host, c) {
+    return function (m) {
+      if (m.type === "open") { location.href = studioUrl(c); return; }
+      if (m.type !== "size") return;
+      var card = host.closest(".cm-card");
+      if (!card || m.full) return;
+      // The component's own size, kept for fitting (also after a resize).
+      host.setAttribute("data-nw", m.w || 0);
+      host.setAttribute("data-nh", m.h || 0);
+      if (!card.hasAttribute("data-sized")) {
+        card.setAttribute("data-sized", "");
+        var h = Math.max(STAGE_MIN, Math.min(STAGE_MAX, Math.round(m.h + STAGE_PAD))) + CARD_CHROME;
+        sizes[c.id] = h;
+        setCardHeight(card, h);
+      }
+      requestAnimationFrame(function () { fitPreview(host); });
+    };
+  }
+
+  // A component wider or taller than its card zooms out to fit, with 24px
+  // around it: the frame gets a larger viewport and is scaled back down, so
+  // the component lays out at its real size.
+  var FIT_PAD = 24;
+  function fitPreview(host) {
+    var f = host.querySelector("iframe.cm-frame");
+    var w = +host.getAttribute("data-nw"), h = +host.getAttribute("data-nh");
+    if (!f || !w || !h) return;
+    var W = host.clientWidth, H = host.clientHeight;
+    var k = Math.min(1, (W - FIT_PAD * 2) / w, (H - FIT_PAD * 2) / h);
+    // A sliver over (a few px) is not worth a blurry scale.
+    if (k >= 0.97 || !(k > 0)) {
+      f.style.removeProperty("width"); f.style.removeProperty("height"); f.style.removeProperty("transform"); f.style.removeProperty("transform-origin");
+      return;
+    }
+    k = Math.max(0.5, Math.round(k * 1000) / 1000);
+    f.style.width = W / k + "px";
+    f.style.height = H / k + "px";
+    f.style.transformOrigin = "0 0";
+    f.style.transform = "scale(" + k + ")";
+  }
+  var fitTimer = 0;
+  window.addEventListener("resize", function () {
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(function () { document.querySelectorAll(".cm-stage[data-nw]").forEach(fitPreview); }, 120);
+  });
 
   // ── Card ────────────────────────────────────────────────────────────────────
   function initials(a) {
@@ -554,7 +673,7 @@
 
   // The library card (index / library pages): stage, title, subtitle, and the
   // bottom-right slot where the copy button sits, here the view count.
-  var EYE = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.6 8.3C2.9 5.6 5.2 4 8 4s5.1 1.6 6.4 4.3a.7.7 0 0 1 0 .6C13.1 11.4 10.8 13 8 13s-5.1-1.6-6.4-4.1a.7.7 0 0 1 0-.6Z" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8.6" r="2" stroke="currentColor" stroke-width="1.4"/></svg>';
+  var EYE = '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1.5 7C2.7 4.6 4.6 3.25 7 3.25S11.3 4.6 12.5 7C11.3 9.4 9.4 10.75 7 10.75S2.7 9.4 1.5 7Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.75" stroke="currentColor" stroke-width="1.2"/></svg>';
   function compact(n) {
     n = n || 0;
     return n < 1000 ? String(n) : n < 10000 ? (Math.round(n / 100) / 10) + "k" : Math.round(n / 1000) + "k";
@@ -564,49 +683,96 @@
     var el = document.createElement("article");
     el.className = "card cm-card";
     el.setAttribute("data-id", c.id);
+    if (sizes[c.id]) { setCardHeight(el, sizes[c.id]); el.setAttribute("data-sized", ""); }
     var a = c.author || {};
-    // Subtitle: the author in the feed; on a profile (author known) the
-    // status for the owner's drafts, otherwise the format.
-    var sub = !c.published ? "Draft" : c.hidden ? "Hidden by moderation"
-      : !opts.hideAuthor && a.handle ? (a.display_name || a.handle)
-      : (c.mode === "react" ? "React" : "HTML/CSS");
-    var subHtml = !opts.hideAuthor && a.handle && c.published && !c.hidden
+    // Subtitle: the author in the feed; on your own lists, the format.
+    var sub = !opts.hideAuthor && a.handle ? (a.display_name || a.handle) : (c.mode === "react" ? "React" : "HTML/CSS");
+    // Public: published, approved by a reviewer (review is only sent to the
+    // author; others only ever get approved work) and not hidden.
+    var live = c.published && !c.hidden && (!c.review || c.review === "approved");
+    var subHtml = !opts.hideAuthor && a.handle && live
       ? '<a class="card-subtitle cm-sub" href="' + esc(profileUrl(a.handle)) + '">' + esc(sub) + "</a>"
       : '<div class="card-subtitle cm-sub">' + esc(sub) + "</div>";
-    // AI Act transparency: work the Studio's agent built or changed says so.
-    if (c.ai) subHtml = subHtml.replace(/<\/(a|div)>$/, ' <span class="cm-ai-tag" title="Built or changed with the Studio\'s AI agent">AI-assisted</span></$1>');
+    // Status and the AI Act label, top left over the preview.
+    var badges = [];
+    if (c.review === "rejected") badges.push('<span class="cm-badge cm-badge--warn" title="Not published after review. Open it to see why.">Not approved</span>');
+    else if (!c.published) badges.push('<span class="cm-badge">Draft</span>');
+    else if (c.hidden) badges.push('<span class="cm-badge cm-badge--warn">Hidden by moderation</span>');
+    else if (c.review === "pending") badges.push('<span class="cm-badge cm-badge--review" title="A person checks every new component before it appears in the Community">In review</span>');
     el.innerHTML =
       '<div class="card-stage cm-stage" data-cm-stage></div>' +
+      (badges.length ? '<div class="cm-badges">' + badges.join("") + "</div>" : "") +
       '<div class="card-meta cm-meta">' +
         '<a class="card-title cm-title" href="' + esc(studioUrl(c)) + '">' + esc(c.title) + "</a>" +
         subHtml +
       "</div>" +
-      (c.published && !c.hidden
+      (live
         ? '<span class="cm-views" title="' + (c.views || 0) + (c.views === 1 ? " view" : " views") + '">' + EYE +
             '<span class="sr-only">Views: </span>' + compact(c.views) + "</span>"
         : "");
     lazyPreview(el.querySelector("[data-cm-stage]"), c);
+    // As a library card: the whole card opens it (links, buttons and the live
+    // component keep their own clicks), and it is reachable by keyboard.
+    var href = studioUrl(c);
+    el.tabIndex = 0;
+    el.addEventListener("click", function (e) {
+      if (e.target.closest("a, button, input, textarea, select, label")) return;
+      location.href = href;
+    });
+    el.addEventListener("keydown", function (e) {
+      if (e.target !== el) return;
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); location.href = href; }
+    });
     return el;
   }
 
+  // Toasts: the Refine app's toast (refine/demo.html, "Values copied"), a
+  // white pill at the bottom center with an icon, in over 250ms and out over
+  // 350ms with the smooth ease out. A check for confirmations, an alert for
+  // errors ("err"). Longer messages stay up longer; a new one replaces it.
+  var ICON_CHECK_T = '<path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  var ICON_ALERT_T = '<circle cx="8" cy="8" r="5.75" stroke="currentColor" stroke-width="1.5"/><path d="M8 5.25v3.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="10.9" r=".9" fill="currentColor"/>';
+  var shownToast = null;
   function toast(msg, kind) {
-    var t = document.createElement("div");
-    t.className = "cm-toast" + (kind ? " cm-toast--" + kind : "");
-    t.setAttribute("role", "status");
-    t.textContent = msg;
-    document.body.appendChild(t);
-    requestAnimationFrame(function () { t.classList.add("is-open"); });
-    setTimeout(function () {
-      t.classList.remove("is-open");
-      setTimeout(function () { t.remove(); }, 250);
-    }, 2600);
+    if (shownToast) { clearTimeout(shownToast.timer); shownToast.el.remove(); }
+    var err = kind === "err";
+    var wrap = document.createElement("div");
+    wrap.className = "cm-rtoast-wrap";
+    wrap.setAttribute("aria-live", err ? "assertive" : "polite");
+    wrap.innerHTML = '<div class="cm-rtoast' + (err ? " cm-rtoast--err" : "") + '" role="' + (err ? "alert" : "status") + '">' +
+      '<span class="cm-rtoast-ic"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">' + (err ? ICON_ALERT_T : ICON_CHECK_T) + "</svg></span>" +
+      '<span class="cm-rtoast-msg"></span></div>';
+    wrap.querySelector(".cm-rtoast-msg").textContent = msg;
+    document.body.appendChild(wrap);
+    var me = { el: wrap };
+    var stay = Math.min(6000, 1800 + Math.max(0, String(msg).length - 20) * 40 + (err ? 1200 : 0));
+    me.timer = setTimeout(function () {
+      wrap.firstChild.classList.add("is-closing");
+      me.timer = setTimeout(function () { wrap.remove(); if (shownToast === me) shownToast = null; }, 360);
+    }, stay);
+    shownToast = me;
   }
+  function confirmToast(msg) { toast(msg); }
 
   // ── Dropdowns: the nav's 3-dot menu (.tl-menu.t-dropdown) ──────────────────
   // Same behavior as the nav menu: is-open scales in over 250ms, is-closing
   // fades out over 150ms, outside click and Escape close it. Opening one
   // closes the others. Returns set(open).
   var DROPDOWN_CLOSE_MS = 150;
+  // A menu inherits its anchor's sub-pixel position (centered layouts, 24.2px
+  // line heights), which smears its 1.4px icon strokes. Nudge it onto whole
+  // device pixels. Its edge follows the anchor's: left or right, and top
+  // (also for menus that open upward, which sit a fixed gap above it).
+  function snapToPixels(menu) {
+    var p = menu.offsetParent;
+    if (!p) return;
+    menu.style.translate = "";
+    var r = p.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var snap = function (v) { return Math.round(v * dpr) / dpr - v; };
+    var x = getComputedStyle(menu).left === "auto" ? r.right : r.left;
+    menu.style.translate = snap(x).toFixed(3) + "px " + snap(r.top).toFixed(3) + "px";
+  }
   var dropdowns = [];
   function dropdown(btn, menu) {
     var open = false, timer = null;
@@ -619,6 +785,7 @@
       if (open) {
         dropdowns.forEach(function (d) { if (d !== set) d(false); });
         menu.classList.remove("is-closing");
+        snapToPixels(menu);
         void menu.offsetWidth; // commit the closed frame, then enter
         menu.classList.add("is-open");
       } else {
@@ -655,6 +822,7 @@
           (opts.input ? '<textarea class="cm-ask-input" rows="3" maxlength="' + (opts.max || 500) + '" placeholder="' + esc(opts.placeholder || "") + '"></textarea>' : "") +
           '<div class="cm-ask-row">' +
             (opts.cancel === false ? "" : '<button type="button" class="cm-btn cm-btn--ghost" data-no>' + esc(opts.cancel || "Cancel") + "</button>") +
+            (opts.alt ? '<button type="button" class="cm-btn cm-btn--ghost" data-alt>' + esc(opts.alt) + "</button>" : "") +
             '<button type="submit" class="cm-btn ' + (opts.danger ? "cm-btn--danger" : "cm-btn--primary") + '">' + esc(opts.ok || "OK") + "</button>" +
           "</div>" +
         "</form>";
@@ -678,6 +846,9 @@
       wrap.addEventListener("mousedown", function (e) { if (e.target === wrap) finish(opts.input ? null : false); });
       var no = wrap.querySelector("[data-no]");
       if (no) no.addEventListener("click", function () { finish(opts.input ? null : false); });
+      // opts.alt: a second action beside OK; resolves "alt".
+      var alt = wrap.querySelector("[data-alt]");
+      if (alt) alt.addEventListener("click", function () { finish("alt"); });
       form.addEventListener("submit", function (e) {
         e.preventDefault();
         finish(opts.input ? input.value.trim() : true);
@@ -698,7 +869,8 @@
     return libP;
   }
   function thumbUrl(slug, dark) {
-    return "assets/community/thumbs/" + encodeURIComponent(slug) + (dark ? "-dark" : "") + ".jpg";
+    // ?v= changes when the thumbnails are rebuilt (now 2x, without demo buttons).
+    return "assets/community/thumbs/" + encodeURIComponent(slug) + (dark ? "-dark" : "") + ".jpg?v=2";
   }
   var CLOSE_SVG = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
   // The homepage's categories (Pro transitions are not remixable).
@@ -731,6 +903,7 @@
     var input = overlay.querySelector(".cmdk-input");
     var list = overlay.querySelector(".cm-lib-list");
     var filters = overlay.querySelector(".cm-lib-filters");
+    list.addEventListener("scroll", function () { overlay.classList.toggle("is-scrolled", list.scrollTop > 0); }, { passive: true });
     var shown = [], active = 0, done = null, last = null, cat = "all";
 
     function paint() {
@@ -1009,6 +1182,10 @@
     bad_origin: "This action has to come from transitions.dev.",
     quota_exceeded: "You have used this month’s AI drafts. They reset on the 1st.",
     capacity: "AI drafts are busy today. Try again tomorrow.",
+    out_of_credits: "You're out of AI credits for this month. They renew on the 1st, or get Pro for more.",
+    free_capacity: "Free AI credits are used up for today. Try again tomorrow, or get Pro.",
+    agent_pro: "The Opus agent needs a Pro or Business subscription.",
+    invalid_x_handle: "That X handle doesn't look right. Use your @name, up to 15 letters, numbers or underscores.",
     busy: "The AI is busy right now. Try again in a minute.",
     refused: "That request could not be drafted. Try describing it differently.",
     too_long: "That draft ran too long. Try a smaller component.",
@@ -1043,8 +1220,94 @@
     appeal_open: "You already asked for a review. We will email you the outcome.",
     not_hidden: "This component is not hidden.",
     design_system_missing: "That design system was deleted. Pick another one in the Design system tab.",
+    draft_limit: "You have 10 private drafts. Publish or delete one, or get Pro for unlimited.",
+    hourly_limit: "That's a lot of edits in one hour. Take a short break and try again in a few minutes.",
+    chatgpt_limit: "You've reached the usage limit you set for Transitions.dev in ChatGPT.",
+    chatgpt_not_eligible: "Your ChatGPT plan can't be used here. Plan usage needs ChatGPT Plus or Pro.",
+    chatgpt_disconnected: "ChatGPT is no longer connected. Connect it again to keep using your plan.",
+    chatgpt_not_connected: "Connect ChatGPT to use your plan.",
+    chatgpt_unavailable: "ChatGPT plan usage isn't available right now.",
+    chatgpt_busy: "ChatGPT is busy right now. Try again in a minute.",
+    chatgpt_failed: "ChatGPT couldn't finish that draft. Try again.",
+    // Content rules (api/src/moderation.js).
+    title_not_allowed: "The title contains words we don't allow in the Community.",
+    title_links: "Titles can't contain links. Put one link in the description instead.",
+    text_not_allowed: "That text contains words or content we don't allow in the Community.",
+    too_many_links: "Use at most one link.",
+    content_blocked: "This component contains content that isn't allowed in the Community.",
+    name_not_allowed: "That name contains words we don't allow.",
+    name_reserved: "That name is reserved. Names can't suggest you speak for Transitions.dev, its team or an AI company.",
+    name_symbols: "Names can't contain check marks or badge symbols.",
+    name_links: "Names can't contain links.",
+    image_not_allowed: "That image can't be used. Try a different one.",
+    image_dimensions: "That image is too big. Use one up to 1024 × 1024 pixels.",
   };
   function errorText(code) { return ERRORS[code] || "Something went wrong. Please try again."; }
+
+  // The AI allowance line. Free is a dollar budget underneath, shown as an
+  // estimate in edits; paid is a number of drafts.
+  // AI credits (1 credit = one cent of AI cost; an edit uses what it cost).
+  // short: for the row under the Studio input.
+  function quotaText(q, short) {
+    if (!q) return "";
+    var n = q.remaining.toLocaleString();
+    if (q.remaining <= 0) return short ? "No credits left" : "No AI credits left this month. They renew on the 1st.";
+    return short ? n + " credit" + (q.remaining === 1 ? "" : "s") + " left"
+      : n + " of " + q.limit.toLocaleString() + " AI credits left this month. They renew on the 1st.";
+  }
+
+  // Tooltips: the skill's Tooltip open/close (17-tooltip.md). One bubble per
+  // [data-tip-group], shared by its [data-tip] triggers; hovering one writes
+  // the bubble's x and width (snapped while hidden so only the appear plays,
+  // tweened while showing so it travels). Leaving the group hides it.
+  function tooltips(root) {
+    (root || document).querySelectorAll("[data-tip-group]").forEach(function (group) {
+      if (group.__tt) return;
+      group.__tt = true;
+      var tip = document.createElement("span");
+      tip.className = "t-tt";
+      tip.setAttribute("role", "tooltip");
+      tip.setAttribute("aria-hidden", "true");
+      tip.setAttribute("data-show", "false");
+      tip.innerHTML = '<span class="t-tt-text"></span>';
+      group.appendChild(tip);
+      var text = tip.firstChild;
+      function hide() { tip.setAttribute("data-show", "false"); tip.setAttribute("aria-hidden", "true"); }
+      function place(trigger) {
+        var showing = tip.getAttribute("data-show") === "true";
+        text.textContent = trigger.getAttribute("data-tip") || "";
+        var cs = getComputedStyle(tip);
+        var width = Math.ceil(text.scrollWidth + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight));
+        var g = group.getBoundingClientRect(), r = trigger.getBoundingClientRect();
+        var x = r.left - g.left + r.width / 2 - width / 2;
+        if (!showing) {
+          tip.style.transition = "none";
+          tip.style.width = width + "px";
+          tip.style.setProperty("--tt-x", x + "px");
+          void tip.offsetWidth;
+          tip.style.transition = "";
+        } else {
+          tip.style.width = width + "px";
+          tip.style.setProperty("--tt-x", x + "px");
+        }
+        tip.setAttribute("data-show", "true");
+        tip.setAttribute("aria-hidden", "false");
+      }
+      group.querySelectorAll("[data-tip]").forEach(function (t) {
+        t.addEventListener("pointerenter", function () { place(t); });
+        t.addEventListener("focus", function () { if (t.matches(":focus-visible")) place(t); });
+        t.addEventListener("blur", hide);
+      });
+      // The gaps between triggers keep it (so it can travel); another
+      // control in the group without a tip, or leaving the group, hides it.
+      group.addEventListener("pointerover", function (e) {
+        if (!e.target.closest("[data-tip]") && e.target.closest("button, a, [role=menu]")) hide();
+      });
+      group.addEventListener("pointerleave", hide);
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { tooltips(); });
+  else tooltips();
 
   window.Community = {
     api: api,
@@ -1061,6 +1324,7 @@
     compileReact: compileReact,
     card: card,
     toast: toast,
+    confirmToast: confirmToast,
     dropdown: dropdown,
     library: library,
     pickLibrary: pickLibrary,
@@ -1070,6 +1334,7 @@
     confirm: function (opts) { return dialog(opts); },
     ask: function (opts) { return dialog(Object.assign({ input: true }, opts)); },
     errorText: errorText,
+    quotaText: quotaText,
     studioUrl: studioUrl,
     profileUrl: profileUrl,
     initials: initials,

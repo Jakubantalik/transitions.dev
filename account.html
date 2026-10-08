@@ -4672,15 +4672,17 @@
     .acc-avatar {
       position: relative; flex: none; display: grid; place-items: center;
       width: 36px; height: 36px; margin-right: 4px; border-radius: 50%; overflow: hidden;
-      background: #fff; color: #17181c;
+      background: var(--av-bg, #fff); color: var(--av-fg, #17181c);
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.06), inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
-      font-family: var(--font-sans); font-size: 14px; font-weight: 500; text-transform: uppercase;
+      font-family: var(--font-sans); font-size: 12px; font-weight: 500; letter-spacing: -0.01em; text-transform: uppercase;
     }
-    html[data-theme="dark"] .acc-avatar { background: #2a2a2a; color: #e8e8e8; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
+    html[data-theme="dark"] .acc-avatar { background: color-mix(in srgb, var(--av-fg, #e8e8e8) 30%, #202020); color: var(--av-bg, #e8e8e8); box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
     .acc-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .acc-avatar img[hidden] { display: none; }
     .acc-photo[aria-busy="true"] .acc-avatar { opacity: 0.5; }
     .settings-value { font-size: 13px; color: var(--text-muted, #6c6c6c); }
+    .acc-provider { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+    .acc-provider .settings-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .account-note { margin: 16px 0 0; font-size: 13px; line-height: 1.4; }
     .account-note[data-kind="ok"] { color: #16a34a; }
@@ -4874,6 +4876,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
+  <link rel="stylesheet" href="assets/nav-products.css?v=3" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -4892,10 +4895,16 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <div class="nav-products" data-nav-products>
+            <button type="button" class="nav-pill nav-products-btn" data-nav="products" aria-haspopup="menu" aria-expanded="false" aria-controls="nav-products-menu">Products<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg></button>
+            <div class="tl-menu t-dropdown nav-products-menu" id="nav-products-menu" role="menu" aria-label="Products">
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/library.html"><span class="nav-products-name">Library</span><span class="nav-products-hint">Production-ready UI transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Transitions Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+            </div>
+          </div>
           <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
           </nav>
@@ -5024,11 +5033,14 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
+          <li class="mobile-menu-group" aria-hidden="true">Products</li>
           <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html">Builder</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Motion Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Transitions Motion Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
       </nav>
     </header>
@@ -5093,6 +5105,15 @@
             <div class="settings-row">
               <span class="settings-label">Email</span>
               <span class="settings-value" id="acc-email"></span>
+            </div>
+            <!-- Sign in with GitHub / ChatGPT: shown once the API offers them. -->
+            <div class="settings-row" data-provider-row="github" hidden>
+              <span class="settings-label">GitHub</span>
+              <span class="acc-provider"><span class="settings-value" data-provider-state></span><button type="button" class="row-btn" data-provider-btn></button></span>
+            </div>
+            <div class="settings-row" data-provider-row="chatgpt" hidden>
+              <span class="settings-label">ChatGPT</span>
+              <span class="acc-provider"><span class="settings-value" data-provider-state></span><button type="button" class="row-btn" data-provider-btn></button></span>
             </div>
             <div class="settings-row" id="acc-cancel-row">
               <span class="settings-label">Cancel plan</span>
@@ -5196,8 +5217,8 @@
             </div>
           </div>
           <div class="account-agent" id="acc-agent-key-block" hidden>
-            <p class="account-agent-title">Transitions Agent</p>
-            <p class="account-agent-sub">Your plan includes the Agent. Signing up in the CLI with this email connects automatically; the key below is for CI - add it as a <code>TRANSITIONS_AGENT_LICENSE</code> repo secret.</p>
+            <p class="account-agent-title">Transitions Motion Agent</p>
+            <p class="account-agent-sub">Your plan includes the Motion Agent. Signing up in the CLI with this email connects automatically; the key below is for CI - add it as a <code>TRANSITIONS_AGENT_LICENSE</code> repo secret.</p>
             <div class="skill-code-row">
               <code id="acc-agent-key">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</code>
               <button type="button" class="card-copy" aria-label="Copy Agent license key" data-copy-target="#acc-agent-key">
@@ -5233,7 +5254,7 @@
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/community.html">Community</a>
             <a href="/skill.html">Skill</a>
-            <a href="/agent.html">Agent</a>
+            <a href="/agent.html">Motion Agent</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -5649,9 +5670,11 @@
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
+        { group: "Pages", label: "Builder", hint: "Build a component with the AI agent", href: "/builder.html", ic: "wand" },
+        { group: "Pages", label: "Projects", hint: "Your saved and published components", href: "/projects.html", ic: "grid" },
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
-        { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Transitions Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         return { group: "Transitions", label: n, hint: "Transition", href: "/#components", ic: "motion" };
@@ -6019,7 +6042,7 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=45" defer></script>
+  <script src="assets/pro-client.js?v=57" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;
@@ -6086,7 +6109,9 @@
         var img = el("acc-avatar-img");
         if (s.avatar) { if (img.getAttribute("src") !== s.avatar) img.src = s.avatar; img.hidden = false; }
         else { img.hidden = true; img.removeAttribute("src"); }
-        el("acc-avatar-initial").textContent = ((s.firstName || s.email || "?").charAt(0));
+        // The same letters and colors as the nav avatar (pro-client avatarFor).
+        var who = [s.firstName, s.lastName].filter(Boolean).join(" ") || s.name || "";
+        el("acc-avatar-initial").textContent = TP.paintAvatar ? TP.paintAvatar(el("acc-avatar-initial").parentNode, who, s.email).text : (s.firstName || s.email || "?").charAt(0);
         el("acc-photo-remove").hidden = !s.avatar;
       }
       function postJSON(path, body) {
@@ -6143,9 +6168,19 @@
         box.setAttribute("aria-busy", "true");
         squareImage(f).then(function (im) { return postJSON("/account/avatar", im); }).then(function (r) {
           box.removeAttribute("aria-busy");
-          if (!r || !r.ok) { setNote("acc-note", r && r.error === "image_too_large" ? "That image is too large." : "Couldn't upload the photo. Please try again.", "err"); return; }
+          if (!r || !r.ok) {
+            var why = {
+              image_too_large: "That image is too large.",
+              image_dimensions: "That image is too large.",
+              image_not_allowed: "That photo can't be used. Try a different one.",
+              invalid_image: "Couldn't read that image. Try a PNG, JPEG or WebP.",
+            }[r && r.error];
+            setNote("acc-note", why || "Couldn't upload the photo. Please try again.", "err");
+            return;
+          }
           TP.setProfile({ avatar_url: r.avatar_url });
-          setNote("acc-note", "Photo updated.", "ok");
+          // Checked automatically; when that couldn't run, a person looks first.
+          setNote("acc-note", r.review === "pending" ? "Photo updated. Others see it after a quick review." : "Photo updated.", "ok");
         }).catch(function () {
           box.removeAttribute("aria-busy");
           setNote("acc-note", "Couldn't read that image.", "err");
@@ -6502,8 +6537,8 @@
             if (!d || !d.license) return;
             el("acc-agent-key").textContent = d.license;
             el("acc-agent-plan").textContent = d.plan === "team"
-              ? "Full Agent: 200 hosted fixes a month, polish + revamp."
-              : "Free Agent: 10 hosted polish fixes a month" + (d.pro ? ", plus Pro recipe sources over MCP." : ".");
+              ? "Full Motion Agent: 200 hosted fixes a month, polish + revamp."
+              : "Free Motion Agent: 10 hosted polish fixes a month" + (d.pro ? ", plus Pro recipe sources over MCP." : ".");
             el("acc-agent-key-block").hidden = false;
           })
           .catch(function () { /* optional block, stays hidden */ });
@@ -6515,5 +6550,43 @@
     });
   </script>
   <script src="assets/brand-mark.js?v=4" defer></script>
+  <script src="assets/nav-products.js?v=7" defer></script>
+  <script>
+    // Linked sign-in providers: connect (a redirect to GitHub or ChatGPT that
+    // comes back here) or disconnect. Email sign-in always keeps working.
+    // pro-client.js is deferred: run once the document has loaded.
+    document.addEventListener("DOMContentLoaded", function () {
+      var tp = window.TransitionsPro;
+      if (!tp || !tp.providers) return;
+      var rows = document.querySelectorAll("[data-provider-row]");
+      var on = {};
+      function paint() {
+        var linked = (tp.state && tp.state.providers) || {};
+        rows.forEach(function (row) {
+          var p = row.getAttribute("data-provider-row");
+          row.hidden = !on[p] && !linked[p];
+          var l = linked[p];
+          row.querySelector("[data-provider-state]").textContent = l
+            ? (l.email || "Connected") + (p === "chatgpt" ? (l.plan ? " · plan usage on" : "") : "")
+            : "Not connected";
+          var btn = row.querySelector("[data-provider-btn]");
+          btn.textContent = l ? "Disconnect" : "Connect";
+          btn.hidden = !l && !on[p];
+          btn.disabled = false;
+        });
+      }
+      rows.forEach(function (row) {
+        var p = row.getAttribute("data-provider-row");
+        row.querySelector("[data-provider-btn]").addEventListener("click", function () {
+          var linked = (tp.state && tp.state.providers) || {};
+          if (!linked[p]) { tp.oauth(p, "link"); return; }
+          this.disabled = true;
+          tp.disconnect(p).then(function () { return tp.refresh(); }).then(paint);
+        });
+      });
+      tp.providers().then(function (r) { on = r || {}; paint(); });
+      document.addEventListener("pro:me", paint);
+    });
+  </script>
 </body>
 </html>

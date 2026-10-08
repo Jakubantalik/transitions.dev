@@ -373,10 +373,10 @@
       <header class="doc-head">
         <p class="eyebrow"><a href="/">Transitions.dev</a></p>
         <h1>Terms &amp; License</h1>
-        <p class="updated">Last updated 3 October 2026</p>
+        <p class="updated">Last updated 8 October 2026</p>
         <p class="lede">
           These terms cover using Transitions.dev: the free transition library, the
-          Transitions&nbsp;Pro and Business plans, the Transitions Agent, the Community and Studio, and the Refine tool.
+          Transitions&nbsp;Pro and Business plans, the Transitions Motion Agent, the Community and Studio, and the Refine tool.
           You accept them when you create an account or buy a plan. In short: use the
           transitions in as many projects as you like, including commercial ones; a subscription
           bills until you cancel; and what you've already downloaded stays yours.
@@ -420,7 +420,7 @@
         <ul>
           <li><strong>Billing &amp; renewal.</strong> Pro is billed monthly or yearly through Stripe and <strong>renews automatically</strong> at the end of each period until you cancel.</li>
           <li><strong>Prices &amp; tax.</strong> Prices are in US dollars. VAT or other sales tax is added at checkout where it applies, and the checkout shows the full amount you pay before you confirm.</li>
-          <li><strong>Lifetime plans.</strong> Lifetime plans are a <strong>one-time payment</strong>: no renewal, nothing to cancel. They include ongoing access and every future transition for as long as the service operates. Team lifetime plans (no longer sold) include a fixed 5 seats. Lifetime plans cover the Pro library, future transitions, and local tooling, including running the Agent with your own AI assistant. <strong>Hosted Agent fixes are not part of a lifetime purchase</strong>: lifetime holders get the same Free Agent allowance as free accounts, which may change over time.</li>
+          <li><strong>Lifetime plans.</strong> Lifetime plans are a <strong>one-time payment</strong>: no renewal, nothing to cancel. They include ongoing access and every future transition for as long as the service operates (see <a href="#discontinuation">Discontinuing the service</a>). Team lifetime plans (no longer sold) include a fixed 5 seats. Lifetime plans cover the Pro library, future transitions, and local tooling, including running the Motion Agent with your own AI assistant. <strong>Hosted AI is not part of a lifetime purchase</strong>: for hosted Motion Agent fixes and Studio AI edits, lifetime holders get the same free allowance as free accounts, which may change over time.</li>
           <li><strong>Updates.</strong> While your plan is active you receive new Pro transitions and improvements at no extra charge.</li>
           <li><strong>You keep what you've downloaded.</strong> Cancelling stops future access, downloads, and updates, but any files already added to your projects continue to work and remain licensed under the terms above.</li>
         </ul>
@@ -478,15 +478,15 @@
       </section>
 
       <section>
-        <h2>Transitions Agent plans</h2>
+        <h2>Transitions Motion Agent plans</h2>
         <p>
-          The Transitions Agent scans code for motion issues and fixes them. What each plan
+          The Transitions Motion Agent scans code for motion issues and fixes them. What each plan
           licenses:
         </p>
         <ul>
           <li><strong>Free</strong>: unlimited scans, and a monthly allowance of hosted fixes, for personal and evaluation use.</li>
           <li><strong>Pro and Business</strong>: full recipe access. Business additionally licenses <strong>automated fixing in CI</strong> (for example GitHub Actions) <strong>through the hosted fix service only</strong>: the workflow where our service and our model keys do the fixing, metered by your plan.</li>
-          <li><strong>Enterprise</strong>: additionally licenses running the Agent toolchain in CI and other automation <strong>with your own model keys</strong> (your code then flows only to your model provider), plus org-wide use across teams and repositories.</li>
+          <li><strong>Enterprise</strong>: additionally licenses running the Motion Agent toolchain in CI and other automation <strong>with your own model keys</strong> (your code then flows only to your model provider), plus org-wide use across teams and repositories.</li>
         </ul>
         <p>
           Interactive use in your own editor or terminal with your own AI assistant is included in
@@ -504,11 +504,16 @@
         <ul>
           <li><strong>Your content stays yours.</strong> You keep the rights to what you publish. By publishing, you allow us to host, show and distribute it on Transitions.dev, and you allow other users to view, copy, remix and use it in their own projects under the <span class="todo">MIT License</span>. Unpublish or delete it at any time; copies others already made keep their license.</li>
           <li><strong>Only publish what you may share.</strong> No illegal content, nothing that infringes someone's copyright, trademarks or privacy, no malware, tracking, phishing or code that attacks visitors, no spam, and nothing hateful, harassing or sexually explicit. Don't publish other people's personal data.</li>
-          <li><strong>AI-assisted work.</strong> The Studio's agent is an AI (Claude, by Anthropic). Its output can be wrong; check it before you use it. Components the agent built or changed are labelled "AI-assisted". You are responsible for what you publish, including AI-assisted work.</li>
-          <li><strong>Reporting.</strong> Use <em>Report</em> on any component to tell us about content you think is illegal or breaks these rules: say what is wrong and why, and confirm the report is made in good faith. We email you a receipt and our decision. You can also write to <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>.</li>
-          <li><strong>Moderation.</strong> A component reported by three different people is hidden automatically until a person reviews it. We may also hide or remove content, or suspend an account, that breaks the law or these rules. We decide case by case, considering the rights of everyone involved.</li>
+          <li><strong>AI-assisted work.</strong> The Studio's agent is an AI (Claude, by Anthropic). Its output can be wrong; check it before you use it. We record which components the agent built or changed. You are responsible for what you publish, including AI-assisted work.</li>
+          <li><strong>AI allowance.</strong> AI edits use credits: one credit is one cent of AI cost, so an edit uses what it cost and larger models use more. Free accounts get a limited number of credits each month, which may change, and free use may pause for the day when the day's free capacity is used up; paid plans get the credits their plan names. The Studio shows what you have left; unused credits do not carry over.</li>
+          <li><strong>Your ChatGPT plan.</strong> If you connect ChatGPT, you can have the Studio draft on your own ChatGPT plan instead of credits. Those drafts are between you and OpenAI: they run under OpenAI's terms, count against your plan and the usage limit you set for Transitions.dev in ChatGPT, and depend on OpenAI offering plan usage. They follow every other rule here, and Pro features stay Pro. You can disconnect at any time.</li>
+          <li><strong>Drafts and fair use.</strong> Free accounts keep up to 10 private (unpublished) drafts at a time; published components don't count, and Pro and Business keep any number. To stop automated abuse, each account can start a limited number of AI drafts per hour, whichever agent it uses.</li>
+          <li><strong>Reporting.</strong> Use <em>Report</em> on any component or profile to tell us about content you think is illegal or breaks these rules: say what is wrong and why, and confirm the report is made in good faith. We email you a receipt and our decision. You can also write to <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>.</li>
+          <li><strong>Review before publishing.</strong> A person checks every component you publish before it appears in the Community. Until then only you can see it, and we email you the decision; if we don't publish it, we tell you why, and you can change it and publish it again. Automated checks run first: they refuse titles and content that clearly break these rules (such as slurs or sexually explicit material) and point the reviewer to things worth a look, such as password fields or links to other sites. If a component you already published changes in a way the checks can't clear, it goes back to review.</li>
+          <li><strong>Names and pictures.</strong> Display names, handles, bios and profile pictures go through the same automated checks. Names can't contain links or badge symbols, or suggest that you speak for Transitions.dev, its team or an AI company. A picture the checks can't clear stays visible only to you until a person has looked at it.</li>
+          <li><strong>Moderation.</strong> A component reported by three different people is hidden automatically until a person reviews it; on a profile reported by three people, the name, bio and picture are hidden the same way. We may also hide or remove content, or suspend an account, that breaks the law or these rules. We decide case by case, considering the rights of everyone involved.</li>
           <li><strong>Reasons and reviews.</strong> If we hide your component or restrict your account, we tell you by email what we did, why, and whether it was automated. You can ask for a review in the Studio or by replying to that email; a person decides and tells you the outcome. You can also go to court or use other remedies.</li>
-          <li><strong>Repeated abuse.</strong> We may suspend, after a warning, accounts that often publish clearly illegal content or often send clearly unfounded reports.</li>
+          <li><strong>Repeated abuse.</strong> We may suspend, after a warning, accounts that often publish clearly illegal content or often send clearly unfounded reports. A suspended account can't publish, and its components and profile are hidden from others.</li>
           <li><strong>Contact point.</strong> For users and for authorities under the Digital Services Act: <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>, in English or Czech.</li>
         </ul>
       </section>
@@ -516,9 +521,10 @@
       <section>
         <h2>Your account</h2>
         <p>
-          Accounts use passwordless email sign-in. Keep access to your email secure: anyone who
-          can receive your sign-in code or link can access your account. You must be at least 16
-          to create one. Don't share credentials, probe or
+          Accounts use passwordless email sign-in, or you can continue with GitHub or ChatGPT. Keep
+          access to your email and those accounts secure: anyone who can receive your sign-in code
+          or link, or use your linked GitHub or ChatGPT account, can access your account. You must
+          be at least 16 to create one. Don't share credentials, probe or
           abuse the service, attempt to bypass the entitlement checks, or scrape the Pro content.
           We may suspend accounts that do, and we tell you why. You can delete your account at any
           time from your <a href="/account.html">account page</a>. How we handle your data is
@@ -594,6 +600,26 @@
           from or in connection with the software or its use. Nothing in these
           terms limits liability that cannot be limited by law, including your
           statutory rights as a consumer.
+        </p>
+      </section>
+
+      <section id="discontinuation">
+        <h2>Discontinuing the service</h2>
+        <p>
+          We intend to run Transitions.dev for a long time. If we ever close it, or a paid part of
+          it, this is what happens:
+        </p>
+        <ul>
+          <li><strong>Notice.</strong> We email every account holder at least 60 days before the closing date, and stop selling new plans the same day.</li>
+          <li><strong>Subscriptions</strong> stop renewing. If you paid for time after the closing date, we refund that unused part pro rata.</li>
+          <li><strong>Lifetime plans.</strong> For refunds, a lifetime plan counts as 36 months of access from its purchase. If we close within those 36 months, we refund the unused months pro rata: closing 12 months after your purchase refunds 24/36 of the price. After 36 months, nothing is owed.</li>
+          <li><strong>Your files.</strong> Everything you have downloaded stays yours to use under these terms, with no end date. Before we close, we give you a way to download all the transitions your plan includes.</li>
+          <li><strong>Your data.</strong> You get at least 30 days to export your account data and your Community components. After the closing date we delete your personal data, except the billing records we must keep by law.</li>
+          <li><strong>Hosted features</strong> (the Studio AI, hosted Motion Agent fixes and Pro downloads) stop on the closing date. Unused AI credits have no cash value and are not refunded separately.</li>
+        </ul>
+        <p>
+          Refunds go back to the original payment method within 30 days of the closing date. Nothing
+          here limits your statutory rights as a consumer.
         </p>
       </section>
 
@@ -676,7 +702,7 @@
               <a href="/">Home</a>
               <a href="/">Transitions</a>
               <a href="/skill.html">Skill</a>
-              <a href="/agent.html">Agent</a>
+              <a href="/agent.html">Motion Agent</a>
               <a href="/pro.html">Get Pro</a>
             </div>
             <div class="footer-col">

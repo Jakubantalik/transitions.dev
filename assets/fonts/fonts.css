@@ -10,6 +10,10 @@
  * SIL Open Font License 1.1 (https://openfontlicense.org).
  * Inter: (c) The Inter Project Authors. Roboto Mono: (c) The Roboto Mono
  * Project Authors.
+ *
+ * inter-variable-latin(-ext).woff2: Inter Variable 4.001 from rsms.me/inter
+ * (the official build, with the optical size axis), subset to the same two
+ * ranges. The Studio's component previews use it (community.js FONT_CSS).
  */
 
 /* Inter 400, 500, 600 */

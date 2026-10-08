@@ -2397,6 +2397,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
+  <link rel="stylesheet" href="assets/nav-products.css?v=3" />
 </head>
 <body>
   <!-- Site top-nav (UI chrome): data-tl-ui + outside #root so the Refine scanner skips it. -->
@@ -2413,13 +2414,19 @@
           <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
         </a>
         <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <div class="nav-products" data-nav-products>
+            <button type="button" class="nav-pill nav-products-btn" data-nav="products" aria-haspopup="menu" aria-expanded="false" aria-controls="nav-products-menu">Products<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg></button>
+            <div class="tl-menu t-dropdown nav-products-menu" id="nav-products-menu" role="menu" aria-label="Products">
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/library.html"><span class="nav-products-name">Library</span><span class="nav-products-hint">Production-ready UI transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Transitions Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+            </div>
+          </div>
           <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
-        </nav>
+          </nav>
       </div>
       <div class="site-nav-right">
         <a
@@ -5677,5 +5684,6 @@ import React from "https://esm.sh/react@19";
     createRoot(document.getElementById("root")).render(h(WebsiteApp));
   </script>
   <script src="assets/brand-mark.js?v=4" defer></script>
+  <script src="assets/nav-products.js?v=7" defer></script>
 </body>
 </html>

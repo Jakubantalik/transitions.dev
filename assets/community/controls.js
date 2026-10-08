@@ -8,6 +8,12 @@
 // Every editable value keeps its offsets in the CSS text, so an edit splices
 // just that value and leaves the rest of the stylesheet byte for byte.
 //
+// What is shown, and how it is grouped, comes from the @motion comment the
+// Studio agent writes at the top of the CSS (see manifest()): one group per
+// animation as people perceive it, a few main controls each, the rest behind
+// "More". Without one, tokens are grouped by name family and identical
+// transitions on several elements share one control.
+//
 // Presets are the transitions.dev motion tokens (skills/transitions-dev/
 // _root.css). The easing editor, springs and value fields port the Refine
 // tool's inspector (refine/demo.html).
@@ -247,6 +253,136 @@
       if (items.length) groups.push({ selector: selector, prop: d.prop, items: items });
     });
     return { tokens: tokens, groups: groups };
+  }
+
+  // ── Grouping ────────────────────────────────────────────────────────────────
+  // The agent's manifest, a comment at the top of the CSS:
+  //   /* @motion
+  //   [Temperature pop-in] temperature
+  //   --num-dur: Duration
+  //   --ease-smooth-out: Easing
+  //   more --num-blur: Blur
+  //   */
+  // "[Name] what it applies to" starts a group; token lines are its main
+  // controls, "more" lines sit behind a disclosure. Null when there is none.
+  function manifest(css) {
+    var m = /\/\*\s*@motion\b([\s\S]*?)\*\//.exec(css || "");
+    if (!m) return null;
+    var groups = [], g = null;
+    m[1].split("\n").forEach(function (line) {
+      var l = line.trim().replace(/^\*\s?/, "");
+      if (!l) return;
+      // "[Name] applies" is a main group; "more [Name] applies" a supporting
+      // one, shown collapsed under the main ones.
+      var head = /^(more\s+)?\[([^\]]+)\]\s*(.*)$/i.exec(l);
+      if (head) { g = { name: head[2].trim(), applies: head[3].trim(), main: [], more: [], secondary: !!head[1] }; groups.push(g); return; }
+      var row = /^(more\s+)?(--[\w-]+)\s*:?\s*(.*)$/i.exec(l);
+      if (!row || !g) return;
+      (row[1] ? g.more : g.main).push({ name: row[2], label: row[3].trim() });
+    });
+    return groups.length ? groups : null;
+  }
+
+  // Without a manifest: tokens grouped by their name family (--num-dur and
+  // --num-blur are one animation), the transitions.dev global scale last.
+  var ROLE_RE = /-(exit-dur|enter-dur|open-dur|close-dur|dur|duration|exit-ease|ease|easing|translate-[xy]|translate|distance|dist|offset|travel|blur|scale|delay|stagger)$/i;
+  var FAMILY = {
+    "text-swap": "Text swap", num: "Number pop-in", resize: "Card resize", tabs: "Tabs", icon: "Icon swap",
+    toggle: "Toggle", menu: "Menu", dropdown: "Dropdown", modal: "Modal", tooltip: "Tooltip", toast: "Toast",
+    acc: "Accordion", panel: "Panel", badge: "Badge", check: "Success check", shake: "Error shake",
+  };
+  // --p7-open-dur and --p7-close-dur are one animation (a library card's
+  // own tokens), as are --menu-enter-dur and --menu-exit-dur.
+  function familyOf(name) {
+    var raw = name.replace(/^--/, "");
+    var card = /^(p\d+)-/.exec(raw);
+    var n = raw.replace(/^p\d+-/, "");
+    if (!card && /^(duration|ease|distance|scale|blur)-/.test(n)) return "";
+    if (card && !("-" + n).replace(ROLE_RE, "")) return card[1];
+    var f = n.replace(ROLE_RE, "");
+    if (f === n) f = n.split("-")[0];
+    f = f.replace(/(^|-)(open|close|enter|exit|in|out)$/, "");
+    return f || (card ? card[1] : "");
+  }
+  function familyTitle(f) {
+    if (!f) return "Shared";
+    if (/^p\d+$/.test(f)) return "Motion";
+    if (FAMILY[f]) return FAMILY[f];
+    var t = f.replace(/-/g, " ");
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  function roleLabel(name, kind) {
+    var n = name.replace(/^--/, "");
+    if (/exit/.test(n)) return "Exit " + KINDS_LABEL[kind].toLowerCase();
+    if (/enter|open/.test(n)) return "Open " + KINDS_LABEL[kind].toLowerCase();
+    if (/close/.test(n)) return "Close " + KINDS_LABEL[kind].toLowerCase();
+    if (/stagger/.test(n)) return "Stagger";
+    return KINDS_LABEL[kind];
+  }
+  var KINDS_LABEL = { duration: "Duration", delay: "Delay", distance: "Distance", blur: "Blur", scale: "Scale", easing: "Easing" };
+
+  // Groups for the panel: [{ name, applies, main: [token], more: [token] }].
+  // A token shows once, in the first group that names it; tokens no group
+  // names go to a last "Other tokens" group, behind its disclosure.
+  function groupTokens(tokens, css) {
+    var byName = {};
+    tokens.forEach(function (t) { byName[t.name] = t; });
+    var used = {}, out = [];
+    var plan = manifest(css);
+    if (plan) {
+      plan.forEach(function (g) {
+        var pick = function (list) {
+          return list.map(function (r) {
+            var t = byName[r.name];
+            if (!t || used[r.name]) return null;
+            used[r.name] = true;
+            return { token: t, label: r.label || roleLabel(t.name, t.field.kind) };
+          }).filter(Boolean);
+        };
+        var main = pick(g.main), more = pick(g.more);
+        if (main.length || more.length) out.push({ name: g.name, applies: g.applies, main: main, more: more, secondary: g.secondary });
+      });
+    } else {
+      var fams = {}, order = [];
+      tokens.forEach(function (t) {
+        var f = familyOf(t.name);
+        if (!fams[f]) { fams[f] = []; order.push(f); }
+        fams[f].push(t);
+      });
+      order.sort(function (a, b) { return (a === "") - (b === ""); });
+      order.forEach(function (f) {
+        var list = fams[f], main = [], more = [], took = {};
+        // The feel of an animation is mostly its duration and its easing.
+        list.forEach(function (t) {
+          var k = t.field.kind;
+          var primary = f && (k === "duration" || k === "easing") && !took[k] && !/exit|close|stagger|delay/.test(t.name);
+          if (primary) took[k] = true;
+          (primary ? main : more).push({ token: t, label: roleLabel(t.name, k) });
+          used[t.name] = true;
+        });
+        out.push({ name: familyTitle(f), applies: "", main: main, more: more });
+      });
+    }
+    var rest = tokens.filter(function (t) { return !used[t.name]; });
+    if (rest.length) out.push({ name: "Other tokens", applies: "", main: [], more: rest.map(function (t) { return { token: t, label: t.name.replace(/^--/, "") }; }), secondary: true });
+    // Main groups first, the supporting ones after them.
+    return out.filter(function (g) { return !g.secondary; }).concat(out.filter(function (g) { return g.secondary; }));
+  }
+
+  // Identical transitions on several elements become one control that edits
+  // them all: [{ label, selectors, items: [item] }].
+  function mergeTransitions(groups) {
+    var byKey = {}, out = [];
+    groups.forEach(function (g) {
+      g.items.forEach(function (item) {
+        var key = item.label + "|" + item.fields.map(function (f) { return f.kind + ":" + norm(f.value); }).join(",");
+        if (!byKey[key]) { byKey[key] = { label: item.label, selectors: [], items: [] }; out.push(byKey[key]); }
+        var m = byKey[key];
+        if (m.selectors.indexOf(g.selector) < 0) m.selectors.push(g.selector);
+        m.items.push(item);
+      });
+    });
+    return out;
   }
 
   // ── Floating menu: the nav's 3-dot menu (.tl-menu.t-dropdown), fixed to the
@@ -666,7 +802,27 @@
       api.setCss(css, final);
     }
 
-    function prettyName(name) { return name.replace(/^--/, ""); }
+    // One edit to several fields (a transition shared by several elements):
+    // spliced from the end so earlier offsets stay valid, one setCss.
+    function applyMany(fields, next, final) {
+      var css = api.getCss();
+      var stale = fields.some(function (f) { return css.slice(f.start, f.end) !== f.value; });
+      if (stale) { refresh(true); return; }
+      fields.slice().sort(function (a, b) { return b.start - a.start; }).forEach(function (field) {
+        var delta = next.length - (field.end - field.start);
+        css = css.slice(0, field.start) + next + css.slice(field.end);
+        model.forEach(function (f) {
+          if (f !== field && f.start >= field.end) { f.start += delta; f.end += delta; }
+        });
+        field.end = field.start + next.length;
+        field.value = next;
+      });
+      lastCss = css;
+      api.setCss(css, final);
+    }
+
+    // Disclosures stay as they were when the panel re-renders.
+    var open = {};
 
     function render(found) {
       root.innerHTML = "";
@@ -677,8 +833,8 @@
       }
       var head = document.createElement("div");
       head.className = "ctl-head";
-      head.innerHTML = '<p class="ctl-head-text">Edit the motion. Presets are the transitions.dev motion tokens.</p>' +
-        '<button type="button" class="st-ghost st-ghost--icon ctl-reset" aria-label="Reset motion" title="Reset to the loaded values">' +
+      // Just the reset, in the first group's title row.
+      head.innerHTML = '<button type="button" class="st-ghost st-ghost--icon ctl-reset" aria-label="Reset motion" title="Reset to the loaded values">' +
         '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.33301 6.66667C1.33301 6.66667 2.66966 4.84548 3.75556 3.75883C4.84147 2.67218 6.34207 2 7.99967 2C11.3134 2 13.9997 4.68629 13.9997 8C13.9997 11.3137 11.3134 14 7.99967 14C5.26428 14 2.95642 12.1695 2.23419 9.66667M5.33301 6.66667H1.33301V2.66667" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
       head.querySelector(".ctl-reset").addEventListener("click", function () { api.reset(); });
       root.appendChild(head);
@@ -691,58 +847,97 @@
         };
       }
 
-      if (found.tokens.length) {
-        var sec = section("Motion tokens");
-        var tokenDur = function () {
-          var d = found.tokens.filter(function (t) { return t.field.kind === "duration"; })[0];
-          return d ? ms(d.field.value) : 600;
+      var css = api.getCss() || "";
+      var tokenDur = function () {
+        var d = found.tokens.filter(function (t) { return t.field.kind === "duration"; })[0];
+        return d ? ms(d.field.value) : 600;
+      };
+      function tokenRow(entry, durOf) {
+        var t = entry.token;
+        model.push(t.field);
+        var row = t.field.kind === "easing"
+          ? easingField(entry.label, t.field, function (v, final) { apply(t.field, v, final); }, durOf)
+          : valueField(entry.label, t.field, function (v, final) { apply(t.field, v, final); });
+        row.title = t.name;
+        return row;
+      }
+      function disclosure(sec, key, label, rows) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ctl-more-btn";
+        btn.setAttribute("aria-expanded", String(!!open[key]));
+        btn.innerHTML = "<span>" + label + " (" + rows.length + ")</span>" + CHEVRON;
+        var box = document.createElement("div");
+        box.className = "ctl-more";
+        box.hidden = !open[key];
+        rows.forEach(function (r) { box.appendChild(r); });
+        btn.addEventListener("click", function () {
+          open[key] = !open[key];
+          box.hidden = !open[key];
+          btn.setAttribute("aria-expanded", String(open[key]));
+        });
+        sec.appendChild(btn);
+        sec.appendChild(box);
+      }
+
+      groupTokens(found.tokens, css).forEach(function (g) {
+        var sec = section(g.name, g.applies);
+        var dur = function () {
+          var d = g.main.concat(g.more).filter(function (e) { return e.token.field.kind === "duration"; })[0];
+          return d ? ms(d.token.field.value) : tokenDur();
         };
-        found.tokens.forEach(function (t) {
-          model.push(t.field);
-          var label = prettyName(t.name);
-          var row = t.field.kind === "easing"
-            ? easingField(label, t.field, function (v, final) { apply(t.field, v, final); }, tokenDur)
-            : valueField(label, t.field, function (v, final) { apply(t.field, v, final); });
-          row.title = t.name + (t.selector && t.selector !== ":root" ? " in " + t.selector : "");
-          sec.appendChild(row);
-        });
-      }
+        // A supporting group shows its title with every control collapsed.
+        if (g.secondary) {
+          disclosure(sec, "g:" + g.name, "Show", g.main.concat(g.more).map(function (e) { return tokenRow(e, dur); }));
+          return;
+        }
+        g.main.forEach(function (e) { sec.appendChild(tokenRow(e, dur)); });
+        if (g.more.length) disclosure(sec, "g:" + g.name, g.main.length ? "More" : "Show", g.more.map(function (e) { return tokenRow(e, dur); }));
+      });
 
-      if (found.groups.length) {
-        var tsec = section("Transitions");
-        found.groups.forEach(function (g) {
-          var box = document.createElement("div");
-          box.className = "ctl-group";
-          var sel = document.createElement("p");
-          sel.className = "ctl-selector";
-          sel.textContent = g.selector + (g.prop.indexOf("animation") === 0 ? "  · animation" : "");
-          box.appendChild(sel);
-          g.items.forEach(function (item) {
-            var it = document.createElement("div");
-            it.className = "ctl-item";
-            var name = document.createElement("p");
-            name.className = "ctl-item-name";
-            name.textContent = item.label + (item.refs.length ? "  · uses " + item.refs.join(", ") : "");
-            it.appendChild(name);
-            var dur = durFor(item.fields);
-            item.fields.forEach(function (f) {
-              model.push(f);
-              it.appendChild(f.kind === "easing"
-                ? easingField("Easing", f, function (v, final) { apply(f, v, final); }, dur)
-                : valueField(KINDS[f.kind].label, f, function (v, final) { apply(f, v, final); }));
-            });
-            box.appendChild(it);
+      // Transitions written with literal values (token-driven ones are edited
+      // through their tokens above). Behind a disclosure when tokens exist.
+      var merged = mergeTransitions(found.groups);
+      if (merged.length) {
+        var tsec = section("Transitions", found.tokens.length ? "written directly in the CSS" : "");
+        var rows = merged.map(function (m) {
+          var it = document.createElement("div");
+          it.className = "ctl-item";
+          var name = document.createElement("p");
+          name.className = "ctl-item-name";
+          name.textContent = m.label + (m.selectors.length > 1 ? "  · " + m.selectors.length + " elements" : "  · " + m.selectors[0]);
+          name.title = m.selectors.join("\n");
+          it.appendChild(name);
+          var first = m.items[0];
+          var dur = durFor(first.fields);
+          first.fields.forEach(function (f, i) {
+            var all = m.items.map(function (x) { return x.fields[i]; }).filter(Boolean);
+            all.forEach(function (x) { model.push(x); });
+            var onChange = function (v, final) { applyMany(all, v, final); };
+            it.appendChild(f.kind === "easing" ? easingField("Easing", f, onChange, dur) : valueField(KINDS[f.kind].label, f, onChange));
           });
-          tsec.appendChild(box);
+          return it;
         });
+        if (found.tokens.length) disclosure(tsec, "transitions", "Show", rows);
+        else rows.forEach(function (r) { tsec.appendChild(r); });
       }
 
-      function section(title) {
+      function section(title, applies) {
         var s = document.createElement("section");
         s.className = "ctl-sec";
         var h = document.createElement("h3");
         h.className = "ctl-title";
-        h.textContent = title;
+        var n = document.createElement("span");
+        n.className = "ctl-title-name";
+        n.textContent = title;
+        h.title = applies ? title + ": " + applies : title;
+        h.appendChild(n);
+        if (applies) {
+          var a = document.createElement("span");
+          a.className = "ctl-applies";
+          a.textContent = applies;
+          h.appendChild(a);
+        }
         s.appendChild(h);
         root.appendChild(s);
         return s;
@@ -762,5 +957,5 @@
     return { refresh: refresh };
   }
 
-  window.StudioControls = { mount: mount, scan: scan, simulateSpring: simulateSpring };
+  window.StudioControls = { mount: mount, scan: scan, manifest: manifest, groupTokens: groupTokens, simulateSpring: simulateSpring };
 })();

@@ -6524,6 +6524,8 @@
       color: #3f3f3f;
     }
     html[data-theme="dark"] .docs-main.is-doc .detail-sub { color: #ededed; }
+    /* ...so the body starts one paragraph gap (12px) below it, not 24px. */
+    .docs-main.is-doc .detail-doc { margin-top: 12px; }
     html[data-theme="dark"] .doc-article .skill-section-note,
     html[data-theme="dark"] .doc-article .skill-steps,
     html[data-theme="dark"] .doc-article .feature-list li,
@@ -6841,6 +6843,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
+  <link rel="stylesheet" href="assets/nav-products.css?v=3" />
 </head>
 <body class="is-detail">
   <a href="#main" class="skip-link">Skip to content</a>
@@ -6859,11 +6862,17 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <div class="nav-products" data-nav-products>
+            <button type="button" class="nav-pill nav-products-btn" data-nav="products" aria-haspopup="menu" aria-expanded="false" aria-controls="nav-products-menu">Products<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg></button>
+            <div class="tl-menu t-dropdown nav-products-menu" id="nav-products-menu" role="menu" aria-label="Products">
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/library.html"><span class="nav-products-name">Library</span><span class="nav-products-hint">Production-ready UI transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Transitions Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+            </div>
+          </div>
           <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
-          <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
+          <a class="nav-pill nav-pill--active" href="/detail.html?doc=introduction" data-nav="docs" aria-current="page">Docs</a>
           <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
           </nav>
         </div>
@@ -6987,12 +6996,14 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
+          <li class="mobile-menu-group" aria-hidden="true">Products</li>
           <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html">Builder</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Motion Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Transitions Motion Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction" aria-current="page">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <a class="mobile-menu-cta" id="mobile-signin" href="/pro.html">Sign in</a>
       </nav>
@@ -7008,7 +7019,7 @@
             <div class="docs-fold-panel">
               <div class="docs-fold-inner">
                 <a class="docs-link docs-link--child" href="?doc=installation" data-doc="installation">Library and Skill</a>
-                <a class="docs-link docs-link--child" href="?doc=installation-agent" data-doc="installation-agent">Agent</a>
+                <a class="docs-link docs-link--child" href="?doc=installation-agent" data-doc="installation-agent">Motion Agent</a>
               </div>
             </div>
           </div>
@@ -7043,8 +7054,8 @@
               <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="react" aria-selected="false">React</button>
             </div>
             <div class="detail-actions">
-            <!-- Free transitions only: opens the React source in the Studio
-                 as a new Community component. -->
+            <!-- Free transitions only: opens the transition in the Studio
+                 as a new component to remix. -->
             <a class="detail-prompt detail-remix" id="detail-remix" href="studio.html" hidden>
               <svg aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Remix
@@ -7095,9 +7106,9 @@
           <article class="doc-article skill-content" data-doc="introduction"
                    data-title="Introduction" data-subtitle="The UI motion layer for web apps: a library, a skill and an agent." hidden>
             <div class="skill-section">
-              <p class="skill-section-note">Transitions.dev is the motion layer for your product. It started as a library of the essential UI transitions and grew into three pieces that share one motion system: the <a href="/library.html">Library</a> you browse and copy from, the <a href="/skill.html">Skill</a> that teaches your coding agent to apply it, and the <a href="/agent.html">Agent</a> that scans a codebase, scores its motion and fixes it as pull requests.</p>
-              <p class="skill-section-note">Every piece reads from the same scale of motion tokens (duration, easing, distance, blur and scale), so a dropdown you paste by hand, one your agent writes from the skill, and one the Agent rewrites in a fix all move the same way. The recipes are plain CSS, with a little JavaScript only where a state change needs it.</p>
-              <p class="skill-section-note">Start wherever fits: pick a transition from the sidebar to see it three ways (a live Preview, the portable CSS, and a self-contained React version), then see <a href="?doc=installation" data-doc="installation">Installation</a> for the ways to bring it into your project, by hand, through the skill, or by letting the Agent do it.</p>
+              <p class="skill-section-note">Transitions.dev is the motion layer for your product. It started as a library of the essential UI transitions and grew into three pieces that share one motion system: the <a href="/library.html">Library</a> you browse and copy from, the <a href="/skill.html">Skill</a> that teaches your coding agent to apply it, and the <a href="/agent.html">Motion Agent</a> that scans a codebase, scores its motion and fixes it as pull requests.</p>
+              <p class="skill-section-note">Every piece reads from the same scale of motion tokens (duration, easing, distance, blur and scale), so a dropdown you paste by hand, one your agent writes from the skill, and one the Motion Agent rewrites in a fix all move the same way. The recipes are plain CSS, with a little JavaScript only where a state change needs it.</p>
+              <p class="skill-section-note">Start wherever fits: pick a transition from the sidebar to see it three ways (a live Preview, the portable CSS, and a self-contained React version), then see <a href="?doc=installation" data-doc="installation">Installation</a> for the ways to bring it into your project, by hand, through the skill, or by letting the Motion Agent do it.</p>
             </div>
           </article>
 
@@ -7162,8 +7173,8 @@
           </article>
 
           <article class="doc-article skill-content" data-doc="installation-agent"
-                   data-title="Agent" data-subtitle="Run the Agent from your terminal, or on every GitHub pull request." hidden>
-            <div class="gs-tabs t-tabs" role="tablist" aria-label="How to run the Agent">
+                   data-title="Agent" data-subtitle="Run the Motion Agent from your terminal, or on every GitHub pull request." hidden>
+            <div class="gs-tabs t-tabs" role="tablist" aria-label="How to run the Motion Agent">
               <span class="t-tabs-pill" aria-hidden="true"></span>
               <button class="t-tab" type="button" role="tab" id="gs-tab-cli" aria-selected="true" aria-controls="gs-panel-cli">Coding agent (CLI)</button>
               <button class="t-tab" type="button" role="tab" id="gs-tab-gha" aria-selected="false" aria-controls="gs-panel-gha" tabindex="-1">GitHub Action</button>
@@ -7222,10 +7233,10 @@
                 <code id="cmd-action">npx transitions-agent init-ci</code>
                 <button type="button" class="skill-code-copy card-copy" aria-label="Copy" data-copy-target="#cmd-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
               </div>
-              <p class="skill-section-note">Tell your coding agent <em>"set up Transitions Agent for CI"</em> and it runs this command for you - or run it yourself. It writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code>. Commit and push - done.</p>
+              <p class="skill-section-note">Tell your coding agent <em>"set up Transitions Motion Agent for CI"</em> and it runs this command for you - or run it yourself. It writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> into <code>.github/workflows/</code>. Commit and push - done.</p>
 
               <h2 class="skill-section-title gs-sub">Or add the workflow manually</h2>
-              <div class="gs-code-block"><pre id="yml-action">name: Transitions Agent
+              <div class="gs-code-block"><pre id="yml-action">name: Transitions Motion Agent
 on: pull_request
 permissions:
   contents: read
@@ -7246,7 +7257,7 @@ jobs:
                 <code id="cmd-fix-workflow">npx transitions-agent init-ci --fix</code>
                 <button type="button" class="skill-code-copy card-copy" aria-label="Copy" data-copy-target="#cmd-fix-workflow"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
               </div>
-              <p class="skill-section-note">Also writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a>. Add one repo secret - <code>TRANSITIONS_AGENT_LICENSE</code>, the key from your <a href="/pro.html">Business plan</a> email - then run "Transitions Agent fix" from the Actions tab: a fix pull request opens with the diffs for your team to review. Our hosted service does the fixing; no AI key ever enters your repo. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</p>
+              <p class="skill-section-note">Also writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a>. Add one repo secret - <code>TRANSITIONS_AGENT_LICENSE</code>, the key from your <a href="/pro.html">Business plan</a> email - then run "Transitions Motion Agent fix" from the Actions tab: a fix pull request opens with the diffs for your team to review. Our hosted service does the fixing; no AI key ever enters your repo. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</p>
 
               <h2 class="skill-section-title gs-sub">What happens on a pull request</h2>
               <ul class="gs-bullets">
@@ -8782,7 +8793,7 @@ jobs:
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/community.html">Community</a>
             <a href="/skill.html">Skill</a>
-            <a href="/agent.html">Agent</a>
+            <a href="/agent.html">Motion Agent</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -15858,9 +15869,11 @@ export function Surface({ open, children }) {
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
+        { group: "Pages", label: "Builder", hint: "Build a component with the AI agent", href: "/builder.html", ic: "wand" },
+        { group: "Pages", label: "Projects", hint: "Your saved and published components", href: "/projects.html", ic: "grid" },
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
-        { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Transitions Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_ITEMS.map(function (it) {
         return {
@@ -17143,8 +17156,9 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: unlocks Pro code for entitled viewers (fires pro:me). -->
-  <script src="assets/pro-client.js?v=45" defer></script>
+  <script src="assets/pro-client.js?v=57" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
+  <script src="assets/nav-products.js?v=7" defer></script>
 </body>
 </html>
 

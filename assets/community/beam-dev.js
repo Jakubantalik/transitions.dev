@@ -21,7 +21,11 @@
     ["--beam-hue-base", "Hue shift", -180, 180, 1, "deg", "turns the whole palette around the color wheel"],
     ["--beam-drift", "Drift", 0, 180, 1, "", "degrees the hue wanders either way while it breathes"],
   ];
-  var SLIDERS = GLOW.concat(TONE);
+  var PULSE = [
+    ["--beam-pulse", "Pulse", 0, 2, 0.01, "", "how deep the glow breathes: 0 holds it still, 1 is the package"],
+    ["--beam-pulse-speed", "Pulse speed", 0.25, 3, 0.05, "", "1 is the package pace, 2 twice as fast"],
+  ];
+  var SLIDERS = GLOW.concat(TONE, PULSE);
   // Edge colors, clockwise from the top left: [slot, label]
   var COLORS = [
     [0, "Top left"], [6, "Top right"], [7, "Right top"], [8, "Right bottom"],
@@ -123,6 +127,7 @@
       return '<label class="bdev-swatch" data-swatch="' + cvar(c[0]) + '"><input type="color" data-color="' + cvar(c[0]) + '" aria-label="' + c[1] + ' color" />' + c[1] + "</label>";
     }).join("") + "</div>" +
     TONE.map(sliderRow).join("") +
+    '<p class="bdev-section">Pulse</p>' + PULSE.map(sliderRow).join("") +
     '<div class="bdev-code-row"><code class="bdev-code" data-code></code><button type="button" class="bdev-btn" data-copy>Copy</button></div>';
   var fab = document.createElement("button");
   fab.type = "button";
@@ -144,7 +149,7 @@
     SLIDERS.forEach(function (r) {
       var v = values[r[0]];
       panel.querySelector('[data-var="' + r[0] + '"]').value = v;
-      panel.querySelector('[data-val="' + r[0] + '"]').textContent = fmt(r, v) + (r[5] === "deg" || r[0] === "--beam-drift" ? "°" : r[5]);
+      panel.querySelector('[data-val="' + r[0] + '"]').textContent = fmt(r, v) + (r[5] === "deg" || r[0] === "--beam-drift" ? "°" : r[0] === "--beam-pulse-speed" ? "×" : r[5]);
       panel.querySelector('[data-name="' + r[0] + '"]').classList.toggle("bdev-changed", v !== base[r[0]]);
     });
     COLORS.forEach(function (c) {

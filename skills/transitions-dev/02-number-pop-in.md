@@ -20,6 +20,9 @@ Replay:
     force a reflow, then re-add `.is-animating`.
   - Use data-stagger="1", "2", … to delay individual
     digits by `n * var(--digit-stagger)`.
+  - Mark the leading digits the old and new number share with
+    data-same: they stay still and only the changed digits pop
+    (1,299 to 1,305: "1," stays, "305" pops in).
 
 Direction:
   --digit-dir-x / --digit-dir-y are unit-less multipliers
@@ -83,6 +86,11 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
 .t-digit-group.is-animating .t-digit[data-stagger="2"] {
   animation-delay: calc(var(--digit-stagger) * 2);
 }
+/* Digits that did not change (the leading ones the old and new number
+   share) stay still; only the digits that changed pop in. */
+.t-digit-group.is-animating .t-digit[data-same] {
+  animation: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .t-digit-group .t-digit { animation: none !important; }
@@ -95,12 +103,17 @@ The `@media (prefers-reduced-motion: reduce)` guard at the bottom of the snippet
 
 ```js
 // Replay the digit pop-in: remove .is-animating, swap the digit spans,
-// force a reflow, then re-add .is-animating. Mark the last two digits
-// with data-stagger="1" / "2" so they ride in 1× / 2× --digit-stagger
-// behind the leading digits.
+// force a reflow, then re-add .is-animating. Only the digits that changed
+// pop: the leading characters the old and new number share are marked
+// data-same and stay still. Mark the last two digits with
+// data-stagger="1" / "2" so they ride in 1× / 2× --digit-stagger
+// behind the others.
 const group = document.querySelector(".t-digit-group");
 
 function setDigits(str) {
+  const prev = group.textContent.replace(/\s+/g, "");
+  let same = 0;
+  while (same < prev.length && same < str.length && prev[same] === str[same]) same++;
   group.classList.remove("is-animating");
   group.replaceChildren();
   const chars = str.split("");
@@ -108,6 +121,7 @@ function setDigits(str) {
     const span = document.createElement("span");
     span.className = "t-digit";
     span.textContent = ch;
+    if (i < same) span.dataset.same = "";
     if (i === chars.length - 2) span.dataset.stagger = "1";
     else if (i === chars.length - 1) span.dataset.stagger = "2";
     group.appendChild(span);

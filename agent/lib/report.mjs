@@ -116,7 +116,7 @@ export function renderMarkdown(result, opts = {}) {
   const { previousScore } = opts;
   const lines = [];
   lines.push("<!-- transitions-agent -->");
-  lines.push(`### ✨ Transitions Agent`);
+  lines.push(`### ✨ Transitions Motion Agent`);
   lines.push("");
   const delta = previousScore != null ? ` (was ${previousScore})` : "";
   lines.push(`**Motion score: ${result.score} / 100** (${result.grade})${delta}, scanned ${result.scannedFiles} files.`);

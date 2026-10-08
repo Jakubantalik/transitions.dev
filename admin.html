@@ -146,6 +146,8 @@
     .mod-meta { color: var(--c-text-mut2); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mod-flag { padding: 1px 6px; border-radius: 999px; background: rgba(226, 48, 20, 0.1); color: #d02c12; font-size: 11px; font-weight: 500; }
     .mod-empty { padding: 20px 14px; color: var(--c-text-mut2); font-size: 13px; }
+    .mod-flag--review { background: rgba(0, 115, 229, 0.1); color: #0a66c2; }
+    .mod-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex: none; }
 
     /* ─── Stats ─────────────────────────────────────────────── */
     .stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-bottom: 1px solid var(--c-line); }
@@ -430,7 +432,7 @@
                 <th data-sort="name">Person<span class="arrow"></span></th>
                 <th data-sort="company" class="col-company">Company<span class="arrow"></span></th>
                 <th data-sort="plan">Plan<span class="arrow"></span></th>
-                <th data-sort="agent" class="col-agent">Agent<span class="arrow"></span></th>
+                <th data-sort="agent" class="col-agent">Motion Agent<span class="arrow"></span></th>
                 <th data-sort="fixes" class="num col-fixes" title="Hosted Agent fixes">Fixes<span class="arrow"></span></th>
                 <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
                 <th data-sort="created" class="col-signup">Joined<span class="arrow"></span></th>
@@ -452,7 +454,7 @@
       <div class="crm-head">
         <div class="crm-title">
           <h1 id="mod-title">Community moderation</h1>
-          <p id="mod-sub">Reported, hidden and recent components</p>
+          <p id="mod-sub">Components waiting for review, profile photos, reports and hidden work</p>
         </div>
         <div class="seg" id="mod-filters" role="tablist" aria-label="Moderation filter"></div>
       </div>
@@ -474,7 +476,7 @@
       { id: "pro", label: "Pro" },
       { id: "lifetime", label: "Lifetime" },
       { id: "churned", label: "Churned" },
-      { id: "agent", label: "Agent" },
+      { id: "agent", label: "Motion Agent" },
       { id: "agent-fix", label: "Agent fixes" },
       { id: "free", label: "Free" }
     ];
@@ -679,7 +681,7 @@
         { label: "Hit a limit", value: a.blocked_month, sub: "quota, daily cap or revamp, this month" },
         { label: "MCP calls", value: a.mcp_30d, sub: a.mcp_anonymous_30d + " without a key, 30 days" }
       ];
-      el.innerHTML = '<div class="band-label"><strong>Transitions Agent</strong><span>' +
+      el.innerHTML = '<div class="band-label"><strong>Transitions Motion Agent</strong><span>' +
         esc(a.tracking_since ? "usage history since " + day(a.tracking_since) : "usage history starts with the next Agent run") +
         (a.keys_pending_backfill ? " · " + a.keys_pending_backfill + " keys still indexing" : "") + "</span></div>" +
         '<div class="stats stats--agent">' + cells.map(function (s) {
@@ -775,7 +777,7 @@
           row("Company", p.company ? esc(p.company) + ' <span class="muted">(' + esc(SRC_LABEL[p.company_source] || "") + ")</span>" : '<span class="muted">Unknown</span>') +
           row("Country", p.country ? esc(flag(p.country) + " " + p.country) : '<span class="muted">Unknown</span>') +
         (hasAgent(p) ? (function (a) {
-          return '</dl><div class="insp-divider"></div><div class="insp-section">Transitions Agent</div><dl>' +
+          return '</dl><div class="insp-divider"></div><div class="insp-section">Transitions Motion Agent</div><dl>' +
             row("Key", a.key ? esc((a.plan === "team" ? "Business" : a.plan === "enterprise" ? "Enterprise" : "Free") + (a.active === false ? ", revoked" : "")) +
               (a.key_created_at ? ' <span class="muted">since ' + esc(day(a.key_created_at)) + "</span>" : "") : '<span class="muted">No key</span>') +
             (a.source ? row("Came from", esc(KEY_SOURCE[a.source] || a.source)) : "") +
@@ -1009,8 +1011,11 @@
     if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
 
     /* ─── Community moderation ─────────────────────────────── */
-    var MOD_FILTERS = [{ id: "reported", label: "Reported" }, { id: "hidden", label: "Hidden" }, { id: "recent", label: "Recent" }];
-    var modFilter = "reported";
+    var MOD_FILTERS = [
+      { id: "pending", label: "In review" }, { id: "avatars", label: "Photos" }, { id: "reported", label: "Reported" },
+      { id: "hidden", label: "Hidden" }, { id: "appeals", label: "Appeals" }, { id: "recent", label: "Published" },
+    ];
+    var modFilter = "pending";
     function modCall(path, body) {
       var token = load(TOKEN_KEY);
       return fetch(API + path, {
@@ -1029,17 +1034,28 @@
       if (!load(TOKEN_KEY)) return;
       renderModFilters();
       $("mod-list").innerHTML = '<div class="mod-empty">Loading…</div>';
+      if (modFilter === "avatars") { loadAvatars(); return; }
       modCall("/admin/community?filter=" + modFilter).then(function (r) {
         var items = (r && r.items) || [];
         if (!items.length) { $("mod-list").innerHTML = '<div class="mod-empty">Nothing here.</div>'; return; }
         $("mod-list").innerHTML = items.map(function (c) {
+          var pending = c.review_state === "pending";
+          var flags = (c.review_flags || []).map(function (f) { return esc(f.label); }).join(" · ");
           return '<div class="mod-row">' +
-            '<div class="mod-main"><a href="/studio.html?id=' + encodeURIComponent(c.id) + '" target="_blank" rel="noopener">' + esc(c.title) + "</a>" +
-            '<span class="mod-meta">@' + esc(c.handle || "?") + " · " + esc(c.email || "") + " · " + esc(c.mode) + " · " + (c.likes_count || 0) + " likes" +
-            (c.reasons ? " · " + esc(c.reasons) : "") + "</span></div>" +
+            '<div class="mod-main"><a href="/studio.html?id=' + encodeURIComponent(c.id) + '&amp;review=1" target="_blank" rel="noopener">' + esc(c.title) + "</a>" +
+            '<span class="mod-meta">' + (c.display_name ? esc(c.display_name) + " " : "") + "@" + esc(c.handle || "?") + " · " + esc(c.email || "") + " · " + esc(c.mode) + " · " + (c.likes_count || 0) + " likes" +
+            (pending && !c.author_public ? " · first component (profile goes public)" : "") +
+            (c.bio ? " · Bio: " + esc(c.bio) : "") +
+            (c.reasons ? " · " + esc(c.reasons) : "") + (c.appeal ? " · Appeal: " + esc(c.appeal) : "") + "</span>" +
+            (flags ? '<span class="mod-meta">' + flags + "</span>" : "") + "</div>" +
+            (pending ? '<span class="mod-flag mod-flag--review">In review</span>' : "") +
+            (c.review_state === "rejected" ? '<span class="mod-flag">Rejected</span>' : "") +
             (c.reports ? '<span class="mod-flag">' + c.reports + (c.reports === 1 ? " report" : " reports") + "</span>" : "") +
             (c.hidden ? '<span class="mod-flag">Hidden</span>' : "") +
-            '<button type="button" class="btn-sec" data-hide="' + esc(c.id) + '" data-hidden="' + (c.hidden ? 1 : 0) + '">' + (c.hidden ? "Restore" : "Hide") + "</button>" +
+            (pending
+              ? '<button type="button" class="btn-sec" data-review="' + esc(c.id) + '" data-approve="0">Reject</button>' +
+                '<button type="button" class="btn-sec" data-review="' + esc(c.id) + '" data-approve="1">Approve</button>'
+              : '<button type="button" class="btn-sec" data-hide="' + esc(c.id) + '" data-hidden="' + (c.hidden ? 1 : 0) + '">' + (c.hidden ? "Restore" : "Hide") + "</button>") +
             "</div>";
         }).join("");
       }).catch(function () { $("mod-list").innerHTML = '<div class="mod-empty">Could not load community items.</div>'; });
@@ -1050,7 +1066,38 @@
       modFilter = b.getAttribute("data-mod");
       loadMod();
     });
+    // Profile photos the Moderation API could not check.
+    function loadAvatars() {
+      modCall("/admin/avatars").then(function (r) {
+        var items = (r && r.items) || [];
+        if (!items.length) { $("mod-list").innerHTML = '<div class="mod-empty">No photos waiting.</div>'; return; }
+        $("mod-list").innerHTML = items.map(function (a) {
+          return '<div class="mod-row"><img class="mod-avatar" alt="" src="' + esc(a.src) + '">' +
+            '<div class="mod-main"><span>@' + esc(a.handle || "?") + '</span><span class="mod-meta">' + esc(a.email || "") + "</span></div>" +
+            '<button type="button" class="btn-sec" data-avatar="' + esc(a.user_id) + '" data-approve="0">Remove</button>' +
+            '<button type="button" class="btn-sec" data-avatar="' + esc(a.user_id) + '" data-approve="1">Approve</button></div>';
+        }).join("");
+      }).catch(function () { $("mod-list").innerHTML = '<div class="mod-empty">Could not load photos.</div>'; });
+    }
     $("mod-list").addEventListener("click", function (e) {
+      var rv = e.target.closest("[data-review]");
+      if (rv) {
+        var approve = rv.getAttribute("data-approve") === "1";
+        var reason = "";
+        if (!approve) {
+          reason = window.prompt("Why? The author gets this by email and in the Studio.", "It doesn't meet the Community rules in our Terms.");
+          if (reason === null) return;
+        }
+        rv.disabled = true;
+        modCall("/admin/community/review", { id: rv.getAttribute("data-review"), approve: approve, reason: reason }).then(loadMod, loadMod);
+        return;
+      }
+      var av = e.target.closest("[data-avatar]");
+      if (av) {
+        av.disabled = true;
+        modCall("/admin/avatars/review", { user_id: av.getAttribute("data-avatar"), approve: av.getAttribute("data-approve") === "1" }).then(loadMod, loadMod);
+        return;
+      }
       var b = e.target.closest("[data-hide]");
       if (!b) return;
       var hide = b.getAttribute("data-hidden") !== "1";

@@ -85,12 +85,20 @@
     mountBadges: mountProBadges,
     openSignIn: signIn,
     joinCommunity: joinCommunity,
+    // Sign in with (or, signed in, connect) GitHub or ChatGPT: a full-page
+    // redirect that comes back to `returnTo` (default: this page).
+    oauth: startOAuth,
+    providers: providers,
+    get lastOAuth() { return lastOAuth; },
+    disconnect: function (provider) { return apiJSON("/auth/oauth/" + encodeURIComponent(provider) + "/disconnect", "POST", {}); },
     fetchContent: fetchProContent,
     logout: logout,
     signInFromCheckout: signInFromCheckout,
     refreshGeo: refreshGeo,
     get ppp() { return state.ppp; },
     get team() { return team; },
+    avatarFor: avatarFor,
+    paintAvatar: paintAvatar,
     // The account page saved a name or picture: repaint the nav and tell the page.
     setProfile: function (p) {
       if ("first_name" in p) state.firstName = p.first_name || null;
@@ -182,6 +190,7 @@
         state.business = !!me.business;
         state.subscription = me.subscription || null;
         state.billing = !!me.billing;
+        state.providers = me.providers || {};
         state.resolved = true;
         writeAuthCache();
         paintAuth();
@@ -293,8 +302,8 @@
   }
 
   function paintAuth() {
-    // 3-dot menu: "Sign in" becomes "Account", plus a "Sign out" item appears
-    // right below it, only while authenticated (Figma: profile under the ⋮ menu).
+    // 3-dot menu: "Sign in" becomes "Account", and while authenticated a
+    // "Sign out" item closes the menu, after a divider (Figma: profile under the ⋮ menu).
     var signin = document.getElementById("pm-signin");
     if (signin) {
       var signinLabel = signin.querySelector(".tl-menu-item-label");
@@ -314,10 +323,31 @@
             if (/\/account(\.html)?$/.test(location.pathname)) location.href = "/";
           });
         });
-        signin.parentNode.insertBefore(signout, signin.nextSibling);
+        var rule = document.createElement("div");
+        rule.className = "tl-menu-divider";
+        rule.id = "pm-signout-rule";
+        signin.parentNode.appendChild(rule);
+        signin.parentNode.appendChild(signout);
       } else if (!state.authenticated && signout) {
         signout.remove();
+        var oldRule = document.getElementById("pm-signout-rule");
+        if (oldRule) oldRule.remove();
       }
+      // Signed in: your Community profile and your projects, above Account.
+      [["pm-profile", "Profile", "/profile.html"], ["pm-projects", "Projects", "/projects.html"]].forEach(function (it) {
+        var el = document.getElementById(it[0]);
+        if (state.authenticated && !el) {
+          el = document.createElement("a");
+          el.className = "tl-menu-item";
+          el.id = it[0];
+          el.href = it[2];
+          el.setAttribute("role", "menuitem");
+          el.innerHTML = '<span class="tl-menu-item-label">' + it[1] + "</span>";
+          signin.parentNode.insertBefore(el, signin);
+        } else if (!state.authenticated && el) {
+          el.remove();
+        }
+      });
     }
     // The 3-dot "More" button becomes the user's avatar while signed in, as on
     // Libraries.dev: the menu behind it stays the same and already reads
@@ -334,7 +364,8 @@
           initial.setAttribute("aria-hidden", "true");
           moreBtn.appendChild(initial);
         }
-        initial.textContent = state.email.charAt(0);
+        var who = [state.firstName, state.lastName].filter(Boolean).join(" ") || state.name || "";
+        initial.textContent = paintAvatar(moreBtn, who, state.email).text;
         // The account picture, when the user set one (account page).
         var pic = moreBtn.querySelector(".nav-avatar-img");
         if (state.avatar) {
@@ -467,11 +498,13 @@
         var css = document.createElement("style");
         css.id = "tp-buy-css";
         css.textContent =
-          ".tp-buy{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.32);opacity:0;transition:opacity 200ms cubic-bezier(.22,1,.36,1)}" +
+          ".tp-buy{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:rgba(15,15,15,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity 200ms cubic-bezier(.22,1,.36,1)}" +
+          'html[data-theme="dark"] .tp-buy{background:rgba(0,0,0,.5)}' +
           ".tp-buy.is-open{opacity:1}" +
           ".tp-buy-card{width:100%;max-width:440px;box-sizing:border-box;padding:22px;border-radius:20px;background:var(--card-bg,#fff);color:var(--text,#0d0d0d);" +
-          "box-shadow:0 20px 60px rgba(0,0,0,.25);font:14px/20px var(--font-sans,Inter,system-ui,sans-serif);transform:translateY(8px) scale(.98);transition:transform 250ms cubic-bezier(.22,1,.36,1)}" +
-          ".tp-buy.is-open .tp-buy-card{transform:none}" +
+          "box-shadow:0 20px 60px rgba(0,0,0,.25);font:14px/20px var(--font-sans,Inter,system-ui,sans-serif);transform:scale(.96);opacity:0;transition:transform 150ms cubic-bezier(.22,1,.36,1),opacity 150ms cubic-bezier(.22,1,.36,1)}" +
+          // The search modal's open/close: scale 0.96 to 1 with a fade, 250ms in, 150ms out.
+          ".tp-buy.is-open .tp-buy-card{transform:scale(1);opacity:1;transition:transform 250ms cubic-bezier(.22,1,.36,1),opacity 250ms cubic-bezier(.22,1,.36,1)}" +
           ".tp-buy h2{margin:0 0 8px;font-size:17px;line-height:24px;font-weight:500}" +
           ".tp-buy p{margin:0 0 12px;color:var(--text-muted,#6c6c6c);font-size:13px;line-height:19px}" +
           ".tp-buy a{color:inherit;text-decoration:underline;text-underline-offset:2px}" +
@@ -600,6 +633,8 @@
     if (deviceCode) body.device_code = deviceCode;
     if (inviteToken) body.invite_token = inviteToken;
     if (signup) body.signup = true;
+    // The sign-in box says "By continuing, you agree to our Terms".
+    body.terms = TERMS_VERSION;
     return apiJSON("/auth/magic-link", "POST", body);
   }
 
@@ -667,6 +702,16 @@
   function stepCopy(step, email) {
     var signup = authCtx.mode === "signup";
     var plan = authCtx.plan;
+    // GitHub or ChatGPT gave an address that already has an account: the
+    // emailed code proves it is theirs before the two are linked.
+    if (authCtx.pending && step === "code") {
+      return {
+        title: "Confirm it’s you",
+        sub: "This email already has an account. Enter the code we sent to " + (authCtx.pending.email || "your inbox") +
+          " to link " + (PROVIDER_NAMES[authCtx.pending.provider] || "it") + ".",
+        btn: "Continue",
+      };
+    }
     // Community: one door for new and returning members, since a free
     // account is all a like, a remix or a publish needs.
     if (plan === "community") {
@@ -714,6 +759,15 @@
         '<span class="tp-modal-mark" aria-hidden="true" hidden><svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.85265L15.5409 3.84441L14.5604 5.58756L13 4.70985V7H11V4.70985L9.43962 5.58756L8.45909 3.84441L12 1.85265ZM17.3613 4.86837L21 6.91515V11H19V9.23205L17.0359 10.366L16.0359 8.63397L17.9804 7.51132L16.3807 6.61152L17.3613 4.86837ZM7.61925 6.61152L6.01961 7.51132L7.9641 8.63397L6.9641 10.366L5 9.23205L5 11H3L3 6.91515L6.63873 4.86837L7.61925 6.61152ZM5 13V14.7679L6.9641 13.634L7.9641 15.366L6.0196 16.4887L7.61925 17.3885L6.63873 19.1316L3 17.0848V13H5ZM21 13V17.0848L17.3613 19.1316L16.3807 17.3885L17.9804 16.4887L16.0359 15.366L17.0359 13.634L19 14.7679V13H21ZM13 17V19.2902L14.5604 18.4124L15.5409 20.1556L12 22.1473L8.45908 20.1556L9.43961 18.4124L11 19.2902V17H13Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M15.0981 11.366L13 12.5774V15H11V12.5774L8.90192 11.366L9.90192 9.63397L12 10.8453L14.0981 9.63397L15.0981 11.366Z" fill="currentColor"/></svg></span>' +
         '<p class="tp-modal-intro" id="tp-modal-title"><span data-step-title>Sign in</span>' +
           '<span class="tp-modal-intro-muted" data-step-sub></span></p>' +
+        // GitHub and ChatGPT, shown once /auth/providers says they are set up.
+        // The ChatGPT button needs OpenAI's approved logo before it goes live.
+        '<div class="tp-modal-oauth" hidden>' +
+          '<button type="button" class="tp-modal-btn tp-modal-btn--ghost tp-modal-oauth-btn" data-oauth="github" hidden>' +
+            '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>Continue with GitHub</span></button>' +
+          '<button type="button" class="tp-modal-btn tp-modal-btn--ghost tp-modal-oauth-btn" data-oauth="chatgpt" hidden>' +
+            '<span>Continue with ChatGPT</span></button>' +
+          '<p class="tp-modal-or"><span>or</span></p>' +
+        '</div>' +
         '<form class="tp-modal-form tp-modal-email-form" novalidate>' +
           '<div class="tp-modal-field">' +
             '<input class="tp-modal-input" id="tp-modal-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" aria-label="Email address" />' +
@@ -734,11 +788,15 @@
         '</div>' +
         '<p class="tp-modal-note" role="status" hidden></p>' +
         '<p class="tp-modal-foot" data-foot></p>' +
+        '<p class="tp-modal-legal" data-legal>By continuing, you agree to our <a href="/terms.html" target="_blank" rel="noopener">Terms</a> ' +
+          'and acknowledge our <a href="/privacy.html" target="_blank" rel="noopener">Privacy notice</a>.</p>' +
       "</div>";
     document.body.appendChild(modalEl);
 
     modalEl.addEventListener("click", function (e) {
       if (e.target.hasAttribute("data-tp-close")) closeAuthModal();
+      var ob = e.target.closest("[data-oauth]");
+      if (ob) { ob.disabled = true; startOAuth(ob.getAttribute("data-oauth"), "signin"); return; }
       // Footer switch between "Sign in" and "Create an account". Switching to
       // sign-up from the plain sign-in box starts the free plan.
       var sw = e.target.closest("[data-tp-switch]");
@@ -761,11 +819,30 @@
     var subEl = modalEl.querySelector("[data-step-sub]");
     var footEl = modalEl.querySelector("[data-foot]");
     var markEl = modalEl.querySelector(".tp-modal-mark");
+    var oauthEl = modalEl.querySelector(".tp-modal-oauth");
+    var legalEl = modalEl.querySelector("[data-legal]");
+    var onEmailStep = true;
+    function paintProviders(p) {
+      var any = false;
+      oauthEl.querySelectorAll("[data-oauth]").forEach(function (b) {
+        var on = !!(p && p[b.getAttribute("data-oauth")]);
+        b.hidden = !on;
+        b.disabled = false;
+        any = any || on;
+      });
+      oauthEl.hidden = !any || !onEmailStep;
+    }
+    providers().then(paintProviders);
     function showStep(step, email) {
       var copy = stepCopy(step, email);
       emailForm.hidden = step !== "email";
       codeFormEl.hidden = step !== "code";
       doneEl.hidden = step !== "done";
+      onEmailStep = step === "email";
+      providers().then(paintProviders);
+      legalEl.hidden = step === "done";
+      // A provider's confirmation code has no email to change.
+      codeFormEl.querySelector("[data-tp-restart]").textContent = authCtx.pending ? "Cancel" : "Use a different email";
       titleEl.textContent = copy.title;
       subEl.textContent = copy.sub;
       // The cube heads the sign-up screen only.
@@ -790,6 +867,7 @@
     // "Use a different email" returns to step one rather than closing, so a
     // typo in the address costs one click instead of restarting the flow.
     modalEl.querySelector("[data-tp-restart]").addEventListener("click", function () {
+      if (authCtx.pending) { authCtx.pending = null; closeAuthModal(); return; }
       setModalNote(modalEl.querySelector(".tp-modal-note"), "", "");
       codeFormEl.querySelector(".tp-modal-error").hidden = true;
       codeFormEl.querySelector(".tp-modal-input").value = "";
@@ -838,6 +916,11 @@
           }
           setModalNote(note, "", "");
           showStep("code", email);
+          // Local dev: no email is sent, so the API returns the code. Fill it in.
+          if (data && data.dev_code) {
+            codeFormEl.querySelector("input").value = data.dev_code;
+            setModalNote(note, "Local dev: code filled in. Press Continue.", "ok");
+          }
         })
         .catch(function () { setModalNote(note, "Couldn’t send the code. Please try again.", "err"); })
         .finally(function () { btn.disabled = false; btn.textContent = label; });
@@ -858,7 +941,30 @@
       cErr.hidden = true;
       cBtn.disabled = true; cBtn.textContent = "Signing in…";
       var keepBusy = false;
-      apiJSON("/auth/code", "POST", { email: email, code: code })
+      if (authCtx.pending) {
+        var pend = authCtx.pending;
+        apiJSON("/auth/oauth/confirm", "POST", { pending: pend.id, code: code })
+          .then(function (r) {
+            if (!(r && r.ok)) {
+              cErr.textContent = r && r.error === "expired"
+                ? "This confirmation expired. Close this and sign in again."
+                : "That code didn’t work. Check it and try again.";
+              cErr.hidden = false;
+              shake(cInput);
+              return;
+            }
+            authCtx.pending = null;
+            return refreshMe().then(function () {
+              closeAuthModal();
+              oauthDone({ status: "signed_in", provider: pend.provider });
+              afterProviderSignIn(r.plan || authCtx.plan, false);
+            });
+          })
+          .catch(function () { cErr.hidden = false; })
+          .finally(function () { cBtn.disabled = false; cBtn.textContent = label; });
+        return;
+      }
+      apiJSON("/auth/code", "POST", { email: email, code: code, terms: TERMS_VERSION })
         .then(function (r) {
           if (!(r && r.ok)) {
             cErr.textContent = r && r.error === "too_many_attempts"
@@ -909,6 +1015,94 @@
     note.setAttribute("data-kind", kind || "");
   }
 
+  // ── GitHub / ChatGPT ──────────────────────────────────────────────────────
+  var PROVIDER_NAMES = { github: "GitHub", chatgpt: "ChatGPT" };
+  // The last provider result, kept for page scripts that start after it.
+  var lastOAuth = null;
+  function oauthDone(detail) {
+    lastOAuth = detail;
+    document.dispatchEvent(new CustomEvent("tp:oauth", { detail: detail }));
+  }
+  var providersP = null;
+  // Which providers the API has set up: { github, chatgpt, chatgpt_plan }.
+  function providers() {
+    if (!providersP) providersP = apiJSON("/auth/providers").catch(function () { return {}; });
+    return providersP;
+  }
+
+  // intent "signin" (also creates a free account for a new address) or
+  // "link" (signed in: connect it to this account).
+  function startOAuth(provider, intent, returnTo) {
+    var u = new URL(API_BASE + "/auth/oauth/" + encodeURIComponent(provider) + "/start");
+    u.searchParams.set("return", returnTo || location.href);
+    u.searchParams.set("intent", intent === "link" ? "link" : "signin");
+    u.searchParams.set("terms", TERMS_VERSION);
+    if (intent !== "link" && authCtx.plan) u.searchParams.set("plan", authCtx.plan);
+    location.href = u.toString();
+  }
+
+  // After a provider sign-in, finish what the visitor came for: the plan they
+  // picked on the pricing page goes on to checkout, a new free account gets
+  // its Agent key.
+  function afterProviderSignIn(plan, isNew) {
+    if (plan === "solo" || plan === "team") {
+      if (plan === "solo" && state.pro) return;
+      startCheckout(plan);
+    } else if (plan === "free" && isNew && state.email) {
+      apiJSON("/agent/signup", "POST", { email: state.email }).catch(function () {});
+      var m = openAuthModal({ mode: "signup", plan: "free", step: "done" });
+      if (m && m.__showStep) m.__showStep("done", state.email);
+    }
+  }
+
+  var OAUTH_ERRORS = {
+    denied: function (n) { return n + " sign-in was cancelled."; },
+    in_use: function (n) { return "That " + n + " account is linked to another Transitions.dev account."; },
+    no_email: function (n) { return "Your " + n + " account has no verified email we can use. Add one there, or continue with email."; },
+    signed_out: function (n) { return "Sign in first, then connect " + n + "."; },
+    unavailable: function (n) { return n + " sign-in isn’t available right now. Continue with email."; },
+    expired: function (n) { return "That " + n + " sign-in took too long. Please try again."; },
+    failed: function (n) { return "Couldn’t sign in with " + n + ". Please try again, or continue with email."; },
+  };
+
+  // The API sends the browser back with ?oauth=… (done), ?oauth_error=… or
+  // ?oauth_confirm=<id> (an existing account: enter the emailed code).
+  function handleOAuthReturn() {
+    var q = new URLSearchParams(location.search);
+    var status = q.get("oauth"), err = q.get("oauth_error"), pending = q.get("oauth_confirm");
+    if (!status && !err && !pending) return;
+    var provider = q.get("provider") || "", plan = q.get("plan") || "";
+    ["oauth", "oauth_error", "oauth_confirm", "provider", "plan"].forEach(function (k) { q.delete(k); });
+    var qs = q.toString();
+    history.replaceState(history.state, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+    var name = PROVIDER_NAMES[provider] || "that account";
+    if (pending) {
+      apiJSON("/auth/oauth/confirm/" + encodeURIComponent(pending)).then(function (r) {
+        if (!r || r.error) {
+          var m = openAuthModal({ mode: "signin", plan: plan || null });
+          setModalNote(m.querySelector(".tp-modal-note"), OAUTH_ERRORS.expired(name), "err");
+          return;
+        }
+        openAuthModal({ mode: "signin", plan: plan || null, step: "code", pending: { id: pending, provider: r.provider, email: r.email } });
+      });
+      return;
+    }
+    if (err) {
+      // "Connect" errors belong to the page that asked (the Studio says them).
+      if (err === "in_use" || err === "signed_out") {
+        oauthDone({ error: err, provider: provider, text: OAUTH_ERRORS[err](name) });
+        if (state.authenticated) return;
+      }
+      var m = openAuthModal({ mode: plan ? "signup" : "signin", plan: plan || null });
+      setModalNote(m.querySelector(".tp-modal-note"), (OAUTH_ERRORS[err] || OAUTH_ERRORS.failed)(name), "err");
+      return;
+    }
+    refreshMe().then(function () {
+      oauthDone({ status: status, provider: provider });
+      if (status !== "connected") afterProviderSignIn(plan, status === "signed_up");
+    });
+  }
+
   // Community actions need an account. Signed in: run `onDone` now.
   // Otherwise open the community sign-in, which creates the account when the
   // address is new and runs `onDone` once the code verifies.
@@ -925,20 +1119,22 @@
       plan: opts.plan || null,
       cta: opts.cta || null,
       onDone: opts.onDone || null,
+      pending: opts.pending || null,
     };
     var m = ensureAuthModal();
     lastFocus = document.activeElement;
     setModalNote(m.querySelector(".tp-modal-note"), "", "");
     var codeInput = m.querySelector("#tp-modal-code");
     if (codeInput) codeInput.value = "";
-    if (m.__showStep) m.__showStep("email");
+    if (m.__showStep) m.__showStep(opts.step || "email");
     m.classList.remove("is-closing");
     m.removeAttribute("hidden");
     // Reflow so the enter transition plays from the closed (scale .96 / opacity 0) state.
     void m.offsetWidth;
     m.classList.add("is-open");
     var input = m.querySelector("#tp-modal-email");
-    setTimeout(function () { input.focus(); }, 0);
+    setTimeout(function () { (opts.step === "code" ? m.querySelector("#tp-modal-code") : input).focus(); }, 0);
+    return m;
   }
 
   function closeAuthModal() {
@@ -963,8 +1159,9 @@
       "font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}" +
       ".tp-modal[hidden]{display:none}" +
       // Modal open/close (transitions-dev 06): backdrop fades, card scales 0.96 -> 1.
-      ".tp-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;" +
-      "transition:opacity 250ms cubic-bezier(0.22,1,0.36,1)}" +
+      ".tp-modal-backdrop{position:absolute;inset:0;background:rgba(15,15,15,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;" +
+      "transition:opacity 200ms cubic-bezier(0.22,1,0.36,1)}" +
+      'html[data-theme="dark"] .tp-modal-backdrop{background:rgba(0,0,0,.5)}' +
       ".tp-modal-card{position:relative;width:min(92vw,369px);box-sizing:border-box;background:#fff;color:#0d0d0d;" +
       "border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:24px;" +
       "box-shadow:0 1px 3px rgba(0,0,0,.04)," +
@@ -1025,6 +1222,17 @@
       '.tp-modal-note[data-kind="ok"]{color:#16a34a}' +
       '.tp-modal-note[data-kind="err"]{color:#d62b11}' +
       ".tp-modal-foot{margin:0;font-size:13px;line-height:16px;color:#17181c}" +
+      ".tp-modal-oauth{display:flex;flex-direction:column;gap:8px}" +
+      ".tp-modal-oauth[hidden],.tp-modal-oauth-btn[hidden],.tp-modal-legal[hidden]{display:none}" +
+      ".tp-modal-oauth-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}" +
+      ".tp-modal-oauth-btn svg{flex:none}" +
+      ".tp-modal-or{display:flex;align-items:center;gap:12px;margin:4px 0 -12px;font-size:12px;line-height:16px;color:#8a8a8a}" +
+      ".tp-modal-or::before,.tp-modal-or::after{content:\"\";flex:1;height:1px;background:rgba(0,0,0,.08)}" +
+      'html[data-theme="dark"] .tp-modal-or::before,html[data-theme="dark"] .tp-modal-or::after{background:rgba(255,255,255,.1)}' +
+      ".tp-modal-legal{margin:-12px 0 0;font-size:12px;line-height:17px;color:#8a8a8a}" +
+      ".tp-modal-legal a{color:inherit;text-decoration:underline;text-underline-offset:2px}" +
+      ".tp-modal-legal a:hover{color:#17181c}" +
+      'html[data-theme="dark"] .tp-modal-legal a:hover{color:#f2f2f2}' +
       ".tp-modal-foot a{color:inherit;font-weight:500;text-decoration:none}" +
       ".tp-modal-foot a:hover{text-decoration:underline}" +
       ".tp-modal-foot button{border:0;background:none;padding:0;font:inherit;font-weight:500;color:inherit;cursor:pointer}" +
@@ -1048,24 +1256,52 @@
   // (Figma 1425:38996): a raised white chip with the email's initial in light
   // mode, a #2a2a2a chip in dark. Injected here because every page that loads
   // this client carries its own copy of the nav CSS.
+  // Initial avatars in the avvvatars style (avvvatars.com, MIT, by nusu): a
+  // pastel background with matching ink, picked from its 20 pairs by a hash
+  // of the person, so everyone keeps their color everywhere.
+  var AV_BG = ["F7F9FC", "EEEDFD", "FFEBEE", "FDEFE2", "E7F9F3", "EDEEFD", "ECFAFE", "F2FFD1", "FFF7E0", "FDF1F7",
+    "EAEFE6", "E0E6EB", "E4E2F3", "E6DFEC", "E2F4E8", "E6EBEF", "EBE6EF", "E8DEF6", "D8E8F3", "ECE1FE"];
+  var AV_FG = ["060A23", "4409B9", "BD0F2C", "C56511", "216E55", "05128A", "1F84A3", "526E0C", "935F10", "973562",
+    "69785E", "2D3A46", "280F6D", "37364F", "363548", "4D176E", "AB133E", "420790", "222A54", "192251"];
+  // seed: what identifies the person (name, else email or handle). Returns the
+  // two letters and the colors: { text, bg, fg }.
+  function avatarFor(name, fallback) {
+    var seed = String(name || fallback || "?").trim().toLowerCase();
+    var h = 0;
+    for (var i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+    var k = h % AV_BG.length;
+    var words = String(name || "").trim().split(/\s+/).filter(Boolean);
+    var text = words.length > 1 ? words[0].charAt(0) + words[words.length - 1].charAt(0)
+      : (words[0] || String(fallback || "?").split("@")[0].replace(/[^\p{L}\p{N}]/gu, "")).slice(0, 2);
+    return { text: (text || "?").toUpperCase(), bg: "#" + AV_BG[k], fg: "#" + AV_FG[k] };
+  }
+  // Paints an avatar element: the letters and its --av-bg / --av-fg.
+  function paintAvatar(el, name, fallback) {
+    var a = avatarFor(name, fallback);
+    el.style.setProperty("--av-bg", a.bg);
+    el.style.setProperty("--av-fg", a.fg);
+    return a;
+  }
+
   function injectAvatarStyle() {
     if (document.getElementById("tp-avatar-base")) return;
     var st = document.createElement("style");
     st.id = "tp-avatar-base";
     st.textContent =
-      ".icon-btn.icon-btn--avatar{background:#fff;color:#17181c;" +
+      ".icon-btn.icon-btn--avatar{background:var(--av-bg,#fff);color:var(--av-fg,#17181c);" +
       "box-shadow:0 1px 3px 0 rgba(0,0,0,.04),inset 0 0 0 1px rgba(0,0,0,.06)," +
       "inset 0 -1px 0 0 rgba(0,0,0,.1),inset 0 0 0 1px rgba(196,196,196,.1)}" +
-      ".icon-btn.icon-btn--avatar:hover{background:#fafafa}" +
-      ".icon-btn.icon-btn--avatar:active{background:#f1f1f1}" +
-      'html[data-theme="dark"] .icon-btn.icon-btn--avatar{background:#2a2a2a;color:#e8e8e8;' +
+      ".icon-btn.icon-btn--avatar:hover{background:color-mix(in srgb,var(--av-bg,#fff) 95%,#000)}" +
+      ".icon-btn.icon-btn--avatar:active{background:color-mix(in srgb,var(--av-bg,#fff) 90%,#000)}" +
+      // Dark: the ink tints a dark chip and the pastel becomes the letters.
+      'html[data-theme="dark"] .icon-btn.icon-btn--avatar{background:color-mix(in srgb,var(--av-fg,#e8e8e8) 30%,#202020);color:var(--av-bg,#e8e8e8);' +
       "box-shadow:0 1px 3px 0 rgba(0,0,0,.04),inset 0 1px 0 0 rgba(255,255,255,.04)," +
       "inset 0 0 0 1px rgba(0,0,0,.06),inset 0 -1px 0 0 rgba(0,0,0,.06),inset 0 0 0 1px rgba(196,196,196,.1)}" +
-      'html[data-theme="dark"] .icon-btn.icon-btn--avatar:hover{background:#323232}' +
-      'html[data-theme="dark"] .icon-btn.icon-btn--avatar:active{background:#262626}' +
+      'html[data-theme="dark"] .icon-btn.icon-btn--avatar:hover{background:color-mix(in srgb,var(--av-fg,#e8e8e8) 36%,#202020)}' +
+      'html[data-theme="dark"] .icon-btn.icon-btn--avatar:active{background:color-mix(in srgb,var(--av-fg,#e8e8e8) 26%,#202020)}' +
       ".icon-btn.icon-btn--avatar svg{display:none!important}" +
       ".nav-avatar-initial{display:none;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;" +
-      "font-size:12px;font-weight:500;line-height:13px;text-transform:uppercase}" +
+      "font-size:12px;font-weight:500;line-height:13px;letter-spacing:-.01em;text-transform:uppercase}" +
       ".icon-btn--avatar .nav-avatar-initial{display:block}" +
       ".nav-avatar-img{display:none}" +
       ".icon-btn--avatar.icon-btn--pic{overflow:hidden;padding:0}" +
@@ -1078,6 +1314,16 @@
   // style is minimal and low-specificity so page CSS added later overrides it easily.
   function mountProBadges() {
     injectBadgeStyle();
+    // "New" next to Community in the nav, Builder in the Products menu, and
+    // both in the mobile menu.
+    document.querySelectorAll('a[data-nav="community"], .mobile-menu-link[href="/community.html"], ' +
+      '.nav-products-item[href="/builder.html"] .nav-products-name, .mobile-menu-link[href="/builder.html"]').forEach(function (a) {
+      if (a.querySelector(".nav-new-badge")) return;
+      var b = document.createElement("span");
+      b.className = "nav-new-badge";
+      b.textContent = "New";
+      a.appendChild(b);
+    });
     var cards = document.querySelectorAll('.card[data-pro="true"]');
     cards.forEach(function (card) {
       if (card.querySelector(".card-pro-badge")) return;
@@ -1107,7 +1353,16 @@
       "inset 0 0 0 1px rgba(0,101,208,0.1)," +
       "inset 0 -1px 0 0 rgba(0,0,0,0.06)," +
       "inset 0 0 0 1px rgba(196,196,196,0.1)}" +
-      'html[data-theme="dark"] .card-pro-badge{background:rgba(0,115,255,0.16);color:rgba(122,168,255,0.95)}';
+      'html[data-theme="dark"] .card-pro-badge{background:rgba(0,115,255,0.16);color:rgba(122,168,255,0.95)}' +
+      // The nav's "New" tag on Community: the same pill, inline.
+      ".nav-new-badge{display:inline-flex;align-items:center;height:18px;margin-left:6px;padding:0 6px;border-radius:50px;" +
+      "background:rgba(0,115,255,0.06);font:500 11px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;" +
+      "color:rgba(0,83,227,0.8);box-shadow:0 1px 3px rgba(0,0,0,0.04),inset 0 0 0 1px rgba(0,101,208,0.1)," +
+      "inset 0 -1px 0 0 rgba(0,0,0,0.06),inset 0 0 0 1px rgba(196,196,196,0.1)}" +
+      'html[data-theme="dark"] .nav-new-badge{background:rgba(0,115,255,0.16);color:rgba(122,168,255,0.95)}' +
+      ".nav-products-name:has(.nav-new-badge){display:inline-flex;align-items:center}" +
+      // A pill ending in the badge: the right padding equals the badge's gap from the top.
+      ".nav-pill:has(>.nav-new-badge){padding-right:9px}";
     document.head.appendChild(style);
   }
 
@@ -1243,6 +1498,15 @@
         else startPaid(plan, cta);
       });
     });
+    // "Join for free": the free sign-up box; signed in, straight to the Builder.
+    // The href (pricing) is the fallback without this client.
+    document.querySelectorAll("[data-join-free]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (state.authenticated) location.href = "/builder.html";
+        else openAuthModal({ mode: "signup", plan: "free", cta: el });
+      });
+    });
     var signin = document.getElementById("pm-signin");
     if (signin) {
       signin.addEventListener("click", function (e) {
@@ -1303,6 +1567,25 @@
     wireFeedback();
     refreshMe();
     refreshGeo();
+    handleOAuthReturn();
+    injectModalRing();
+  }
+
+  // Light theme: every modal card (search, sign-in, Before you pay, the
+  // Studio's and Community's dialogs, the remix picker) is edged with a
+  // white hairline instead of a grey one, over the dimmed backdrop. The
+  // ring comes first so the drop shadows paint under it, not over it. Here
+  // because this client loads on every page; dark mode keeps its own rings.
+  function injectModalRing() {
+    if (document.getElementById("tp-modal-ring")) return;
+    var st = document.createElement("style");
+    st.id = "tp-modal-ring";
+    st.textContent =
+      'html:not([data-theme="dark"]) .cmdk-panel{box-shadow:0 0 0 1px #fff,0 4px 42px 0 rgba(0,0,0,.08),0 2px 6px 0 rgba(0,0,0,.06)}' +
+      'html:not([data-theme="dark"]) .st-dialog-card{box-shadow:0 0 0 1px #fff,0 20px 60px rgba(0,0,0,.25),0 1px 3px 0 rgba(0,0,0,.04)}' +
+      'html:not([data-theme="dark"]) .tp-modal-card{box-shadow:0 0 0 1px #fff,0 1px 3px rgba(0,0,0,.04)}' +
+      'html:not([data-theme="dark"]) .tp-buy-card{box-shadow:0 0 0 1px #fff,0 20px 60px rgba(0,0,0,.25)}';
+    document.head.appendChild(st);
   }
 
   if (document.readyState !== "loading") wire();

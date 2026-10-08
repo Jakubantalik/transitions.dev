@@ -2025,6 +2025,7 @@
       .site-nav .brand-word { display: none; }
     }
   </style>
+  <link rel="stylesheet" href="assets/nav-products.css?v=3" />
   <style>
     /* Pill variant of .icon-btn: gains horizontal padding + a label.
        Stays 36px tall, mirrors the .icon-btn fills so it tracks
@@ -2123,7 +2124,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
-  <link rel="stylesheet" href="assets/community/community.css?v=48" />
+  <link rel="stylesheet" href="assets/community/community.css?v=200" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -2142,10 +2143,16 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
-          <a class="nav-pill nav-pill--active" href="/community.html" data-nav="community">Community</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
+          <div class="nav-products" data-nav-products>
+            <button type="button" class="nav-pill nav-products-btn nav-pill--active" data-nav="products" aria-haspopup="menu" aria-expanded="false" aria-controls="nav-products-menu">Products<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg></button>
+            <div class="tl-menu t-dropdown nav-products-menu" id="nav-products-menu" role="menu" aria-label="Products">
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/library.html"><span class="nav-products-name">Library</span><span class="nav-products-hint">Production-ready UI transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html" aria-current="page"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Transitions Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+            </div>
+          </div>
+          <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
           </nav>
@@ -2271,12 +2278,14 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
+          <li class="mobile-menu-group" aria-hidden="true">Products</li>
           <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html" aria-current="page">Builder</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Motion Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Transitions Motion Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <button type="button" class="mobile-menu-cta" id="mobile-signin">Sign in</button>
       </nav>
@@ -2295,13 +2304,8 @@
           <button type="button" class="cm-btn" id="st-save" data-edit>Save draft</button>
           <button type="button" class="cm-btn cm-btn--primary" id="st-publish" data-edit>Publish</button>
           <!-- Viewing someone else's component -->
-          <button type="button" class="cm-like" id="st-like" aria-pressed="false" aria-label="Like" data-view hidden>
-            <svg class="cm-heart" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13.6s-5.5-3.2-5.5-7.1A2.9 2.9 0 0 1 8 4.7a2.9 2.9 0 0 1 5.5 1.8c0 3.9-5.5 7.1-5.5 7.1Z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-            <span class="cm-like-count">0</span>
-          </button>
           <button type="button" class="cm-btn cm-btn--primary" id="st-remix" data-view hidden>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Remix
+            Publish Remix
           </button>
           <div class="st-menu-anchor">
             <button type="button" class="cm-btn cm-btn--icon" id="st-more" aria-label="More" aria-haspopup="menu" aria-expanded="false">
@@ -2309,7 +2313,7 @@
             </button>
             <!-- The nav's 3-dot menu component (tl-menu t-dropdown). -->
             <div class="tl-menu t-dropdown" id="st-menu" role="menu" aria-label="More options">
-              <button type="button" class="tl-menu-item" role="menuitem" data-act="new"><span class="tl-menu-item-label">New component</span></button>
+              <button type="button" class="tl-menu-item" role="menuitem" data-act="new"><span class="tl-menu-item-label">Create new component</span></button>
               <button type="button" class="tl-menu-item" role="menuitem" data-act="library"><span class="tl-menu-item-label">Start from a library transition</span></button>
               <button type="button" class="tl-menu-item" role="menuitem" data-act="desc" data-edit><span class="tl-menu-item-label">Edit description</span></button>
               <button type="button" class="tl-menu-item" role="menuitem" data-act="about" data-view hidden><span class="tl-menu-item-label">About this component</span></button>
@@ -2332,12 +2336,12 @@
               <button type="button" class="st-tab" role="tab" data-show="preview" aria-selected="true">Preview</button>
               <button type="button" class="st-tab" role="tab" data-show="code" aria-selected="false">Code</button>
             </div>
-            <div class="st-stage-actions">
+            <div class="st-stage-actions" data-tip-group>
               <!-- Tools on the preview (as in Lovable): pick an element, draw on it. -->
-              <button type="button" class="st-ghost st-ghost--icon st-tool" id="st-select" aria-pressed="false" aria-label="Select an element" title="Select an element">
+              <button type="button" class="st-ghost st-ghost--icon st-tool" id="st-select" aria-pressed="false" aria-label="Select an element" data-tip="Select an element">
                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 2.5 12.5 6.6 8.4 8.2 6.8 12.3 3 2.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="m8.6 8.6 3.6 3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
               </button>
-              <button type="button" class="st-ghost st-ghost--icon st-tool" id="st-draw" aria-pressed="false" aria-label="Draw on the preview" title="Draw on the preview">
+              <button type="button" class="st-ghost st-ghost--icon st-tool" id="st-draw" aria-pressed="false" aria-label="Draw on the preview" data-tip="Draw on the preview">
                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10.6 2.6a1.4 1.4 0 0 1 2 2L5.5 11.7 2.8 12.4l.7-2.7 7.1-7.1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M9.4 3.8l2 2" stroke="currentColor" stroke-width="1.4"/></svg>
               </button>
               <span class="st-bar-rule" aria-hidden="true"></span>
@@ -2351,7 +2355,7 @@
                   <button type="button" class="tl-menu-item" role="menuitemradio" data-mode="react" aria-checked="false"><span class="tl-menu-item-label">React</span><span class="tl-menu-trail"><span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></button>
                 </div>
               </div>
-              <button type="button" class="st-ghost st-ghost--icon" id="st-replay" aria-label="Reload preview" title="Reload preview">
+              <button type="button" class="st-ghost st-ghost--icon" id="st-replay" aria-label="Reload preview" data-tip="Reload preview">
                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.33301 6.66667C1.33301 6.66667 2.66966 4.84548 3.75556 3.75883C4.84147 2.67218 6.34207 2 7.99967 2C11.3134 2 13.9997 4.68629 13.9997 8C13.9997 11.3137 11.3134 14 7.99967 14C5.26428 14 2.95642 12.1695 2.23419 9.66667M5.33301 6.66667H1.33301V2.66667" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
               <button type="button" class="st-pill" id="st-copy" aria-label="Copy a prompt for your coding agent">
@@ -2390,6 +2394,11 @@
               <button type="button" role="tab" data-file="css" aria-selected="false">CSS</button>
               <button type="button" role="tab" data-file="js" aria-selected="false">JS</button>
               <span class="st-hint" id="st-hint"></span>
+              <!-- Copies the open file. Copy to check is the library's Icon swap. -->
+              <button type="button" class="st-chat-copy st-file-copy" id="st-file-copy" data-copied="false" aria-label="Copy HTML" title="Copy">
+                <span class="st-swap-ico st-swap-copy"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.8" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 3.5v-.3A1.2 1.2 0 0 0 9.3 2H3.2A1.2 1.2 0 0 0 2 3.2v6.1a1.2 1.2 0 0 0 1.2 1.2h.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+                <span class="st-swap-ico st-swap-check"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 8.4l2.5 2.8L12 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              </button>
             </div>
             <div class="st-code" id="st-code"></div>
           </div>
@@ -2408,7 +2417,7 @@
 
           <div class="st-panel-body st-panel-body--chat" data-panel-body="agent">
             <div class="st-chat-log" id="st-chat-log" aria-live="polite">
-              <p class="st-chat-empty" id="st-chat-empty">Describe what you want and the AI agent builds it, or changes the current component: “make the hover springier”, “add a dark glass look”, “turn it into a toggle”.</p>
+              <p class="st-chat-empty" id="st-chat-empty">Describe what to build or change, like “make the hover springier”.</p>
             </div>
             <!-- What the agent reads besides the request: skills and libraries. -->
             <div class="st-context">
@@ -2419,17 +2428,10 @@
                 </button>
                 <div class="tl-menu t-dropdown tl-menu--left tl-menu--up st-pop" id="st-skills-menu" role="menu" aria-label="Skills"></div>
               </div>
-              <div class="st-menu-anchor">
-                <button type="button" class="st-chip" id="st-libs-btn" aria-haspopup="menu" aria-expanded="false">
+              <button type="button" class="st-chip" id="st-libs-btn" aria-haspopup="dialog">
                   <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.75 13.5 4.8v6.4L8 14.25 2.5 11.2V4.8L8 1.75Zm0 0v12.5M2.5 4.8 8 7.9l5.5-3.1" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
                   Libraries <span class="st-chip-count" id="st-libs-count"></span>
                 </button>
-                <div class="tl-menu t-dropdown tl-menu--left tl-menu--up st-pop" id="st-libs-menu" role="menu" aria-label="Libraries"></div>
-              </div>
-              <button type="button" class="st-chip" id="st-img-btn" aria-label="Attach images">
-                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="2.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5.75" cy="6.25" r="1.25" fill="currentColor"/><path d="m2.5 11.5 3.2-3.1a1 1 0 0 1 1.4 0l1.6 1.6m-.5-.5 1.7-1.7a1 1 0 0 1 1.4 0l2.2 2.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Image
-              </button>
               <input type="file" id="st-img-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden />
             </div>
             <form class="st-chat-composer" id="st-ai" novalidate>
@@ -2437,11 +2439,33 @@
               <div class="cm-imgs" id="st-imgs" aria-label="Attached images" hidden></div>
               <label class="sr-only" for="st-ai-input">Ask the agent</label>
               <textarea class="st-chat-input" id="st-ai-input" rows="1" maxlength="2000" placeholder="Ask for a change…"></textarea>
-              <button type="submit" class="st-chat-send" id="st-ai-send" aria-label="Send" disabled>
-                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M7.99967 12.6667V3.33337M12.6663 8.00004L7.99967 3.33337L3.33301 8.00004" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
+              <!-- Inside the input, under the text: add an image, pick the agent, the allowance, send. -->
+              <div class="st-chat-foot">
+                <!-- +: the Builder's menu (attach an image, add a skill or a library). -->
+                <div class="st-menu-anchor">
+                  <button type="button" class="cm-round st-plus" id="st-plus" aria-label="Add" aria-haspopup="menu" aria-expanded="false">
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </button>
+                  <div class="tl-menu t-dropdown tl-menu--left tl-menu--up st-plus-menu" id="st-plus-menu" role="menu" aria-label="Add">
+                    <button type="button" class="tl-menu-item" role="menuitem" data-plus="image"><svg class="cm-menu-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="2.75" width="12" height="10.5" rx="2" stroke="currentColor" stroke-width="1.4"/><circle cx="5.75" cy="6.25" r="1.25" fill="currentColor"/><path d="m2.5 11.5 3.2-3 2.3 2 2.2-2.2 3.3 3.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="tl-menu-item-label">Attach image</span></button>
+                    <button type="button" class="tl-menu-item" role="menuitem" data-plus="skill"><svg class="cm-menu-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3.5A1.5 1.5 0 0 1 4.5 2H13v10H4.5A1.5 1.5 0 0 0 3 13.5m0-10v10m0 0A1.5 1.5 0 0 0 4.5 15H13v-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="tl-menu-item-label">Add skill</span></button>
+                    <button type="button" class="tl-menu-item" role="menuitem" data-plus="library"><svg class="cm-menu-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.75 13.5 4.8v6.4L8 14.25 2.5 11.2V4.8L8 1.75Zm0 0v12.5M2.5 4.8 8 7.9l5.5-3.1" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="tl-menu-item-label">Add library</span></button>
+                  </div>
+                </div>
+                <div class="st-menu-anchor">
+                  <button type="button" class="cm-agent st-agent" id="st-agent" aria-haspopup="menu" aria-expanded="false">
+                    <span id="st-agent-label">Agent</span>
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg>
+                  </button>
+                  <div class="tl-menu t-dropdown tl-menu--left tl-menu--up st-pop st-agent-menu" id="st-agent-menu" role="menu" aria-label="Agent"></div>
+                </div>
+                <span class="cm-grow"></span>
+                <p class="st-chat-quota" id="st-chat-quota" hidden></p>
+                <button type="submit" class="st-chat-send" id="st-ai-send" aria-label="Send" disabled>
+                  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M7.99967 12.6667V3.33337M12.6663 8.00004L7.99967 3.33337L3.33301 8.00004" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
             </form>
-            <p class="st-chat-quota" id="st-chat-quota" hidden></p>
           </div>
 
           <div class="st-panel-body st-panel-body--scroll" data-panel-body="controls" hidden>
@@ -2504,11 +2528,13 @@
           </button>
         </div>
         <div class="st-skill-body">
-          <div class="st-tabs st-ds-tabs" id="st-ds-tabs" role="tablist" aria-label="Add from">
+          <div class="st-tabs st-ds-tabs" id="st-ds-tabs" role="tablist" aria-label="Design system">
             <span class="st-tabs-indicator" aria-hidden="true"></span>
             <button type="button" class="st-tab" role="tab" data-src="shot" aria-selected="true">Screenshot</button>
-            <button type="button" class="st-tab" role="tab" data-src="paste" aria-selected="false">Paste values</button>
+            <button type="button" class="st-tab" role="tab" data-src="style" aria-selected="false">Style</button>
+            <button type="button" class="st-tab" role="tab" data-src="paste" aria-selected="false">Code</button>
           </div>
+          <p class="st-ds-note" id="st-ds-note" hidden></p>
           <div class="st-ds-shot" data-src-body="shot">
             <button type="button" class="st-ds-drop" id="st-ds-drop">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="2.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5.75" cy="6.25" r="1.25" fill="currentColor"/><path d="m2.5 11.5 3.2-3.1a1 1 0 0 1 1.4 0l1.6 1.6m-.5-.5 1.7-1.7a1 1 0 0 1 1.4 0l2.2 2.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -2522,18 +2548,82 @@
             </label>
             <p class="st-ds-status" id="st-ds-status" aria-live="polite" hidden><span class="st-ds-spin" aria-hidden="true"></span><span id="st-ds-status-text"></span></p>
           </div>
+          <label class="st-field" id="st-ds-namef"><span>Name</span>
+            <input id="st-ds-name" type="text" maxlength="60" placeholder="Acme" autocomplete="off" />
+          </label>
+          <!-- Style: colors, text sizes and the basic elements, set visually.
+               It writes the ds:style block at the top of the values. -->
+          <div class="st-ds-style" data-src-body="style" hidden>
+            <div class="st-ds-ctrls">
+              <section class="st-ds-sec" aria-labelledby="st-ds-h-color">
+                <div class="st-ds-sec-head">
+                  <h3 id="st-ds-h-color">Colors</h3>
+                  <div class="st-ds-theme" role="group" aria-label="Theme">
+                    <button type="button" data-ds-theme="light" aria-pressed="true">Light</button>
+                    <button type="button" data-ds-theme="dark" aria-pressed="false">Dark</button>
+                  </div>
+                </div>
+                <div class="st-ds-colors" id="st-ds-colors"></div>
+              </section>
+              <section class="st-ds-sec" aria-labelledby="st-ds-h-shape">
+                <div class="st-ds-sec-head"><h3 id="st-ds-h-shape">Corners</h3><span class="st-ds-radii" id="st-ds-radii"></span></div>
+                <label class="st-ds-row st-ds-row--wide st-ds-range"><span>Corner radius</span><input type="range" data-ds-k="shape.roundness" min="0" max="100" step="1" /><output id="st-ds-round-out"></output></label>
+                <label class="st-ds-check"><input type="checkbox" data-ds-k="shape.pill" /><span>Pill buttons</span></label>
+              </section>
+              <section class="st-ds-sec" aria-labelledby="st-ds-h-type">
+                <div class="st-ds-sec-head"><h3 id="st-ds-h-type">Text</h3></div>
+                <label class="st-ds-row st-ds-row--wide"><span>Font</span><input type="text" data-ds-k="font" maxlength="80" placeholder="Inter" spellcheck="false" /></label>
+                <div class="st-ds-grid">
+                  <label class="st-ds-row"><span>Small</span><span class="st-ds-num"><input type="number" data-ds-k="type.small" min="9" max="20" /><i>px</i></span></label>
+                  <label class="st-ds-row"><span>Body</span><span class="st-ds-num"><input type="number" data-ds-k="type.body" min="11" max="24" /><i>px</i></span></label>
+                  <label class="st-ds-row"><span>Title</span><span class="st-ds-num"><input type="number" data-ds-k="type.title" min="13" max="40" /><i>px</i></span></label>
+                  <label class="st-ds-row"><span>Display</span><span class="st-ds-num"><input type="number" data-ds-k="type.display" min="18" max="96" /><i>px</i></span></label>
+                </div>
+              </section>
+              <section class="st-ds-sec" aria-labelledby="st-ds-h-el">
+                <div class="st-ds-sec-head"><h3 id="st-ds-h-el">Elements</h3></div>
+                <div class="st-ds-el">
+                  <b>Button</b>
+                  <label class="st-ds-row"><span>Fill</span><select data-ds-k="button.fill"><option value="accent">Accent</option><option value="ink">Text color</option></select></label>
+                  <label class="st-ds-row"><span>Height</span><span class="st-ds-num"><input type="number" data-ds-k="button.height" min="24" max="56" /><i>px</i></span></label>
+                  <label class="st-ds-row"><span>Radius</span><span class="st-ds-num"><input type="number" data-ds-k="button.radius" min="0" max="40" /><i>px</i></span></label>
+                  <label class="st-ds-row"><span>Shadow</span><select data-ds-k="button.shadow" data-ds-shadow></select></label>
+                </div>
+                <div class="st-ds-el">
+                  <b>Card</b>
+                  <label class="st-ds-row"><span>Padding</span><span class="st-ds-num"><input type="number" data-ds-k="card.padding" min="8" max="40" /><i>px</i></span></label>
+                  <label class="st-ds-row"><span>Radius</span><span class="st-ds-num"><input type="number" data-ds-k="card.radius" min="0" max="40" /><i>px</i></span></label>
+                  <label class="st-ds-row"><span>Shadow</span><select data-ds-k="card.shadow" data-ds-shadow></select></label>
+                </div>
+                <div class="st-ds-el">
+                  <b>Input</b>
+                  <label class="st-ds-row"><span>Height</span><span class="st-ds-num"><input type="number" data-ds-k="input.height" min="24" max="56" /><i>px</i></span></label>
+                  <label class="st-ds-row"><span>Radius</span><span class="st-ds-num"><input type="number" data-ds-k="input.radius" min="0" max="40" /><i>px</i></span></label>
+                  <label class="st-ds-row"><span>Shadow</span><select data-ds-k="input.shadow" data-ds-shadow></select></label>
+                </div>
+              </section>
+            </div>
+            <div class="st-ds-preview" aria-label="Preview">
+              <div class="st-dsp" id="st-dsp">
+                <div class="st-dsp-card">
+                  <span class="st-dsp-head"><span class="st-dsp-small">Pro plan</span><span class="st-dsp-chip">Popular</span></span>
+                  <span class="st-dsp-display">$24</span>
+                  <span class="st-dsp-title">Everything you need</span>
+                  <span class="st-dsp-body">Custom design systems, libraries and more drafts every month.</span>
+                  <span class="st-dsp-input">you@company.com</span>
+                  <span class="st-dsp-actions"><span class="st-dsp-btn st-dsp-btn--2">Cancel</span><span class="st-dsp-btn">Upgrade</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="st-ds-values" data-src-body="paste" hidden>
-            <p class="st-ds-note" id="st-ds-note" hidden></p>
-            <label class="st-field"><span>Name</span>
-              <input id="st-ds-name" type="text" maxlength="60" placeholder="Acme" autocomplete="off" />
-            </label>
             <label class="st-field"><span>Values</span>
               <textarea id="st-ds-content" maxlength="20000" spellcheck="false" placeholder="Paste CSS variables, design tokens (JSON), a Tailwind theme, or a written spec: colors, type, radii, spacing, shadows, how buttons and inputs look."></textarea>
             </label>
-            <div class="st-skill-meta">
-              <label class="cm-btn cm-btn--ghost st-skill-upload">Upload a file<input type="file" id="st-ds-upload" accept=".md,.markdown,.txt,.css,.json,.js,.ts,text/markdown,text/plain,text/css,application/json" /></label>
-              <span id="st-ds-count">0 / 20,000</span>
-            </div>
+          </div>
+          <div class="st-skill-meta" id="st-ds-meta">
+            <label class="cm-btn cm-btn--ghost st-skill-upload">Import file<input type="file" id="st-ds-upload" accept=".md,.markdown,.txt,.css,.json,.js,.ts,text/markdown,text/plain,text/css,application/json" /></label>
+            <span id="st-ds-count">0 / 20,000</span>
           </div>
           <p class="st-skill-err" id="st-ds-err" role="alert" hidden></p>
         </div>
@@ -2541,9 +2631,29 @@
           <button type="button" class="cm-btn cm-btn--ghost st-skill-del" id="st-ds-del" hidden>Delete</button>
           <span class="cm-grow"></span>
           <button type="button" class="cm-btn cm-btn--ghost" data-close>Cancel</button>
+          <button type="button" class="cm-btn" id="st-ds-update" hidden>Save changes</button>
           <button type="submit" class="cm-btn cm-btn--primary" id="st-ds-save">Extract values</button>
         </div>
       </form>
+    </div>
+
+    <!-- Libraries: the libraries.dev packages preloaded in React previews.
+         Everyone can browse them and copy their usage; adding them to the
+         agent's context is part of Pro and Business. -->
+    <div class="st-dialog" id="st-libs-dlg" hidden>
+      <div class="st-dialog-card st-libs-card" role="dialog" aria-modal="true" aria-labelledby="st-libs-title">
+        <div class="st-dialog-head">
+          <h2 id="st-libs-title">Libraries</h2>
+          <button type="button" class="cm-btn cm-btn--icon cm-btn--ghost" data-close aria-label="Close">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="st-libs-body">
+          <p class="st-libs-lead">Preinstalled from libraries.dev, free tier. Import them in React components; the ones you add are explained to the agent.</p>
+          <div class="st-libs-list" id="st-libs-list" role="list"></div>
+          <p class="st-libs-note" id="st-libs-note" hidden></p>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -2940,9 +3050,11 @@
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
+        { group: "Pages", label: "Builder", hint: "Build a component with the AI agent", href: "/builder.html", ic: "wand" },
+        { group: "Pages", label: "Projects", hint: "Your saved and published components", href: "/projects.html", ic: "grid" },
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
-        { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Transitions Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -3136,11 +3248,12 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=45" defer></script>
+  <script src="assets/pro-client.js?v=57" defer></script>
 
-  <script src="assets/community/community.js?v=48" defer></script>
-  <script src="assets/community/controls.js?v=48" defer></script>
-  <script src="assets/community/studio.js?v=48" defer></script>
+  <script src="assets/community/community.js?v=160" defer></script>
+  <script src="assets/community/controls.js?v=140" defer></script>
+  <script src="assets/community/studio.js?v=203" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
+  <script src="assets/nav-products.js?v=7" defer></script>
 </body>
 </html>

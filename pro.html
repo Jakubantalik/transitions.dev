@@ -5153,7 +5153,7 @@
       .pro2-card, .p22-toast { transition: none; }
     }
 
-    /* Transitions Agent — terminal mock (cropped panel, same bleed as the
+    /* Transitions Motion Agent — terminal mock (cropped panel, same bleed as the
        Pro-skill code card): scan output with motion score and findings. */
     .pro-refine-frame {
       position: absolute; left: 32px; right: -150px; top: 132px; bottom: -24px;
@@ -5382,6 +5382,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
+  <link rel="stylesheet" href="assets/nav-products.css?v=3" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -5400,10 +5401,16 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <div class="nav-products" data-nav-products>
+            <button type="button" class="nav-pill nav-products-btn" data-nav="products" aria-haspopup="menu" aria-expanded="false" aria-controls="nav-products-menu">Products<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg></button>
+            <div class="tl-menu t-dropdown nav-products-menu" id="nav-products-menu" role="menu" aria-label="Products">
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/library.html"><span class="nav-products-name">Library</span><span class="nav-products-hint">Production-ready UI transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Transitions Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+            </div>
+          </div>
           <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           <a class="nav-pill nav-pill--active" href="/pro.html" data-nav="pricing" aria-current="page">Pricing</a>
           </nav>
@@ -5528,12 +5535,14 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
+          <li class="mobile-menu-group" aria-hidden="true">Products</li>
           <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html">Builder</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Motion Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Transitions Motion Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <button type="button" class="mobile-menu-cta" id="mobile-signin">Sign in</button>
       </nav>
@@ -5543,7 +5552,7 @@
       <h1 class="title">Pricing</h1>
       <p class="subtitle">
         43+ production-ready transitions, the <a href="/skill.html">Pro skill</a> for your agent,<br />
-        and the <a href="/agent.html">Transitions Agent</a> that scans your app, scores its motion,<br />
+        and the <a href="/agent.html">Transitions Motion Agent</a> that scans your app, scores its motion,<br />
         and fixes it as pull requests.
       </p>
     </header>
@@ -5598,15 +5607,15 @@
             </div>
             <div class="pro-plan-pills">
               <button type="button" class="plan-pill" data-cmp="skill">Free skill</button>
-              <button type="button" class="plan-pill" data-cmp="agent">Free Agent</button>
+              <button type="button" class="plan-pill" data-cmp="agent">Free Motion Agent</button>
             </div>
           </div>
           <div class="pro-price-divider"></div>
           <ul class="pro-feature-list">
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Core transitions library with copy-ready snippets</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Free Transitions skill for Claude Code, Cursor and Codex</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Agent: unlimited motion scans, 10 hosted polish fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-1">i</button><span class="cmp-tip" id="tip-free-agent-1" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Agent for personal use</span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Motion Agent: unlimited motion scans, 10 hosted polish fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-1">i</button><span class="cmp-tip" id="tip-free-agent-1" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Motion Agent for personal use</span></li>
           </ul>
           <a class="pro-price-cta" href="#" data-plan="free">Start free</a>
         </div>
@@ -5620,7 +5629,7 @@
             </div>
             <div class="pro-plan-pills">
               <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
-              <button type="button" class="plan-pill" data-cmp="agent">Free Agent</button>
+              <button type="button" class="plan-pill" data-cmp="agent">Free Motion Agent</button>
             </div>
           </div>
           <div class="pro-price-divider"></div>
@@ -5628,7 +5637,7 @@
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>License for solo builders and freelancers</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>43+ production-ready transitions ready for React, Next.js, Typescript</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Agent included<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-2">i</button><span class="cmp-tip" id="tip-free-agent-2" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Motion Agent included<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-2">i</button><span class="cmp-tip" id="tip-free-agent-2" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Every future transition, free</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Commercial license, unlimited projects</li>
           </ul>
@@ -5644,14 +5653,14 @@
             </div>
             <div class="pro-plan-pills">
               <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
-              <button type="button" class="plan-pill plan-pill--accent" data-cmp="agent">Full Agent</button>
+              <button type="button" class="plan-pill plan-pill--accent" data-cmp="agent">Full Motion Agent</button>
             </div>
           </div>
           <div class="pro-price-divider"></div>
           <ul class="pro-feature-list">
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>License for companies and teams</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Everything in Pro, for 5 seats, +$9/mo per extra seat</li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Full Agent included: 200 hosted fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the full Agent?" aria-describedby="tip-full-agent">i</button><span class="cmp-tip" id="tip-full-agent" role="tooltip">200 fixes a month, polish and revamp modes, and fix pull requests from CI.</span></span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Full Motion Agent included: 200 hosted fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the full Agent?" aria-describedby="tip-full-agent">i</button><span class="cmp-tip" id="tip-full-agent" role="tooltip">200 fixes a month, polish and revamp modes, and fix pull requests from CI.</span></span></span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Polish + revamp modes, grounded in the Pro recipes</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>GitHub Action with pull-request motion gate</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Commercial license for the whole team</li>
@@ -5666,7 +5675,7 @@
       <!-- Enterprise: sold by conversation, not by card. BYO AI keys is the
            feature - code never flows through our fix service. -->
       <p class="pro-enterprise-note">
-        <strong>Enterprise</strong>: unlimited Agent on your own AI keys, org-wide license,
+        <strong>Enterprise</strong>: unlimited Motion Agent on your own AI keys, org-wide license,
         custom motion rules, priority support.
         <a href="mailto:jakubja@gmail.com?subject=Transitions%20Enterprise">Talk to us</a>
       </p>
@@ -5681,7 +5690,7 @@
         </div>
         <div data-cmp-panel="agent">
           <table class="plan-cmp">
-            <tr><th></th><th>Free Agent</th><th>Full Agent</th></tr>
+            <tr><th></th><th>Free Motion Agent</th><th>Full Motion Agent</th></tr>
             <tr><td>Motion scans + score</td><td>Unlimited</td><td>Unlimited</td></tr>
             <tr><td>GitHub Action: PR score + merge gate</td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td></tr>
             <tr><td>Hosted fixes</td><td>10 / month</td><td>200 / month</td></tr>
@@ -5691,7 +5700,7 @@
             <tr><td>Fix pull requests from CI, one secret</td><td class="cmp-no">&#8212;</td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td></tr>
             <tr><td>Use</td><td>Personal use</td><td>Commercial, whole team</td></tr>
           </table>
-          <p class="plan-modal-note">Full Agent comes with the Business plan. More detail on the <a href="/agent.html">Agent page</a>.</p>
+          <p class="plan-modal-note">Full Motion Agent comes with the Business plan. More detail on the <a href="/agent.html">Agent page</a>.</p>
         </div>
         <div data-cmp-panel="skill">
           <table class="plan-cmp">
@@ -5864,7 +5873,7 @@ description: Production-ready CSS
         </div>
 
         <div class="pro-bento-card pro-bento-card--sm">
-          <h3 class="pro-bento-title">Transitions Agent</h3>
+          <h3 class="pro-bento-title">Transitions Motion Agent</h3>
           <p class="pro-bento-desc">Scans your app, scores the motion, and fixes it <span class="dim">as pull requests.</span></p>
           <div class="pro-refine-frame pro-agent-frame" aria-hidden="true">
             <div class="ag-term">
@@ -5892,7 +5901,7 @@ description: Production-ready CSS
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
             <p>Transitions Pro is a collection of the most essential UI transitions for web apps: 43+ polished, production-ready recipes, each with React and TypeScript variants. Copy and paste the CSS into any project, or let your AI agent apply them through the Pro skill. It also unlocks the Refine tool wired to the Pro recipes.</p>
-            <p>For teams there is <strong>Business</strong>: $59/mo for 5 Pro seats in one organization, plus the Full Transitions Agent. It scans and fixes your motion with 200 hosted fixes a month, in both polish and revamp modes, and can gate pull requests on GitHub.</p>
+            <p>For teams there is <strong>Business</strong>: $59/mo for 5 Pro seats in one organization, plus the Full Transitions Motion Agent. It scans and fixes your motion with 200 hosted fixes a month, in both polish and revamp modes, and can gate pull requests on GitHub.</p>
           </div></div>
         </div>
 
@@ -5902,7 +5911,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p>The free site showcases the core transitions with copy-ready snippets, and the Free Agent scans any codebase for missing or janky motion (<code>npx transitions-agent</code>). Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-dev add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan. Business adds the Full Agent on top: hosted AI fixes as pull requests, grounded in the Pro recipe library.</p>
+            <p>The free site showcases the core transitions with copy-ready snippets, and the Free Motion Agent scans any codebase for missing or janky motion (<code>npx transitions-agent</code>). Pro unlocks the full 30-transition library with React and TypeScript variants of every transition, delivered both inside the Pro skill and through the install package (<code>npx transitions-dev add --pro</code>). You also get the extended Pro skill, the Refine tool with the Pro recipes, advanced annotation, and all future updates for the life of your plan. Business adds the Full Motion Agent on top: hosted AI fixes as pull requests, grounded in the Pro recipe library.</p>
           </div></div>
         </div>
 
@@ -5912,7 +5921,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p><strong>Free</strong> is the open library, the free skill, and the Free Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $9/mo, a single seat with the full Pro library, and includes the Free Agent. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $9/mo) plus the Full Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase for Pro, $149 for a single seat, covering the library forever (the Free Agent included); the Full Agent stays subscription-only because every fix runs on live AI, so Business has no lifetime option.</p>
+            <p><strong>Free</strong> is the open library, the free skill, and the Free Motion Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $9/mo, a single seat with the full Pro library, and includes the Free Motion Agent. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $9/mo) plus the Full Motion Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase for Pro, $149 for a single seat, covering the library forever (the Free Motion Agent included); the Full Motion Agent stays subscription-only because every fix runs on live AI, so Business has no lifetime option.</p>
           </div></div>
         </div>
 
@@ -5969,7 +5978,7 @@ description: Production-ready CSS
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/community.html">Community</a>
             <a href="/skill.html">Skill</a>
-            <a href="/agent.html">Agent</a>
+            <a href="/agent.html">Motion Agent</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -6385,9 +6394,11 @@ description: Production-ready CSS
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
+        { group: "Pages", label: "Builder", hint: "Build a component with the AI agent", href: "/builder.html", ic: "wand" },
+        { group: "Pages", label: "Projects", hint: "Your saved and published components", href: "/projects.html", ic: "grid" },
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
-        { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Transitions Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -6518,7 +6529,7 @@ description: Production-ready CSS
       /* ── Pricing: billing (Monthly/Annual/Lifetime) × three cards ──
          Card keys stay "solo"/"team" internally (pro-client.js and the
          checkout API key on them); the visible names read Pro / Business.
-         Business has no lifetime (the hosted Agent runs on live AI), so
+         Business has no lifetime (the hosted Motion Agent runs on live AI), so
          under Lifetime its card falls back to the monthly price. */
       var PRICES = {
         free: {
@@ -6815,7 +6826,7 @@ description: Production-ready CSS
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=45" defer></script>
+  <script src="assets/pro-client.js?v=57" defer></script>
 
   <!-- Plan comparison modal behavior (recipe: skill 06-modal state dance). -->
   <script>
@@ -6832,7 +6843,7 @@ description: Production-ready CSS
       function open(kind, trigger) {
         lastTrigger = trigger || null;
         modal.setAttribute("data-show", kind);
-        if (title) title.textContent = kind === "skill" ? "Free skill vs Pro skill" : "Free Agent vs Full Agent";
+        if (title) title.textContent = kind === "skill" ? "Free skill vs Pro skill" : "Free Motion Agent vs Full Motion Agent";
         overlay.setAttribute("data-open", "");
         modal.classList.remove("is-closing");
         overlay.classList.remove("is-closing");
@@ -6864,5 +6875,6 @@ description: Production-ready CSS
     })();
   </script>
   <script src="assets/brand-mark.js?v=4" defer></script>
+  <script src="assets/nav-products.js?v=7" defer></script>
 </body>
 </html>

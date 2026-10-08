@@ -350,24 +350,27 @@ const TRIGGERS = {
   "card-resize": ["resize", "expand", "collapse", "grow", "shrink", "width", "height", "size change"],
   "number-pop-in": ["number", "price", "pricing", "amount", "total", "count", "counter", "balance", "score", "stat", "value", "percent", "$", "€", "monthly", "yearly", "annual", "billing"],
   "notification-badge": ["badge", "notification", "unread", "bell", "dot"],
-  "text-states-swap": ["text", "label", "status", "change", "swap", "switch", "state", "price", "pricing", "monthly", "yearly", "billing", "save", "saved", "copy", "copied", "loading", "done", "tab"],
+  "text-states-swap": ["text", "label", "status", "change", "swap", "switch", "state", "price", "pricing", "monthly", "yearly", "billing", "loading", "done", "tab"],
   "menu-dropdown": ["dropdown", "menu", "popover", "select", "options", "more"],
   "modal": ["modal", "dialog", "popup", "overlay", "lightbox", "sheet"],
   "panel-reveal": ["panel", "drawer", "sidebar", "slide in", "slide-in", "bottom sheet", "reveal"],
-  "page-side-by-side": ["page", "step", "wizard", "onboarding", "list detail", "navigate", "back"],
+  // Tab panels are pages too: switching tabs slides the content side by side.
+  "page-side-by-side": ["page", "pages", "step", "steps", "wizard", "onboarding", "list detail", "navigate", "back", "tab", "tabs", "tab panel", "tabpanel", "panels", "screen", "screens", "view", "views", "segmented", "switch between"],
   "icon-swap": ["icon", "hamburger", "close", "play", "pause", "copy", "check", "toggle icon"],
   "success-check": ["success", "check", "done", "complete", "confirm", "paid", "uploaded"],
   "avatar-group-hover": ["avatar", "avatars", "stack", "chips", "group", "team"],
-  "error-state-shake": ["error", "invalid", "wrong", "shake", "validation", "required"],
+  "error-state-shake": ["error", "invalid", "wrong", "shake", "validation", "required", "email", "password", "sign in", "log in", "login", "invite", "verification code", "form"],
   "input-clear-dissolve": ["clear", "search", "input", "field", "reset"],
   "skeleton-reveal": ["skeleton", "loading", "placeholder", "load"],
   "shimmer-text": ["shimmer", "thinking", "loading text", "generating"],
-  "tabs-sliding": ["tab", "tabs", "segmented", "switcher", "toggle group", "monthly", "yearly", "billing", "filter"],
+  "tabs-sliding": ["tab", "tabs", "segmented", "segmented control", "segment", "switcher", "toggle group", "radio group", "radiogroup", "sliding", "sliding pill", "slide between", "monthly", "yearly", "billing", "filter", "rsvp"],
   "tooltip": ["tooltip", "hint", "info", "hover label"],
   "texts-reveal": ["headline", "hero", "heading", "intro", "empty state", "reveal text", "stagger"],
   "card-tilt": ["tilt", "3d", "card hover", "parallax", "glare"],
   "plus-menu-morph": ["plus", "fab", "compose", "morph"],
-  "accordion": ["accordion", "faq", "disclosure", "show more", "collapsible", "expandable"],
+  // Any toggle that shows or hides content is an accordion, also on edits
+  // where only the current code says so (a Details button, aria-expanded).
+  "accordion": ["accordion", "faq", "disclosure", "show more", "show less", "read more", "see more", "see all", "more info", "details", "expand", "collapse", "expanded", "collapsed", "aria-expanded", "collapsible", "expandable"],
   "toast": ["toast", "snackbar", "alert", "message"],
   "like-button": ["like", "heart", "favorite", "favourite", "upvote"],
   "learn-more-hover": ["learn more", "link", "arrow", "chevron", "cta"],
@@ -379,6 +382,9 @@ const TRIGGERS = {
   "streaming-text": ["stream", "typing", "typewriter", "chat", "response"],
   "matrix-loader": ["loader", "spinner", "loading", "dots"],
   "banner-stacking": ["banner", "stack", "notifications", "toasts", "queue"],
+  "text-morph": ["copy", "copied", "follow", "following", "save", "saved", "label change", "morph text", "text morph", "check in", "checked"],
+  "text-swap-soft": ["period", "week", "month", "year", "range", "currency", "unit", "chart", "total", "values", "data", "stats", "update"],
+  "donut-chart": ["donut", "ring chart", "pie", "chart", "breakdown", "spending", "budget", "allocation", "segments", "portfolio"],
 };
 function recipeOf(md) {
   const part = (h) => {
@@ -405,6 +411,9 @@ const recipes = readdirSync(skillDir).filter((f) => /^\d\d-.+\.md$/.test(f)).sor
   return { id, title: md.split("\n")[0].replace(/^#\s*/, "").trim(), triggers: TRIGGERS[id], recipe: recipeOf(md) };
 });
 writeFileSync(join(root, "assets/community/skills/recipes.json"), JSON.stringify(recipes) + "\n");
+// The API sends every recipe with each draft from its own copy
+// (api/src/ui-agent/recipes.json); API_DIR points at that api folder.
+if (process.env.API_DIR) writeFileSync(join(process.env.API_DIR, "src/ui-agent/recipes.json"), JSON.stringify(recipes) + "\n");
 console.log("wrote", recipes.length, "recipes to assets/community/skills/recipes.json",
   Math.round(recipes.reduce((n, r) => n + r.recipe.length, 0) / 1024) + " KB, largest " +
   Math.max(...recipes.map((r) => r.recipe.length)) + " chars");

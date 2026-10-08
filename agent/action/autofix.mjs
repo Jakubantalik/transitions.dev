@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Automatic fixes on pull requests. Runs inside the Transitions Agent Action
+// Automatic fixes on pull requests. Runs inside the Transitions Motion Agent Action
 // after the scan: when a pull request has fixable motion findings and a
 // license, it gets fixes from the fix service and opens (or updates) one fix
 // pull request into the pull request's own branch, never into main. The score
@@ -145,7 +145,7 @@ async function main() {
       commitMessage: `fix(motion): transitions-agent ${mode} fixes for #${pr.number}`,
       title: ({ before, after }) => `Motion fixes for #${pr.number} (${mode}, score ${before} → ${after})`,
       body: ({ before, after, files, summary, changes }) => fixPrBody({
-        intro: `[Transitions Agent](https://transitions.dev/agent.html) reviewed the motion in #${pr.number} and proposes the changes below. **Merge** this pull request to apply them to #${pr.number}, or **close** it to keep #${pr.number} as it is. It targets \`${pr.head.ref}\`, never your default branch.`,
+        intro: `[Transitions Motion Agent](https://transitions.dev/agent.html) reviewed the motion in #${pr.number} and proposes the changes below. **Merge** this pull request to apply them to #${pr.number}, or **close** it to keep #${pr.number} as it is. It targets \`${pr.head.ref}\`, never your default branch.`,
         mode, before, after, changes, summary, files,
         footer: mode === "polish" && changes && changes.remaining.some((r) => /Revamp installs/.test(r))
           ? [`Want the library recipes installed too? Add the \`revamp\` label to #${pr.number} (Business plan).`, ""]

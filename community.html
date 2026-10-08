@@ -2025,6 +2025,7 @@
       .site-nav .brand-word { display: none; }
     }
   </style>
+  <link rel="stylesheet" href="assets/nav-products.css?v=3" />
   <style>
     /* Pill variant of .icon-btn: gains horizontal padding + a label.
        Stays 36px tall, mirrors the .icon-btn fills so it tracks
@@ -2123,7 +2124,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
-  <link rel="stylesheet" href="assets/community/community.css?v=48" />
+  <link rel="stylesheet" href="assets/community/community.css?v=200" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -2142,10 +2143,16 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <div class="nav-products" data-nav-products>
+            <button type="button" class="nav-pill nav-products-btn" data-nav="products" aria-haspopup="menu" aria-expanded="false" aria-controls="nav-products-menu">Products<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg></button>
+            <div class="tl-menu t-dropdown nav-products-menu" id="nav-products-menu" role="menu" aria-label="Products">
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/library.html"><span class="nav-products-name">Library</span><span class="nav-products-hint">Production-ready UI transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Transitions Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+            </div>
+          </div>
           <a class="nav-pill nav-pill--active" href="/community.html" data-nav="community" aria-current="page">Community</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
           </nav>
@@ -2271,72 +2278,23 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
+          <li class="mobile-menu-group" aria-hidden="true">Products</li>
           <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html">Builder</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Motion Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Transitions Motion Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html" aria-current="page">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <button type="button" class="mobile-menu-cta" id="mobile-signin">Sign in</button>
       </nav>
     </header>
-
-    <header class="header cm-hero">
+    <header class="header cm-hero cm-hero--feed">
       <h1 class="title">Build it, share it, and get inspired</h1>
-      <p class="subtitle">Transitions Community is a place where you can be creative, tweak current components or build components from scratch.</p>
-
-      <!-- Composer (Figma 1696:36087): attached images on top, the prompt, then
-           + and Remix on the left, the Agent menu and send on the right.
-           Wrapped in the libraries.dev border beam (pulse-outside, beam.js). -->
-      <div class="cm-beam" id="cm-beam">
-      <form class="cm-composer" id="cm-composer" novalidate>
-        <label class="sr-only" for="cm-prompt">Describe a component</label>
-        <div class="cm-imgs" id="cm-imgs" aria-label="Attached images" hidden></div>
-        <textarea id="cm-prompt" rows="1" maxlength="2000" placeholder="Tell me what do you want to build"></textarea>
-        <input type="file" id="cm-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden />
-        <div class="cm-composer-row">
-          <div class="st-menu-anchor">
-            <button type="button" class="cm-round" id="cm-plus" aria-label="More ways to start" aria-haspopup="menu" aria-expanded="false">
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </button>
-            <div class="tl-menu t-dropdown tl-menu--left" id="cm-plus-menu" role="menu" aria-label="More ways to start">
-              <button type="button" class="tl-menu-item" role="menuitem" id="cm-upload"><span class="tl-menu-item-label">Upload image</span></button>
-              <a class="tl-menu-item" role="menuitem" id="cm-scratch" href="studio.html?mode=html"><span class="tl-menu-item-label">Start from scratch</span></a>
-            </div>
-          </div>
-          <!-- Remix: picks a library transition to start from (Agent pill styling). -->
-          <div class="cm-remix" id="cm-remix">
-            <button type="button" class="cm-remix-btn" id="cm-remix-btn" aria-haspopup="dialog">
-              <span class="cm-remix-thumb" id="cm-remix-thumb" aria-hidden="true" hidden></span>
-              <span class="cm-remix-key">Remix:</span>
-              <span class="cm-remix-val" id="cm-remix-val">Pick one</span>
-              <svg class="cm-remix-chev" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg>
-            </button>
-            <button type="button" class="cm-remix-clear" id="cm-remix-clear" aria-label="Stop remixing" hidden>
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </button>
-          </div>
-          <span class="cm-grow"></span>
-          <div class="st-menu-anchor">
-            <button type="button" class="cm-agent" id="cm-agent" aria-haspopup="menu" aria-expanded="false">
-              <span id="cm-agent-label">Agent</span>
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg>
-            </button>
-            <div class="tl-menu t-dropdown" id="cm-agent-menu" role="menu" aria-label="Agent">
-              <p class="tl-menu-group">Agent builds in</p>
-              <button type="button" class="tl-menu-item" role="menuitemradio" data-mode="html" aria-checked="true"><span class="tl-menu-item-label">HTML/CSS</span><span class="tl-menu-trail"><span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></button>
-              <button type="button" class="tl-menu-item" role="menuitemradio" data-mode="react" aria-checked="false"><span class="tl-menu-item-label">React</span><span class="tl-menu-trail"><span class="tl-menu-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8.4268L6.46155 11.19223L12 4.97001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></button>
-              <div class="tl-menu-divider" id="cm-quota-rule" hidden></div>
-              <p class="tl-menu-note" id="cm-quota" hidden></p>
-            </div>
-          </div>
-          <button type="submit" class="cm-round cm-send" id="cm-send" aria-label="Build with the agent" disabled>
-            <svg class="cm-arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M7.99967 12.6667V3.33337M12.6663 8.00004L7.99967 3.33337L3.33301 8.00004" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="cm-spin" aria-hidden="true"></span>
-          </button>
-        </div>
-      </form>
+      <div class="cm-hero-actions">
+        <a class="cm-btn cm-btn--primary" href="builder.html">Build a component</a>
+        <a class="cm-btn" href="projects.html" id="cm-hero-projects" hidden>Your projects</a>
       </div>
     </header>
 
@@ -2374,7 +2332,7 @@
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/community.html">Community</a>
             <a href="/skill.html">Skill</a>
-            <a href="/agent.html">Agent</a>
+            <a href="/agent.html">Motion Agent</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -2790,9 +2748,11 @@
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
+        { group: "Pages", label: "Builder", hint: "Build a component with the AI agent", href: "/builder.html", ic: "wand" },
+        { group: "Pages", label: "Projects", hint: "Your saved and published components", href: "/projects.html", ic: "grid" },
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
-        { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Transitions Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -2986,11 +2946,11 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=45" defer></script>
+  <script src="assets/pro-client.js?v=57" defer></script>
 
-  <script src="assets/community/community.js?v=48" defer></script>
-  <script src="assets/community/beam.js?v=48" defer></script>
-  <script src="assets/community/feed.js?v=48" defer></script>
+  <script src="assets/community/community.js?v=160" defer></script>
+  <script src="assets/community/feed.js?v=146" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
+  <script src="assets/nav-products.js?v=7" defer></script>
 </body>
 </html>

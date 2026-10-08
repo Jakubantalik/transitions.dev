@@ -50,7 +50,8 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
     opacity   var(--icon-swap-dur) var(--icon-swap-ease),
     filter    var(--icon-swap-dur) var(--icon-swap-ease),
     transform var(--icon-swap-dur) var(--icon-swap-ease);
-  will-change: opacity, filter, transform;
+  /* No will-change: it would freeze each icon's raster at its 0.25 start
+     scale, so a large icon scales up blurry and pixelated. */
 }
 .t-icon-swap[data-state="a"] .t-icon[data-icon="a"],
 .t-icon-swap[data-state="b"] .t-icon[data-icon="b"] {

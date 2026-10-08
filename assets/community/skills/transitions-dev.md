@@ -38,6 +38,9 @@ Motion tokens and the 32 library transitions from transitions.dev. Reuse these t
 | **Streaming text** | Resolve streamed words one by one through a soft cross-blur. |
 | **Matrix dot loader** | Pulse a 4×4 dot matrix in scan / twinkle / orbit / pulse patterns. |
 | **Banner stacking** | Stack banners like toasts, new ones rise in, older ones push back. |
+| **Text morph** | Keep the letters two labels share and cross-blur only the part that changes, easing its width. |
+| **Text swap soft** | Cross-blur a value into the new one in place, both at once, with no movement. |
+| **Donut chart** | Ring segments with even gaps and rounded corners that morph to new values. |
 
 ## Decision rules
 
@@ -48,7 +51,10 @@ When the user asks for a transition, match against the visible UI element first,
 - **Surface that slides into a region of the page** → panel reveal.
 - **Two screens, list ↔ detail or step 1 ↔ step 2** → page side-by-side.
 - **Element changes width or height** → card resize.
-- **Element's text content changes in place** → text states swap.
+- **A label changes in place and the old and new text share letters at the start or end** (Copy code to Copied, Follow to Following) → text morph.
+- **Element's text content changes in place and the texts share nothing** (Processing to Done) → text states swap.
+- **Values update in place because the data behind a view changed** (a chart's period, a currency, a unit) → text swap soft for every value that changed.
+- **A donut or ring chart** → donut chart (even gaps, the smallest corner radius, morphs when its data changes).
 - **Two icons in the same slot** → icon swap.
 - **A number updates** → number pop-in.
 - **Confirmation / success / "done" moment** (checkmark, payment processed, file uploaded) → success check.

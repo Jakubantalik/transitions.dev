@@ -172,7 +172,7 @@ async function initCi() {
     ...(flags["score-only"] ? [] : [{ name: "transitions-fix.yml", what: "fix pull requests from the Actions tab",
       transform: (b) => fixMode ? b.replace("default: polish", "default: " + fixMode) : b }]),
   ];
-  console.log("Transitions Agent CI setup");
+  console.log("Transitions Motion Agent CI setup");
   console.log("");
   for (const f of files) {
     const dest = join(wfDir, f.name);
@@ -365,7 +365,7 @@ async function initCi() {
   if (!todo.length) {
     console.log(autoFixOn
       ? "CI is fully set up. Every pull request gets a motion score, and when there is something to fix, a fix pull request into its branch: merge it to apply, close it to reject."
-      : "CI is fully set up. Every pull request gets a motion score; run \"Transitions Agent fix\" from the Actions tab for a fix pull request.");
+      : "CI is fully set up. Every pull request gets a motion score; run \"Transitions Motion Agent fix\" from the Actions tab for a fix pull request.");
   } else {
     console.log("Left to do:");
     todo.forEach((t, i) => console.log("  " + (i + 1) + ". " + t));

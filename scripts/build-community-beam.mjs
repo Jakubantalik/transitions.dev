@@ -106,6 +106,16 @@ const DRIVER = ${JSON.stringify(driver)};
 const REF_WIDTH = 350;
 const REF_HEIGHT = 140;
 
+// The package's breathing as authored: every oscillator's range and period.
+// --beam-pulse scales the ranges around their middle (0 holds the glow
+// still, 1 is the package, 2 twice as deep) and --beam-pulse-speed the pace
+// (1 is the package, 2 twice as fast). refresh() applies both.
+const BASE = JSON.parse(JSON.stringify(DRIVER));
+function readNum(el, name, fallback, min, max) {
+  const v = parseFloat(getComputedStyle(el).getPropertyValue(name));
+  return isNaN(v) ? fallback : Math.max(min, Math.min(max, v));
+}
+
 // Hue drift in degrees either way, from --beam-drift on the wrapper.
 function readDrift(el) {
   const v = parseFloat(getComputedStyle(el).getPropertyValue("--beam-drift"));
@@ -179,8 +189,19 @@ function mount(el) {
 // Re-reads the CSS-driven settings (the dev panel calls it after a change).
 function refresh(el) {
   const drift = readDrift(el);
-  DRIVER.light.hue.range = drift;
-  DRIVER.dark.hue.range = drift;
+  const depth = readNum(el, "--beam-pulse", 1, 0, 2);
+  const speed = readNum(el, "--beam-pulse-speed", 1, 0.25, 3);
+  for (const theme of ["light", "dark"]) {
+    DRIVER[theme].hue.range = drift;
+    DRIVER[theme].oscillators.forEach((o, i) => {
+      const b = BASE[theme].oscillators[i];
+      const mid = (b.a + b.b) / 2;
+      o.a = mid + (b.a - mid) * depth;
+      o.b = mid + (b.b - mid) * depth;
+      o.period = b.period / speed;
+      o.delay = b.delay / speed;
+    });
+  }
 }
 
 window.TdevBeam = { mount, refresh };

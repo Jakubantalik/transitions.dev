@@ -299,10 +299,10 @@
       <header class="doc-head">
         <p class="eyebrow"><a href="/">Transitions.dev</a></p>
         <h1>Privacy Policy</h1>
-        <p class="updated">Last updated 3 October 2026</p>
+        <p class="updated">Last updated 8 October 2026</p>
         <p class="lede">
           This policy explains what personal data Transitions.dev processes when you visit the site,
-          create an account, buy a plan or use the Transitions Agent: why, on what legal basis, who
+          create an account, buy a plan or use the Transitions Motion Agent: why, on what legal basis, who
           helps us process it, how long we keep it, and the rights you have. We collect as little as
           the product needs, and we never sell your data.
         </p>
@@ -337,7 +337,11 @@
           <li><strong>Your email address</strong>, used for passwordless sign-in with a one-time code or link, for your account, and for service emails.</li>
           <li><strong>Sign-in records:</strong> one-time codes and links (stored only as hashes), your sessions, and whether you have confirmed your email address.</li>
           <li><strong>Your name</strong>, if you add it or give it at checkout.</li>
-          <li><strong>A free Transitions Agent key</strong>, created and emailed to you when you sign up.</li>
+          <li><strong>A free Transitions Motion Agent key</strong>, created and emailed to you when you sign up.</li>
+          <li><strong>Which version of our Terms you accepted</strong>, and when, each time you continue past the sign-in or sign-up box.</li>
+          <li><strong>If you continue with GitHub:</strong> GitHub tells us your GitHub user ID, your name and your primary verified email address. We use them to sign you in and keep the user ID to recognise you next time. We don't keep GitHub's access token.</li>
+          <li><strong>If you continue with ChatGPT:</strong> OpenAI tells us your OpenAI account ID, your name and your email address. If you also let the Studio use your ChatGPT plan, OpenAI gives us access tokens for it, which we keep encrypted and use only to send your Studio drafts to OpenAI (see below).</li>
+          <li>If GitHub or ChatGPT gives us an email address that already has an account, we email that address a code and only link the two once you enter it.</li>
         </ul>
         <h3>When you buy a plan</h3>
         <ul>
@@ -346,20 +350,22 @@
           <li><strong>Team data</strong>, if you own or join a team: the team name, its members, their roles and pending invitations, including the invited email addresses.</li>
           <li><strong>Download records:</strong> an audit log of protected downloads with your IP address stored only as a salted hash.</li>
         </ul>
-        <h3>When you use the Transitions Agent</h3>
+        <h3>When you use the Transitions Motion Agent</h3>
         <ul>
           <li><strong>Usage records:</strong> each scan or fix run with your account, plan, the number of findings and files, a score and the outcome. We do not store your source code.</li>
-          <li><strong>Hosted fixes:</strong> when you ask the Agent to fix code with our hosted AI, the files in that run and their findings are sent to Anthropic, which generates the proposed edits. Anthropic processes them only to answer the request.</li>
+          <li><strong>Hosted fixes:</strong> when you ask the Motion Agent to fix code with our hosted AI, the files in that run and their findings are sent to Anthropic, which generates the proposed edits. Anthropic processes them only to answer the request.</li>
         </ul>
         <h3 id="community">When you use the Community and the Studio</h3>
         <ul>
-          <li><strong>Your Community profile:</strong> a handle, a display name (by default your account name), an optional bio, and your profile picture if you add one on the account page. <strong>It stays private until you publish a component.</strong> From then on, your handle, display name, bio, picture and published components are public, with their like and view counts. Unpublish everything and the profile is private again.</li>
+          <li><strong>Your Community profile:</strong> a handle, a display name (by default your account name), an optional bio and X handle, and your profile picture if you add one on the account page. Your email address is never shown on it; only you see it on your own profile. <strong>It stays private until a component of yours passes review and is published.</strong> From then on, your handle, display name, bio, picture and published components are public, with their like and view counts. Unpublish everything and the profile is private again.</li>
           <li><strong>Components:</strong> the code, title and description you save. Drafts are visible only to you; published ones are public and others can open, copy and remix them. Remixes credit the original author's handle.</li>
           <li><strong>Likes</strong> you give, shown only as counts.</li>
           <li><strong>Views:</strong> we count one view per viewer, per component, per day. To avoid counting twice we keep, for 3 days, your account ID if you are signed in, or otherwise a salted hash of your IP address.</li>
           <li><strong>AI drafts:</strong> when you ask the Studio's AI agent to build or change a component, we send Anthropic your request, the current code, the element you selected, the images and drawings you attach, and the skills, libraries and design system you chose. Anthropic generates the component and processes the data only to answer. We keep your request text for 90 days (for abuse prevention and your monthly allowance), and a record of the draft without the text for 13 months. We do not keep the images.</li>
+          <li><strong>AI drafts on your ChatGPT plan:</strong> if you connect ChatGPT and pick it in the Studio, the same request data goes to OpenAI instead of Anthropic, under your own ChatGPT account. OpenAI processes it under its terms and privacy policy and your ChatGPT settings, and counts it against your plan and the usage limit you set for Transitions.dev. We ask OpenAI not to store the request (<code>store: false</code>). We keep the same record of the draft as for any other, without a cost.</li>
           <li><strong>Design systems and skills</strong> you add, until you delete them. Extracting a design system from screenshots sends those screenshots to Anthropic in the same way.</li>
-          <li><strong>Reports and reviews:</strong> if you report a component, your account, the category and your explanation. The author is not told who reported it. If your component is hidden, your request for a review and its outcome.</li>
+          <li><strong>Content checks:</strong> when you publish a component, change a published one, or change your Community name, handle, bio or profile picture, we send the visible text (title, description, the words in the component), images in the component and your picture to OpenAI's Moderation API, which scores them for harmful content. OpenAI processes them only to give that answer and doesn't use them to train its models. We keep what the checks and our reviewers decided about your components, profile and picture until you delete your account.</li>
+          <li><strong>Reports and reviews:</strong> if you report a component or a profile, your account, the category and your explanation. The author is not told who reported it. If your component is hidden, your request for a review and its outcome.</li>
           <li><strong>In your browser:</strong> the Studio keeps an unsaved draft (<code>tdev:studio:scratch</code>), your skill and library choices (<code>tdev:studio:context</code>) and your build mode (<code>tdev:community:mode</code>) in local storage, and briefly hands a prompt and its images from the Community page to the Studio in session storage.</li>
         </ul>
         <h3>When you contact us</h3>
@@ -374,13 +380,13 @@
           <table class="proc">
             <thead><tr><th>Purpose</th><th>Legal basis (GDPR)</th></tr></thead>
             <tbody>
-              <tr><td>Running your account, sign-in, plans, teams, downloads and the Agent, including hosted fixes</td><td>Contract, Art. 6(1)(b)</td></tr>
+              <tr><td>Running your account, sign-in, plans, teams, downloads and the Motion Agent, including hosted fixes</td><td>Contract, Art. 6(1)(b)</td></tr>
               <tr><td>The Community and the Studio: profiles, components, likes, AI drafts, design systems and skills; showing what you publish</td><td>Contract, Art. 6(1)(b)</td></tr>
               <tr><td>View counts, and handling reports, moderation and reviews</td><td>Legitimate interest in a fair, safe Community, and our legal duties as a hosting service under the Digital Services Act, Art. 6(1)(c) and (f)</td></tr>
               <tr><td>Service emails: sign-in codes, team invitations, purchase confirmations, receipts and important account notices</td><td>Contract, Art. 6(1)(b)</td></tr>
               <tr><td>Billing records, invoices and tax</td><td>Legal obligation, Art. 6(1)(c)</td></tr>
               <tr><td>Security: rate limiting, abuse and fraud prevention, the download audit log, server logs</td><td>Legitimate interest in a secure service, Art. 6(1)(f)</td></tr>
-              <tr><td>Cookieless analytics and an internal customer overview that combines account, plan and Agent usage data (for example your company name from Stripe or your email domain, and your country) so we can support customers and improve the product</td><td>Legitimate interest in understanding and supporting our customers, Art. 6(1)(f)</td></tr>
+              <tr><td>Cookieless analytics and an internal customer overview that combines account, plan and Motion Agent usage data (for example your company name from Stripe or your email domain, and your country) so we can support customers and improve the product</td><td>Legitimate interest in understanding and supporting our customers, Art. 6(1)(f)</td></tr>
               <tr><td>Regional pricing</td><td>Legitimate interest in fair regional prices, Art. 6(1)(f)</td></tr>
               <tr><td>Answering your messages</td><td>Legitimate interest, or steps before or under a contract</td></tr>
             </tbody>
@@ -400,7 +406,9 @@
               <tr><td>Cloudflare (USA, global network)</td><td>API, database, key storage, request logs, country lookup</td><td>Account, team, plan and usage data, hashed logs, IP address in transit</td></tr>
               <tr><td>GitHub (USA)</td><td>Serving the website; star count</td><td>IP address and request data</td></tr>
               <tr><td>Resend (USA, sending from the EU)</td><td>Service email</td><td>Email address and message content</td></tr>
-              <tr><td>Anthropic (USA)</td><td>AI for the Agent's hosted fixes, Studio drafts and design system extraction</td><td>Code and findings in a fix run; Studio requests, code, selected elements, attached images and chosen context</td></tr>
+              <tr><td>Anthropic (USA)</td><td>AI for the Motion Agent's hosted fixes, Studio drafts and design system extraction</td><td>Code and findings in a fix run; Studio requests, code, selected elements, attached images and chosen context</td></tr>
+              <tr><td>GitHub (USA)</td><td>Sign in with GitHub, if you use it</td><td>Your GitHub user ID, name and verified email address</td></tr>
+              <tr><td>OpenAI (USA)</td><td>Content checks for published components and Community profiles (Moderation API); Sign in with ChatGPT and Studio drafts on your ChatGPT plan, if you use them</td><td>For checks: a component's title, description, visible text and images, and your Community name, bio and profile picture. For sign-in and drafts: your OpenAI account ID, name and email address, and the same request data as Studio drafts sent to Anthropic</td></tr>
               <tr><td>esm.sh</td><td>Loads code libraries for component previews and the Studio editor</td><td>IP address and request data when a preview loads</td></tr>
               <tr><td>GoatCounter</td><td>Cookieless analytics</td><td>Page, referrer, browser type, screen size, country</td></tr>
               <tr><td>Google (Gmail)</td><td>Our email inbox</td><td>Messages you send us, feedback, and account notifications we send ourselves</td></tr>
@@ -444,8 +452,10 @@
           <li><strong>Sign-up without confirming your email:</strong> deleted after 7 days.</li>
           <li><strong>One-time codes and links:</strong> expire after 15 minutes and are deleted within a day.</li>
           <li><strong>Sessions:</strong> deleted when they expire, at most 30 days after your last visit.</li>
+          <li><strong>Linked GitHub and ChatGPT accounts, and ChatGPT plan tokens:</strong> until you disconnect them or delete your account. Tokens OpenAI has revoked are deleted when we notice.</li>
+          <li><strong>Sign-in with GitHub or ChatGPT in progress:</strong> 10 to 15 minutes.</li>
           <li><strong>Team invitations:</strong> deleted 30 days after they expire, or 90 days after they are accepted or revoked.</li>
-          <li><strong>Agent usage records:</strong> 24 months.</li>
+          <li><strong>Motion Agent usage records:</strong> 24 months.</li>
           <li><strong>Community profile, components, likes, design systems and skills:</strong> until you delete them or your account.</li>
           <li><strong>AI draft requests:</strong> the text for 90 days, the record without it for 13 months.</li>
           <li><strong>View de-duplication records:</strong> 3 days.</li>
@@ -510,7 +520,7 @@
               <a href="/">Home</a>
               <a href="/">Transitions</a>
               <a href="/skill.html">Skill</a>
-              <a href="/agent.html">Agent</a>
+              <a href="/agent.html">Motion Agent</a>
               <a href="/pro.html">Get Pro</a>
             </div>
             <div class="footer-col">

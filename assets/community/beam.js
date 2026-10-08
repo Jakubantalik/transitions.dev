@@ -58,6 +58,11 @@
   var DRIVER = { "light": { "oscillators": [{ "prop": "--bw1-cmb-light", "a": 0.64, "b": 1.396, "period": 4.14, "delay": 0, "unit": "" }, { "prop": "--bh1-cmb-light", "a": 1.324, "b": 0.694, "period": 5.795999999999999, "delay": 0, "unit": "" }, { "prop": "--bx1-cmb-light", "a": -19, "b": 17.1, "period": 5.920000000000001, "delay": 0, "unit": "px" }, { "prop": "--by1-cmb-light", "a": 10.450000000000001, "b": -13.299999999999999, "period": 5.920000000000001, "delay": 0, "unit": "px" }, { "prop": "--bw2-cmb-light", "a": 1.3599999999999999, "b": 0.694, "period": 5.06, "delay": 0, "unit": "" }, { "prop": "--bh2-cmb-light", "a": 0.712, "b": 1.3780000000000001, "period": 3.726, "delay": 0, "unit": "" }, { "prop": "--bx2-cmb-light", "a": 15.200000000000001, "b": -17.1, "period": 6.9559999999999995, "delay": 0, "unit": "px" }, { "prop": "--by2-cmb-light", "a": -19, "b": 12.35, "period": 6.9559999999999995, "delay": 0, "unit": "px" }, { "prop": "--bw3-cmb-light", "a": 0.784, "b": 1.414, "period": 4.508, "delay": 0, "unit": "" }, { "prop": "--bh3-cmb-light", "a": 1.27, "b": 0.64, "period": 6.4399999999999995, "delay": 0, "unit": "" }, { "prop": "--bx3-cmb-light", "a": -11.4, "b": 19, "period": 5.365, "delay": 0, "unit": "px" }, { "prop": "--by3-cmb-light", "a": -16.15, "b": 8.55, "period": 5.365, "delay": 0, "unit": "px" }, { "prop": "--bgh-cmb-light", "a": 0.42000000000000004, "b": 1.58, "period": 3.8, "delay": 0, "unit": "" }, { "prop": "--bop-tl-cmb-light", "a": 1, "b": 1, "period": 3.7, "delay": 0, "unit": "" }, { "prop": "--bop-tr-cmb-light", "a": 1, "b": 1, "period": 4.884, "delay": 1.0360000000000003, "unit": "" }, { "prop": "--bop-bl-cmb-light", "a": 1, "b": 1, "period": 3.108, "delay": 2.035, "unit": "" }, { "prop": "--bop-br-cmb-light", "a": 1, "b": 1, "period": 5.846000000000001, "delay": 3.071, "unit": "" }], "hue": { "prop": "--beam-hue-cmb-light", "range": 12, "period": 14, "continuous": false } }, "dark": { "oscillators": [{ "prop": "--bw1-cmb-dark", "a": 0.72, "b": 1.308, "period": 5.760000000000001, "delay": 0, "unit": "" }, { "prop": "--bh1-cmb-dark", "a": 1.252, "b": 0.762, "period": 8.064, "delay": 0, "unit": "" }, { "prop": "--bx1-cmb-dark", "a": -14, "b": 12.6, "period": 3.6799999999999997, "delay": 0, "unit": "px" }, { "prop": "--by1-cmb-dark", "a": 7.700000000000001, "b": -9.799999999999999, "period": 3.6799999999999997, "delay": 0, "unit": "px" }, { "prop": "--bw2-cmb-dark", "a": 1.28, "b": 0.762, "period": 7.040000000000001, "delay": 0, "unit": "" }, { "prop": "--bh2-cmb-dark", "a": 0.776, "b": 1.294, "period": 5.184000000000001, "delay": 0, "unit": "" }, { "prop": "--bx2-cmb-dark", "a": 11.200000000000001, "b": -12.6, "period": 4.324, "delay": 0, "unit": "px" }, { "prop": "--by2-cmb-dark", "a": -14, "b": 9.1, "period": 4.324, "delay": 0, "unit": "px" }, { "prop": "--bw3-cmb-dark", "a": 0.832, "b": 1.322, "period": 6.272, "delay": 0, "unit": "" }, { "prop": "--bh3-cmb-dark", "a": 1.21, "b": 0.72, "period": 8.959999999999999, "delay": 0, "unit": "" }, { "prop": "--bx3-cmb-dark", "a": -8.4, "b": 14, "period": 3.3349999999999995, "delay": 0, "unit": "px" }, { "prop": "--by3-cmb-dark", "a": -11.9, "b": 6.3, "period": 3.3349999999999995, "delay": 0, "unit": "px" }, { "prop": "--bgh-cmb-dark", "a": 0.84, "b": 1.16, "period": 2.4, "delay": 0, "unit": "" }, { "prop": "--bop-tl-cmb-dark", "a": 0.54, "b": 1, "period": 2.3, "delay": 0, "unit": "" }, { "prop": "--bop-tr-cmb-dark", "a": 0.54, "b": 1, "period": 3.036, "delay": 0.644, "unit": "" }, { "prop": "--bop-bl-cmb-dark", "a": 0.54, "b": 1, "period": 1.9319999999999997, "delay": 1.265, "unit": "" }, { "prop": "--bop-br-cmb-dark", "a": 0.54, "b": 1, "period": 3.634, "delay": 1.9089999999999998, "unit": "" }], "hue": { "prop": "--beam-hue-cmb-dark", "range": 12, "period": 14, "continuous": false } } };
   var REF_WIDTH = 350;
   var REF_HEIGHT = 140;
+  var BASE = JSON.parse(JSON.stringify(DRIVER));
+  function readNum(el, name, fallback, min, max) {
+    const v = parseFloat(getComputedStyle(el).getPropertyValue(name));
+    return isNaN(v) ? fallback : Math.max(min, Math.min(max, v));
+  }
   function readDrift(el) {
     const v = parseFloat(getComputedStyle(el).getPropertyValue("--beam-drift"));
     return isNaN(v) ? 12 : Math.max(0, Math.min(180, v));
@@ -128,8 +133,19 @@
   }
   function refresh(el) {
     const drift = readDrift(el);
-    DRIVER.light.hue.range = drift;
-    DRIVER.dark.hue.range = drift;
+    const depth = readNum(el, "--beam-pulse", 1, 0, 2);
+    const speed = readNum(el, "--beam-pulse-speed", 1, 0.25, 3);
+    for (const theme of ["light", "dark"]) {
+      DRIVER[theme].hue.range = drift;
+      DRIVER[theme].oscillators.forEach((o, i) => {
+        const b = BASE[theme].oscillators[i];
+        const mid = (b.a + b.b) / 2;
+        o.a = mid + (b.a - mid) * depth;
+        o.b = mid + (b.b - mid) * depth;
+        o.period = b.period / speed;
+        o.delay = b.delay / speed;
+      });
+    }
   }
   window.TdevBeam = { mount, refresh };
 })();
