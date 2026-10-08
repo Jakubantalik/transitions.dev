@@ -516,11 +516,6 @@
   // Terms version the buyer accepts at checkout (bump with terms.html).
   var TERMS_VERSION = "2026-10-03";
 
-  // EU consumer law: digital content that starts at once is only exempt from
-  // the 14-day withdrawal right if the buyer asks for immediate access and
-  // acknowledges losing the right, before paying. This asks, and the API
-  // records the answer on the Stripe session and in the confirmation email.
-  // Resolves true to continue, false to stop.
   function buyCss() {
     if (!document.getElementById("tp-buy-css")) {
       var css = document.createElement("style");
@@ -547,48 +542,6 @@
       document.head.appendChild(css);
     }
   }
-  function confirmPurchase(plan, billingKind) {
-    return new Promise(function (resolve) {
-      buyCss();
-      var lifetime = billingKind === "lifetime" && plan !== "team";
-      var wrap = document.createElement("div");
-      wrap.className = "tp-buy";
-      wrap.innerHTML =
-        '<div class="tp-buy-card" role="dialog" aria-modal="true" aria-labelledby="tp-buy-title">' +
-          '<h2 id="tp-buy-title">Before you pay</h2>' +
-          "<p>" + (lifetime
-            ? "Lifetime is a one-time payment."
-            : "Your plan renews automatically each " + (billingKind === "annual" ? "year" : "month") + " until you cancel, which you can do any time from your account.") +
-            " VAT is added at checkout where it applies, and Stripe shows the full amount before you confirm.</p>" +
-          '<label><input type="checkbox" class="tp-buy-ok" /><span>I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and want access to start right away. ' +
-            'I understand that I lose my 14-day <a href="/terms.html#withdrawal" target="_blank" rel="noopener">right of withdrawal</a> once access begins.</span></label>' +
-          '<div class="tp-buy-row"><button type="button" class="tp-buy-no">Cancel</button>' +
-          '<button type="button" class="tp-buy-go" disabled>Continue to payment</button></div>' +
-        "</div>";
-      document.body.appendChild(wrap);
-      var ok = wrap.querySelector(".tp-buy-ok");
-      var go = wrap.querySelector(".tp-buy-go");
-      var last = document.activeElement;
-      var done = false;
-      function finish(v) {
-        if (done) return;
-        done = true;
-        document.removeEventListener("keydown", onKey, true);
-        wrap.classList.remove("is-open");
-        setTimeout(function () { wrap.remove(); if (last && last.focus) last.focus(); }, 200);
-        resolve(v);
-      }
-      function onKey(e) { if (e.key === "Escape") { e.stopPropagation(); finish(false); } }
-      document.addEventListener("keydown", onKey, true);
-      ok.addEventListener("change", function () { go.disabled = !ok.checked; });
-      go.addEventListener("click", function () { if (ok.checked) finish(true); });
-      wrap.querySelector(".tp-buy-no").addEventListener("click", function () { finish(false); });
-      wrap.addEventListener("mousedown", function (e) { if (e.target === wrap) finish(false); });
-      requestAnimationFrame(function () { wrap.classList.add("is-open"); });
-      setTimeout(function () { ok.focus(); }, 30);
-    });
-  }
-
   // Moving a subscription to another Builder credit tier: prorated now, so an
   // upgrade charges the difference today and a downgrade credits the next
   // invoice. Resolves true to go ahead.
@@ -661,12 +614,10 @@
     // A larger Builder credit tier picked on the card (not for Lifetime).
     var credits = cta ? +cta.getAttribute("data-credits") : 0;
     if (credits && credits !== (plan === "team" ? 900 : 600) && payload.plan !== "lifetime") payload.credits = credits;
-    return confirmPurchase(plan, billingKind).then(function (agreed) {
-      if (!agreed) return;
-      // What the buyer agreed to, recorded with the order.
-      payload.consent = { terms: TERMS_VERSION, immediate_access: true, withdrawal_waiver: true };
-      return toCheckout(payload, cta);
-    });
+    // Straight to Stripe (user decision 2026-10-08: no pre-checkout dialog).
+    // No withdrawal waiver is asked for, so EU and EEA buyers keep their
+    // 14-day right of withdrawal (see terms.html#withdrawal).
+    return toCheckout(payload, cta);
   }
 
   function toCheckout(payload, cta) {
