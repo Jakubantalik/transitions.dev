@@ -163,7 +163,19 @@ html[data-theme="dark"] .cm-btn--accent { color: #04131a; }
   border-radius: 20px;
 }
 
-html[data-theme="dark"] .cm-beam { --beam-strength: 0.71; --beam-core-blur: 22.5px; --beam-bloom-blur: 22.5px; --beam-glow-brightness: 1.4; --beam-glow-saturate: 1.2; }
+/* Dark: the package's own dark values (border-beam "dark" preset); the
+   light tuning above stays light-only. Retune with the dev panel's Dark tab. */
+html[data-theme="dark"] .cm-beam {
+  --beam-strength: 1;
+  --beam-core-blur: 3px;
+  --beam-bloom-blur: 22.5px;
+  --beam-glow-brightness: 1.9;
+  --beam-glow-saturate: 1.2;
+  --beam-hue-base: 0deg;
+  --beam-drift: 12;
+  --beam-pulse: 1;
+  --beam-pulse-speed: 1;
+}
 
 /* The beam's border layer sits under the composer, so the input's own ring
    and shadows draw over the whole effect; set 1px outside the edge, it shows

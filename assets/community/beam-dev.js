@@ -87,6 +87,9 @@
     ".bdev-fab{position:fixed;right:16px;bottom:16px;z-index:2147483000;box-shadow:var(--menu-shadow)}" +
     ".bdev-section{margin:4px 0 -4px;font-size:11px;font-weight:500;letter-spacing:.02em;text-transform:uppercase;color:var(--text-faint)}" +
     ".bdev-hint{color:var(--text-faint);font-size:11px;line-height:15px}" +
+    ".bdev-seg{display:flex;gap:2px;padding:2px;border-radius:60px;background:var(--chip-bg)}" +
+    ".bdev-seg button{flex:1;height:24px;border:0;border-radius:60px;background:none;color:var(--text-muted);font:500 12px/16px var(--font-sans);cursor:pointer;transition:background-color 150ms ease,color 150ms ease}" +
+    ".bdev-seg button.is-on{background:var(--card-bg,#fff);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.12)}" +
     ".bdev-row{display:flex;flex-direction:column;gap:4px}" +
     ".bdev-row-head{display:flex;justify-content:space-between;color:var(--text-muted)}" +
     ".bdev-changed{color:var(--text)}" +
@@ -120,6 +123,10 @@
     '<header class="bdev-head"><span class="bdev-title">Border beam · dev</span>' +
       '<span class="bdev-actions"><button type="button" class="bdev-btn" data-reset>Reset</button>' +
       '<button type="button" class="bdev-btn" data-close aria-label="Close">×</button></span></header>' +
+    // Light and dark are tuned separately: the tab shows the page in that theme.
+    '<div class="bdev-seg" role="tablist" aria-label="Theme to tune">' +
+      '<button type="button" role="tab" data-theme-tab="light">Light</button>' +
+      '<button type="button" role="tab" data-theme-tab="dark">Dark</button></div>' +
     '<p class="bdev-hint" data-theme-note></p>' +
     '<p class="bdev-section">Glow</p>' + GLOW.map(sliderRow).join("") +
     '<p class="bdev-section">Color</p>' +
@@ -145,7 +152,12 @@
     return sel + " {\n  " + parts.join("\n  ") + "\n}";
   }
   function paint() {
-    panel.querySelector("[data-theme-note]").textContent = "Tuning the " + theme() + " theme. Values apply live and stay after a reload.";
+    panel.querySelector("[data-theme-note]").textContent = "Tuning the " + theme() + " theme only. Values apply live and stay after a reload.";
+    panel.querySelectorAll("[data-theme-tab]").forEach(function (b) {
+      var on = b.getAttribute("data-theme-tab") === theme();
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
     SLIDERS.forEach(function (r) {
       var v = values[r[0]];
       panel.querySelector('[data-var="' + r[0] + '"]').value = v;
@@ -174,6 +186,10 @@
     remember(k || c);
     apply();
     paint();
+  });
+  // Switching the tab switches the page's theme (the observer below re-syncs).
+  panel.querySelectorAll("[data-theme-tab]").forEach(function (b) {
+    b.addEventListener("click", function () { document.documentElement.setAttribute("data-theme", b.getAttribute("data-theme-tab")); });
   });
   panel.querySelector("[data-reset]").addEventListener("click", function () {
     delete saved[theme()];
