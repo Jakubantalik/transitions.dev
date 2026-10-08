@@ -207,6 +207,24 @@
     @media (max-width: 1100px) { .periods { grid-template-columns: repeat(2, minmax(0, 1fr)); } .period:nth-child(2) { border-right: none; } .period:nth-child(-n+2) { border-bottom: 1px solid var(--c-line); } }
     @media (max-width: 860px) { .day-table .col-agentday { display: none; } }
 
+    /* Errors view. */
+    .err-sum { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 12px; border-bottom: 1px solid var(--c-line); }
+    .err-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: none; border-radius: 36px; cursor: pointer;
+      font-size: 12px; font-weight: 500; background: var(--chip-bg); box-shadow: var(--chip-ring); color: var(--c-text-mut2); transition: background 0.12s ease; }
+    .err-chip:hover { background: var(--c-ghost-h); }
+    .err-chip.is-on { background: var(--c-blue-bg); color: var(--c-blue); box-shadow: none; }
+    .err-chip b { font-weight: 500; color: var(--c-text); font-variant-numeric: tabular-nums; }
+    .err-chip.is-on b { color: inherit; }
+    .err-dot { width: 6px; height: 6px; border-radius: 50%; background: #c2410c; }
+    .err-dot.fail { background: var(--err-fg); }
+    .err-dot.info { background: var(--c-text-faint); }
+    .err-table td { height: 44px; white-space: normal; }
+    .err-table td.when { white-space: nowrap; color: var(--c-text-mut2); }
+    .err-table td.detail { font-size: 12px; line-height: 16px; color: var(--c-text-mut2); max-width: 420px; word-break: break-word; }
+    .err-what { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .err-where { font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
+    .err-count { color: var(--err-fg); }
+
     /* Range picker in the header: the Refine tool's select. */
     .range-select {
       appearance: none; -webkit-appearance: none; height: 32px; border: none; border-radius: 8px; cursor: pointer;
@@ -416,6 +434,7 @@
         <div class="seg view-seg" id="view-seg" role="tablist" aria-label="View">
           <button type="button" role="tab" class="seg-btn is-active" data-view="people" aria-selected="true">People</button>
           <button type="button" role="tab" class="seg-btn" data-view="daily" aria-selected="false">Daily</button>
+          <button type="button" role="tab" class="seg-btn" data-view="errors" aria-selected="false">Errors</button>
         </div>
         <button type="button" class="btn-sec" id="export-btn" title="Download the current view as CSV">
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5v7.5m0 0L5 7m3 3 3-3M3 12.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -440,6 +459,7 @@
       <div id="agent-band"></div>
       <div id="builder-band"></div>
       <div id="daily-view" hidden></div>
+      <div id="errors-view" hidden></div>
 
       <div class="toolbar" id="people-toolbar">
         <label class="field">
@@ -464,6 +484,7 @@
                 <th data-sort="builder_drafts" class="num col-builder" title="Builder drafts that finished (failed ones in the tooltip)">Drafts<span class="arrow"></span></th>
                 <th data-sort="builder_credits" class="num col-builder" title="Builder credits spent (1 credit = $0.01 of AI)">Credits<span class="arrow"></span></th>
                 <th data-sort="community" class="col-community" title="Community components and Builder drafts">Community<span class="arrow"></span></th>
+                <th data-sort="errors" class="num col-errors" title="Errors in the last 30 days (Builder and Motion Agent)">Errors<span class="arrow"></span></th>
                 <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
                 <th data-sort="created" class="col-signup">Joined<span class="arrow"></span></th>
                 <th data-sort="last" class="col-last">Last sign-in<span class="arrow"></span></th>
@@ -676,6 +697,7 @@
         fixes: function (p) { return fixCount(p); },
         builder_drafts: function (p) { var c = p.community; return c ? (c.drafts || 0) + (c.failed || 0) / 1e3 : -1; },
         builder_credits: function (p) { var c = p.community; return c ? (c.credits || 0) + (c.drafts || 0) / 1e4 : -1; },
+        errors: function (p) { var e = p.errors; return e ? e.count * 1e3 + e.count_7d : 0; },
         community: function (p) { var c = p.community; return c ? c.pending * 1e6 + c.live * 1e3 + c.made + c.drafts / 1e3 : -1; },
         agent: function (p) { var a = p.agent; return a ? (a.fixes_month * 1e6 + (a.fixes_total || 0) * 1e3 + (a.last_used ? 1 : 0) + (a.key ? 0.5 : 0)) : -1; },
         created: function (p) { return p.created_at || ""; },
@@ -727,13 +749,16 @@
         var v = T[k] || {}; s.drafts += v.drafts || 0; s.failed += v.failed || 0; s.credits += v.credits || 0; return s;
       }, { drafts: 0, failed: 0, credits: 0 });
       var monthDrafts = ["free", "paid", "chatgpt"].reduce(function (s, k) { return s + ((M[k] || {}).drafts || 0); }, 0);
-      // Per person who drafted on that tier: tokens are input + output.
+      // Per person who drafted on that tier, in credits (1 credit = $0.01 of
+      // AI); a ChatGPT plan costs no credits, so it shows tokens (input + output).
       var perUser = function (label, k, credits) {
         var v = T[k] || {}, m = M[k] || {};
-        return { label: label, value: v.users ? tok(v.avg_tokens) + " tokens" : "·",
+        return { label: label,
+          value: !v.users ? "·" : credits ? num(v.avg_credits) + " credits" : tok(v.avg_tokens) + " tokens",
           sub: v.users
-            ? plural(v.users, "person", "people") + (credits ? " · " + num(v.avg_credits) + " credits each" : "") +
-              " · " + num(v.avg_drafts) + " drafts each" + (m.users ? " · this month " + tok(m.avg_tokens) : "")
+            ? plural(v.users, "person", "people") + " · " + num(v.avg_drafts) + " drafts each" +
+              (credits ? " · " + tok(v.avg_tokens) + " tokens each" : "") +
+              (m.users ? " · this month " + (credits ? num(m.avg_credits) + " credits" : tok(m.avg_tokens)) : "")
             : "no drafts yet" };
       };
       var cells = [
@@ -744,7 +769,7 @@
         { label: "Credits used", value: num(all.credits), sub: "$" + (all.credits / 100).toFixed(2) + " of AI · free " + num((T.free || {}).credits) + " · paid " + num((T.paid || {}).credits) },
         { label: "Components", value: num(C.made), sub: num(C.drafts) + " drafts · " + num(C.live) + " live" + (C.in_review ? " · " + num(C.in_review) + " in review" : "") }
       ];
-      el.innerHTML = '<div class="band-label"><strong>Transitions UI Builder</strong><span>tokens are input + output per person who drafted, all time</span></div>' +
+      el.innerHTML = '<div class="band-label"><strong>Transitions UI Builder</strong><span>averages per person who drafted, all time</span></div>' +
         '<div class="stats stats--agent">' + cells.map(function (c) {
           return '<div class="stat"><span class="stat-label">' + esc(c.label) + '</span><span class="stat-value">' + esc(c.value) + '</span><span class="stat-sub">' + esc(c.sub) + "</span></div>";
         }).join("") + "</div>";
@@ -843,6 +868,12 @@
             var sub = [c.live ? c.live + " live" : "", c.pending ? c.pending + " in review" : "", c.drafts ? plural(c.drafts, "draft") : ""].filter(Boolean).join(" · ");
             return '<td class="col-community"><div class="agent-cell"><span class="agent-main">' + esc((c.handle ? "@" + c.handle + " · " : "") + plural(c.made, "component")) +
               (c.pending ? ' <span class="tag tag--warn">Review</span>' : "") + '</span><span class="agent-sub">' + esc(sub) + "</span></div></td>";
+          })() +
+          (function () {
+            var e = p.errors;
+            if (!e || !e.count) return '<td class="num tnum col-errors"><span class="muted">·</span></td>';
+            return '<td class="num tnum col-errors" title="' + esc("Last: " + errLabel(e.last_code) + ", " + ago(e.last_at) + (e.count_7d ? " · " + e.count_7d + " in 7 days" : "")) + '">' +
+              '<span class="err-count">' + esc(num(e.count)) + "</span></td>";
           })() +
           '<td class="num tnum">' + (paidText(p.paid) ? esc(paidText(p.paid)) : '<span class="muted">·</span>') + "</td>" +
           '<td class="col-signup tnum">' + esc(day(p.created_at)) + "</td>" +
@@ -1013,6 +1044,50 @@
         }).join("") + "</tbody></table></div>";
       el.innerHTML = html;
     }
+    /* ─── Errors ────────────────────────────────────────────── */
+    // code -> [label, "limit" (a wall they hit) or "fail" (something broke)]
+    var ERR = {
+      build_failed: ["Build failed", "fail"], interrupted: ["Build interrupted", "fail"], stopped: ["Stopped by them", "info"],
+      out_of_credits: ["Out of credits", "limit"], free_capacity: ["Free pool used up", "limit"], capacity: ["Daily capacity reached", "limit"],
+      hourly_limit: ["Hourly draft limit", "limit"], draft_limit: ["Draft limit (10 private)", "limit"], agent_pro: ["Opus needs a paid plan", "limit"],
+      design_system_pro: ["Design systems need Pro", "limit"], pro_required: ["Pro skill needs Pro", "limit"],
+      review_queue_full: ["Review queue full", "limit"], publish_daily_limit: ["Publish limit for today", "limit"], account_restricted: ["Account restricted", "limit"],
+      fix_failed: ["Fix failed (AI)", "fail"], quota: ["Monthly fix quota used", "limit"], daily: ["Daily fix cap", "limit"],
+      revamp_gate: ["Revamp needs Business", "limit"], model: ["Fix failed (AI)", "fail"]
+    };
+    function errLabel(code) { return (ERR[code] || [String(code || "Error").replace(/_/g, " ")])[0]; }
+    state.errCode = null;
+    function renderErrors() {
+      var all = (state.data.errors && state.data.errors.list) || [];
+      var el = $("errors-view");
+      var counts = {};
+      all.forEach(function (e) { counts[e.code] = (counts[e.code] || 0) + 1; });
+      var codes = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+      var list = state.errCode ? all.filter(function (e) { return e.code === state.errCode; }) : all;
+      var html = '<div class="err-sum">' +
+        '<button type="button" class="err-chip' + (state.errCode ? "" : " is-on") + '" data-err="">All <b>' + num(all.length) + "</b></button>" +
+        codes.map(function (c) {
+          var kind = (ERR[c] || [])[1];
+          return '<button type="button" class="err-chip' + (state.errCode === c ? " is-on" : "") + '" data-err="' + esc(c) + '"><span class="err-dot' + (kind === "fail" ? " fail" : kind === "info" ? " info" : "") + '"></span>' +
+            esc(errLabel(c)) + " <b>" + num(counts[c]) + "</b></button>";
+        }).join("") + "</div>";
+      if (!list.length) {
+        html += '<div class="empty">No errors in the last ' + ((state.data.errors && state.data.errors.days) || 30) + " days.</div>";
+      } else {
+        html += '<div class="table-wrap"><table class="err-table"><thead><tr><th>When</th><th>Person</th><th>What</th><th>Details</th></tr></thead><tbody>' +
+          list.slice(0, 500).map(function (e) {
+            var p = e.email && state.data.people.find(function (x) { return x.email === e.email; });
+            var where = (e.source === "agent" ? "Motion Agent" : "Builder") + (e.tier ? " · " + e.tier : "") + (e.model ? " · " + e.model.replace(/^claude-/, "") : "") + (e.mode ? " · " + e.mode : "");
+            return '<tr data-email="' + esc(e.email || "") + '" title="' + esc(new Date(e.at).toLocaleString()) + '">' +
+              '<td class="when">' + esc(ago(e.at)) + "</td>" +
+              "<td>" + (e.email ? '<div class="who-text"><span class="who-name' + (p && p.name ? "" : " is-empty") + '">' + esc((p && p.name) || "No name") + '</span><span class="who-email">' + esc(e.email) + "</span></div>" : '<span class="muted">Unknown</span>') + "</td>" +
+              '<td><div class="err-what"><span class="err-dot' + ({ fail: " fail", info: " info" }[(ERR[e.code] || [])[1]] || "") + '"></span>' + esc(errLabel(e.code)) + '</div><div class="err-where">' + esc(where) + "</div></td>" +
+              '<td class="detail">' + esc(e.detail || "") + "</td></tr>";
+          }).join("") + "</tbody></table></div>" +
+          (list.length > 500 ? '<div class="empty">Showing the newest 500 of ' + num(list.length) + ".</div>" : "");
+      }
+      el.innerHTML = html;
+    }
     function setView(v) {
       state.view = v;
       document.querySelectorAll("#view-seg .seg-btn").forEach(function (b) {
@@ -1020,14 +1095,16 @@
         b.classList.toggle("is-active", on);
         b.setAttribute("aria-selected", on ? "true" : "false");
       });
-      var daily = v === "daily";
+      var daily = v === "daily", errs = v === "errors", other = daily || errs;
       $("daily-view").hidden = !daily;
-      $("agent-band").hidden = daily;
-      $("builder-band").hidden = daily;
-      $("people-toolbar").hidden = daily;
-      $("people-body").hidden = daily;
-      $("export-btn").hidden = daily;
+      $("errors-view").hidden = !errs;
+      $("agent-band").hidden = other;
+      $("builder-band").hidden = other;
+      $("people-toolbar").hidden = other;
+      $("people-body").hidden = other;
+      $("export-btn").hidden = other;
       if (daily && state.data) renderDaily();
+      if (errs && state.data) renderErrors();
     }
     function renderDayFilter() {
       var el = $("day-filter");
@@ -1036,7 +1113,7 @@
         '<button type="button" id="day-clear" aria-label="Clear day filter"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></span>';
       $("day-clear").addEventListener("click", function () { state.day = null; renderDayFilter(); renderRows(); });
     }
-    function render() { renderStats(); renderAgent(); renderBuilder(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); }
+    function render() { renderStats(); renderAgent(); renderBuilder(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); if (state.view === "errors") renderErrors(); }
     function select(email) {
       state.selected = state.selected === email ? null : email;
       document.querySelectorAll("#rows tr").forEach(function (tr) { tr.classList.toggle("selected", tr.getAttribute("data-email") === state.selected); });
@@ -1101,6 +1178,18 @@
       var r = parseInt(load("tdev:crm-range"), 10) || 0;
       if (r) { state.range = r; $("range").value = String(r); $("range").classList.add("is-set"); }
     })();
+    $("errors-view").addEventListener("click", function (e) {
+      var chip = e.target.closest("[data-err]");
+      if (chip) { state.errCode = chip.getAttribute("data-err") || null; renderErrors(); return; }
+      // A row opens that person in People.
+      var tr = e.target.closest("tr[data-email]");
+      var email = tr && tr.getAttribute("data-email");
+      if (!email) return;
+      state.filter = "all"; state.day = null; state.q = email; $("search").value = email;
+      setView("people");
+      renderFilters(); renderDayFilter(); renderRows();
+      if (state.selected !== email) select(email);
+    });
     $("view-seg").addEventListener("click", function (e) {
       var b = e.target.closest("[data-view]");
       if (b) setView(b.getAttribute("data-view"));
