@@ -57,7 +57,7 @@ Prefer layered shadows to borders.
 - Menu: material surface, radius 12px, padding 6px, items 32px tall with radius 8px and chip fill on hover.
 - Tabs / segmented control: chip track with a surface pill indicator that slides between options.
 - Toggle: 32 by 20 track, chip off, accent on, white knob with a soft shadow.
-- Press feedback: a press dips the instant it starts (`:active { transform: scale(var(--press-scale)); transition-duration: 0ms }`) and eases back to 100% over 150ms on release, so even a quick click shows the whole press. The depth follows the size, so the travel is always visible (about 1 to 2px): wide buttons and clickable cards (200px and wider) 99%, regular and pill buttons 97%, round and icon buttons up to 64px (mic, play, send, close) 95%.
+- Press feedback: a press scales down over 150ms (`transition: transform 150ms cubic-bezier(.22,1,.36,1)`, `:active { transform: scale(var(--press-scale)) }`) and eases back to 100% over the same 150ms on release; never instant. The depth follows the size, so the travel is always visible (about 1 to 2px): wide buttons and clickable cards (200px and wider) 99%, regular and pill buttons 97%, round and icon buttons up to 64px (mic, play, send, close) 95%.
 - Focus: visible ring `0 0 0 2px var(--stage-surface), 0 0 0 4px var(--stage-accent)`.
 
 ## Motion

@@ -37,6 +37,7 @@
     $("pf-links").innerHTML = links.join("");
     $("pf-links").hidden = !links.length;
     $("pf-actions").hidden = !r.owner;
+    $("pf-viewer").hidden = !!r.owner;
     $("pf-photo").hidden = !r.owner;
     document.title = name + " (@" + p.handle + ") | Transitions.dev Community";
 
@@ -122,6 +123,23 @@
   });
 
   load();
+
+  // A report about the name, bio, X link or photo (a DSA notice). Three
+  // reports hide them until a person reviews the profile.
+  $("pf-report").addEventListener("click", function () {
+    if (!profile) return;
+    C.withAccount(function () {
+      C.reportDialog({
+        title: "Report @" + profile.handle,
+        note: "For the name, bio, X link or photo. To report a component, open it and use Report there. We email you a receipt and our decision.",
+      }).then(function (rep) {
+        if (!rep) return;
+        C.api.reportProfile(profile.handle, rep).then(function (r) {
+          C.toast(r.error ? C.errorText(r.error) : "Thanks. We'll review it and email you what we decide.", r.error ? "err" : undefined);
+        });
+      });
+    });
+  });
 
   // Change the photo: crop to a 256px square, then the account page's upload
   // (POST /account/avatar), which checks it and may hold it for a review.

@@ -1012,7 +1012,7 @@
 
     /* ─── Community moderation ─────────────────────────────── */
     var MOD_FILTERS = [
-      { id: "pending", label: "In review" }, { id: "avatars", label: "Photos" }, { id: "reported", label: "Reported" },
+      { id: "pending", label: "In review" }, { id: "avatars", label: "Photos" }, { id: "profiles", label: "Profiles" }, { id: "reported", label: "Reported" },
       { id: "hidden", label: "Hidden" }, { id: "appeals", label: "Appeals" }, { id: "recent", label: "Published" },
     ];
     var modFilter = "pending";
@@ -1035,6 +1035,7 @@
       renderModFilters();
       $("mod-list").innerHTML = '<div class="mod-empty">Loading…</div>';
       if (modFilter === "avatars") { loadAvatars(); return; }
+      if (modFilter === "profiles") { loadProfiles(); return; }
       modCall("/admin/community?filter=" + modFilter).then(function (r) {
         var items = (r && r.items) || [];
         if (!items.length) { $("mod-list").innerHTML = '<div class="mod-empty">Nothing here.</div>'; return; }
@@ -1056,6 +1057,7 @@
               ? '<button type="button" class="btn-sec" data-review="' + esc(c.id) + '" data-approve="0">Reject</button>' +
                 '<button type="button" class="btn-sec" data-review="' + esc(c.id) + '" data-approve="1">Approve</button>'
               : '<button type="button" class="btn-sec" data-hide="' + esc(c.id) + '" data-hidden="' + (c.hidden ? 1 : 0) + '">' + (c.hidden ? "Restore" : "Hide") + "</button>") +
+            (c.user_id ? '<button type="button" class="btn-sec" data-profile="' + esc(c.user_id) + '" data-act="' + (c.banned_at ? "unban" : "ban") + '">' + (c.banned_at ? "Unban maker" : "Ban maker") + "</button>" : "") +
             "</div>";
         }).join("");
       }).catch(function () { $("mod-list").innerHTML = '<div class="mod-empty">Could not load community items.</div>'; });
@@ -1066,6 +1068,28 @@
       modFilter = b.getAttribute("data-mod");
       loadMod();
     });
+    // Reported, hidden (after 3 reports) and suspended profiles.
+    function loadProfiles() {
+      modCall("/admin/community/profiles").then(function (r) {
+        var items = (r && r.items) || [];
+        if (!items.length) { $("mod-list").innerHTML = '<div class="mod-empty">No reported or suspended profiles.</div>'; return; }
+        $("mod-list").innerHTML = items.map(function (p) {
+          var btn = function (act, label) { return '<button type="button" class="btn-sec" data-profile="' + esc(p.user_id) + '" data-act="' + act + '">' + label + "</button>"; };
+          return '<div class="mod-row">' + (p.avatar ? '<img class="mod-avatar" alt="" src="' + esc(p.avatar) + '">' : "") +
+            '<div class="mod-main"><a href="/profile.html?u=' + encodeURIComponent(p.handle) + '" target="_blank" rel="noopener">' +
+              esc(p.display_name || "(no name)") + " @" + esc(p.handle) + "</a>" +
+              '<span class="mod-meta">' + esc(p.email || "") + (p.x_handle ? " · x.com/" + esc(p.x_handle) : "") + (p.bio ? " · Bio: " + esc(p.bio) : "") + "</span>" +
+              (p.reasons ? '<span class="mod-meta">' + esc(p.reasons) + "</span>" : "") +
+              (p.ban_reason ? '<span class="mod-meta">Suspended: ' + esc(p.ban_reason) + "</span>" : "") + "</div>" +
+            (p.reports ? '<span class="mod-flag">' + p.reports + (p.reports === 1 ? " report" : " reports") + "</span>" : "") +
+            (p.profile_hidden ? '<span class="mod-flag">Hidden</span>' : "") +
+            (p.banned_at ? '<span class="mod-flag">Suspended</span>' : "") +
+            btn("restore", "Restore") + btn("clear", "Clear name and photo") + (p.banned_at ? btn("unban", "Unban") : btn("ban", "Ban maker")) +
+            "</div>";
+        }).join("");
+      }).catch(function () { $("mod-list").innerHTML = '<div class="mod-empty">Could not load profiles.</div>'; });
+    }
+
     // Profile photos the Moderation API could not check.
     function loadAvatars() {
       modCall("/admin/avatars").then(function (r) {
@@ -1090,6 +1114,21 @@
         }
         rv.disabled = true;
         modCall("/admin/community/review", { id: rv.getAttribute("data-review"), approve: approve, reason: reason }).then(loadMod, loadMod);
+        return;
+      }
+      var pa = e.target.closest("[data-profile]");
+      if (pa) {
+        var act = pa.getAttribute("data-act");
+        var why = "";
+        if (act === "clear" || act === "ban") {
+          why = window.prompt(act === "ban"
+            ? "Why suspend this maker? They get this by email. Everything they published stops being public."
+            : "Why remove the name, bio, X link and photo? The owner gets this by email.",
+            act === "ban" ? "Repeated or serious breaches of the Community rules in our Terms." : "They don't meet the Community rules in our Terms.");
+          if (why === null) return;
+        }
+        pa.disabled = true;
+        modCall("/admin/community/profile", { user_id: pa.getAttribute("data-profile"), action: act, reason: why }).then(loadMod, loadMod);
         return;
       }
       var av = e.target.closest("[data-avatar]");

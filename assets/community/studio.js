@@ -373,6 +373,7 @@
         if (m.type === "ready" && tool === "select") C.tellPreview(preview, { type: "select", on: true });
         if (m.type === "selected") onSelected(m);
         if (m.type === "snapshot" && snapWait) snapWait(m);
+        if (m.type === "size" && !m.full && m.h) syncSize(Math.round(m.h));
         if (m.type === "layout") {
           layoutIssues = (m.issues || []).slice(0, 8);
           if (sayLayout && layoutIssues.length) {
@@ -724,58 +725,8 @@
     });
   }
 
-  // A report is a notice under the EU Digital Services Act: what kind of
-  // problem, why, and a good-faith statement. The account says who sent it.
   function reportDialog() {
-    return new Promise(function (resolve) {
-      var last = document.activeElement;
-      var wrap = document.createElement("div");
-      wrap.className = "st-dialog cm-ask";
-      wrap.innerHTML =
-        '<form class="st-dialog-card cm-ask-card st-report" role="dialog" aria-modal="true" aria-labelledby="st-report-title" novalidate>' +
-          '<h2 id="st-report-title">Report this component</h2>' +
-          '<label class="st-field"><span>What is wrong</span><select class="cm-ask-input st-report-cat">' +
-            '<option value="illegal">Illegal content</option>' +
-            '<option value="ip">Copyright or stolen work</option>' +
-            '<option value="harmful">Harmful or abusive content</option>' +
-            '<option value="spam">Spam or misleading</option>' +
-            '<option value="other" selected>Something else</option>' +
-          "</select></label>" +
-          '<label class="st-field"><span>Why</span><textarea class="cm-ask-input st-report-why" rows="3" maxlength="500" placeholder="Explain what breaks the rules or the law, and where"></textarea></label>' +
-          '<label class="st-report-check"><input type="checkbox" class="st-report-ok" /> <span>I believe the information in this report is accurate and complete.</span></label>' +
-          '<p class="st-report-note">We email you a receipt and our decision. The author is not told who reported it.</p>' +
-          '<div class="cm-ask-row"><button type="button" class="cm-btn cm-btn--ghost" data-no>Cancel</button>' +
-          '<button type="submit" class="cm-btn cm-btn--primary" disabled>Report</button></div>' +
-        "</form>";
-      document.body.appendChild(wrap);
-      var form = wrap.querySelector("form");
-      var why = wrap.querySelector(".st-report-why");
-      var ok = wrap.querySelector(".st-report-ok");
-      var submit = wrap.querySelector("[type=submit]");
-      function sync() { submit.disabled = !why.value.trim() || !ok.checked; }
-      why.addEventListener("input", sync);
-      ok.addEventListener("change", sync);
-      var done = false;
-      function finish(v) {
-        if (done) return;
-        done = true;
-        wrap.classList.remove("is-open");
-        document.removeEventListener("keydown", onKey, true);
-        setTimeout(function () { wrap.remove(); if (last && last.focus) last.focus(); }, 200);
-        resolve(v);
-      }
-      function onKey(e) { if (e.key === "Escape") { e.stopPropagation(); finish(null); } }
-      document.addEventListener("keydown", onKey, true);
-      wrap.addEventListener("mousedown", function (e) { if (e.target === wrap) finish(null); });
-      wrap.querySelector("[data-no]").addEventListener("click", function () { finish(null); });
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        if (submit.disabled) return;
-        finish({ category: wrap.querySelector(".st-report-cat").value, reason: why.value.trim(), good_faith: true });
-      });
-      requestAnimationFrame(function () { wrap.classList.add("is-open"); });
-      setTimeout(function () { wrap.querySelector(".st-report-cat").focus(); }, 30);
-    });
+    return C.reportDialog({ title: "Report this component", note: "We email you a receipt and our decision. The author is not told who reported it." });
   }
 
   // Publishing makes the component and your profile public, so say exactly
@@ -806,8 +757,8 @@
       el.hidden = !(S.owner && S.id) || (el.getAttribute("data-act") === "unpublish" && !S.published);
     });
     document.querySelectorAll("[data-viewer]").forEach(function (el) { el.hidden = S.owner; });
-    // Copy link: any saved component, published or not (a link opens drafts too).
-    document.querySelectorAll("[data-needs-id]").forEach(function (el) { el.hidden = !S.id; });
+    // Copy link: only approved, published components open for others.
+    document.querySelectorAll("[data-needs-id]").forEach(function (el) { el.hidden = !S.id || !S.published || S.review !== "approved"; });
     var dangerRule = document.querySelector("[data-danger-rule]");
     if (dangerRule) dangerRule.hidden = !menu.querySelector(".is-danger:not([hidden])");
     $("st-save").textContent = S.published ? "Save changes" : "Save draft";
@@ -839,12 +790,27 @@
     if (S.dirty && S.owner && S.id) { e.preventDefault(); e.returnValue = ""; }
   });
 
+  // The component's own height in the preview, stored with the saved
+  // component (the author's only), so its feed card is sized before its
+  // preview loads. Sent once it settles, and only for saved code.
+  var natH = 0, sizeTimer = 0;
+  function syncSize(h) {
+    if (h) natH = h;
+    clearTimeout(sizeTimer);
+    sizeTimer = setTimeout(function () {
+      if (!natH || !S.owner || !S.id || S.dirty || natH === S.previewH) return;
+      var id = S.id, h2 = natH;
+      C.api.size(id, h2).then(function (r) { if (!r.error && S.id === id) S.previewH = h2; });
+    }, 800);
+  }
+
   // ── Load ────────────────────────────────────────────────────────────────────
   function apply(c, opts) {
     opts = opts || {};
     S.id = opts.asNew ? null : c.id || null;
     S.owner = opts.asNew ? true : !!c.owner;
     S.published = opts.asNew ? false : !!c.published;
+    S.previewH = opts.asNew ? 0 : c.preview_h || 0;
     S.mode = c.mode === "react" ? "react" : "html";
     S.files = { html: c.html || "", css: c.css || "", js: c.js || "" };
     S.stash = {};
@@ -996,6 +962,7 @@
         }
         markSaved("Saved");
         paintHeader();
+        syncSize(0);
         if (publish === true) C.toast(S.review === "approved" ? "Published to the Community" : "Sent for review. We’ll email you when it’s live.");
         else if (publish === false) C.toast("Unpublished. Only you can see it now.");
         else if (wasReview === "approved" && S.review === "pending") C.toast("Saved. This change goes to review before it’s public again.");
@@ -1457,7 +1424,7 @@
   // account adds its own from a screenshot (the agent writes the values) or
   // by pasting values. The pick is a per-browser preference, like the skills.
   var MODERN = {
-    id: "modern", name: "Modern", builtin: true, file: "modern.md?v=24",
+    id: "modern", name: "Modern", builtin: true, file: "modern.md?v=25",
     sub: "Default · the transitions.dev look",
     spec: {
       light: { bg: "#f9f9f9", surface: "#ffffff", text: "#0d0d0d", muted: "#6c6c6c", accent: "#17181c", onAccent: "#ffffff", radius: "40px" },

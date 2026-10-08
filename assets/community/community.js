@@ -87,9 +87,11 @@
     update: function (id, c) { return call("/community/c/" + encodeURIComponent(id), "POST", c); },
     remove: function (id) { return call("/community/c/" + encodeURIComponent(id) + "/delete", "POST", {}); },
     like: function (id, liked) { return call("/community/c/" + encodeURIComponent(id) + "/like", "POST", { liked: liked }); },
+    reportProfile: function (handle, rep) { return call("/community/u/" + encodeURIComponent(handle) + "/report", "POST", rep); },
     // A notice under the EU Digital Services Act: { category, reason, good_faith }.
     report: function (id, notice) { return call("/community/c/" + encodeURIComponent(id) + "/report", "POST", notice); },
     // The author of a hidden component asks for a review.
+    size: function (id, h) { return call("/community/c/" + encodeURIComponent(id) + "/size", "POST", { h: h }); },
     appeal: function (id, message) { return call("/community/c/" + encodeURIComponent(id) + "/appeal", "POST", { message: message }); },
     // images: [{ media_type, data }] from attachments().items(); onEvent gets
     // the agent's progress ({ type: "status", phase, text, lines? } and
@@ -341,12 +343,18 @@
 
   var CSP = [
     "default-src 'none'",
-    "script-src 'unsafe-inline' 'unsafe-eval' blob: https://esm.sh",
+    // No 'unsafe-eval': component code never needs eval or new Function.
+    "script-src 'unsafe-inline' blob: https://esm.sh",
     "style-src 'unsafe-inline'",
     "font-src data: " + location.origin,
     "img-src data: blob: https://images.unsplash.com",
     "media-src data: blob:",
     "connect-src https://esm.sh",
+    // No workers (crypto miners), no nested frames, no plugins.
+    "worker-src 'none'",
+    "frame-src 'none'",
+    "child-src 'none'",
+    "object-src 'none'",
     "base-uri 'none'",
     "form-action 'none'",
   ].join("; ");
@@ -527,6 +535,8 @@
       var f = document.createElement("iframe");
       f.className = "cm-frame";
       f.setAttribute("sandbox", "allow-scripts");
+      // No device access, whatever the code asks for.
+      f.setAttribute("allow", "camera 'none'; microphone 'none'; geolocation 'none'; display-capture 'none'; usb 'none'; serial 'none'; bluetooth 'none'; payment 'none'; clipboard-read 'none'");
       f.setAttribute("title", (c.title || "Component") + " preview");
       f.setAttribute("referrerpolicy", "no-referrer");
       // A preview gets exactly one document. A second load means the code
@@ -611,7 +621,20 @@
   // (the card adds 84 px for its padding and title). Kept once known, also
   // across remounts. The grid packs them as masonry (4px rows, community.css).
   var STAGE_MIN = 180, STAGE_MAX = 420, STAGE_PAD = 96, CARD_CHROME = 84, ROW = 4, GAP = 16;
+  // Card heights by component id: from the size the author's Studio stored
+  // (preview_h), else from an earlier visit (kept in this browser), so a card
+  // takes its final height before its preview loads and never jumps.
+  var SIZES_KEY = "tdev:cm-sizes";
   var sizes = {};
+  try { sizes = JSON.parse(localStorage.getItem(SIZES_KEY) || "{}") || {}; } catch (e) {}
+  function cardHeight(nh) { return Math.max(STAGE_MIN, Math.min(STAGE_MAX, Math.round(nh + STAGE_PAD))) + CARD_CHROME; }
+  function keepSize(id, h) {
+    if (sizes[id] === h) return;
+    sizes[id] = h;
+    var ids = Object.keys(sizes);
+    if (ids.length > 300) ids.slice(0, ids.length - 300).forEach(function (k) { delete sizes[k]; });
+    try { localStorage.setItem(SIZES_KEY, JSON.stringify(sizes)); } catch (e) {}
+  }
   function setCardHeight(card, h) {
     card.style.setProperty("--cm-h", h + "px");
     card.style.gridRowEnd = "span " + Math.ceil((h + GAP) / ROW);
@@ -625,12 +648,13 @@
       // The component's own size, kept for fitting (also after a resize).
       host.setAttribute("data-nw", m.w || 0);
       host.setAttribute("data-nh", m.h || 0);
+      var h = cardHeight(m.h);
       if (!card.hasAttribute("data-sized")) {
         card.setAttribute("data-sized", "");
-        var h = Math.max(STAGE_MIN, Math.min(STAGE_MAX, Math.round(m.h + STAGE_PAD))) + CARD_CHROME;
-        sizes[c.id] = h;
         setCardHeight(card, h);
       }
+      // Remembered for the next visit; a card already sized keeps its height.
+      keepSize(c.id, h);
       requestAnimationFrame(function () { fitPreview(host); });
     };
   }
@@ -683,10 +707,11 @@
     var el = document.createElement("article");
     el.className = "card cm-card";
     el.setAttribute("data-id", c.id);
-    if (sizes[c.id]) { setCardHeight(el, sizes[c.id]); el.setAttribute("data-sized", ""); }
+    var known = c.preview_h ? cardHeight(c.preview_h) : sizes[c.id];
+    if (known) { setCardHeight(el, known); el.setAttribute("data-sized", ""); }
     var a = c.author || {};
     // Subtitle: the author in the feed; on your own lists, the format.
-    var sub = !opts.hideAuthor && a.handle ? (a.display_name || a.handle) : (c.mode === "react" ? "React" : "HTML/CSS");
+    var sub = !opts.hideAuthor && a.handle ? "by " + (a.display_name || a.handle) : (c.mode === "react" ? "React" : "HTML/CSS");
     // Public: published, approved by a reviewer (review is only sent to the
     // author; others only ever get approved work) and not hidden.
     var live = c.published && !c.hidden && (!c.review || c.review === "approved");
@@ -1241,6 +1266,10 @@
     name_links: "Names can't contain links.",
     image_not_allowed: "That image can't be used. Try a different one.",
     image_dimensions: "That image is too big. Use one up to 1024 × 1024 pixels.",
+    account_restricted: "Your Community account is suspended, so you can't publish. Reply to our email to ask for a review.",
+    review_queue_full: "You have 3 components waiting for review. Publish more once one of them is reviewed.",
+    publish_daily_limit: "That's today's limit for sending components to review. Try again tomorrow.",
+    own_profile: "You can't report your own profile.",
   };
   function errorText(code) { return ERRORS[code] || "Something went wrong. Please try again."; }
 
@@ -1309,6 +1338,62 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { tooltips(); });
   else tooltips();
 
+  // A report is a notice under the EU Digital Services Act: what kind of
+  // problem, why, and a good-faith statement. The account says who sent it.
+  // opts.title, opts.note: the dialog's heading and the line under the checkbox.
+  function reportDialog(opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      var last = document.activeElement;
+      var wrap = document.createElement("div");
+      wrap.className = "st-dialog cm-ask";
+      wrap.innerHTML =
+        '<form class="st-dialog-card cm-ask-card st-report" role="dialog" aria-modal="true" aria-labelledby="st-report-title" novalidate>' +
+          '<h2 id="st-report-title">' + esc(opts.title || "Report this") + "</h2>" +
+          '<label class="st-field"><span>What is wrong</span><select class="cm-ask-input st-report-cat">' +
+            '<option value="illegal">Illegal content</option>' +
+            '<option value="ip">Copyright or stolen work</option>' +
+            '<option value="harmful">Harmful or abusive content</option>' +
+            '<option value="spam">Spam or misleading</option>' +
+            '<option value="other" selected>Something else</option>' +
+          "</select></label>" +
+          '<label class="st-field"><span>Why</span><textarea class="cm-ask-input st-report-why" rows="3" maxlength="500" placeholder="Explain what breaks the rules or the law, and where"></textarea></label>' +
+          '<label class="st-report-check"><input type="checkbox" class="st-report-ok" /> <span>I believe the information in this report is accurate and complete.</span></label>' +
+          '<p class="st-report-note">' + esc(opts.note || "We email you a receipt and our decision. Nobody is told who reported it.") + "</p>" +
+          '<div class="cm-ask-row"><button type="button" class="cm-btn cm-btn--ghost" data-no>Cancel</button>' +
+          '<button type="submit" class="cm-btn cm-btn--primary" disabled>Report</button></div>' +
+        "</form>";
+      document.body.appendChild(wrap);
+      var form = wrap.querySelector("form");
+      var why = wrap.querySelector(".st-report-why");
+      var ok = wrap.querySelector(".st-report-ok");
+      var submit = wrap.querySelector("[type=submit]");
+      function sync() { submit.disabled = !why.value.trim() || !ok.checked; }
+      why.addEventListener("input", sync);
+      ok.addEventListener("change", sync);
+      var done = false;
+      function finish(v) {
+        if (done) return;
+        done = true;
+        wrap.classList.remove("is-open");
+        document.removeEventListener("keydown", onKey, true);
+        setTimeout(function () { wrap.remove(); if (last && last.focus) last.focus(); }, 200);
+        resolve(v);
+      }
+      function onKey(e) { if (e.key === "Escape") { e.stopPropagation(); finish(null); } }
+      document.addEventListener("keydown", onKey, true);
+      wrap.addEventListener("mousedown", function (e) { if (e.target === wrap) finish(null); });
+      wrap.querySelector("[data-no]").addEventListener("click", function () { finish(null); });
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (submit.disabled) return;
+        finish({ category: wrap.querySelector(".st-report-cat").value, reason: why.value.trim(), good_faith: true });
+      });
+      requestAnimationFrame(function () { wrap.classList.add("is-open"); });
+      setTimeout(function () { wrap.querySelector(".st-report-cat").focus(); }, 30);
+    });
+  }
+
   window.Community = {
     api: api,
     esc: esc,
@@ -1324,6 +1409,7 @@
     compileReact: compileReact,
     card: card,
     toast: toast,
+    reportDialog: reportDialog,
     confirmToast: confirmToast,
     dropdown: dropdown,
     library: library,
