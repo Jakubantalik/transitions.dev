@@ -348,7 +348,7 @@
       .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .stat:nth-child(3n) { border-right: none; }
       .stat:nth-child(-n+3) { border-bottom: 1px solid var(--c-line); }
-      .col-country, .col-last, .col-agent { display: none; }
+      .col-country, .col-last, .col-agent, .col-community { display: none; }
     }
     @media (max-width: 860px) {
       .crm { padding: 0; }
@@ -434,6 +434,7 @@
                 <th data-sort="plan">Plan<span class="arrow"></span></th>
                 <th data-sort="agent" class="col-agent">Motion Agent<span class="arrow"></span></th>
                 <th data-sort="fixes" class="num col-fixes" title="Hosted Agent fixes">Fixes<span class="arrow"></span></th>
+                <th data-sort="community" class="col-community" title="Community components and Builder drafts">Community<span class="arrow"></span></th>
                 <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
                 <th data-sort="created" class="col-signup">Joined<span class="arrow"></span></th>
                 <th data-sort="last" class="col-last">Last sign-in<span class="arrow"></span></th>
@@ -478,6 +479,7 @@
       { id: "churned", label: "Churned" },
       { id: "agent", label: "Motion Agent" },
       { id: "agent-fix", label: "Agent fixes" },
+      { id: "makers", label: "Makers" },
       { id: "free", label: "Free" }
     ];
     var PAYING = { business: 1, pro: 1, lifetime: 1, sponsor: 1 };
@@ -523,6 +525,7 @@
     function planBadge(plan) { return '<span class="plan plan--' + esc(plan) + '">' + esc(PLAN_LABEL[plan] || plan) + "</span>"; }
     var SRC_LABEL = { stripe: "from Stripe", team: "team name", domain: "email domain" };
     var KEY_SOURCE = { cli: "CLI signup", browser: "browser signup", account: "account page", purchase: "with a purchase" };
+    function isMaker(p) { var c = p.community; return !!(c && (c.made || c.drafts)); }
     function hasAgent(p) { return !!(p.agent && (p.agent.key || p.agent.last_used)); }
     // At least one hosted fix: this or last month's counter (from before the
     // history existed) or any fix in the history.
@@ -618,9 +621,10 @@
         if (state.filter === "paying" && !PAYING[p.plan]) return false;
         if (state.filter === "agent" && !hasAgent(p)) return false;
         if (state.filter === "agent-fix" && !hasAgentFix(p)) return false;
-        if (state.filter !== "all" && state.filter !== "paying" && state.filter !== "agent" && state.filter !== "agent-fix" && p.plan !== state.filter) return false;
+        if (state.filter === "makers" && !isMaker(p)) return false;
+        if (state.filter !== "all" && state.filter !== "paying" && state.filter !== "agent" && state.filter !== "agent-fix" && state.filter !== "makers" && p.plan !== state.filter) return false;
         if (!q) return true;
-        return [p.name, p.email, p.company, p.country, p.plan].some(function (v) { return v && String(v).toLowerCase().indexOf(q) !== -1; });
+        return [p.name, p.email, p.company, p.country, p.plan, p.community && p.community.handle].some(function (v) { return v && String(v).toLowerCase().indexOf(q) !== -1; });
       });
       var key = state.sort, dir = state.dir;
       var val = {
@@ -629,6 +633,7 @@
         plan: function (p) { return PLAN_ORDER[p.plan]; },
         paid: function (p) { return paidTotal(p.paid); },
         fixes: function (p) { return fixCount(p); },
+        community: function (p) { var c = p.community; return c ? c.pending * 1e6 + c.live * 1e3 + c.made + c.drafts / 1e3 : -1; },
         agent: function (p) { var a = p.agent; return a ? (a.fixes_month * 1e6 + (a.fixes_total || 0) * 1e3 + (a.last_used ? 1 : 0) + (a.key ? 0.5 : 0)) : -1; },
         created: function (p) { return p.created_at || ""; },
         last: function (p) { return p.last_sign_in || ""; },
@@ -695,7 +700,8 @@
         all: state.data.total,
         paying: (c.business || 0) + (c.pro || 0) + (c.lifetime || 0) + (c.sponsor || 0),
         agent: state.data.people.filter(hasAgent).length,
-        "agent-fix": state.data.people.filter(hasAgentFix).length
+        "agent-fix": state.data.people.filter(hasAgentFix).length,
+        makers: state.data.people.filter(isMaker).length
       };
       $("filters").innerHTML = FILTERS.map(function (f) {
         var n = f.id in count ? count[f.id] : (c[f.id] || 0);
@@ -735,6 +741,13 @@
             var n = fixCount(p);
             return '<td class="num tnum col-fixes"' + (n ? ' title="' + esc(plural(p.agent.fixes_month || 0, "fix", "fixes") + " this month") + '"' : "") + ">" +
               (n ? esc(n) : '<span class="muted">·</span>') + "</td>";
+          })() +
+          (function () {
+            var c = p.community;
+            if (!c || (!c.made && !c.drafts)) return '<td class="col-community"><span class="muted">' + (c && c.handle ? "@" + esc(c.handle) : "·") + "</span></td>";
+            var sub = [c.live ? c.live + " live" : "", c.pending ? c.pending + " in review" : "", c.drafts ? plural(c.drafts, "draft") : ""].filter(Boolean).join(" · ");
+            return '<td class="col-community"><div class="agent-cell"><span class="agent-main">' + esc((c.handle ? "@" + c.handle + " · " : "") + plural(c.made, "component")) +
+              (c.pending ? ' <span class="tag tag--warn">Review</span>' : "") + '</span><span class="agent-sub">' + esc(sub) + "</span></div></td>";
           })() +
           '<td class="num tnum">' + (paidText(p.paid) ? esc(paidText(p.paid)) : '<span class="muted">·</span>') + "</td>" +
           '<td class="col-signup tnum">' + esc(day(p.created_at)) + "</td>" +
@@ -789,6 +802,18 @@
             (a.mcp_calls ? row("MCP", esc(plural(a.mcp_calls, "call")) + (a.recipes ? ", " + esc(plural(a.recipes, "recipe")) + " fetched" : "")) : "") +
             row("Last used", a.last_used ? esc(ago(a.last_used)) : '<span class="muted">Never</span>');
         })(p.agent) : "") +
+        (p.community ? (function (c) {
+          var states = { live: "Live", review: "In review", rejected: "Not published", hidden: "Hidden", draft: "Draft" };
+          return '</dl><div class="insp-divider"></div><div class="insp-section">Community</div><dl>' +
+            row("Profile", c.handle ? '<a href="/profile.html?u=' + encodeURIComponent(c.handle) + '" target="_blank" rel="noopener">@' + esc(c.handle) + "</a>" : '<span class="muted">None</span>') +
+            row("Components", '<span class="tnum">' + esc(c.made + " made, " + c.live + " live" + (c.pending ? ", " + c.pending + " in review" : "")) + "</span>") +
+            row("Builder", c.drafts ? '<span class="tnum">' + esc(plural(c.drafts, "draft") + ", $" + c.ai_usd.toFixed(2) + " of AI") + "</span>" : '<span class="muted">No drafts</span>') +
+            (c.last_at ? row("Last active", esc(ago(c.last_at))) : "") +
+            (c.recent && c.recent.length ? row("Recent", c.recent.map(function (r) {
+              return '<a href="/studio.html?id=' + encodeURIComponent(r.id) + (r.state === "review" ? "&review=1" : "") + '" target="_blank" rel="noopener">' + esc(r.title || "Untitled") + "</a> " +
+                '<span class="muted">' + esc(states[r.state] || r.state) + "</span>";
+            }).join("<br>")) : "");
+        })(p.community) : "") +
         '</dl><div class="insp-divider"></div><div class="insp-section">Activity</div><dl>' +
           row("Joined", esc(day(p.created_at))) +
           row("Account", p.account ? "Yes" : '<span class="muted">No, Stripe only</span>') +
@@ -810,7 +835,7 @@
       return d.toLocaleDateString("en-US", withDay ? { weekday: "short", month: "short", day: "numeric" } : { month: "short", day: "numeric" });
     }
     function sumDays(days) {
-      var t = { new_people: 0, new_free: 0, new_paid: 0, renewals: 0, churned: 0, agent_keys: 0, agent_signups: 0, agent_fixes: 0, agent_blocked: 0, paid_by: {}, revenue: {} };
+      var t = { new_people: 0, new_free: 0, new_paid: 0, renewals: 0, churned: 0, agent_keys: 0, agent_signups: 0, agent_fixes: 0, agent_blocked: 0, made: 0, published: 0, paid_by: {}, revenue: {} };
       days.forEach(function (d) {
         for (var k in t) if (typeof t[k] === "number") t[k] += d[k] || 0;
         for (var p in d.paid_by) t.paid_by[p] = (t.paid_by[p] || 0) + d.paid_by[p];
@@ -845,6 +870,8 @@
           line("Churned", t.churned) +
           line("Agent signups", t.agent_signups + (t.agent_keys > t.agent_signups ? ' <span class="muted">+' + (t.agent_keys - t.agent_signups) + " keys</span>" : "")) +
           line("Agent fixes", t.agent_fixes) +
+          line("Components made", t.made) +
+          line("Published", t.published) +
           "</dl></div>";
       }).join("") + "</div>";
 
@@ -870,7 +897,7 @@
       var cell = function (n, extra) { return '<td class="num tnum' + (n ? "" : " zero") + (extra ? " " + extra : "") + '">' + (n || "0") + "</td>"; };
       html += '<div class="table-wrap"><table class="day-table"><thead><tr>' +
         '<th>Day</th><th class="num">New</th><th class="num">Free</th><th>New paying</th><th class="num">Revenue</th><th class="num">Renewals</th><th class="num">Churned</th>' +
-        '<th class="num col-agentday">Agent signups</th><th class="num col-agentday">Agent fixes</th><th class="num col-agentday">Agent active</th></tr></thead><tbody>' +
+        '<th class="num col-agentday">Agent signups</th><th class="num col-agentday">Agent fixes</th><th class="num col-agentday">Agent active</th><th class="num">Made</th><th class="num">Published</th></tr></thead><tbody>' +
         days.map(function (d, i) {
           return '<tr data-day="' + esc(d.date) + '"' + (i === 0 ? ' class="is-today"' : "") + ' title="Show who joined this day">' +
             "<td>" + esc(i === 0 ? "Today" : i === 1 ? "Yesterday" : fmtDate(d.date, true)) + "</td>" +
@@ -879,6 +906,7 @@
             '<td class="num tnum' + (paidText(d.revenue) ? "" : " zero") + '">' + esc(paidText(d.revenue) || "$0") + "</td>" +
             cell(d.renewals) + cell(d.churned) +
             cell(d.agent_signups, "col-agentday") + cell(d.agent_fixes, "col-agentday") + cell(d.agent_active, "col-agentday") +
+            cell(d.made) + cell(d.published) +
             "</tr>";
         }).join("") + "</tbody></table></div>";
       el.innerHTML = html;
