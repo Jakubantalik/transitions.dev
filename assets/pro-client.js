@@ -446,8 +446,37 @@
         if (soloCta) { soloCta.textContent = "Manage subscription"; soloCta.setAttribute("data-action", "portal"); }
         if (teamCta) { teamCta.textContent = "Upgrade to Business"; teamCta.setAttribute("data-action", "upgrade"); }
       }
+      paintCreditsCta();
     }
   }
+
+  // Builder credits: the subscriber's own card starts on their tier (the
+  // pricing page's picker, window.TDevPricing), and picking another tier there
+  // turns "Manage subscription" into the switch. Lifetime and annual-vs-monthly
+  // changes stay in the billing portal.
+  var creditsSynced = false;
+  function paintCreditsCta() {
+    var sub = state.subscription;
+    if (!state.pro || !sub || !sub.credits || state.lifetime) return;
+    var plan = state.business ? "team" : "solo";
+    var cta = document.querySelector('.pro-price-cta[data-plan="' + plan + '"]');
+    if (!cta) return;
+    if (!creditsSynced && window.TDevPricing) {
+      creditsSynced = true;
+      window.TDevPricing.setCredits(plan, sub.credits);
+      if (window.TDevPricing.setBilling) window.TDevPricing.setBilling(sub.interval === "year" ? "annual" : "monthly");
+    }
+    var picked = +cta.getAttribute("data-credits") || sub.credits;
+    var sameInterval = (selectedBilling() === "annual") === (sub.interval === "year");
+    if (picked !== sub.credits && sameInterval) {
+      cta.textContent = "Switch to " + picked.toLocaleString("en-US") + " credits";
+      cta.setAttribute("data-action", "credits");
+    } else {
+      cta.textContent = "Manage subscription";
+      cta.setAttribute("data-action", "portal");
+    }
+  }
+  document.addEventListener("pro:credits", function () { paintCreditsCta(); });
 
   function selectedBilling() {
     var billing = document.getElementById("pro-billing");
@@ -492,32 +521,35 @@
   // acknowledges losing the right, before paying. This asks, and the API
   // records the answer on the Stripe session and in the confirmation email.
   // Resolves true to continue, false to stop.
+  function buyCss() {
+    if (!document.getElementById("tp-buy-css")) {
+      var css = document.createElement("style");
+      css.id = "tp-buy-css";
+      css.textContent =
+        ".tp-buy{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:rgba(15,15,15,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity 200ms cubic-bezier(.22,1,.36,1)}" +
+        'html[data-theme="dark"] .tp-buy{background:rgba(0,0,0,.5)}' +
+        ".tp-buy.is-open{opacity:1}" +
+        ".tp-buy-card{width:100%;max-width:440px;box-sizing:border-box;padding:22px;border-radius:20px;background:var(--card-bg,#fff);color:var(--text,#0d0d0d);" +
+        "box-shadow:0 20px 60px rgba(0,0,0,.25);font:14px/20px var(--font-sans,Inter,system-ui,sans-serif);transform:scale(.96);opacity:0;transition:transform 150ms cubic-bezier(.22,1,.36,1),opacity 150ms cubic-bezier(.22,1,.36,1)}" +
+        // The search modal's open/close: scale 0.96 to 1 with a fade, 250ms in, 150ms out.
+        ".tp-buy.is-open .tp-buy-card{transform:scale(1);opacity:1;transition:transform 250ms cubic-bezier(.22,1,.36,1),opacity 250ms cubic-bezier(.22,1,.36,1)}" +
+        ".tp-buy h2{margin:0 0 8px;font-size:17px;line-height:24px;font-weight:500}" +
+        ".tp-buy p{margin:0 0 12px;color:var(--text-muted,#6c6c6c);font-size:13px;line-height:19px}" +
+        ".tp-buy a{color:inherit;text-decoration:underline;text-underline-offset:2px}" +
+        ".tp-buy label{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;font-size:13px;line-height:19px;cursor:pointer}" +
+        ".tp-buy input{margin:3px 0 0;flex:none;accent-color:var(--accent,#0073e5)}" +
+        ".tp-buy-row{display:flex;justify-content:flex-end;gap:8px}" +
+        ".tp-buy button{height:36px;padding:0 16px;border:0;border-radius:40px;font:500 13px/16px var(--font-sans,Inter,system-ui,sans-serif);cursor:pointer}" +
+        ".tp-buy-no{background:var(--chip-bg,#f4f4f4);color:var(--text,#0d0d0d)}" +
+        ".tp-buy-go{background:var(--text,#0d0d0d);color:var(--bg,#fff)}" +
+        ".tp-buy-go:disabled{opacity:.4;cursor:default}" +
+        "@media (prefers-reduced-motion: reduce){.tp-buy,.tp-buy-card{transition:none}}";
+      document.head.appendChild(css);
+    }
+  }
   function confirmPurchase(plan, billingKind) {
     return new Promise(function (resolve) {
-      if (!document.getElementById("tp-buy-css")) {
-        var css = document.createElement("style");
-        css.id = "tp-buy-css";
-        css.textContent =
-          ".tp-buy{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:rgba(15,15,15,.28);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;transition:opacity 200ms cubic-bezier(.22,1,.36,1)}" +
-          'html[data-theme="dark"] .tp-buy{background:rgba(0,0,0,.5)}' +
-          ".tp-buy.is-open{opacity:1}" +
-          ".tp-buy-card{width:100%;max-width:440px;box-sizing:border-box;padding:22px;border-radius:20px;background:var(--card-bg,#fff);color:var(--text,#0d0d0d);" +
-          "box-shadow:0 20px 60px rgba(0,0,0,.25);font:14px/20px var(--font-sans,Inter,system-ui,sans-serif);transform:scale(.96);opacity:0;transition:transform 150ms cubic-bezier(.22,1,.36,1),opacity 150ms cubic-bezier(.22,1,.36,1)}" +
-          // The search modal's open/close: scale 0.96 to 1 with a fade, 250ms in, 150ms out.
-          ".tp-buy.is-open .tp-buy-card{transform:scale(1);opacity:1;transition:transform 250ms cubic-bezier(.22,1,.36,1),opacity 250ms cubic-bezier(.22,1,.36,1)}" +
-          ".tp-buy h2{margin:0 0 8px;font-size:17px;line-height:24px;font-weight:500}" +
-          ".tp-buy p{margin:0 0 12px;color:var(--text-muted,#6c6c6c);font-size:13px;line-height:19px}" +
-          ".tp-buy a{color:inherit;text-decoration:underline;text-underline-offset:2px}" +
-          ".tp-buy label{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;font-size:13px;line-height:19px;cursor:pointer}" +
-          ".tp-buy input{margin:3px 0 0;flex:none;accent-color:var(--accent,#0073e5)}" +
-          ".tp-buy-row{display:flex;justify-content:flex-end;gap:8px}" +
-          ".tp-buy button{height:36px;padding:0 16px;border:0;border-radius:40px;font:500 13px/16px var(--font-sans,Inter,system-ui,sans-serif);cursor:pointer}" +
-          ".tp-buy-no{background:var(--chip-bg,#f4f4f4);color:var(--text,#0d0d0d)}" +
-          ".tp-buy-go{background:var(--text,#0d0d0d);color:var(--bg,#fff)}" +
-          ".tp-buy-go:disabled{opacity:.4;cursor:default}" +
-          "@media (prefers-reduced-motion: reduce){.tp-buy,.tp-buy-card{transition:none}}";
-        document.head.appendChild(css);
-      }
+      buyCss();
       var lifetime = billingKind === "lifetime" && plan !== "team";
       var wrap = document.createElement("div");
       wrap.className = "tp-buy";
@@ -557,6 +589,59 @@
     });
   }
 
+  // Moving a subscription to another Builder credit tier: prorated now, so an
+  // upgrade charges the difference today and a downgrade credits the next
+  // invoice. Resolves true to go ahead.
+  function confirmChange(label, price) {
+    return new Promise(function (resolve) {
+      buyCss();
+      var wrap = document.createElement("div");
+      wrap.className = "tp-buy";
+      wrap.innerHTML =
+        '<div class="tp-buy-card" role="dialog" aria-modal="true" aria-labelledby="tp-buy-title">' +
+          '<h2 id="tp-buy-title">Switch to ' + esc(label) + "</h2>" +
+          "<p>Your plan changes now to " + esc(price) + ". Stripe prorates the change: moving up charges the difference for the rest of this period today, moving down credits it to your next invoice.</p>" +
+          '<div class="tp-buy-row"><button type="button" class="tp-buy-no">Cancel</button>' +
+          '<button type="button" class="tp-buy-go">Switch plan</button></div>' +
+        "</div>";
+      document.body.appendChild(wrap);
+      var last = document.activeElement;
+      var done = false;
+      function finish(v) {
+        if (done) return;
+        done = true;
+        document.removeEventListener("keydown", onKey, true);
+        wrap.classList.remove("is-open");
+        setTimeout(function () { wrap.remove(); if (last && last.focus) last.focus(); }, 200);
+        resolve(v);
+      }
+      function onKey(e) { if (e.key === "Escape") { e.stopPropagation(); finish(false); } }
+      document.addEventListener("keydown", onKey, true);
+      wrap.querySelector(".tp-buy-go").addEventListener("click", function () { finish(true); });
+      wrap.querySelector(".tp-buy-no").addEventListener("click", function () { finish(false); });
+      wrap.addEventListener("mousedown", function (e) { if (e.target === wrap) finish(false); });
+      requestAnimationFrame(function () { wrap.classList.add("is-open"); });
+      setTimeout(function () { wrap.querySelector(".tp-buy-go").focus(); }, 30);
+    });
+  }
+  function changeCredits(cta) {
+    var n = +cta.getAttribute("data-credits");
+    var label = n.toLocaleString("en-US") + " credits" + (cta.getAttribute("data-plan") === "team" ? " per seat" : "");
+    return confirmChange(label, cta.getAttribute("data-price") || "the new price").then(function (ok) {
+      if (!ok) return;
+      setBusy(cta, true);
+      return apiJSON("/billing/credits", "POST", { credits: n })
+        .then(function (r) {
+          if (r && r.ok) { refreshMe(); return; }
+          notify(r && r.error === "no_subscription"
+            ? "Only the person who pays for the plan can change it."
+            : "Couldn't change the plan" + (r && r.error ? " (" + r.error + ")" : "") + ".");
+        })
+        .catch(function () { notify("Couldn't change the plan. Please try again."); })
+        .finally(function () { setBusy(cta, false); });
+    });
+  }
+
   function startCheckout(plan, ctaEl) {
     if (plan === "free") { startFree(ctaEl); return Promise.resolve(); }
     // Business (team) → per-seat subscription (buyer adjusts the seat count on
@@ -573,6 +658,9 @@
       payload = { plan: billingKind === "annual" ? "yearly" : "monthly" };
     }
     var cta = ctaEl || document.querySelector('.pro-price-cta[data-plan="' + (plan || "solo") + '"]');
+    // A larger Builder credit tier picked on the card (not for Lifetime).
+    var credits = cta ? +cta.getAttribute("data-credits") : 0;
+    if (credits && credits !== (plan === "team" ? 900 : 600) && payload.plan !== "lifetime") payload.credits = credits;
     return confirmPurchase(plan, billingKind).then(function (agreed) {
       if (!agreed) return;
       // What the buyer agreed to, recorded with the order.
@@ -1493,7 +1581,8 @@
         e.preventDefault();
         if (cta.getAttribute("aria-disabled") === "true") return;
         var plan = cta.getAttribute("data-plan");
-        if (cta.getAttribute("data-action") === "portal") startPortal();
+        if (cta.getAttribute("data-action") === "credits") changeCredits(cta);
+        else if (cta.getAttribute("data-action") === "portal") startPortal();
         else if (plan === "free") startFree(cta);
         else startPaid(plan, cta);
       });

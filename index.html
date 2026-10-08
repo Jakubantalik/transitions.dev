@@ -1393,19 +1393,17 @@
       line-height: 24.2px;
       color: var(--text-muted);
       text-align: center;
+      text-wrap: balance; /* even lines, no word left alone on the last one */
     }
     /* Slightly darker than the body copy — points at the Skill page. */
+    /* Hero links (Builder, Library), as on the pricing page: darker than
+       the body copy, no underline at rest; the underline only on hover. */
     .subtitle-skill {
-      color: inherit;
-      display: inline-block;
-      text-decoration: underline;
-      text-decoration-thickness: from-font;
-      text-underline-position: from-font;
-      text-decoration-skip-ink: auto;
-      text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
-      transition: none;
+      color: var(--text);
+      text-decoration: none;
+      text-underline-offset: 2px;
     }
-    .subtitle-skill:hover { text-decoration-color: currentColor; }
+    .subtitle-skill:hover { text-decoration: underline; }
 
     /* Hero CTA row (same component as /refine + /skill). Primary pill is
        dark in light theme and light in dark theme; secondary keeps a
@@ -6311,7 +6309,8 @@
       </div>
       <h1 class="title">Better UI motion<br />and craft starts here</h1>
       <p class="subtitle">
-        AI agents for motion and UI craft, a library of 43+ crafted transitions,
+        AI agents for motion and UI craft, a <a class="subtitle-skill" href="/builder.html">component builder</a>,
+        a <a class="subtitle-skill" href="/library.html">library of 43+ crafted transitions</a>,
         and a skill that fits your workflow.
       </p>
       <div class="skill-cta-row">
@@ -15550,7 +15549,7 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: mounts Pro badges on data-pro cards, reads auth state. -->
-  <script src="assets/pro-client.js?v=57" defer></script>
+  <script src="assets/pro-client.js?v=58" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
   <script src="assets/nav-products.js?v=7" defer></script>
 </body>

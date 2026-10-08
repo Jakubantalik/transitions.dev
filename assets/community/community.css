@@ -1637,7 +1637,10 @@ html[data-theme="dark"] .st-ds-spec-check { color: #04131a; }
 .st-ds-theme button { height: 22px; padding: 0 10px; border: 0; border-radius: 40px; background: transparent; color: var(--pg-label); font: 500 12px/16px var(--font-sans); cursor: pointer; }
 .st-ds-theme button[aria-pressed="true"] { background: var(--pg-tabs-pill-bg); color: var(--pg-title); box-shadow: var(--pg-tabs-pill-shadow); }
 .st-ds-colors { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.st-ds-color { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 8px 6px 6px; border-radius: 12px; background: var(--pg-control-bg); }
+/* Each color row is one input: a click anywhere edits the value, and the row
+   takes the dialog inputs' focus ring. */
+.st-ds-color { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 8px 6px 6px; border-radius: 12px; background: var(--pg-control-bg); cursor: text; transition: box-shadow 150ms var(--cm-ease); }
+.st-ds-color:focus-within { box-shadow: inset 0 0 0 1px var(--pg-swatch-ring); }
 .st-ds-color.is-bad .st-ds-hex { color: #d02c12; }
 .st-ds-sw { position: relative; flex: none; width: 24px; height: 24px; border-radius: 8px; background: var(--sw, #fff); box-shadow: inset 0 0 0 1px var(--pg-swatch-ring); overflow: hidden; }
 .st-ds-sw input { position: absolute; inset: -6px; width: 36px; height: 36px; padding: 0; border: 0; opacity: 0; cursor: pointer; }
@@ -1646,7 +1649,7 @@ html[data-theme="dark"] .st-ds-spec-check { color: #04131a; }
 .st-ds-cl b { font: 500 12px/16px var(--font-sans); color: var(--pg-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .st-ds-cl span { font-size: 11px; line-height: 14px; color: var(--pg-label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .st-skill-body .st-ds-hex { width: 104px; flex: none; padding: 4px 6px; border-radius: 8px; background: transparent; font: 12px/16px var(--font-mono); text-align: right; }
-.st-skill-body .st-ds-hex:focus { background: var(--pg-panel-bg); }
+.st-skill-body .st-ds-hex:focus { background: transparent; box-shadow: none; }
 .st-ds-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .st-ds-row { display: flex; flex-direction: column; gap: 4px; min-width: 0; margin: 0; }
 .st-ds-row > span:first-child { font-size: 12px; line-height: 14px; color: var(--pg-label); }
@@ -1688,7 +1691,24 @@ html[data-theme="dark"] .st-ds-spec-check { color: #04131a; }
 .st-ds-range output { width: 28px; text-align: right; font-size: 12px; color: var(--pg-label); font-variant-numeric: tabular-nums; }
 .st-ds-check { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; color: var(--pg-title); cursor: pointer; }
 .st-skill-body .st-ds-check { align-self: flex-start; }
-.st-skill-body .st-ds-check input { flex: none; width: 14px; height: 14px; margin: 0; padding: 0; background: none; accent-color: var(--pg-title); }
+/* The library's Checkbox check (25-checkbox-check.md): an 18px box, radius 6,
+   that fills, then the check draws in; the native input stays for state. */
+.st-ds-check { position: relative; }
+.st-skill-body .st-ds-check input { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; opacity: 0; pointer-events: none; }
+.st-ds-box {
+  --check-len: 15;
+  flex: none; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 6px;
+  background: var(--pg-panel-bg); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.11);
+  transition: background 150ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+html[data-theme="dark"] .st-ds-box { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); }
+.st-ds-box svg { display: block; overflow: visible; }
+.st-ds-box path { stroke: var(--pg-panel-bg); stroke-dasharray: var(--check-len); stroke-dashoffset: var(--check-len); transition: stroke-dashoffset 150ms cubic-bezier(0.22, 1, 0.36, 1); }
+.st-ds-check input:checked + .st-ds-box { background: var(--pg-title); box-shadow: inset 0 0 0 1px var(--pg-title); }
+.st-ds-check input:checked + .st-ds-box path { stroke-dashoffset: 0; transition: stroke-dashoffset 350ms cubic-bezier(0.22, 1, 0.36, 1); }
+.st-ds-check input:focus-visible + .st-ds-box { outline: 2px solid var(--text-muted); outline-offset: 2px; }
+.st-ds-check input:disabled + .st-ds-box { opacity: 0.5; }
+@media (prefers-reduced-motion: reduce) { .st-ds-box, .st-ds-box path { transition: none !important; } }
 .st-skill-body .st-ds-range input[type="range"] { height: 16px; padding: 0; background: none; border-radius: 0; box-shadow: none; }
 .st-ds-style :disabled { opacity: 0.6; cursor: not-allowed; }
 /* The color input is the invisible hit area over the swatch: it stays invisible. */
@@ -2669,7 +2689,9 @@ a.pf-link:hover { background: var(--chip-bg-hover); }
 .ub-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: auto; margin-top: 16px; }
 .ub-card { position: relative; display: flex; flex-direction: column; min-height: 268px; padding: 28px 32px; overflow: hidden; border-radius: 24px; background: #f6f6f6; }
 html[data-theme="dark"] .ub-card { background: #141414; }
-.ub-card::after { content: ""; position: absolute; inset: 0; z-index: 10; border-radius: inherit; pointer-events: none; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.03) inset; }
+/* The card's hairline sits above its frame, so it follows the rounded
+   corner and reads the same over the gray card and the white frame. */
+.ub-card::after { content: ""; position: absolute; inset: 0; z-index: 10; border-radius: inherit; pointer-events: none; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05) inset, 0 -1px 0 0 rgba(0, 0, 0, 0.02) inset; }
 html[data-theme="dark"] .ub-card::after { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 -1px 0 0 rgba(255, 255, 255, 0.03) inset; }
 .ub-card--tall { grid-row: span 2; min-height: 552px; }
 .ub-title { margin: 0 0 10px; font: 500 22px/28px "Saans", var(--font-sans); letter-spacing: -0.01em; color: var(--text); text-wrap: balance; }
@@ -2723,9 +2745,8 @@ html[data-theme="dark"] .ub-mini-stage img.is-dark { display: block; }
 @keyframes ub-swap-a { 0%, 42% { opacity: 1; transform: none; filter: none; } 46%, 96% { opacity: 0; transform: translateY(-4px); filter: blur(2px); } 100% { opacity: 1; transform: none; filter: none; } }
 @keyframes ub-swap-b { 0%, 46% { opacity: 0; transform: translateY(4px); filter: blur(2px); } 50%, 92% { opacity: 1; transform: none; filter: none; } 96%, 100% { opacity: 0; transform: translateY(-4px); filter: blur(2px); } }
 
-/* 2. Trained for UI motion and craft: the agent's motion audit. Each
-   state is matched to its pattern and checked off in turn (the skill's
-   Texts reveal: a blurred rise, staggered), then the list resets. */
+/* 2. Trained for UI motion and craft: the agent's motion audit, every
+   state matched to its pattern and checked off. Static. */
 .ub-frame--audit { display: flex; flex-direction: column; padding: 20px 20px 20px 24px; }
 .ub-audit-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px; font-size: 13px; line-height: 20px; font-weight: 500; color: var(--text); }
 .ub-audit-count { padding: 2px 8px; border-radius: 40px; background: var(--ub-sunk); color: var(--text-muted); font-size: 12px; line-height: 16px; font-weight: 400; }
@@ -2733,49 +2754,29 @@ html[data-theme="dark"] .ub-mini-stage img.is-dark { display: block; }
 .ub-audit li {
   position: relative;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 20px;
+  grid-template-columns: minmax(0, 1fr) 20px;
   align-items: center;
   gap: 12px;
   padding: 8px 0;
-  animation: ub-audit-in 7s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  animation-delay: calc(var(--i) * 350ms);
 }
 /* Dividers fade out at both ends, 49% of the line color. */
 .ub-audit li + li::before {
   content: "";
   position: absolute;
-  left: 52px;
+  left: 0;
   right: 0;
   top: 0;
   height: 1px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--ub-line) 49%, transparent), color-mix(in srgb, var(--ub-line) 49%, transparent) 80%, transparent);
 }
-/* The pattern's own library thumbnail, framed like a library card. */
-.ub-audit-thumb { position: relative; width: 40px; height: 36px; padding: 2px; box-sizing: border-box; border-radius: 9px; background: var(--ub-surface); box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.06), inset 0 -1px 0 0 rgba(0, 0, 0, 0.06); }
-html[data-theme="dark"] .ub-audit-thumb { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.04), inset 0 0 0 1px rgba(196, 196, 196, 0.07); }
-.ub-audit-thumb > span { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 7px; }
-.ub-audit-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(2.2); }
-.ub-audit-thumb img.is-dark, html[data-theme="dark"] .ub-audit-thumb img.is-light { display: none; }
-html[data-theme="dark"] .ub-audit-thumb img.is-dark { display: block; }
 .ub-audit-txt { display: flex; flex-direction: column; min-width: 0; }
 .ub-audit-state, .ub-audit-pat { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ub-audit-state { font-size: 13px; line-height: 20px; color: var(--text); }
 .ub-audit-pat { font-size: 12px; line-height: 16px; color: var(--text-muted); }
-/* The site's own check, drawn in once the state is matched. */
+/* The site's own check, static. */
 .ub-audit-check { width: 20px; height: 20px; color: var(--text); }
-.ub-audit-check path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: ub-audit-check 7s cubic-bezier(0.22, 1, 0.36, 1) infinite; animation-delay: calc(var(--i) * 350ms + 250ms); }
 .ub-audit-tokens { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 16px; }
 .ub-audit-tokens code { padding: 3px 8px; border-radius: 6px; background: var(--ub-sunk); color: var(--text-muted); font: 11px/14px var(--font-mono); }
-@keyframes ub-audit-in {
-  0% { opacity: 0; transform: translateY(6px); filter: blur(2px); }
-  6%, 84% { opacity: 1; transform: none; filter: none; }
-  92%, 100% { opacity: 0; transform: none; filter: none; }
-}
-@keyframes ub-audit-check {
-  0%, 2% { stroke-dashoffset: 1; }
-  10%, 100% { stroke-dashoffset: 0; }
-}
-
 /* 4. Screenshot to component: a flat capture, scanned, then the live toggle. */
 .ub-frame--shot { display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 4px; padding: 16px 20px 16px 16px; }
 .ub-shot, .ub-live { position: relative; flex: 1; min-width: 0; padding: 10px; border-radius: 12px; overflow: hidden; }
@@ -2827,7 +2828,6 @@ html[data-theme="dark"] .ub-btn-modern { background: #fff; color: #0d0d0d; }
   .ub-frame *, .ub-frame *::before, .ub-frame *::after { animation: none !important; }
   .ub-swap--b { opacity: 0; }
   .ub-scan { display: none; }
-  .ub-audit-check path { stroke-dashoffset: 0; }
 }
 @media (max-width: 860px) {
   .ub-grid, .ub-grid--3 { grid-template-columns: 1fr; grid-auto-rows: auto; }

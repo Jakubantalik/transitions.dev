@@ -6042,7 +6042,7 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=57" defer></script>
+  <script src="assets/pro-client.js?v=58" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;
@@ -6219,7 +6219,12 @@
           el("acc-plan-name").textContent = s.pro ? "Pro plan" : "No active plan";
           // Quoting "$9 /mo" to somebody with no plan reads as a charge they
           // are already paying. Show a price only when one is actually billed.
-          el("acc-plan-price").textContent = s.pro ? (yearly ? "$90" : "$9") : "—";
+          // What this subscription bills: an older $9 / $90 price, or the
+          // price of its Builder credit tier.
+          var sub2 = s.subscription || {};
+          var TIER = { 600: ["$12", "$120"], 1200: ["$22", "$220"], 2500: ["$42", "$420"] };
+          var p = sub2.legacy_price ? ["$9", "$90"] : TIER[sub2.credits] || ["$12", "$120"];
+          el("acc-plan-price").textContent = s.pro ? (yearly ? p[1] : p[0]) : "—";
           el("acc-plan-per").textContent = s.pro ? (yearly ? "/yr" : "/mo") : "";
           var renew = "";
           if (sub && sub.current_period_end) {

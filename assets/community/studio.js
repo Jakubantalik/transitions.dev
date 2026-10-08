@@ -1138,16 +1138,7 @@
   var ICON_SPARK = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5l1.3 3.2 3.2 1.3-3.2 1.3L8 11.5 6.7 8.3 3.5 7l3.2-1.3L8 2.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M12.5 11v3M11 12.5h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
   var ICON_STAR = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M7.5 2.3c.2-.4.8-.4 1 0l1.4 2.9 3.2.5c.5.1.7.6.3 1l-2.3 2.2.5 3.2c.1.5-.4.8-.8.6L8 11.2l-2.9 1.5c-.4.2-.9-.1-.8-.6l.5-3.2L2.6 6.7c-.4-.4-.2-.9.3-1l3.2-.5 1.4-2.9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
   // Library glyphs: flat, one colour, same box as the skill rows.
-  var LIB_SVG = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">';
-  var LIB_ICONS = {
-    beam: LIB_SVG + '<rect x="2.5" y="2.5" width="11" height="11" rx="3"/><path d="M9 2.5h1.5a3 3 0 0 1 3 3V7" stroke-width="2.2"/></svg>',
-    orbs: LIB_SVG + '<circle cx="8" cy="8" r="5" stroke-dasharray="0.1 2.6" stroke-width="1.8"/></svg>',
-    gooey: LIB_SVG + '<circle cx="5.5" cy="8" r="3"/><circle cx="10.5" cy="8" r="3"/></svg>',
-    voice: LIB_SVG + '<path d="M3 7v2M5.5 5v6M8 3v10M10.5 5v6M13 7v2"/></svg>',
-    bots: LIB_SVG + '<rect x="3" y="4.5" width="10" height="8" rx="2.5"/><path d="M8 2.5v2"/><circle cx="6" cy="8.5" r=".6" fill="currentColor"/><circle cx="10" cy="8.5" r=".6" fill="currentColor"/></svg>',
-    metal: LIB_SVG + '<path d="M8 2.5c2.3 3 3.8 5 3.8 7a3.8 3.8 0 0 1-7.6 0c0-2 1.5-4 3.8-7Z"/><path d="M6.4 10.2a1.7 1.7 0 0 0 1.4 1.4"/></svg>',
-    image: LIB_SVG + '<rect x="2.5" y="3" width="11" height="10" rx="2"/><circle cx="6" cy="6.5" r="1"/><path d="m3 11.5 3-3 2.5 2.5 1.5-1.5 2.5 2.5"/></svg>',
-  };
+  var LIB_ICONS = C.LIB_ICONS;
   var ICON_PLUS = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16" style="margin-right:8px;flex:none"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
 
   function sw(on, label) {
@@ -1866,6 +1857,15 @@
     row.querySelector(".st-ds-sw").style.setProperty("--sw", v);
     if (e.target.type !== "color") row.querySelector("input[type=color]").value = toHex(v);
     styleChanged();
+  });
+  // The whole row is the input: a click outside the swatch edits the value.
+  colorsEl.addEventListener("click", function (e) {
+    var row = e.target.closest(".st-ds-color");
+    if (!row || e.target.closest("input")) return;
+    var hex = row.querySelector(".st-ds-hex");
+    if (hex.disabled) return;
+    hex.focus();
+    hex.select();
   });
   colorsEl.addEventListener("focusout", function (e) {
     var row = e.target.closest(".st-ds-color");

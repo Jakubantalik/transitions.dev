@@ -67,16 +67,123 @@
       setPlusMenu(false);
       fileInput.click();
     });
-    // Add skill / Add library: both live in the Studio, so the + menu opens it
-    // on that dialog, starting from the picked remix and keeping what was typed.
-    document.querySelectorAll("#cm-plus-menu [data-add]").forEach(function (a) {
-      a.addEventListener("click", function (e) {
-        e.preventDefault();
+    // Add skill / Add library: the Studio's skill editor and libraries, here
+    // as dialogs. What is picked is the Studio's agent context
+    // (tdev:studio:context), so the draft the Studio runs uses it.
+    var CTX_KEY = "tdev:studio:context";
+    function readCtx() {
+      var c = { builtin: true, skills: {}, libs: {} };
+      try { var saved = JSON.parse(localStorage.getItem(CTX_KEY) || "null"); if (saved) c = Object.assign(c, saved); } catch (e) {}
+      return c;
+    }
+    function writeCtx(c) { try { localStorage.setItem(CTX_KEY, JSON.stringify(c)); } catch (e) {} }
+    function showDialog(d) { d.hidden = false; requestAnimationFrame(function () { d.classList.add("is-open"); }); }
+    function hideDialog(d) { d.classList.remove("is-open"); setTimeout(function () { d.hidden = true; }, 200); }
+
+    var ICON_BOOK = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3.5A1.5 1.5 0 0 1 4.5 2H13v10H4.5A1.5 1.5 0 0 0 3 13.5m0-10v10m0 0A1.5 1.5 0 0 0 4.5 15H13v-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var ICON_EXT = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M11.5 9.5v2.5a1.5 1.5 0 0 1-1.5 1.5H4a1.5 1.5 0 0 1-1.5-1.5V6A1.5 1.5 0 0 1 4 4.5h2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var libsDlg = document.getElementById("st-libs-dlg");
+    var libsList = document.getElementById("st-libs-list");
+    var libraries = null;
+    function paintLibs() {
+      var c = readCtx();
+      libsList.innerHTML = (libraries || []).map(function (l) {
+        var on = !!c.libs[l.id];
+        return '<div class="tl-menu-item st-pop-row st-lib-row" role="listitem" data-lib="' + C.esc(l.id) + '">' +
+          '<span class="st-pop-ico" aria-hidden="true">' + (C.LIB_ICONS[l.id] || ICON_BOOK) + "</span>" +
+          '<span class="st-pop-main"><b>' + C.esc(l.name) + "</b><span><code>" + C.esc(l.pkg) + "</code> · " + C.esc(l.desc) + "</span></span>" +
+          '<a class="st-pop-act" href="https://libraries.dev/' + C.esc(l.id) + '.html" target="_blank" rel="noopener"' +
+            ' aria-label="Open ' + C.esc(l.name) + ' on libraries.dev (new tab)" title="Open on libraries.dev">' + ICON_EXT + "</a>" +
+          '<button type="button" class="st-check" role="switch" aria-checked="' + on + '"' +
+            ' aria-label="Add ' + C.esc(l.name) + ' to the agent"></button></div>';
+      }).join("");
+      var note = document.getElementById("st-libs-note");
+      var react = buildMode() === "react";
+      note.hidden = react;
+      note.innerHTML = react ? "" : 'Libraries are React components. <button type="button" data-react>Switch to React</button>';
+    }
+    function openLibs() {
+      var ready = libraries ? Promise.resolve() : fetch("assets/community/libraries.json?v=2")
+        .then(function (r) { return r.json(); }).then(function (l) { libraries = l || []; }).catch(function () { libraries = []; });
+      ready.then(function () { paintLibs(); showDialog(libsDlg); });
+    }
+    libsDlg.addEventListener("click", function (e) {
+      var t = e.target;
+      if (t === libsDlg || t.closest("[data-close]")) { hideDialog(libsDlg); return; }
+      if (t.closest("[data-react]")) {
+        var reactBtn = agentMenu.querySelector('[data-mode="react"]');
+        if (reactBtn) reactBtn.click();
+        paintLibs();
+        return;
+      }
+      if (t.closest("a.st-pop-act")) return;
+      var row = t.closest("[data-lib]");
+      if (!row) return;
+      var c = readCtx(), id = row.getAttribute("data-lib");
+      c.libs[id] = !c.libs[id];
+      writeCtx(c);
+      row.querySelector(".st-check").setAttribute("aria-checked", String(!!c.libs[id]));
+    });
+
+    var skillDlg = document.getElementById("st-skill-dlg");
+    var skillName = document.getElementById("st-skill-name");
+    var skillText = document.getElementById("st-skill-content");
+    var skillErr = document.getElementById("st-skill-err");
+    function skillCount() { document.getElementById("st-skill-count").textContent = skillText.value.length.toLocaleString() + " / 20,000"; }
+    skillText.addEventListener("input", skillCount);
+    function openSkill() {
+      C.withAccount(function () {
+        skillName.value = "";
+        skillText.value = "";
+        skillErr.hidden = true;
+        skillCount();
+        showDialog(skillDlg);
+        setTimeout(function () { skillName.focus(); }, 50);
+      });
+    }
+    skillDlg.addEventListener("click", function (e) {
+      if (e.target === skillDlg || e.target.closest("[data-close]")) hideDialog(skillDlg);
+    });
+    document.getElementById("st-skill-file").addEventListener("change", function (e) {
+      var f = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if (!f) return;
+      if (f.size > 200000) { skillErr.textContent = "That file is too large for a skill."; skillErr.hidden = false; return; }
+      f.text().then(function (text) {
+        // A SKILL.md names itself in its front matter.
+        var fm = text.match(/^---\s*\n([\s\S]*?)\n---/);
+        var named = fm && fm[1].match(/^name:\s*(.+)$/m);
+        if (!skillName.value.trim()) skillName.value = (named ? named[1] : f.name.replace(/\.(md|markdown|txt)$/i, "")).trim().slice(0, 60);
+        skillText.value = text.slice(0, 20000);
+        skillCount();
+        if (text.length > 20000) { skillErr.textContent = "Trimmed to the first 20,000 characters."; skillErr.hidden = false; }
+      });
+    });
+    skillDlg.querySelector("form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var btn = document.getElementById("st-skill-save");
+      btn.disabled = true;
+      C.api.saveSkill({ name: skillName.value.trim(), content: skillText.value }).then(function (r) {
+        btn.disabled = false;
+        if (r.error) { skillErr.textContent = C.errorText(r.error); skillErr.hidden = false; return; }
+        var c = readCtx();
+        c.skills[r.skill.id] = true;
+        writeCtx(c);
+        hideDialog(skillDlg);
+        C.toast("Skill added. The agent follows it from now on.");
+        prompt.focus();
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      if (!skillDlg.hidden) hideDialog(skillDlg);
+      if (!libsDlg.hidden) hideDialog(libsDlg);
+    });
+
+    document.querySelectorAll("#cm-plus-menu [data-add]").forEach(function (b) {
+      b.addEventListener("click", function () {
         setPlusMenu(false);
-        var text = prompt.value.trim();
-        try { if (text) sessionStorage.setItem("tdev:studio:prefill", text); } catch (err) {}
-        location.href = "studio.html?add=" + a.getAttribute("data-add") +
-          (remix ? "&lib=" + encodeURIComponent(remix.slug) : "&mode=" + buildMode());
+        if (b.getAttribute("data-add") === "skill") openSkill(); else openLibs();
       });
     });
     fileInput.addEventListener("change", function () {
