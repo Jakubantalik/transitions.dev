@@ -1,4 +1,4 @@
-# Transitions Agent fix service.
+# Transitions Motion Agent fix service.
 #   npx wrangler secret put ANTHROPIC_API_KEY
 #   node agent/worker/pack-recipes.mjs            (from the repo root; packs free + Pro)
 #   npx wrangler kv bulk put recipes-kv.json --namespace-id <RECIPES id> --remote

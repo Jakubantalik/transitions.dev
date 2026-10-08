@@ -29,12 +29,7 @@
   <meta property="og:title" content="Terms & License - Transitions.dev Refine" />
   <meta property="og:description" content="Beta software, your agent token/credit usage, agent-written code changes, no warranty, and the MIT license." />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
 
   <script>
     // Apply theme before first paint to avoid FOUC: a theme chosen via the
@@ -364,6 +359,10 @@
       .doc-head { padding-top: 56px; }
       h1 { font-size: 28px; }
     }
+    /* Legal pages: sub-headings, placeholders still to fill, the model form. */
+    .doc-head + section h3, section h3 { margin: 18px 0 6px; font-size: 15px; line-height: 22px; font-weight: 500; color: var(--text); }
+    .todo { padding: 0 4px; border-radius: 4px; background: rgba(255, 196, 0, 0.35); color: var(--text); }
+    .model-form { margin: 0 0 14px; padding: 12px 16px; border-radius: 12px; background: var(--chip-bg); color: var(--text-muted); font-size: 14px; line-height: 21px; }
   </style>
 </head>
 <body>
@@ -374,26 +373,37 @@
       <header class="doc-head">
         <p class="eyebrow"><a href="/">Transitions.dev</a></p>
         <h1>Terms &amp; License</h1>
-        <p class="updated">Last updated July 2026</p>
+        <p class="updated">Last updated 8 October 2026</p>
         <p class="lede">
-          These terms cover using Transitions.dev — the free transition library, the
-          Transitions&nbsp;Pro subscription and Team plans, and the Refine tool. By using the
-          site or subscribing you agree to them. In short: use the transitions in as many
-          projects as you like, including commercial ones; a subscription bills until you
-          cancel; and what you've already downloaded stays yours.
+          These terms cover using Transitions.dev: the free transition library, the
+          Transitions&nbsp;Pro and Business plans, the Transitions Motion Agent, the Community and Studio, and the Refine tool.
+          You accept them when you create an account or buy a plan. In short: use the
+          transitions in as many projects as you like, including commercial ones; a subscription
+          bills until you cancel; and what you've already downloaded stays yours.
         </p>
       </header>
 
       <section>
+        <h2>Who you contract with</h2>
+        <p>
+          Transitions.dev is run by <strong>Jakub Antalik</strong>, a sole trader registered in the
+          Czech Republic (<span class="todo">IČO [company ID]</span>,
+          <span class="todo">[street, postcode, city]</span>). Contact:
+          <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>. Full details are in the
+          <a href="/imprint.html">legal notice</a>. You must be at least 16 to create an account.
+        </p>
+      </section>
+
+      <section id="using">
         <h2>Using the transitions</h2>
         <p>
-          Every transition — free or Pro — is a snippet of CSS (and optional React) you paste
+          Every transition, free or Pro, is a snippet of CSS (and optional React) you paste
           into your own project. Once you have access to a transition, you may use it in
           <strong>unlimited personal and commercial projects</strong>, modify it freely, and
           ship it to your users as part of your product.
         </p>
         <p>
-          The one thing you may not do is <strong>redistribute the library itself</strong> — you
+          The one thing you may not do is <strong>redistribute the library itself</strong>: you
           can't repackage, resell, or publish the collection (or a substantial part of it) as a
           competing transitions library, motion pack, or animation kit. Use them in your
           products, not as a product of their own.
@@ -424,10 +434,12 @@
           transition and update released while your plan is active.
         </p>
         <ul>
-          <li><strong>Billing &amp; renewal.</strong> Pro is billed monthly or yearly through Stripe and <strong>renews automatically</strong> at the end of each period until you cancel. Prices are shown at checkout.</li>
-          <li><strong>Lifetime plans.</strong> Solo and Team lifetime plans are a <strong>one-time payment</strong> — no renewal, nothing to cancel. They include ongoing access and every future transition for as long as the service operates. Team lifetime includes a fixed 5 seats. Lifetime plans cover the Pro library, future transitions, and local tooling, including running the Agent with your own AI assistant. <strong>Hosted Agent fixes are not part of a lifetime purchase</strong>: lifetime holders get the same Free Agent allowance as free accounts, which may change over time.</li>
+          <li><strong>Billing &amp; renewal.</strong> Pro is billed monthly or yearly through Stripe and <strong>renews automatically</strong> at the end of each period until you cancel.</li>
+          <li><strong>Prices &amp; tax.</strong> Prices are in US dollars. VAT or other sales tax is added at checkout where it applies, and the checkout shows the full amount you pay before you confirm.</li>
+          <li><strong>Price changes.</strong> We may change prices for new purchases at any time. An active subscription keeps the price you signed up at unless we tell you otherwise by email at least 30 days before a new price applies; you can cancel before it does, and the new price never applies to a period you've already paid for.</li>
+          <li><strong>Lifetime plans.</strong> Lifetime plans are a <strong>one-time payment</strong>: no renewal, nothing to cancel. They include ongoing access and every future transition for as long as the service operates (see <a href="#discontinuation">Discontinuing the service</a>). Team lifetime plans (no longer sold) include a fixed 5 seats. Lifetime plans cover the Pro library, future transitions, and local tooling, including running the Motion Agent with your own AI assistant. <strong>Hosted AI is not part of a lifetime purchase</strong>: a lifetime Pro purchase includes a one-time pack of 2,000 Builder AI credits; once they are used, and for hosted Motion Agent fixes, lifetime holders get the same free allowance as free accounts, which may change over time.</li>
           <li><strong>Updates.</strong> While your plan is active you receive new Pro transitions and improvements at no extra charge.</li>
-          <li><strong>You keep what you've downloaded.</strong> Cancelling stops future access, downloads, and updates — but any files already added to your projects continue to work and remain licensed under the terms above.</li>
+          <li><strong>You keep what you've downloaded.</strong> Cancelling stops future access, downloads, and updates, but any files already added to your projects continue to work and remain licensed under the terms above.</li>
         </ul>
       </section>
 
@@ -436,12 +448,36 @@
         <p>
           You can cancel any time from your <a href="/account.html">account</a>. Your plan stays
           active until the end of the period you've already paid for; we don't prorate partial
-          periods. If something's wrong — a double charge, a technical problem that stops you
-          using Pro — email <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a> and we'll make
-          it right, including a refund where fair. EU/EEA consumers may have a statutory right of
-          withdrawal; by starting to download Pro content immediately you acknowledge digital
-          delivery begins at once.
+          periods. If something's wrong, such as a double charge or a technical problem that stops
+          you using Pro, email <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a> and we'll
+          make it right, including a refund where fair. Your statutory rights for faulty digital
+          content and services are not affected.
         </p>
+      </section>
+
+      <section id="withdrawal">
+        <h2>Right of withdrawal (EU and EEA consumers)</h2>
+        <p>
+          If you buy as a consumer, you normally have 14 days from the purchase to withdraw from the
+          contract without giving a reason. Pro gives you digital content and services the moment
+          you pay, so at checkout we ask you to confirm that you <strong>want access to start
+          immediately</strong> and that you <strong>understand you lose the right of withdrawal
+          once access begins</strong>. We confirm your choice in the purchase confirmation email.
+          You cannot complete a purchase without that confirmation.
+        </p>
+        <p>
+          Where the right of withdrawal still applies to you, withdraw by sending us a clear
+          statement within the 14 days, for example by email to
+          <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>. You may use this model form,
+          but you don't have to:
+        </p>
+        <blockquote class="model-form">
+          To Jakub Antalik, <span class="todo">[street, postcode, city]</span>, jakubja@gmail.com:
+          I hereby give notice that I withdraw from my contract for the following service:
+          [plan]. Ordered on [date]. Name: [your name]. Email of the account: [email].
+          Date: [date].
+        </blockquote>
+        <p>We refund the payment within 14 days of receiving your withdrawal, by the same payment method.</p>
       </section>
 
       <section>
@@ -453,21 +489,21 @@
         </p>
         <ul>
           <li>Each member gets full Pro access while they belong to an active team.</li>
-          <li>Removing a member, or the team's subscription ending, ends that person's Pro access — again, already-downloaded files keep working.</li>
+          <li>Removing a member, or the team's subscription ending, ends that person's Pro access; already-downloaded files keep working.</li>
           <li>The owner is responsible for who they invite and for the team's billing.</li>
         </ul>
       </section>
 
       <section>
-        <h2>Transitions Agent plans</h2>
+        <h2>Transitions Motion Agent plans</h2>
         <p>
-          The Transitions Agent scans code for motion issues and fixes them. What each plan
+          The Transitions Motion Agent scans code for motion issues and fixes them. What each plan
           licenses:
         </p>
         <ul>
           <li><strong>Free</strong>: unlimited scans, and a monthly allowance of hosted fixes, for personal and evaluation use.</li>
-          <li><strong>Pro and Business</strong>: full recipe access. Business additionally licenses <strong>automated fixing in CI</strong> (for example GitHub Actions) <strong>through the hosted fix service only</strong> — the workflow where our service and our model keys do the fixing, metered by your plan.</li>
-          <li><strong>Enterprise</strong>: additionally licenses running the Agent toolchain in CI and other automation <strong>with your own model keys</strong> (your code then flows only to your model provider), plus org-wide use across teams and repositories.</li>
+          <li><strong>Pro and Business</strong>: full recipe access. Business additionally licenses <strong>automated fixing in CI</strong> (for example GitHub Actions) <strong>through the hosted fix service only</strong>: the workflow where our service and our model keys do the fixing, metered by your plan.</li>
+          <li><strong>Enterprise</strong>: additionally licenses running the Motion Agent toolchain in CI and other automation <strong>with your own model keys</strong> (your code then flows only to your model provider), plus org-wide use across teams and repositories.</li>
         </ul>
         <p>
           Interactive use in your own editor or terminal with your own AI assistant is included in
@@ -476,14 +512,40 @@
         </p>
       </section>
 
+      <section id="community">
+        <h2>The Community</h2>
+        <p>
+          The Community lets you build components in the Studio, publish them, like others' work and
+          remix it. These rules apply on top of the rest of these terms.
+        </p>
+        <ul>
+          <li><strong>Your content stays yours.</strong> You keep the rights to what you publish. By publishing, you allow us to host, show and distribute it on Transitions.dev, and you allow other users to view, copy, remix and use it in their own projects under the <span class="todo">MIT License</span>. Unpublish or delete it at any time; copies others already made keep their license.</li>
+          <li><strong>Only publish what you may share.</strong> No illegal content, nothing that infringes someone's copyright, trademarks or privacy, no malware, tracking, phishing or code that attacks visitors, no spam, and nothing hateful, harassing or sexually explicit. Don't publish other people's personal data.</li>
+          <li><strong>AI-assisted work.</strong> The Studio's agent is an AI (Claude, by Anthropic). Its output can be wrong; check it before you use it. We record which components the agent built or changed. You are responsible for what you publish, including AI-assisted work.</li>
+          <li><strong>AI allowance.</strong> AI edits use credits: one credit is one cent of AI cost, so an edit uses what it cost and larger models use more. Free accounts get a limited number of credits each month, which may change, and free use may pause for the day when the day's free capacity is used up; paid plans get the credits their plan names each month (per seat on Business). The Studio shows what you have left; unused monthly credits do not carry over, and a lifetime pack of credits does not renew.</li>
+          <li><strong>Your ChatGPT plan.</strong> If you connect ChatGPT, you can have the Studio draft on your own ChatGPT plan instead of credits. Those drafts are between you and OpenAI: they run under OpenAI's terms, count against your plan and the usage limit you set for Transitions.dev in ChatGPT, and depend on OpenAI offering plan usage. They follow every other rule here, and Pro features stay Pro. You can disconnect at any time.</li>
+          <li><strong>Drafts and fair use.</strong> Free accounts keep up to 10 private (unpublished) drafts at a time; published components don't count, and Pro and Business keep any number. To stop automated abuse, each account can start a limited number of AI drafts per hour, whichever agent it uses.</li>
+          <li><strong>Reporting.</strong> Use <em>Report</em> on any component or profile to tell us about content you think is illegal or breaks these rules: say what is wrong and why, and confirm the report is made in good faith. We email you a receipt and our decision. You can also write to <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>.</li>
+          <li><strong>Review before publishing.</strong> A person checks every component you publish before it appears in the Community. Until then only you can see it, and we email you the decision; if we don't publish it, we tell you why, and you can change it and publish it again. Automated checks run first: they refuse titles and content that clearly break these rules (such as slurs or sexually explicit material) and point the reviewer to things worth a look, such as password fields or links to other sites. If a component you already published changes in a way the checks can't clear, it goes back to review.</li>
+          <li><strong>Names and pictures.</strong> Display names, handles, bios and profile pictures go through the same automated checks. Names can't contain links or badge symbols, or suggest that you speak for Transitions.dev, its team or an AI company. A picture the checks can't clear stays visible only to you until a person has looked at it.</li>
+          <li><strong>Moderation.</strong> A component reported by three different people is hidden automatically until a person reviews it; on a profile reported by three people, the name, bio and picture are hidden the same way. We may also hide or remove content, or suspend an account, that breaks the law or these rules. We decide case by case, considering the rights of everyone involved.</li>
+          <li><strong>Reasons and reviews.</strong> If we hide your component or restrict your account, we tell you by email what we did, why, and whether it was automated. You can ask for a review in the Studio or by replying to that email; a person decides and tells you the outcome. You can also go to court or use other remedies.</li>
+          <li><strong>Repeated abuse.</strong> We may suspend, after a warning, accounts that often publish clearly illegal content or often send clearly unfounded reports. A suspended account can't publish, and its components and profile are hidden from others.</li>
+          <li><strong>Contact point.</strong> For users and for authorities under the Digital Services Act: <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>, in English or Czech.</li>
+        </ul>
+      </section>
+
       <section>
         <h2>Your account</h2>
         <p>
-          Accounts use passwordless email sign-in. Keep access to your email secure — anyone who
-          can receive your sign-in link can access your account. Don't share credentials, probe or
+          Accounts use passwordless email sign-in, or you can continue with GitHub or ChatGPT. Keep
+          access to your email and those accounts secure: anyone who can receive your sign-in code
+          or link, or use your linked GitHub or ChatGPT account, can access your account. You must
+          be at least 16 to create one. Don't share credentials, probe or
           abuse the service, attempt to bypass the entitlement checks, or scrape the Pro content.
-          We may suspend accounts that do. How we handle your data is described in our
-          <a href="/privacy.html">Privacy Policy</a>.
+          We may suspend accounts that do, and we tell you why. You can delete your account at any
+          time from your <a href="/account.html">account page</a>. How we handle your data is
+          described in our <a href="/privacy.html">Privacy Policy</a>.
         </p>
       </section>
 
@@ -493,14 +555,6 @@
           Refine is a free, open-source tool that connects your own AI coding agent to a live
           timeline panel. The following terms apply specifically to it.
         </p>
-        <p>
-          Refine is an early <strong>Beta</strong>. It is provided for
-          evaluation and everyday use, but features, commands, the panel, and
-          its behavior may change, regress, or be removed at any time without
-          notice. We make no guarantee that it will be available, stable, error-
-          free, or fit for any particular purpose.
-        </p>
-      </section>
         <p>
           Refine is an early <strong>Beta</strong>. It is provided for
           evaluation and everyday use, but features, commands, the panel, and
@@ -558,18 +612,64 @@
         <p>
           To the maximum extent permitted by law, the authors and copyright
           holders shall not be liable for any claim, damages, or other
-          liability - whether direct, indirect, incidental, or consequential,
-          and including lost work, lost data, or lost tokens/credits - arising
-          from or in connection with the software or its use.
+          liability, whether direct, indirect, incidental, or consequential,
+          and including lost work, lost data, or lost tokens/credits, arising
+          from or in connection with the software or its use. Nothing in these
+          terms limits liability that cannot be limited by law, including your
+          statutory rights as a consumer.
+        </p>
+      </section>
+
+      <section id="discontinuation">
+        <h2>Discontinuing the service</h2>
+        <p>
+          We intend to run Transitions.dev for a long time. If we ever close it, or a paid part of
+          it, this is what happens:
+        </p>
+        <ul>
+          <li><strong>Notice.</strong> We email every account holder at least 60 days before the closing date, and stop selling new plans the same day.</li>
+          <li><strong>Subscriptions</strong> stop renewing. If you paid for time after the closing date, we refund that unused part pro rata.</li>
+          <li><strong>Lifetime plans.</strong> For refunds, a lifetime plan counts as 36 months of access from its purchase. If we close within those 36 months, we refund the unused months pro rata: closing 12 months after your purchase refunds 24/36 of the price. After 36 months, nothing is owed.</li>
+          <li><strong>Your files.</strong> Everything you have downloaded stays yours to use under these terms, with no end date. Before we close, we give you a way to download all the transitions your plan includes.</li>
+          <li><strong>Your data.</strong> You get at least 30 days to export your account data and your Community components. After the closing date we delete your personal data, except the billing records we must keep by law.</li>
+          <li><strong>Hosted features</strong> (the Studio AI, hosted Motion Agent fixes and Pro downloads) stop on the closing date. Unused AI credits have no cash value and are not refunded separately.</li>
+        </ul>
+        <p>
+          Refunds go back to the original payment method within 30 days of the closing date. Nothing
+          here limits your statutory rights as a consumer.
+        </p>
+      </section>
+
+      <section>
+        <h2>Changes to these terms</h2>
+        <p>
+          We may update these terms as the product changes. We tell account holders about
+          material changes by email at least 14 days before they apply; a change never affects a
+          period you have already paid for. If you don't agree, you can cancel before the change
+          takes effect.
+        </p>
+      </section>
+
+      <section>
+        <h2>Governing law &amp; disputes</h2>
+        <p>
+          These terms are governed by Czech law. If you are a consumer, you also keep the
+          protection of the mandatory consumer law of the country where you live, and you can
+          bring a claim in the courts there.
+        </p>
+        <p>
+          Please contact us first and we will try to resolve any issue. Consumers can also use
+          out-of-court dispute resolution: the competent body is the Czech Trade Inspection
+          Authority (Česká obchodní inspekce, <a href="https://adr.coi.cz" target="_blank" rel="noopener">adr.coi.cz</a>).
         </p>
       </section>
 
       <section>
         <h2>Open-source license</h2>
         <p>
-          The tooling — the <strong>Refine tool</strong> and the <code>transitions-dev</code> CLI —
+          The tooling (the <strong>Refine tool</strong> and the <code>transitions-dev</code> CLI)
           is released under the MIT License below. The transitions you install are licensed under
-          <a href="#">Using the transitions</a> above, not the MIT terms.
+          <a href="#using">Using the transitions</a> above, not the MIT terms.
         </p>
         <div class="license-block">
           <p>Copyright &copy; 2026 Jakub Antalik / Transitions.dev</p>
@@ -619,7 +719,7 @@
               <a href="/">Home</a>
               <a href="/">Transitions</a>
               <a href="/skill.html">Skill</a>
-              <a href="/agent.html">Agent</a>
+              <a href="/agent.html">Motion Agent</a>
               <a href="/pro.html">Get Pro</a>
             </div>
             <div class="footer-col">
@@ -633,6 +733,7 @@
               <a href="/pro.html" id="footer-signin">Sign in</a>
               <a href="/terms.html">Terms</a>
               <a href="/privacy.html">Privacy</a>
+              <a href="/imprint.html">Legal notice</a>
               <a href="mailto:jakubja@gmail.com">Contact</a>
             </div>
           </nav>

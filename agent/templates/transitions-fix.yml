@@ -1,4 +1,4 @@
-# Transitions Agent: hosted fixes from CI - Business plan, ONE secret.
+# Transitions Motion Agent: hosted fixes from CI - Business plan, ONE secret.
 # Copy to .github/workflows/transitions-fix.yml. Trigger from the Actions tab;
 # it scans, gets fixes from the transitions.dev fix service (our AI, your
 # quota), and opens a pull request. Nothing touches main.
@@ -12,7 +12,7 @@
 # General > Workflow permissions > check "Allow GitHub Actions to create and
 # approve pull requests". Without it the fixes still push as a branch, but
 # the PR must be opened by hand.
-name: Transitions Agent fix
+name: Transitions Motion Agent fix
 
 on:
   workflow_dispatch:

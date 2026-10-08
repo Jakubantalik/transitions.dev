@@ -1,4 +1,4 @@
-/* Brand mark hover: the logo build from the Transitions Agent launch
+/* Brand mark hover: the logo build from the Transitions Motion Agent launch
    video's end card, run on the site's own mark.
 
    The video (transitions-agent-video/video.html, logoAt) builds the

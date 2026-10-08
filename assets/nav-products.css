@@ -1,0 +1,12 @@
+/* The top bar's Products menu (Library, Builder, Agent, Skill), built on the
+   nav's 3-dot menu component (.tl-menu.t-dropdown). Shared by every page. */
+.nav-products { position: relative; display: inline-flex; }
+.nav-products-btn { display: inline-flex; align-items: center; gap: 2px; border: 0; background: transparent; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.nav-products-btn svg { width: 14px; height: 14px; margin-right: -4px; opacity: 0.7; }
+.tl-menu.nav-products-menu { top: calc(100% + 8px); left: -6px; right: auto; width: 296px; padding: 6px; transform-origin: top left; }
+.nav-products-item { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; min-height: 52px; padding: 7px 10px; text-decoration: none; }
+.nav-products-name { font-size: 13px; line-height: 16px; font-weight: 500; color: var(--text); }
+.nav-products-hint { font-size: 12px; line-height: 16px; color: var(--text-muted); }
+.nav-products-item[aria-current="page"] { background: var(--chip-bg); }
+.mobile-menu-group { padding: 4px 0 0; font-size: 13px; line-height: 18px; color: var(--text-muted); }
+.mobile-menu-link--7 { transition-delay: 240ms; }

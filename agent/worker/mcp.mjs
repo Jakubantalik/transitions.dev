@@ -1,4 +1,4 @@
-// Transitions Agent MCP server (streamable HTTP, JSON responses).
+// Transitions Motion Agent MCP server (streamable HTTP, JSON responses).
 // The user's own AI (Claude Code, Cursor, claude.ai, CI via claude-code-action)
 // connects here and does the fixing on its own tokens; this server supplies
 // what it cannot know: the scanner contract, the fix guidance, and the real
@@ -66,7 +66,7 @@ export async function handleMcp(request, env, ctx) {
         capabilities: { tools: {} },
         serverInfo: { name: "transitions-agent", version: "0.1.0" },
         instructions:
-          "Transitions Agent: scan a repo for janky UI motion (scan_instructions), then fix findings following fix_guidance, pulling exact library sources with get_recipe. A transitions.dev license key goes in the Authorization header; get one with: npx transitions-agent signup you@email.com. Licensing: interactive editor/terminal use is included in every paid plan; automated CI fixing on your own model keys requires an Enterprise license (Business plans use the hosted CI workflow) - https://transitions.dev/terms.html",
+          "Transitions Motion Agent: scan a repo for janky UI motion (scan_instructions), then fix findings following fix_guidance, pulling exact library sources with get_recipe. A transitions.dev license key goes in the Authorization header; get one with: npx transitions-agent signup you@email.com. Licensing: interactive editor/terminal use is included in every paid plan; automated CI fixing on your own model keys requires an Enterprise license (Business plans use the hosted CI workflow) - https://transitions.dev/terms.html",
       });
     case "ping":
       return rpcResult(id, {});

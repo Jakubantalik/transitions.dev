@@ -372,7 +372,7 @@ async function openPr(root, result, proposed, opts) {
     ? `Revamp UI transitions with transitions.dev recipes (motion score ${result.score} to ${after})`
     : `Polish UI transitions (motion score ${result.score} to ${after})`);
   const body = custom(opts.body) || fixPrBody({
-    intro: "Transitions Agent reviewed the motion in this branch and proposes the changes below. Every change was shown as a diff and confirmed in the terminal first.",
+    intro: "Transitions Motion Agent reviewed the motion in this branch and proposes the changes below. Every change was shown as a diff and confirmed in the terminal first.",
     mode, before: result.score, after, changes: opts.changes, summary: opts.summary, files: proposed.map((p) => p.path),
   });
   try {
@@ -445,5 +445,5 @@ async function confirm(question) {
 function ciSummary(text) {
   const file = process.env.GITHUB_STEP_SUMMARY;
   if (!file) return;
-  try { appendFileSync(file, "### Transitions Agent fix\n\n" + text + "\n"); } catch { /* log already has it */ }
+  try { appendFileSync(file, "### Transitions Motion Agent fix\n\n" + text + "\n"); } catch { /* log already has it */ }
 }

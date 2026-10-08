@@ -78,7 +78,7 @@ Labels on a pull request: `revamp` installs the transitions.dev recipes for that
 
 ## MCP server (your AI, our recipes)
 
-Prefer your own Claude to do the fixing? Connect the Transitions Agent MCP server and your assistant gets the scanner contract, the fix guidance, and the real recipe sources (Pro included on Business) - fixing runs on your subscription, not our meters:
+Prefer your own Claude to do the fixing? Connect the Transitions Motion Agent MCP server and your assistant gets the scanner contract, the fix guidance, and the real recipe sources (Pro included on Business) - fixing runs on your subscription, not our meters:
 
 ```bash
 claude mcp add --transport http transitions-agent https://api.transitions.dev/v1/agent/mcp --header "Authorization: Bearer $TRANSITIONS_AGENT_LICENSE"
@@ -119,4 +119,4 @@ The Transitions.dev **Pro** plan ($9/month) includes the free Agent tier; the pa
 
 Free hosted fixes run on a faster model and share a global monthly capacity pool (`FREE_GLOBAL_MONTHLY` in [worker/wrangler.toml](worker/wrangler.toml)), so free-tier AI spend has a hard ceiling. Team traffic is never affected by the pool.
 
-MIT for the scanner and CLI. The fix service requires a Transitions Agent license from [transitions.dev](https://transitions.dev).
+MIT for the scanner and CLI. The fix service requires a Transitions Motion Agent license from [transitions.dev](https://transitions.dev).

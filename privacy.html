@@ -29,12 +29,7 @@
   <meta property="og:title" content="Privacy Policy - Transitions.dev" />
   <meta property="og:description" content="What we collect, who processes it, and your rights." />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
 
   <script>
     (function () {
@@ -290,6 +285,10 @@
       .doc-head { padding-top: 56px; }
       h1 { font-size: 28px; }
     }
+    /* Legal pages: sub-headings, placeholders still to fill, the model form. */
+    .doc-head + section h3, section h3 { margin: 18px 0 6px; font-size: 15px; line-height: 22px; font-weight: 500; color: var(--text); }
+    .todo { padding: 0 4px; border-radius: 4px; background: rgba(255, 196, 0, 0.35); color: var(--text); }
+    .model-form { margin: 0 0 14px; padding: 12px 16px; border-radius: 12px; background: var(--chip-bg); color: var(--text-muted); font-size: 14px; line-height: 21px; }
   </style>
 </head>
 <body>
@@ -300,120 +299,205 @@
       <header class="doc-head">
         <p class="eyebrow"><a href="/">Transitions.dev</a></p>
         <h1>Privacy Policy</h1>
-        <p class="updated">Last updated July 2026</p>
+        <p class="updated">Last updated 8 October 2026</p>
         <p class="lede">
-          This policy explains what data Transitions.dev collects when you use the site,
-          create an account, or subscribe to Pro — why we collect it, who processes it on
-          our behalf, and the rights you have over it. We collect as little as the product
-          needs to work, and we never sell your data.
+          This policy explains what personal data Transitions.dev processes when you visit the site,
+          create an account, buy a plan or use the Transitions Motion Agent: why, on what legal basis, who
+          helps us process it, how long we keep it, and the rights you have. We collect as little as
+          the product needs, and we never sell your data.
         </p>
       </header>
 
       <section>
         <h2>Who we are</h2>
         <p>
-          Transitions.dev is operated by <strong>Jakub Antalik</strong> ("we", "us"). For
-          anything in this policy — including data requests — contact
-          <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>. For visitors in the EU/EEA
-          and UK, we act as the <strong>data controller</strong> for the personal data
-          described below.
+          The controller of your personal data is <strong>Jakub Antalik</strong>, a sole trader
+          registered in the Czech Republic (<span class="todo">IČO [company ID]</span>), with the
+          address <span class="todo">[street, postcode, city], Czech Republic</span> ("we", "us").
+          Full company details are in the <a href="/imprint.html">legal notice</a>.
+        </p>
+        <p>
+          For anything about your data, write to
+          <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a>. We have not appointed a data
+          protection officer, because the law does not require one for a service of our size.
         </p>
       </section>
 
       <section>
-        <h2>What we collect</h2>
-        <p>Most of the site — browsing transitions, copying free snippets, reading the docs — needs no account and collects no personal data. The data below applies once you sign in or subscribe.</p>
+        <h2>What we process</h2>
+        <h3>When you visit the site</h3>
         <ul>
-          <li><strong>Your email address</strong> — the anchor for your account and passwordless sign-in. You give it to us when you subscribe or sign in.</li>
-          <li><strong>Billing details</strong> — handled by Stripe. We store your Stripe customer and subscription identifiers and your plan status; <strong>we never see or store your card number</strong> — it is entered directly on Stripe's hosted checkout.</li>
-          <li><strong>Team membership</strong> — if you own or join a team, we store the team name, its members, roles, and pending invitations (invited email addresses).</li>
-          <li><strong>Sign-in &amp; access records</strong> — short-lived login tokens, active sessions, and an audit log of protected downloads and auth events. IP addresses in that log are stored only as a <strong>salted hash</strong>, never in the clear.</li>
-          <li><strong>Basic, cookieless analytics</strong> — aggregate page-view counts via GoatCounter. It sets no cookies and does not build a profile of you.</li>
+          <li><strong>Server logs.</strong> GitHub Pages, which serves the website, and Cloudflare, which runs our API, record standard request data such as your IP address, browser and the page requested, to deliver and protect the service.</li>
+          <li><strong>Analytics.</strong> GoatCounter counts page views without cookies. It records the page, the referring site, the browser type, screen size and country, and does not store your IP address or build a profile of you.</li>
+          <li><strong>Regional pricing.</strong> To show a regional discount, our API reads the country Cloudflare derives from your IP address. We do not store it; your browser keeps the result for 24 hours.</li>
+          <li><strong>GitHub star count.</strong> Some pages ask GitHub's public API for the number of stars on our repository, so GitHub receives your IP address when that request is made.</li>
+        </ul>
+        <h3>When you create an account or sign in</h3>
+        <ul>
+          <li><strong>Your email address</strong>, used for passwordless sign-in with a one-time code or link, for your account, and for service emails.</li>
+          <li><strong>Sign-in records:</strong> one-time codes and links (stored only as hashes), your sessions, and whether you have confirmed your email address.</li>
+          <li><strong>Your name</strong>, if you add it or give it at checkout.</li>
+          <li><strong>A free Transitions Motion Agent key</strong>, created and emailed to you when you sign up.</li>
+          <li><strong>Which version of our Terms you accepted</strong>, and when, each time you continue past the sign-in or sign-up box.</li>
+          <li><strong>If you continue with GitHub:</strong> GitHub tells us your GitHub user ID, your name and your primary verified email address. We use them to sign you in and keep the user ID to recognise you next time. We don't keep GitHub's access token.</li>
+          <li><strong>If you continue with ChatGPT:</strong> OpenAI tells us your OpenAI account ID, your name and your email address. If you also let the Studio use your ChatGPT plan, OpenAI gives us access tokens for it, which we keep encrypted and use only to send your Studio drafts to OpenAI (see below).</li>
+          <li>If GitHub or ChatGPT gives us an email address that already has an account, we email that address a code and only link the two once you enter it.</li>
+        </ul>
+        <h3>When you buy a plan</h3>
+        <ul>
+          <li><strong>Billing details</strong>, handled by Stripe on its hosted checkout. We receive and store your Stripe customer and subscription identifiers, your plan, its status and your payments. <strong>We never see your card number.</strong> Stripe collects your billing address and, if you give one, your VAT number, for invoices and tax.</li>
+          <li><strong>Your checkout choices</strong>, including that you asked for immediate access and acknowledged that the right of withdrawal ends when access starts (see the <a href="/terms.html#withdrawal">Terms</a>).</li>
+          <li><strong>Team data</strong>, if you own or join a team: the team name, its members, their roles and pending invitations, including the invited email addresses.</li>
+          <li><strong>Download records:</strong> an audit log of protected downloads with your IP address stored only as a salted hash.</li>
+        </ul>
+        <h3>When you use the Transitions Motion Agent</h3>
+        <ul>
+          <li><strong>Usage records:</strong> each scan or fix run with your account, plan, the number of findings and files, a score and the outcome. We do not store your source code.</li>
+          <li><strong>Hosted fixes:</strong> when you ask the Motion Agent to fix code with our hosted AI, the files in that run and their findings are sent to Anthropic, which generates the proposed edits. Anthropic processes them only to answer the request.</li>
+        </ul>
+        <h3 id="community">When you use the Community and the Studio</h3>
+        <ul>
+          <li><strong>Your Community profile:</strong> a handle, a display name (by default your account name), an optional bio and X handle, and your profile picture if you add one on the account page. Your email address is never shown on it; only you see it on your own profile. <strong>It stays private until a component of yours passes review and is published.</strong> From then on, your handle, display name, bio, picture and published components are public, with their like and view counts. Unpublish everything and the profile is private again.</li>
+          <li><strong>Components:</strong> the code, title and description you save. Drafts are visible only to you; published ones are public and others can open, copy and remix them. Remixes credit the original author's handle.</li>
+          <li><strong>Likes</strong> you give, shown only as counts.</li>
+          <li><strong>Views:</strong> we count one view per viewer, per component, per day. To avoid counting twice we keep, for 3 days, your account ID if you are signed in, or otherwise a salted hash of your IP address.</li>
+          <li><strong>AI drafts:</strong> when you ask the Studio's AI agent to build or change a component, we send Anthropic your request, the current code, the element you selected, the images and drawings you attach, and the skills, libraries and design system you chose. Anthropic generates the component and processes the data only to answer. We keep your request text for 90 days (for abuse prevention and your monthly allowance), and a record of the draft without the text for 13 months. We do not keep the images.</li>
+          <li><strong>AI drafts on your ChatGPT plan:</strong> if you connect ChatGPT and pick it in the Studio, the same request data goes to OpenAI instead of Anthropic, under your own ChatGPT account. OpenAI processes it under its terms and privacy policy and your ChatGPT settings, and counts it against your plan and the usage limit you set for Transitions.dev. We ask OpenAI not to store the request (<code>store: false</code>). We keep the same record of the draft as for any other, without a cost.</li>
+          <li><strong>Design systems and skills</strong> you add, until you delete them. Extracting a design system from screenshots sends those screenshots to Anthropic in the same way.</li>
+          <li><strong>Content checks:</strong> when you publish a component, change a published one, or change your Community name, handle, bio or profile picture, we send the visible text (title, description, the words in the component), images in the component and your picture to OpenAI's Moderation API, which scores them for harmful content. OpenAI processes them only to give that answer and doesn't use them to train its models. We keep what the checks and our reviewers decided about your components, profile and picture until you delete your account.</li>
+          <li><strong>Reports and reviews:</strong> if you report a component or a profile, your account, the category and your explanation. The author is not told who reported it. If your component is hidden, your request for a review and its outcome.</li>
+          <li><strong>In your browser:</strong> the Studio keeps an unsaved draft (<code>tdev:studio:scratch</code>), your skill and library choices (<code>tdev:studio:context</code>) and your build mode (<code>tdev:community:mode</code>) in local storage, and briefly hands a prompt and its images from the Community page to the Studio in session storage.</li>
+        </ul>
+        <h3>When you contact us</h3>
+        <ul>
+          <li><strong>Feedback and support messages</strong>, with the page you sent them from, your browser type and country, and your email address if you give it. They reach us by email.</li>
         </ul>
       </section>
 
       <section>
-        <h2>How we use it, and our legal basis</h2>
-        <p>Under the GDPR, we rely on the following bases:</p>
-        <ul>
-          <li><strong>To provide the service you asked for</strong> (contract) — authenticate you, unlock and deliver Pro content, manage your team, and process your subscription.</li>
-          <li><strong>To send transactional email</strong> (contract) — magic sign-in links, team invitations, and payment receipts. These are not marketing; we don't send marketing email without your consent.</li>
-          <li><strong>To keep the service secure</strong> (legitimate interest) — rate-limiting, abuse and fraud prevention, and the access audit log.</li>
-          <li><strong>To meet legal obligations</strong> — e.g. retaining billing records for tax and accounting.</li>
-        </ul>
+        <h2>Why we process it, and our legal basis</h2>
+        <div class="proc-scroll">
+          <table class="proc">
+            <thead><tr><th>Purpose</th><th>Legal basis (GDPR)</th></tr></thead>
+            <tbody>
+              <tr><td>Running your account, sign-in, plans, teams, downloads and the Motion Agent, including hosted fixes</td><td>Contract, Art. 6(1)(b)</td></tr>
+              <tr><td>The Community and the Studio: profiles, components, likes, AI drafts, design systems and skills; showing what you publish</td><td>Contract, Art. 6(1)(b)</td></tr>
+              <tr><td>View counts, and handling reports, moderation and reviews</td><td>Legitimate interest in a fair, safe Community, and our legal duties as a hosting service under the Digital Services Act, Art. 6(1)(c) and (f)</td></tr>
+              <tr><td>Service emails: sign-in codes, team invitations, purchase confirmations, receipts and important account notices</td><td>Contract, Art. 6(1)(b)</td></tr>
+              <tr><td>Billing records, invoices and tax</td><td>Legal obligation, Art. 6(1)(c)</td></tr>
+              <tr><td>Security: rate limiting, abuse and fraud prevention, the download audit log, server logs</td><td>Legitimate interest in a secure service, Art. 6(1)(f)</td></tr>
+              <tr><td>Cookieless analytics and an internal customer overview that combines account, plan and Motion Agent usage data (for example your company name from Stripe or your email domain, and your country) so we can support customers and improve the product</td><td>Legitimate interest in understanding and supporting our customers, Art. 6(1)(f)</td></tr>
+              <tr><td>Regional pricing</td><td>Legitimate interest in fair regional prices, Art. 6(1)(f)</td></tr>
+              <tr><td>Answering your messages</td><td>Legitimate interest, or steps before or under a contract</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>We do not send marketing email. We make no decisions about you based solely on automated processing.</p>
       </section>
 
       <section>
-        <h2>Who processes your data</h2>
-        <p>We use a small set of trusted providers ("processors") to run the service. They only process your data on our instructions, for the purposes below.</p>
+        <h2>Who processes your data for us</h2>
+        <p>These providers process personal data on our behalf, under data processing terms, only for the purposes above.</p>
         <div class="proc-scroll">
           <table class="proc">
             <thead><tr><th>Provider</th><th>Purpose</th><th>Data</th></tr></thead>
             <tbody>
-              <tr><td>Stripe</td><td>Payments &amp; subscriptions</td><td>Email, card details (entered directly with Stripe), billing &amp; plan status</td></tr>
-              <tr><td>Resend</td><td>Transactional email</td><td>Email address, message content (sign-in / invite links)</td></tr>
-              <tr><td>Cloudflare</td><td>Hosting, database &amp; file storage</td><td>Account &amp; team data, sessions, hashed access logs, Pro content delivery</td></tr>
-              <tr><td>GitHub Pages</td><td>Serving the public website</td><td>Standard web-server request logs</td></tr>
+              <tr><td>Stripe (Ireland, USA)</td><td>Payments, subscriptions, invoices, tax</td><td>Email, name, billing address, VAT number, payment details, plan</td></tr>
+              <tr><td>Cloudflare (USA, global network)</td><td>API, database, key storage, request logs, country lookup</td><td>Account, team, plan and usage data, hashed logs, IP address in transit</td></tr>
+              <tr><td>GitHub (USA)</td><td>Serving the website; star count</td><td>IP address and request data</td></tr>
+              <tr><td>Resend (USA, sending from the EU)</td><td>Service email</td><td>Email address and message content</td></tr>
+              <tr><td>Anthropic (USA)</td><td>AI for the Motion Agent's hosted fixes, Studio drafts and design system extraction</td><td>Code and findings in a fix run; Studio requests, code, selected elements, attached images and chosen context</td></tr>
+              <tr><td>GitHub (USA)</td><td>Sign in with GitHub, if you use it</td><td>Your GitHub user ID, name and verified email address</td></tr>
+              <tr><td>OpenAI (USA)</td><td>Content checks for published components and Community profiles (Moderation API); Sign in with ChatGPT and Studio drafts on your ChatGPT plan, if you use them</td><td>For checks: a component's title, description, visible text and images, and your Community name, bio and profile picture. For sign-in and drafts: your OpenAI account ID, name and email address, and the same request data as Studio drafts sent to Anthropic</td></tr>
+              <tr><td>esm.sh</td><td>Loads code libraries for component previews and the Studio editor</td><td>IP address and request data when a preview loads</td></tr>
+              <tr><td>GoatCounter</td><td>Cookieless analytics</td><td>Page, referrer, browser type, screen size, country</td></tr>
+              <tr><td>Google (Gmail)</td><td>Our email inbox</td><td>Messages you send us, feedback, and account notifications we send ourselves</td></tr>
             </tbody>
           </table>
         </div>
-        <p>Each provider maintains its own privacy and security terms (<a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe</a>, <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener">Resend</a>, <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare</a>). We do <strong>not</strong> sell or rent your personal data, and we don't share it with advertisers.</p>
+        <p>We do <strong>not</strong> sell or rent your personal data, and we don't share it with advertisers.</p>
       </section>
 
       <section>
-        <h2>Cookies</h2>
+        <h2>Transfers outside the EU</h2>
         <p>
-          We use a single <strong>essential cookie</strong> — <code>tp_session</code> — to keep you
-          signed in. It is <code>HttpOnly</code>, <code>Secure</code>, and set only after you sign in;
-          it carries no tracking data and expires when your session ends. We use no advertising or
-          third-party tracking cookies, and our analytics are cookieless — so there is no cookie
-          consent banner to click through.
+          Several providers above are based in the USA or process data there. Where a provider is
+          certified under the EU-U.S. Data Privacy Framework, transfers rely on the European
+          Commission's adequacy decision for it; otherwise they rely on the Commission's Standard
+          Contractual Clauses. Ask us for a copy of the relevant safeguards.
         </p>
+      </section>
+
+      <section>
+        <h2>Cookies and browser storage</h2>
+        <p>
+          We set one cookie, <code>tp_session</code>, after you sign in. It keeps you signed in for
+          30 days, renewed while you use the site, and is deleted when you sign out. It is
+          <code>HttpOnly</code> and <code>Secure</code> and carries no tracking data.
+        </p>
+        <p>The site also keeps a few entries in your browser's local storage, only for features you use:</p>
+        <ul>
+          <li><code>tdev:theme</code>: your light or dark choice.</li>
+          <li><code>tdev:auth</code>: whether you are signed in, your plan, your email address and profile picture link, so pages show the right state at once. Kept up to 7 days and removed when you sign out.</li>
+          <li><code>tdev:geo</code>: your regional price, for 24 hours.</li>
+          <li><code>tdev:gh-stars</code>: the GitHub star count, for 5 minutes (session storage).</li>
+        </ul>
+        <p>All of these are strictly necessary for the features you use, so they need no consent and there is no cookie banner. We use no advertising or tracking cookies.</p>
       </section>
 
       <section>
         <h2>How long we keep it</h2>
         <ul>
-          <li><strong>Account &amp; team data</strong> — for as long as your account exists. Delete your account and it goes with it, immediately.</li>
-          <li><strong>Sessions &amp; login tokens</strong> — short-lived; login links expire in minutes, sessions in weeks. Both are deleted once used or expired.</li>
-          <li><strong>Access &amp; audit logs</strong> — 12 months, for abuse prevention and security investigation, then deleted automatically. If you delete your account, these stop being linked to you straight away.</li>
-          <li><strong>Billing records</strong> — 10 years, as Czech VAT and accounting law requires. These survive account deletion because we are legally obliged to keep them.</li>
+          <li><strong>Account, team and plan data:</strong> while your account exists. Deleting your account removes it at once.</li>
+          <li><strong>Sign-up without confirming your email:</strong> deleted after 7 days.</li>
+          <li><strong>One-time codes and links:</strong> expire after 15 minutes and are deleted within a day.</li>
+          <li><strong>Sessions:</strong> deleted when they expire, at most 30 days after your last visit.</li>
+          <li><strong>Linked GitHub and ChatGPT accounts, and ChatGPT plan tokens:</strong> until you disconnect them or delete your account. Tokens OpenAI has revoked are deleted when we notice.</li>
+          <li><strong>Sign-in with GitHub or ChatGPT in progress:</strong> 10 to 15 minutes.</li>
+          <li><strong>Team invitations:</strong> deleted 30 days after they expire, or 90 days after they are accepted or revoked.</li>
+          <li><strong>Motion Agent usage records:</strong> 24 months.</li>
+          <li><strong>Community profile, components, likes, design systems and skills:</strong> until you delete them or your account.</li>
+          <li><strong>AI draft requests:</strong> the text for 90 days, the record without it for 13 months.</li>
+          <li><strong>View de-duplication records:</strong> 3 days.</li>
+          <li><strong>Reports and reviews:</strong> while the component exists, or until your account is deleted.</li>
+          <li><strong>Download audit log:</strong> 12 months; on account deletion it stops being linked to you.</li>
+          <li><strong>Billing records and invoices:</strong> 10 years, as Czech VAT and accounting law requires. They stay with Stripe and in our accounts after account deletion.</li>
+          <li><strong>Support and feedback emails:</strong> as long as needed to answer and follow up, and no longer than 24 months.</li>
+          <li><strong>Server logs:</strong> kept by GitHub and Cloudflare for their short standard periods.</li>
         </ul>
-      </section>
-
-      <section>
-        <h2>International transfers</h2>
-        <p>
-          We host in Cloudflare's EU region where possible, and our email region is the EU (Ireland).
-          Some processors (e.g. Stripe) may process data outside the EEA; where they do, they rely on
-          appropriate safeguards such as the EU Standard Contractual Clauses.
-        </p>
       </section>
 
       <section>
         <h2>Your rights</h2>
-        <p>If you're in the EU/EEA or UK, you can ask us to:</p>
+        <p>You have the right to:</p>
         <ul>
-          <li><strong>Access</strong> the personal data we hold about you, or receive a copy (portability).</li>
-          <li><strong>Correct</strong> data that's wrong or out of date.</li>
-          <li><strong>Delete</strong> your account and personal data (subject to billing records we must keep by law).</li>
-          <li><strong>Object to or restrict</strong> certain processing.</li>
+          <li><strong>Access</strong> your personal data and get a copy of it, also in a portable format.</li>
+          <li><strong>Correct</strong> data that is wrong or incomplete.</li>
+          <li><strong>Delete</strong> your data. Use <em>Delete account</em> on your <a href="/account.html">account page</a>; it removes your account and everything linked to it immediately, except the billing records we must keep by law.</li>
+          <li><strong>Restrict</strong> processing, or <strong>object</strong> to processing based on our legitimate interests, including analytics and the customer overview.</li>
+          <li><strong>Withdraw consent</strong> at any time where we rely on it, without affecting earlier processing.</li>
+          <li><strong>Complain</strong> to a data protection authority: in the Czech Republic, the Office for Personal Data Protection (<a href="https://uoou.gov.cz" target="_blank" rel="noopener">uoou.gov.cz</a>), or the authority where you live or work.</li>
         </ul>
         <p>
-          Email <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a> and we'll action it. You can
-          delete most account data yourself from your <a href="/account.html">account</a>. You also have
-          the right to complain to your local data protection authority.
+          Email <a href="mailto:jakubja@gmail.com">jakubja@gmail.com</a> to exercise any right. We
+          answer within one month and may ask you to confirm the request from your account's email
+          address.
         </p>
       </section>
 
       <section>
+        <h2>Security</h2>
+        <p>Sign-in codes, links, invitations and device secrets are stored only as hashes; sessions are signed; all traffic is encrypted; and access to our admin tools is restricted. If a breach puts your data at risk, we will tell you and the authority as the law requires.</p>
+      </section>
+
+      <section>
         <h2>Children</h2>
-        <p>Transitions.dev is a developer tool and isn't directed at children. We don't knowingly collect data from anyone under 16.</p>
+        <p>Transitions.dev is a tool for designers and developers and you must be at least 16 to create an account. We do not knowingly process data of anyone younger; if you believe we have, tell us and we will delete it.</p>
       </section>
 
       <section>
         <h2>Changes to this policy</h2>
-        <p>If we make material changes, we'll update the date above and, where appropriate, notify you by email. Continued use after a change means you accept the updated policy.</p>
+        <p>When this policy changes we update the date above. If a change matters for how we use your data, we tell account holders by email before it takes effect.</p>
       </section>
 
       <footer class="footer">
@@ -436,7 +520,7 @@
               <a href="/">Home</a>
               <a href="/">Transitions</a>
               <a href="/skill.html">Skill</a>
-              <a href="/agent.html">Agent</a>
+              <a href="/agent.html">Motion Agent</a>
               <a href="/pro.html">Get Pro</a>
             </div>
             <div class="footer-col">
@@ -450,6 +534,7 @@
               <a href="/pro.html" id="footer-signin">Sign in</a>
               <a href="/terms.html">Terms</a>
               <a href="/privacy.html">Privacy</a>
+              <a href="/imprint.html">Legal notice</a>
               <a href="mailto:jakubja@gmail.com">Contact</a>
             </div>
           </nav>

@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
 
-  <title>Transitions Agent - Fix your UI motion from the terminal and GitHub</title>
+  <title>Transitions Motion Agent - Fix your UI motion from the terminal and GitHub</title>
   <meta
     name="description"
-    content="Transitions Agent scans your codebase for missing or janky UI motion, gives it a motion score, and fixes it with transitions.dev recipes - as diffs in your terminal or pull requests on GitHub."
+    content="Transitions Motion Agent scans your codebase for missing or janky UI motion, gives it a motion score, and fixes it with transitions.dev recipes - as diffs in your terminal or pull requests on GitHub."
   />
   <meta
     name="keywords"
-    content="Transitions Agent, UI transitions, motion score, CSS transitions, web animations, motion lint, GitHub Action, Claude Code, Cursor, frontend, AI coding agent"
+    content="Transitions Motion Agent, UI transitions, motion score, CSS transitions, web animations, motion lint, GitHub Action, Claude Code, Cursor, frontend, AI coding agent"
   />
   <meta name="author" content="Transitions.dev" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -38,32 +38,23 @@
   <meta property="og:site_name" content="Transitions.dev" />
   <meta property="og:url" content="https://transitions.dev/agent.html" />
   <meta property="og:locale" content="en_US" />
-  <meta property="og:title" content="Transitions Agent - Fix your UI motion" />
+  <meta property="og:title" content="Transitions Motion Agent - Fix your UI motion" />
   <meta property="og:description" content="Scan for janky motion, get a motion score, fix it with transitions.dev recipes as pull requests." />
   <meta property="og:image" content="https://transitions.dev/assets/og-agent.jpg?v=1" />
   <meta property="og:image:secure_url" content="https://transitions.dev/assets/og-agent.jpg?v=1" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Transitions Agent - Fix your UI motion from the terminal and GitHub" />
+  <meta property="og:image:alt" content="Transitions Motion Agent - Fix your UI motion from the terminal and GitHub" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Transitions Agent - Fix your UI motion" />
+  <meta name="twitter:title" content="Transitions Motion Agent - Fix your UI motion" />
   <meta name="twitter:description" content="Scan for janky motion, get a motion score, fix it with transitions.dev recipes as pull requests." />
   <meta name="twitter:image" content="https://transitions.dev/assets/og-agent.jpg?v=1" />
-  <meta name="twitter:image:alt" content="Transitions Agent - Fix your UI motion from the terminal and GitHub" />
+  <meta name="twitter:image:alt" content="Transitions Motion Agent - Fix your UI motion from the terminal and GitHub" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    rel="preload"
-    as="style"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-  />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/inter-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
   <!-- Preload the Saans display face (hero title) so it's fetched before
        first paint — paired with font-display: optional this removes the
        fallback→Saans flash/reflow. -->
@@ -4056,7 +4047,7 @@
       .agent-features-grid { grid-template-columns: minmax(0, 320px); row-gap: 32px; }
     }
 
-    /* ─── What the Agent does: bento, same frame as the Pro page ─── */
+    /* ─── What the Motion Agent does: bento, same frame as the Pro page ─── */
     .agent-bento-wrap {
       width: 100%;
       max-width: 1040px;
@@ -4672,6 +4663,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
+  <link rel="stylesheet" href="assets/nav-products.css?v=3" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -4689,13 +4681,19 @@
           <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
         </a>
         <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <div class="nav-products" data-nav-products>
+            <button type="button" class="nav-pill nav-products-btn nav-pill--active" data-nav="products" aria-haspopup="menu" aria-expanded="false" aria-controls="nav-products-menu">Products<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg></button>
+            <div class="tl-menu t-dropdown nav-products-menu" id="nav-products-menu" role="menu" aria-label="Products">
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/library.html"><span class="nav-products-name">Library</span><span class="nav-products-hint">Production-ready UI transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html" aria-current="page"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Transitions Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+            </div>
+          </div>
           <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
-          <a class="nav-pill nav-pill--active" href="/agent.html" data-nav="agent" aria-current="page">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
-        </nav>
+          </nav>
       </div>
       <div class="site-nav-right">
       <!-- Search → opens the ⌘K command palette. -->
@@ -4814,13 +4812,15 @@
     <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
     <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
       <ul class="mobile-menu-list">
-        <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html" aria-current="page">Agent</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
-        <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
-      </ul>
+          <li class="mobile-menu-group" aria-hidden="true">Products</li>
+          <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html">Builder</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html" aria-current="page">Motion Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Transitions Motion Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+        </ul>
       <a class="mobile-menu-cta" id="mobile-signin" href="/pro.html">Sign in</a>
     </nav>
   </header>
@@ -4828,7 +4828,7 @@
   <main id="main" class="app">
     <header class="header">
       <p class="hero-eyebrow"><span class="beta-badge">Beta</span></p>
-      <h1 class="title">Transitions <span class="title-pro">Agent</span></h1>
+      <h1 class="title">Transitions <span class="title-pro">Motion Agent</span></h1>
       <p class="subtitle">
         Finds the janky motion in your app, scores it,
         and lets AI fix it with real recipes. You approve every diff.
@@ -4840,7 +4840,7 @@
     </header>
 
     <section class="hero-visual-wrap" id="demo" aria-label="Agent demo">
-      <div class="hero-visual" aria-label="Transitions Agent fixing motion from the terminal">
+      <div class="hero-visual" aria-label="Transitions Motion Agent fixing motion from the terminal">
         <!-- The launch capture (16:9), a light and a dark render: autoplay,
              loop, muted. The box keeps the video's own ratio, so nothing
              is cropped. -->
@@ -4892,9 +4892,9 @@
       </div>
     </section>
 
-    <!-- ─── What the Agent does (bento, same frame as the Pro page) ─── -->
+    <!-- ─── What the Motion Agent does (bento, same frame as the Pro page) ─── -->
     <section class="agent-bento-wrap" aria-labelledby="agent-bento-title">
-      <h2 class="agent-bento-heading" id="agent-bento-title">What the Agent does</h2>
+      <h2 class="agent-bento-heading" id="agent-bento-title">What the Motion Agent does</h2>
       <div class="agent-bento">
         <div class="agent-bento-card agent-bento-card--tall">
           <h3 class="agent-bento-title">A motion score for every codebase</h2>
@@ -4968,7 +4968,7 @@
     <section class="skill-content" aria-label="Agent documentation">
       <div class="skill-section" id="get-started">
         <h2 class="skill-section-title">Get started</h2>
-        <div class="gs-tabs t-tabs" role="tablist" aria-label="How to run the Agent">
+        <div class="gs-tabs t-tabs" role="tablist" aria-label="How to run the Motion Agent">
           <span class="t-tabs-pill" aria-hidden="true"></span>
           <button class="t-tab" type="button" role="tab" id="gs-tab-cli" aria-selected="true" aria-controls="gs-panel-cli">Coding agent (CLI)</button>
           <button class="t-tab" type="button" role="tab" id="gs-tab-gha" aria-selected="false" aria-controls="gs-panel-gha" tabindex="-1">GitHub Action</button>
@@ -5027,10 +5027,10 @@
             <code id="cmd-action">npx transitions-agent init-ci</code>
             <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-action"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
           </div>
-          <p class="skill-section-note">Tell your coding agent <em>"set up Transitions Agent for CI"</em> and it runs this command for you - or run it yourself. It writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> and <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a> into <code>.github/workflows/</code>, then checks the GitHub side and offers to finish it: your license key as the <code>TRANSITIONS_AGENT_LICENSE</code> secret, and the repo setting that lets Actions open pull requests. It ends with a checklist of anything left. Commit and push - done.</p>
+          <p class="skill-section-note">Tell your coding agent <em>"set up Transitions Motion Agent for CI"</em> and it runs this command for you - or run it yourself. It writes <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-agent.yml" target="_blank" rel="noopener">transitions-agent.yml</a> and <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a> into <code>.github/workflows/</code>, then checks the GitHub side and offers to finish it: your license key as the <code>TRANSITIONS_AGENT_LICENSE</code> secret, and the repo setting that lets Actions open pull requests. It ends with a checklist of anything left. Commit and push - done.</p>
 
           <h2 class="skill-section-title gs-sub">Or add the workflow manually</h2>
-          <div class="gs-code-block"><pre id="yml-action">name: Transitions Agent
+          <div class="gs-code-block"><pre id="yml-action">name: Transitions Motion Agent
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled]
@@ -5059,12 +5059,12 @@ jobs:
             <code id="cmd-fix-workflow">npx transitions-agent init-ci --yes</code>
             <button type="button" class="card-copy" aria-label="Copy" data-copy-target="#cmd-fix-workflow"><svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
           </div>
-          <p class="skill-section-note">With <code>--yes</code> it adds the secret and the pull request permission without asking (needs the gh CLI). Pick polish or revamp under "Fix mode" on each run; <code>--mode revamp</code> makes revamp the default (Business). Manually: add <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a> and one repo secret - <code>TRANSITIONS_AGENT_LICENSE</code>, your license key (free covers polish, <a href="/pro.html">Business</a> adds revamp) - then run "Transitions Agent fix" from the Actions tab: a fix pull request opens with the diffs for your team to review. Our hosted service does the fixing; no AI key ever enters your repo. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</p>
+          <p class="skill-section-note">With <code>--yes</code> it adds the secret and the pull request permission without asking (needs the gh CLI). Pick polish or revamp under "Fix mode" on each run; <code>--mode revamp</code> makes revamp the default (Business). Manually: add <a href="https://github.com/Jakubantalik/transitions.dev/blob/main/agent/templates/transitions-fix.yml" target="_blank" rel="noopener">transitions-fix.yml</a> and one repo secret - <code>TRANSITIONS_AGENT_LICENSE</code>, your license key (free covers polish, <a href="/pro.html">Business</a> adds revamp) - then run "Transitions Motion Agent fix" from the Actions tab: a fix pull request opens with the diffs for your team to review. Our hosted service does the fixing; no AI key ever enters your repo. Canceling a plan later needs no CI change - the same key simply drops to the free tier.</p>
 
           <h2 class="skill-section-title gs-sub">What happens on a pull request</h2>
           <ul class="gs-bullets">
             <li>One sticky comment per pull request with the motion score, the components it recognized, and a findings table. It updates in place on every push, never stacking.</li>
-            <li>When there is something to fix, the Agent opens one fix pull request into that branch and links it in the comment. Merge it to apply the fixes, close it to reject them.</li>
+            <li>When there is something to fix, the Motion Agent opens one fix pull request into that branch and links it in the comment. Merge it to apply the fixes, close it to reject them.</li>
             <li>It runs again only when someone changes style or component files. Merging the fixes, or pushes that do not touch them, never spend a fix.</li>
             <li>Polish by default. Label a pull request <code>revamp</code> to install the transitions.dev recipes instead (Business), or <code>no-motion-fix</code> to skip it.</li>
             <li>With <code>min-score</code> set, the check fails when the score drops below it, and pull requests already at the gate get no fixes.</li>
@@ -5091,7 +5091,7 @@ jobs:
         <div class="faq-list">
           <div class="t-acc" data-open="false">
             <button class="t-acc-head" type="button" aria-expanded="false">
-              <span>What is Transitions Agent?</span>
+              <span>What is Transitions Motion Agent?</span>
               <span class="t-acc-chevron" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>
               </span>
@@ -5168,7 +5168,7 @@ jobs:
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/community.html">Community</a>
             <a href="/skill.html">Skill</a>
-            <a href="/agent.html">Agent</a>
+            <a href="/agent.html">Motion Agent</a>
             <a href="/pro.html">Pricing</a>
           </div>
           <div class="footer-col">
@@ -5182,6 +5182,7 @@ jobs:
             <a href="/pro.html" id="footer-signin">Sign in</a>
             <a href="/terms.html">Terms</a>
             <a href="/privacy.html">Privacy</a>
+            <a href="/imprint.html">Legal notice</a>
             <a href="mailto:jakubja@gmail.com">Contact</a>
           </div>
         </nav>
@@ -5755,10 +5756,12 @@ jobs:
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
+        { group: "Pages", label: "Builder", hint: "Build a component with the AI agent", href: "/builder.html", ic: "wand" },
+        { group: "Pages", label: "Projects", hint: "Your saved and published components", href: "/projects.html", ic: "grid" },
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
-        { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
-        { group: "Pages", label: "Agent", hint: "Motion fixes + PRs", href: "/agent.html", ic: "wand" },
+        { group: "Pages", label: "Transitions Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Motion Agent", hint: "Motion fixes + PRs", href: "/agent.html", ic: "wand" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -5846,7 +5849,8 @@ jobs:
       });
     })();
   </script>
-  <script src="assets/pro-client.js?v=43" defer></script>
+  <script src="assets/pro-client.js?v=58" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
+  <script src="assets/nav-products.js?v=7" defer></script>
 </body>
 </html>

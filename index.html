@@ -53,17 +53,8 @@
   <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
   <meta name="twitter:image:alt" content="Transitions.dev: UI transitions for AI agents" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    rel="preload"
-    as="style"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-  />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/inter-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
   <!-- Preload the Saans display face (hero title) so it's fetched before
        first paint — paired with font-display: optional this removes the
        fallback→Saans flash/reflow. -->
@@ -1402,19 +1393,17 @@
       line-height: 24.2px;
       color: var(--text-muted);
       text-align: center;
+      text-wrap: balance; /* even lines, no word left alone on the last one */
     }
     /* Slightly darker than the body copy — points at the Skill page. */
+    /* Hero links (Builder, Library), as on the pricing page: darker than
+       the body copy, no underline at rest; the underline only on hover. */
     .subtitle-skill {
-      color: inherit;
-      display: inline-block;
-      text-decoration: underline;
-      text-decoration-thickness: from-font;
-      text-underline-position: from-font;
-      text-decoration-skip-ink: auto;
-      text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
-      transition: none;
+      color: var(--text);
+      text-decoration: none;
+      text-underline-offset: 2px;
     }
-    .subtitle-skill:hover { text-decoration-color: currentColor; }
+    .subtitle-skill:hover { text-decoration: underline; }
 
     /* Hero CTA row (same component as /refine + /skill). Primary pill is
        dark in light theme and light in dark theme; secondary keeps a
@@ -1567,7 +1556,7 @@
       .home-agent { margin-bottom: 64px; }
     }
 
-    /* ─── What the Agent does: bento, same frame as the Pro page ─── */
+    /* ─── What the Motion Agent does: bento, same frame as the Pro page ─── */
     .agent-bento-wrap {
       width: 100%;
       max-width: 1040px;
@@ -1993,6 +1982,11 @@
       background: var(--copy-bg-pressed);
       color: var(--icon-color);
     }
+
+    /* Remix: opens the transition in the Studio. Same circle as the
+       copy button, with a plain "Remix" tooltip. */
+    a.card-remix { text-decoration: none; }
+    .card-remix .card-copy-tooltip .tt-text { white-space: nowrap; }
 
     .card-copy:focus-visible {
       outline: 2px solid var(--icon-color);
@@ -6128,6 +6122,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
+  <link rel="stylesheet" href="assets/nav-products.css?v=3" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -6146,10 +6141,16 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <div class="nav-products" data-nav-products>
+            <button type="button" class="nav-pill nav-products-btn" data-nav="products" aria-haspopup="menu" aria-expanded="false" aria-controls="nav-products-menu">Products<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg></button>
+            <div class="tl-menu t-dropdown nav-products-menu" id="nav-products-menu" role="menu" aria-label="Products">
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/library.html"><span class="nav-products-name">Library</span><span class="nav-products-hint">Production-ready UI transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Transitions Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+            </div>
+          </div>
           <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
           </nav>
@@ -6274,12 +6275,14 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
+          <li class="mobile-menu-group" aria-hidden="true">Products</li>
           <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--6 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html">Builder</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Motion Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Transitions Motion Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <a class="mobile-menu-cta" id="mobile-signin" href="/pro.html">Sign in</a>
       </nav>
@@ -6304,13 +6307,14 @@
           decoding="async"
         />
       </div>
-      <h1 class="title">UI motion agent,<br />backed by a library</h1>
+      <h1 class="title">Better UI motion<br />and craft starts here</h1>
       <p class="subtitle">
-        Better UI motion starts here. An AI agent, a library of 43+ crafted transitions,
-        a skill that fits your workflow.
+        AI agents for motion and UI craft, a <a class="subtitle-skill" href="/builder.html">component builder</a>,
+        a <a class="subtitle-skill" href="/library.html">library of 43+ crafted transitions</a>,
+        and a skill that fits your workflow.
       </p>
       <div class="skill-cta-row">
-        <a class="skill-btn skill-btn--primary" href="/pro.html">Get started</a>
+        <a class="skill-btn skill-btn--primary" href="/pro.html" data-join-free>Join for free</a>
         <a class="skill-btn skill-btn--secondary" href="/library.html">Browse</a>
       </div>
     </header>
@@ -6385,15 +6389,10 @@
           <div class="card-title">Card resize</div>
           <div class="card-subtitle">Smooth card resize transition</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Card resize CSS" data-copy-key="p4">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=card-resize" aria-label="Remix Card resize in the Studio" data-remix-key="p4">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 2. Number pop-in -->
@@ -6414,15 +6413,10 @@
           <div class="card-title">Number pop-in</div>
           <div class="card-subtitle">Digit flip with blur and stagger</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Number pop-in CSS" data-copy-key="p9">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=number-pop-in" aria-label="Remix Number pop-in in the Studio" data-remix-key="p9">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 3. Notification badge -->
@@ -6442,15 +6436,10 @@
           <div class="card-title">Notification badge</div>
           <div class="card-subtitle">Diagonal slide with spring pop-in</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Notification badge CSS" data-copy-key="p1">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=notification-badge" aria-label="Remix Notification badge in the Studio" data-remix-key="p1">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 4. Text states swap -->
@@ -6465,15 +6454,10 @@
           <div class="card-title">Text states swap</div>
           <div class="card-subtitle">Text swap transition with blur</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Text states swap CSS" data-copy-key="p6">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=text-states-swap" aria-label="Remix Text states swap in the Studio" data-remix-key="p6">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 5. Menu dropdown -->
@@ -6492,15 +6476,10 @@
           <div class="card-title">Menu dropdown</div>
           <div class="card-subtitle">Origin-aware open / close transition</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Menu dropdown CSS" data-copy-key="p2">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=menu-dropdown" aria-label="Remix Menu dropdown in the Studio" data-remix-key="p2">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 6. Confetti burst (Pro) -->
@@ -6544,15 +6523,10 @@
           <div class="card-title">Modal open/close</div>
           <div class="card-subtitle">Modal transition with scale</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Modal CSS" data-copy-key="p7">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=modal-open-close" aria-label="Remix Modal in the Studio" data-remix-key="p7">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 8. Panel reveal -->
@@ -6580,15 +6554,10 @@
           <div class="card-title">Panel reveal</div>
           <div class="card-subtitle">Panel open / close transition</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Panel reveal CSS" data-copy-key="p3">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=panel-reveal" aria-label="Remix Panel reveal in the Studio" data-remix-key="p3">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 <!-- 33. Gooey plus menu (Pro) -->
       <article class="card" data-proto-card data-cat="effects" data-seq="29" data-pro="true" data-pro-id="gooey-plus-menu">
@@ -6752,15 +6721,10 @@
           <div class="card-title">Page side-by-side</div>
           <div class="card-subtitle">Forward / back page transition</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Page slide CSS" data-copy-key="p8">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=page-side-by-side" aria-label="Remix Page slide in the Studio" data-remix-key="p8">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 10. Icon swap -->
@@ -6789,15 +6753,10 @@
           <div class="card-title">Icon swap</div>
           <div class="card-subtitle">Scale and blur icon swap</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Icon swap CSS" data-copy-key="p5">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=icon-swap" aria-label="Remix Icon swap in the Studio" data-remix-key="p5">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 11. Success check -->
@@ -6823,15 +6782,10 @@
           <div class="card-title">Success check</div>
           <div class="card-subtitle">Succes check with blur and rotate</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Success check CSS" data-copy-key="p10">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=success-check" aria-label="Remix Success check in the Studio" data-remix-key="p10">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 12. Avatar group hover spring -->
@@ -6865,15 +6819,10 @@
           <div class="card-title">Avatar group hover</div>
           <div class="card-subtitle">Distance-falloff lift with bouncy return</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Avatar group hover CSS" data-copy-key="p11">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=avatar-group-hover" aria-label="Remix Avatar group hover in the Studio" data-remix-key="p11">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 13. Card stack hover (Pro) -->
@@ -6925,15 +6874,10 @@
           <div class="card-title">Error state shake</div>
           <div class="card-subtitle">Cubic-bezier shake on error</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Error state shake CSS" data-copy-key="p12">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=error-state-shake" aria-label="Remix Error state shake in the Studio" data-remix-key="p12">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 15. Input clear with dissolve -->
@@ -6970,15 +6914,10 @@
           <div class="card-title">Input clear with dissolve</div>
           <div class="card-subtitle">Clear with per-word dissolve</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Input clear with dissolve CSS" data-copy-key="p13">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=input-clear-with-dissolve" aria-label="Remix Input clear with dissolve in the Studio" data-remix-key="p13">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 16. Skeleton loader and reveal -->
@@ -7011,15 +6950,10 @@
           <div class="card-title">Skeleton loader and reveal</div>
           <div class="card-subtitle">Pulse to content cross-fade</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Skeleton loader and reveal CSS" data-copy-key="p14">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=skeleton-loader-and-reveal" aria-label="Remix Skeleton loader and reveal in the Studio" data-remix-key="p14">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 17. Texts reveal -->
@@ -7037,15 +6971,10 @@
           <div class="card-title">Texts reveal</div>
           <div class="card-subtitle">Two lines rise with offset stagger</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Texts reveal CSS" data-copy-key="p18">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=texts-reveal" aria-label="Remix Texts reveal in the Studio" data-remix-key="p18">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 18. Tabs sliding -->
@@ -7064,15 +6993,10 @@
           <div class="card-title">Tabs sliding</div>
           <div class="card-subtitle">Pill indicator follows the active tab</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Tabs sliding CSS" data-copy-key="p16">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=tabs-sliding" aria-label="Remix Tabs sliding in the Studio" data-remix-key="p16">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 <!-- 34. Drag &amp; drop with physics (Pro) -->
       <article class="card" data-proto-card data-cat="effects" data-seq="31" data-pro="true" data-pro-id="drag-drop-physics">
@@ -7137,15 +7061,10 @@
           <div class="card-title">Shimmer text</div>
           <div class="card-subtitle">Masked gradient sweep across text</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Shimmer text CSS" data-copy-key="p15">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=shimmer-text" aria-label="Remix Shimmer text in the Studio" data-remix-key="p15">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 20. Organic shimmer (Pro) -->
@@ -7197,15 +7116,10 @@
           <div class="card-title">Tooltip open/close</div>
           <div class="card-subtitle">Delayed in, travels, instant out</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Tooltip open/close CSS" data-copy-key="p17">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=tooltip-open-close" aria-label="Remix Tooltip open/close in the Studio" data-remix-key="p17">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 22. Tilt card -->
@@ -7229,15 +7143,10 @@
           <div class="card-title">3D tilt</div>
           <div class="card-subtitle">3D pointer tilt with cursor glare</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy 3D tilt CSS" data-copy-key="p19">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=3d-tilt" aria-label="Remix 3D tilt in the Studio" data-remix-key="p19">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 23. Plus → menu morph -->
@@ -7265,15 +7174,10 @@
           <div class="card-title">Dropdown menu morph</div>
           <div class="card-subtitle">Button morphs into a menu surface</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Dropdown menu morph CSS" data-copy-key="p20">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=dropdown-menu-morph" aria-label="Remix Dropdown menu morph in the Studio" data-remix-key="p20">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 24. Accordion expand/collapse -->
@@ -7307,15 +7211,10 @@
           <div class="card-title">Accordion</div>
           <div class="card-subtitle">Grid-rows height with chevron morph</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Accordion CSS" data-copy-key="p21">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=accordion" aria-label="Remix Accordion in the Studio" data-remix-key="p21">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 25. Toast open / close -->
@@ -7333,15 +7232,10 @@
           <div class="card-title">Toast open/close</div>
           <div class="card-subtitle">Rises in with fade, blur and scale</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Toast open/close CSS" data-copy-key="p22">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=toast-open-close" aria-label="Remix Toast open/close in the Studio" data-remix-key="p22">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 26. Like button: fill + pop + particle burst -->
@@ -7365,15 +7259,10 @@
           <div class="card-title">Like button</div>
           <div class="card-subtitle">Heart fills and bursts particles</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Like button CSS" data-copy-key="p23">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=like-button" aria-label="Remix Like button in the Studio" data-remix-key="p23">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 27. Image open tilt (Pro) -->
@@ -7426,15 +7315,10 @@
           <div class="card-title">Learn more hover</div>
           <div class="card-subtitle">Chevron shifts and opens on hover</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Learn more hover CSS" data-copy-key="p24">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=learn-more-hover" aria-label="Remix Learn more hover in the Studio" data-remix-key="p24">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 29. Checkbox with check path draw -->
@@ -7455,15 +7339,10 @@
           <div class="card-title">Checkbox check</div>
           <div class="card-subtitle">Check draws on with a stroke path</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Checkbox check CSS" data-copy-key="p25">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=checkbox-check" aria-label="Remix Checkbox check in the Studio" data-remix-key="p25">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 <!-- 35. Spinner to check morph (Pro) -->
       <article class="card" data-proto-card data-cat="ai" data-seq="34" data-pro="true" data-pro-id="spinner-check-morph">
@@ -7518,15 +7397,10 @@
           <div class="card-title">Spinning counter</div>
           <div class="card-subtitle">Digits spin like a reel to the value</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Spinning counter CSS" data-copy-key="p26">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=spinning-counter" aria-label="Remix Spinning counter in the Studio" data-remix-key="p26">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 31. Toggle with double-bounce thumb -->
@@ -7542,15 +7416,10 @@
           <div class="card-title">Toggle</div>
           <div class="card-subtitle">Thumb slides with a double bounce</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Toggle CSS" data-copy-key="p27">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=toggle" aria-label="Remix Toggle in the Studio" data-remix-key="p27">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 32. Pro gradient text (Pro) -->
@@ -7622,15 +7491,10 @@
           <div class="card-title">Thinking states</div>
           <div class="card-subtitle">Status line shimmers, then swaps to the next</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Thinking states CSS" data-copy-key="p28">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=thinking-states" aria-label="Remix Thinking states in the Studio" data-remix-key="p28">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 35. Agent reasoning stream -->
@@ -7656,15 +7520,10 @@
           <div class="card-title">Reasoning stream</div>
           <div class="card-subtitle">Agent reasoning scrolls by two lines</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Reasoning stream CSS" data-copy-key="p29">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=reasoning-stream" aria-label="Remix Reasoning stream in the Studio" data-remix-key="p29">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 36. Streaming text: word-by-word cross-blur -->
@@ -7679,15 +7538,10 @@
           <div class="card-title">Streaming text</div>
           <div class="card-subtitle">Words resolve through a soft cross-blur</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Streaming text CSS" data-copy-key="p30">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=streaming-text" aria-label="Remix Streaming text in the Studio" data-remix-key="p30">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 37. Matrix dot loaders -->
@@ -7706,15 +7560,10 @@
           <div class="card-title">Matrix dot loader</div>
           <div class="card-subtitle">16-dot matrix pulses in four patterns</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Matrix dot loader CSS" data-copy-key="p33">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=matrix-dot-loader" aria-label="Remix Matrix dot loader in the Studio" data-remix-key="p33">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 38. Banner stacking -->
@@ -7729,15 +7578,10 @@
           <div class="card-title">Banner stacking</div>
           <div class="card-subtitle">Banners stack like toasts, three deep</div>
         </div>
-        <button type="button" class="card-copy" aria-label="Copy Banner stacking CSS" data-copy-key="p34">
-          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </button>
+        <a class="card-copy card-remix" href="studio.html?lib=banner-stacking" aria-label="Remix Banner stacking in the Studio" data-remix-key="p34">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2.5 5h7.2a3.3 3.3 0 0 1 0 6.6H6M4.5 2.8 2.3 5l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
       </article>
 
       <!-- 39. Image generation placeholder (Pro) -->
@@ -7801,10 +7645,10 @@
       <a class="skill-btn skill-btn--secondary" href="/library.html">Browse all</a>
     </div>
 
-    <!-- ─── Transitions Agent: the bento from agent.html ─── -->
+    <!-- ─── Transitions Motion Agent: the bento from agent.html ─── -->
     <section class="home-agent" aria-labelledby="home-agent-title">
       <div class="home-section-head home-section-head--agent">
-        <h2 class="home-section-title" id="home-agent-title">Transitions Agent <span class="dim">scans your codebase, scores its motion and fixes it as pull requests.</span></h2>
+        <h2 class="home-section-title" id="home-agent-title">Transitions Motion Agent <span class="dim">scans your codebase, scores its motion and fixes it as pull requests.</span></h2>
         <a class="skill-btn skill-btn--secondary" href="/agent.html">Learn more</a>
       </div>
     <div class="agent-bento-wrap">
@@ -7961,7 +7805,7 @@
             <a href="/transitions/">All transitions</a>
             <a href="/community.html">Community</a>
             <a href="/skill.html">Skill</a>
-            <a href="/agent.html">Agent</a>
+            <a href="/agent.html">Motion Agent</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -7975,6 +7819,7 @@
             <a href="/pro.html" id="footer-signin">Sign in</a>
             <a href="/terms.html">Terms</a>
             <a href="/privacy.html">Privacy</a>
+            <a href="/imprint.html">Legal notice</a>
             <a href="mailto:jakubja@gmail.com">Contact</a>
           </div>
         </nav>
@@ -12689,9 +12534,9 @@ export function Surface({ open, children }) {
         var closeTimer = null;
 
         function openModal(card) {
-          var copyTrigger = card.querySelector("[data-copy-key]");
+          var copyTrigger = card.querySelector("[data-copy-key], [data-remix-key]");
           var key = copyTrigger
-            ? copyTrigger.getAttribute("data-copy-key")
+            ? copyTrigger.getAttribute("data-copy-key") || copyTrigger.getAttribute("data-remix-key")
             : null;
           if (!key || !PROTO_TEMPLATES[key]) return;
           currentKey = key;
@@ -13726,7 +13571,7 @@ export function Surface({ open, children }) {
          data-state between "copy" and "copied" cross-blurs them
          and animates the width between two measured values. */
       (function initCopyTooltips() {
-        var buttons = document.querySelectorAll(".card-copy");
+        var buttons = document.querySelectorAll(".card-copy:not(.card-remix)");
         if (!buttons.length) return;
 
         // Off-screen, always-laid-out measuring host at the body level.
@@ -14314,9 +14159,11 @@ export function Surface({ open, children }) {
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
+        { group: "Pages", label: "Builder", hint: "Build a component with the AI agent", href: "/builder.html", ic: "wand" },
+        { group: "Pages", label: "Projects", hint: "Your saved and published components", href: "/projects.html", ic: "grid" },
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
-        { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Transitions Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_ITEMS.map(function (it) {
         return {
@@ -15702,8 +15549,9 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: mounts Pro badges on data-pro cards, reads auth state. -->
-  <script src="assets/pro-client.js?v=43" defer></script>
+  <script src="assets/pro-client.js?v=58" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
+  <script src="assets/nav-products.js?v=7" defer></script>
 </body>
 </html>
 

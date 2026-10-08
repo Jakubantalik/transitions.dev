@@ -4,14 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <title>Transitions Agent sign-up</title>
-  <meta name="description" content="Get your free Transitions Agent license key." />
+  <title>Transitions Motion Agent sign-up</title>
+  <meta name="description" content="Get your free Transitions Motion Agent license key." />
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon-light-mode.png?v=4" type="image/png" sizes="any" />
   <link rel="icon" href="assets/favicon-darkmode.png?v=4" media="(prefers-color-scheme: dark)" type="image/png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
   <script>
     (function () {
       try {
@@ -93,7 +91,7 @@
 </head>
 <body>
   <main class="card">
-    <h1 id="intro">Get your free Transitions Agent key
+    <h1 id="intro">Get your free Transitions Motion Agent key
       <span class="muted">10 hosted polish fixes a month. The key goes to your terminal and your inbox.</span></h1>
     <form id="form" novalidate>
       <input type="email" id="email" placeholder="you@example.com" required autocomplete="email" aria-label="Email address" autofocus />
@@ -116,7 +114,7 @@
       var btn = document.getElementById("submit");
       if (code) {
         document.getElementById("intro").innerHTML =
-          "Get your free Transitions Agent key" +
+          "Get your free Transitions Motion Agent key" +
           '<span class="muted">Connecting terminal session <span class="code">' + code.replace(/[^A-Z0-9-]/g, "") +
           "</span>. The key lands in your waiting terminal and your inbox.</span>";
       }

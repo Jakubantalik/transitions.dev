@@ -1,4 +1,4 @@
-// Transitions Agent fix service (Cloudflare Worker).
+// Transitions Motion Agent fix service (Cloudflare Worker).
 // Option C architecture: this service holds the Anthropic API key. Clients send
 // findings + file contents with a license key; the service validates the
 // license, meters monthly usage, asks Claude for fixed files, and returns them.

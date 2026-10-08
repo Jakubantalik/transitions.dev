@@ -53,17 +53,8 @@
   <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
   <meta name="twitter:image:alt" content="Transitions Pro: The essential UI transitions for web apps" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    rel="preload"
-    as="style"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-  />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/inter-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
   <!-- Preload the Saans display face (hero title) so it's fetched before
        first paint — paired with font-display: optional this removes the
        fallback→Saans flash/reflow. -->
@@ -4661,7 +4652,37 @@
       gap: 12px; min-height: 48px;
     }
     .settings-label { font-size: 13px; color: var(--text); }
+    /* Name fields: the row-btn surface, as text inputs. */
+    .settings-input {
+      width: 220px; max-width: 58%; height: 32px; padding: 0 12px;
+      border: 0; border-radius: 10px; outline: none;
+      background: rgba(0, 0, 0, 0.04); color: var(--text);
+      font-family: var(--font-sans); font-size: 13px;
+      box-shadow: inset 0 0 0 1px transparent;
+      transition: background 120ms ease, box-shadow 120ms ease;
+    }
+    .settings-input::placeholder { color: var(--text-muted, #6c6c6c); opacity: 0.7; }
+    .settings-input:hover { background: rgba(0, 0, 0, 0.06); }
+    .settings-input:focus { background: transparent; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18); }
+    html[data-theme="dark"] .settings-input { background: rgba(255, 255, 255, 0.07); }
+    html[data-theme="dark"] .settings-input:hover { background: rgba(255, 255, 255, 0.1); }
+    html[data-theme="dark"] .settings-input:focus { background: transparent; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22); }
+    /* Photo: the nav avatar chip, larger, with Upload / Remove beside it. */
+    .acc-photo { display: inline-flex; align-items: center; gap: 8px; }
+    .acc-avatar {
+      position: relative; flex: none; display: grid; place-items: center;
+      width: 36px; height: 36px; margin-right: 4px; border-radius: 50%; overflow: hidden;
+      background: var(--av-bg, #fff); color: var(--av-fg, #17181c);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.06), inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+      font-family: var(--font-sans); font-size: 12px; font-weight: 500; letter-spacing: -0.01em; text-transform: uppercase;
+    }
+    html[data-theme="dark"] .acc-avatar { background: color-mix(in srgb, var(--av-fg, #e8e8e8) 30%, #202020); color: var(--av-bg, #e8e8e8); box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
+    .acc-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .acc-avatar img[hidden] { display: none; }
+    .acc-photo[aria-busy="true"] .acc-avatar { opacity: 0.5; }
     .settings-value { font-size: 13px; color: var(--text-muted, #6c6c6c); }
+    .acc-provider { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+    .acc-provider .settings-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .account-note { margin: 16px 0 0; font-size: 13px; line-height: 1.4; }
     .account-note[data-kind="ok"] { color: #16a34a; }
@@ -4855,6 +4876,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
+  <link rel="stylesheet" href="assets/nav-products.css?v=3" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -4873,10 +4895,16 @@
             <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
           </a>
           <nav class="site-nav-menu" aria-label="Primary">
-          <a class="nav-pill" href="/library.html" data-nav="library">Library</a>
+          <div class="nav-products" data-nav-products>
+            <button type="button" class="nav-pill nav-products-btn" data-nav="products" aria-haspopup="menu" aria-expanded="false" aria-controls="nav-products-menu">Products<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.46967 6.46967C4.76256 6.17678 5.23744 6.17678 5.53033 6.46967L8 8.93934L10.4697 6.46967C10.7626 6.17678 11.2374 6.17678 11.5303 6.46967C11.8232 6.76256 11.8232 7.23744 11.5303 7.53033L8.53033 10.5303C8.23744 10.8232 7.76256 10.8232 7.46967 10.5303L4.46967 7.53033C4.17678 7.23744 4.17678 6.76256 4.46967 6.46967Z"/></svg></button>
+            <div class="tl-menu t-dropdown nav-products-menu" id="nav-products-menu" role="menu" aria-label="Products">
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/library.html"><span class="nav-products-name">Library</span><span class="nav-products-hint">Production-ready UI transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Transitions Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+            </div>
+          </div>
           <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
-          <a class="nav-pill" href="/agent.html" data-nav="agent">Agent</a>
-          <a class="nav-pill" href="/skill.html" data-nav="skill">Skill</a>
           <a class="nav-pill" href="/detail.html?doc=introduction" data-nav="docs">Docs</a>
           <a class="nav-pill" href="/pro.html" data-nav="pricing">Pricing</a>
           </nav>
@@ -5005,11 +5033,14 @@
       <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
       <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile">
         <ul class="mobile-menu-list">
+          <li class="mobile-menu-group" aria-hidden="true">Products</li>
           <li><a class="mobile-menu-link mobile-menu-link--1" href="/library.html">Library</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--2" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Agent</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html">Builder</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Motion Agent</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Transitions Motion Skill</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
       </nav>
     </header>
@@ -5054,6 +5085,36 @@
           </div>
 
           <div class="settings-list">
+            <div class="settings-row">
+              <span class="settings-label">Photo</span>
+              <span class="acc-photo">
+                <span class="acc-avatar" aria-hidden="true"><img id="acc-avatar-img" alt="" hidden /><span id="acc-avatar-initial"></span></span>
+                <button type="button" class="row-btn" id="acc-photo-upload">Upload</button>
+                <button type="button" class="row-btn" id="acc-photo-remove" hidden>Remove</button>
+                <input type="file" id="acc-photo-file" accept="image/png,image/jpeg,image/webp" hidden />
+              </span>
+            </div>
+            <div class="settings-row">
+              <label class="settings-label" for="acc-first">First name</label>
+              <input class="settings-input" id="acc-first" type="text" maxlength="40" autocomplete="given-name" placeholder="First name" />
+            </div>
+            <div class="settings-row">
+              <label class="settings-label" for="acc-last">Last name</label>
+              <input class="settings-input" id="acc-last" type="text" maxlength="40" autocomplete="family-name" placeholder="Last name" />
+            </div>
+            <div class="settings-row">
+              <span class="settings-label">Email</span>
+              <span class="settings-value" id="acc-email"></span>
+            </div>
+            <!-- Sign in with GitHub / ChatGPT: shown once the API offers them. -->
+            <div class="settings-row" data-provider-row="github" hidden>
+              <span class="settings-label">GitHub</span>
+              <span class="acc-provider"><span class="settings-value" data-provider-state></span><button type="button" class="row-btn" data-provider-btn></button></span>
+            </div>
+            <div class="settings-row" data-provider-row="chatgpt" hidden>
+              <span class="settings-label">ChatGPT</span>
+              <span class="acc-provider"><span class="settings-value" data-provider-state></span><button type="button" class="row-btn" data-provider-btn></button></span>
+            </div>
             <div class="settings-row" id="acc-cancel-row">
               <span class="settings-label">Cancel plan</span>
               <button type="button" class="row-btn" id="acc-cancel">Cancel</button>
@@ -5061,14 +5122,6 @@
             <div class="settings-row" id="acc-payment-row">
               <span class="settings-label">Payment</span>
               <button type="button" class="row-btn" id="acc-portal">Manage in Stripe</button>
-            </div>
-            <div class="settings-row" id="acc-name-row" hidden>
-              <span class="settings-label">Name</span>
-              <span class="settings-value" id="acc-name"></span>
-            </div>
-            <div class="settings-row">
-              <span class="settings-label">Email</span>
-              <span class="settings-value" id="acc-email"></span>
             </div>
             <div class="settings-row">
               <span class="settings-label">Log out of all devices</span>
@@ -5164,8 +5217,8 @@
             </div>
           </div>
           <div class="account-agent" id="acc-agent-key-block" hidden>
-            <p class="account-agent-title">Transitions Agent</p>
-            <p class="account-agent-sub">Your plan includes the Agent. Signing up in the CLI with this email connects automatically; the key below is for CI - add it as a <code>TRANSITIONS_AGENT_LICENSE</code> repo secret.</p>
+            <p class="account-agent-title">Transitions Motion Agent</p>
+            <p class="account-agent-sub">Your plan includes the Motion Agent. Signing up in the CLI with this email connects automatically; the key below is for CI - add it as a <code>TRANSITIONS_AGENT_LICENSE</code> repo secret.</p>
             <div class="skill-code-row">
               <code id="acc-agent-key">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</code>
               <button type="button" class="card-copy" aria-label="Copy Agent license key" data-copy-target="#acc-agent-key">
@@ -5201,7 +5254,7 @@
             <a href="detail.html?t=card-resize">Transitions</a>
             <a href="/community.html">Community</a>
             <a href="/skill.html">Skill</a>
-            <a href="/agent.html">Agent</a>
+            <a href="/agent.html">Motion Agent</a>
             <a href="/pro.html">Get Pro</a>
           </div>
           <div class="footer-col">
@@ -5215,6 +5268,7 @@
             <a href="/pro.html" id="footer-signin">Sign in</a>
             <a href="/terms.html">Terms</a>
             <a href="/privacy.html">Privacy</a>
+            <a href="/imprint.html">Legal notice</a>
             <a href="mailto:jakubja@gmail.com">Contact</a>
           </div>
         </nav>
@@ -5616,9 +5670,11 @@
         { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
         { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
         { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
+        { group: "Pages", label: "Builder", hint: "Build a component with the AI agent", href: "/builder.html", ic: "wand" },
+        { group: "Pages", label: "Projects", hint: "Your saved and published components", href: "/projects.html", ic: "grid" },
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
-        { group: "Pages", label: "Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "Transitions Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         return { group: "Transitions", label: n, hint: "Transition", href: "/#components", ic: "motion" };
@@ -5986,7 +6042,7 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=43" defer></script>
+  <script src="assets/pro-client.js?v=58" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;
@@ -6036,6 +6092,108 @@
         b.addEventListener("click", function () { showTab(b.getAttribute("data-acc-tab")); });
       });
 
+      // ── Profile: first and last name, and a photo ──────────────
+      // Names save when a field loses focus (or on Enter); the photo is
+      // scaled to 256px square here and uploaded, and both repaint the nav
+      // avatar through TransitionsPro.setProfile.
+      var savedName = { first: null, last: null };
+      function paintProfile(s) {
+        var first = el("acc-first"), last = el("acc-last");
+        // Never set? Start from the name on the receipt (Stripe checkout),
+        // split at the first space; it saves once a field is left.
+        var f = s.firstName || "", l = s.lastName || "";
+        if (!f && !l && s.name) { var at = s.name.indexOf(" "); f = at < 0 ? s.name : s.name.slice(0, at); l = at < 0 ? "" : s.name.slice(at + 1); }
+        if (document.activeElement !== first) first.value = f;
+        if (document.activeElement !== last) last.value = l;
+        savedName = { first: s.firstName || "", last: s.lastName || "" };
+        var img = el("acc-avatar-img");
+        if (s.avatar) { if (img.getAttribute("src") !== s.avatar) img.src = s.avatar; img.hidden = false; }
+        else { img.hidden = true; img.removeAttribute("src"); }
+        // The same letters and colors as the nav avatar (pro-client avatarFor).
+        var who = [s.firstName, s.lastName].filter(Boolean).join(" ") || s.name || "";
+        el("acc-avatar-initial").textContent = TP.paintAvatar ? TP.paintAvatar(el("acc-avatar-initial").parentNode, who, s.email).text : (s.firstName || s.email || "?").charAt(0);
+        el("acc-photo-remove").hidden = !s.avatar;
+      }
+      function postJSON(path, body) {
+        return fetch(TP.apiBase + path, {
+          method: "POST", credentials: "include",
+          headers: { "content-type": "application/json" }, body: JSON.stringify(body || {}),
+        }).then(function (r) { return r.json().catch(function () { return {}; }); });
+      }
+      function saveName() {
+        var first = el("acc-first").value.replace(/\s+/g, " ").trim();
+        var last = el("acc-last").value.replace(/\s+/g, " ").trim();
+        if (first === savedName.first && last === savedName.last) return;
+        savedName = { first: first, last: last };
+        postJSON("/account/profile", { first_name: first, last_name: last }).then(function (r) {
+          if (!r || !r.ok) { setNote("acc-note", "Couldn't save your name. Please try again.", "err"); return; }
+          TP.setProfile({ first_name: r.first_name, last_name: r.last_name, name: r.name });
+          setNote("acc-note", "Name saved.", "ok");
+        }).catch(function () { setNote("acc-note", "Couldn't save your name. Please try again.", "err"); });
+      }
+      ["acc-first", "acc-last"].forEach(function (id) {
+        el(id).addEventListener("blur", saveName);
+        el(id).addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } });
+      });
+
+      // Center-cropped 256px square; WebP where the browser can write it.
+      function squareImage(file) {
+        return new Promise(function (resolve, reject) {
+          var url = URL.createObjectURL(file);
+          var img = new Image();
+          img.onload = function () {
+            var side = Math.min(img.naturalWidth, img.naturalHeight);
+            var cv = document.createElement("canvas");
+            cv.width = cv.height = 256;
+            var g = cv.getContext("2d");
+            g.fillStyle = "#ffffff";
+            g.fillRect(0, 0, 256, 256);
+            g.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 256, 256);
+            URL.revokeObjectURL(url);
+            var out = cv.toDataURL("image/webp", 0.88);
+            if (out.indexOf("data:image/webp") !== 0) out = cv.toDataURL("image/jpeg", 0.88);
+            resolve({ media_type: out.slice(5, out.indexOf(";")), data: out.slice(out.indexOf(",") + 1) });
+          };
+          img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("unreadable")); };
+          img.src = url;
+        });
+      }
+      el("acc-photo-upload").addEventListener("click", function () { el("acc-photo-file").click(); });
+      el("acc-photo-file").addEventListener("change", function () {
+        var f = this.files && this.files[0];
+        this.value = "";
+        if (!f) return;
+        if (!/^image\/(png|jpeg|webp)$/.test(f.type)) { setNote("acc-note", "Use a PNG, JPEG or WebP image.", "err"); return; }
+        var box = document.querySelector(".acc-photo");
+        box.setAttribute("aria-busy", "true");
+        squareImage(f).then(function (im) { return postJSON("/account/avatar", im); }).then(function (r) {
+          box.removeAttribute("aria-busy");
+          if (!r || !r.ok) {
+            var why = {
+              image_too_large: "That image is too large.",
+              image_dimensions: "That image is too large.",
+              image_not_allowed: "That photo can't be used. Try a different one.",
+              invalid_image: "Couldn't read that image. Try a PNG, JPEG or WebP.",
+            }[r && r.error];
+            setNote("acc-note", why || "Couldn't upload the photo. Please try again.", "err");
+            return;
+          }
+          TP.setProfile({ avatar_url: r.avatar_url });
+          // Checked automatically; when that couldn't run, a person looks first.
+          setNote("acc-note", r.review === "pending" ? "Photo updated. Others see it after a quick review." : "Photo updated.", "ok");
+        }).catch(function () {
+          box.removeAttribute("aria-busy");
+          setNote("acc-note", "Couldn't read that image.", "err");
+        });
+      });
+      el("acc-photo-remove").addEventListener("click", function () {
+        postJSON("/account/avatar/delete").then(function (r) {
+          if (!r || !r.ok) { setNote("acc-note", "Couldn't remove the photo. Please try again.", "err"); return; }
+          TP.setProfile({ avatar_url: null });
+          setNote("acc-note", "Photo removed.", "ok");
+        });
+      });
+
       function paint(s) {
         var authed = !!(s && s.authenticated);
         // Only claim "signed out" once /me has actually answered — while auth
@@ -6048,10 +6206,7 @@
           return;
         }
         el("acc-email").textContent = s.email || "—";
-        // Name comes from the billing details at checkout, and some payment
-        // methods send none. Hide the row rather than show an empty value.
-        el("acc-name").textContent = s.name || "";
-        el("acc-name-row").hidden = !s.name;
+        paintProfile(s);
         var sub = s.subscription || null;
         var yearly = sub && sub.interval === "year";
         if (s.lifetime) {
@@ -6064,7 +6219,12 @@
           el("acc-plan-name").textContent = s.pro ? "Pro plan" : "No active plan";
           // Quoting "$9 /mo" to somebody with no plan reads as a charge they
           // are already paying. Show a price only when one is actually billed.
-          el("acc-plan-price").textContent = s.pro ? (yearly ? "$90" : "$9") : "—";
+          // What this subscription bills: an older $9 / $90 price, or the
+          // price of its Builder credit tier.
+          var sub2 = s.subscription || {};
+          var TIER = { 600: ["$12", "$120"], 1200: ["$22", "$220"], 2500: ["$42", "$420"] };
+          var p = sub2.legacy_price ? ["$9", "$90"] : TIER[sub2.credits] || ["$12", "$120"];
+          el("acc-plan-price").textContent = s.pro ? (yearly ? p[1] : p[0]) : "—";
           el("acc-plan-per").textContent = s.pro ? (yearly ? "/yr" : "/mo") : "";
           var renew = "";
           if (sub && sub.current_period_end) {
@@ -6334,7 +6494,7 @@
         TP.logout(true).then(function () { location.href = "/"; });
       });
       el("acc-delete").addEventListener("click", function () {
-        if (!window.confirm("Delete your account permanently? This cancels your subscription and can't be undone. Files you've already downloaded keep working.")) return;
+        if (!window.confirm("Delete your account permanently? This cancels your subscription and removes your account, Community profile, components, likes, skills, design systems, profile photo, Agent key and usage history right away. It can't be undone. Invoices stay with Stripe because tax law requires it. Files you've already downloaded keep working.")) return;
         var btn = el("acc-delete"); btn.disabled = true;
         fetch(TP.apiBase + "/account/delete", { method: "POST", credentials: "include" })
           .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
@@ -6382,8 +6542,8 @@
             if (!d || !d.license) return;
             el("acc-agent-key").textContent = d.license;
             el("acc-agent-plan").textContent = d.plan === "team"
-              ? "Full Agent: 200 hosted fixes a month, polish + revamp."
-              : "Free Agent: 10 hosted polish fixes a month" + (d.pro ? ", plus Pro recipe sources over MCP." : ".");
+              ? "Full Motion Agent: 200 hosted fixes a month, polish + revamp."
+              : "Free Motion Agent: 10 hosted polish fixes a month" + (d.pro ? ", plus Pro recipe sources over MCP." : ".");
             el("acc-agent-key-block").hidden = false;
           })
           .catch(function () { /* optional block, stays hidden */ });
@@ -6395,5 +6555,43 @@
     });
   </script>
   <script src="assets/brand-mark.js?v=4" defer></script>
+  <script src="assets/nav-products.js?v=7" defer></script>
+  <script>
+    // Linked sign-in providers: connect (a redirect to GitHub or ChatGPT that
+    // comes back here) or disconnect. Email sign-in always keeps working.
+    // pro-client.js is deferred: run once the document has loaded.
+    document.addEventListener("DOMContentLoaded", function () {
+      var tp = window.TransitionsPro;
+      if (!tp || !tp.providers) return;
+      var rows = document.querySelectorAll("[data-provider-row]");
+      var on = {};
+      function paint() {
+        var linked = (tp.state && tp.state.providers) || {};
+        rows.forEach(function (row) {
+          var p = row.getAttribute("data-provider-row");
+          row.hidden = !on[p] && !linked[p];
+          var l = linked[p];
+          row.querySelector("[data-provider-state]").textContent = l
+            ? (l.email || "Connected") + (p === "chatgpt" ? (l.plan ? " · plan usage on" : "") : "")
+            : "Not connected";
+          var btn = row.querySelector("[data-provider-btn]");
+          btn.textContent = l ? "Disconnect" : "Connect";
+          btn.hidden = !l && !on[p];
+          btn.disabled = false;
+        });
+      }
+      rows.forEach(function (row) {
+        var p = row.getAttribute("data-provider-row");
+        row.querySelector("[data-provider-btn]").addEventListener("click", function () {
+          var linked = (tp.state && tp.state.providers) || {};
+          if (!linked[p]) { tp.oauth(p, "link"); return; }
+          this.disabled = true;
+          tp.disconnect(p).then(function () { return tp.refresh(); }).then(paint);
+        });
+      });
+      tp.providers().then(function (r) { on = r || {}; paint(); });
+      document.addEventListener("pro:me", paint);
+    });
+  </script>
 </body>
 </html>

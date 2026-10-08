@@ -1,4 +1,4 @@
-name: "Transitions Agent"
+name: "Transitions Motion Agent"
 description: "Scan pull requests for missing or janky UI transitions. Posts a motion score comment, proposes fixes as a pull request into the branch, and can gate merges on a minimum score."
 branding:
   icon: "activity"
@@ -18,7 +18,7 @@ inputs:
     description: "Token used to post the PR comment and open fix pull requests."
     default: ${{ github.token }}
   license:
-    description: "Transitions Agent license key. Needed for automatic fixes; without it the comment shows how to set it up."
+    description: "Transitions Motion Agent license key. Needed for automatic fixes; without it the comment shows how to set it up."
     default: ""
   auto-fix:
     description: "Propose fixes automatically: a fix pull request into the pull request's branch, never main. Needs a license, contents: write, and the repository setting that lets Actions create pull requests."

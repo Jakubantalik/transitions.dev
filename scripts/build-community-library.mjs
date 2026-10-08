@@ -1,200 +1,488 @@
 #!/usr/bin/env node
-// Builds assets/community/library.json: every free library transition as a
-// React component the Studio can remix. Sources:
-//   - the React snippet shown on each card (index.html, data-react-key)
-//   - the canonical CSS from skills/transitions-dev/NN-*.md (":root" tokens + "## CSS")
-//   - a small Demo wrapper below, so the remix renders something on first load
-// Pro transitions are never included: their code is paid content served by the API.
+// Builds assets/community/library.json: every free library transition as an
+// exact copy of its card on library.html, so a remix starts from what the
+// card shows and does:
+//   - html: the card stage markup, as written in the page
+//   - css:  every rule that applies to the card (its states, dark theme,
+//           reduced motion, responsive tweaks), the keyframes and @property
+//           rules those use, the design tokens they read, and the site's
+//           base reset, taken from the page's CSS source text
+//   - js:   the card's own handlers, cut from the page's prototype script
+// Images the card uses are inlined as data URIs (previews are sandboxed).
+// Pro transitions are never included: their code is paid content.
 //
-// Run after changing a transition: node scripts/build-community-library.mjs
+//   node scripts/build-community-library.mjs
 
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { execFileSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const html = readFileSync(join(root, "index.html"), "utf8");
-const skillDir = join(root, "skills/transitions-dev");
+const page = readFileSync(join(root, "library.html"), "utf8");
 
-// React snippets by template key (p1, p2 ...).
-const react = {};
-for (const m of html.matchAll(/<script type="text\/plain" data-react-key="(p\d+)">([\s\S]*?)<\/script>/g)) {
-  react[m[1]] = m[2].trim() + "\n";
+// ── Text helpers ─────────────────────────────────────────────────────────────
+
+// Index just past the brace that closes the one at `open`, skipping strings,
+// template literals, comments and regex literals.
+function closeBrace(src, open) {
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    const c = src[i];
+    if (c === '"' || c === "'" || c === "`") {
+      for (i++; i < src.length && src[i] !== c; i++) if (src[i] === "\\") i++;
+      continue;
+    }
+    if (c === "/" && src[i + 1] === "/") { i = src.indexOf("\n", i); if (i < 0) return -1; continue; }
+    if (c === "/" && src[i + 1] === "*") { i = src.indexOf("*/", i + 2) + 1; continue; }
+    if (c === "/") {
+      const prev = src.slice(0, i).replace(/\s+$/, "").slice(-1);
+      if (!prev || "(,=:[!&|?{};+-*%<>~^".includes(prev)) {
+        for (i++; i < src.length && src[i] !== "/"; i++) {
+          if (src[i] === "\\") i++;
+          else if (src[i] === "[") { for (i++; i < src.length && src[i] !== "]"; i++) if (src[i] === "\\") i++; }
+        }
+        continue;
+      }
+    }
+    if (c === "{") depth++;
+    else if (c === "}" && --depth === 0) return i + 1;
+  }
+  return -1;
 }
 
-// Template names, to pair snippets with their skill files.
-const names = {};
-for (const m of html.matchAll(/^\s{8}(p\d+): \{\s*\n\s*name: "([^"]+)"/gm)) names[m[1]] = m[2];
-
-const skillByTitle = {};
-for (const f of readdirSync(skillDir).filter((f) => /^\d\d-.+\.md$/.test(f))) {
-  const md = readFileSync(join(skillDir, f), "utf8");
-  skillByTitle[md.split("\n")[0].replace(/^#\s*/, "").trim().toLowerCase()] = md;
+// The element starting at `start` (an opening <tag ...>) through its closing tag.
+function element(src, start, tag) {
+  const re = new RegExp(`<${tag}\\b|</${tag}>`, "g");
+  re.lastIndex = start;
+  let depth = 0, m;
+  while ((m = re.exec(src))) {
+    if (m[0] === `</${tag}>`) { if (--depth === 0) return src.slice(start, m.index + m[0].length); }
+    else depth++;
+  }
+  return null;
 }
 
-function skillCss(md) {
-  const blocks = [...md.matchAll(/```css\n([\s\S]*?)```/g)].map((m) => m[1].trim());
-  const rootBlock = blocks.find((b) => /^:root\s*\{/.test(b)) || "";
-  const cssSection = md.split(/^## CSS\s*$/m)[1] || "";
-  const main = (cssSection.match(/```css\n([\s\S]*?)```/) || [])[1] || "";
-  return [rootBlock, main.trim()].filter(Boolean).join("\n\n") + "\n";
-}
-
+const decode = (s) => s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
-// The card a template belongs to on the home page: its visible title is what
-// detail.html slugs into ?t=, so remix credits link to the right page.
-function cardTitle(key) {
-  const at = html.indexOf(`data-copy-key="${key}"`);
-  if (at < 0) return null;
-  const start = html.lastIndexOf("<article", at);
-  const m = html.slice(start, at).match(/<div class="card-title">([^<]+)<\/div>/);
-  return m ? m[1].replace(/&amp;/g, "&").trim() : null;
+// ── Cards ────────────────────────────────────────────────────────────────────
+
+const cards = [];
+for (const m of page.matchAll(/<article class="card" data-proto-card[^>]*>/g)) {
+  const art = element(page, m.index, "article");
+  if (!art) continue; // a card template inside a script
+  const key = (art.match(/data-copy-key="(p\d+)"/) || [])[1];
+  if (!key) continue; // Pro cards copy through the API (data-pro-copy)
+  const stageAt = art.indexOf('<div class="card-stage"');
+  cards.push({
+    key,
+    n: key.slice(1),
+    open: m[0],
+    stage: element(art, stageAt, "div"),
+    title: decode((art.match(/<div class="card-title">([^<]+)<\/div>/) || [])[1] || key).trim(),
+    desc: decode((art.match(/<div class="card-subtitle">([^<]+)<\/div>/) || [])[1] || "").trim(),
+    cat: (art.match(/data-cat="([^"]+)"/) || [])[1] || "essential",
+  });
 }
 
-// Scaffolding around each transition: neutral controls and surfaces in the
-// stage colors, kept separate from the transition's own CSS.
-const DEMO_CSS = `
-/* Demo scaffolding (not part of the transition) */
-.demo { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.demo button:not([class]), .demo-btn {
-  padding: 8px 14px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--stage-surface);
-  color: var(--stage-fg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 0 0 1px var(--stage-border);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-}
-.demo-surface {
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: var(--stage-surface);
-  color: var(--stage-fg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), inset 0 0 0 1px var(--stage-border);
-}
-.demo-muted { color: var(--stage-muted); font-size: 13px; }
-/* Zero-specificity defaults: any rule in the transition's CSS wins. */
-:where(.demo) :where(button) {
-  padding: 7px 12px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--stage-surface);
-  color: var(--stage-fg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 0 0 1px var(--stage-border);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-}
-:where(.demo) :where(input[type="text"], input:not([type])) {
-  width: 200px;
-  padding: 9px 12px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--stage-surface);
-  color: var(--stage-fg);
-  box-shadow: inset 0 0 0 1px var(--stage-border);
-  font: inherit;
-  outline: none;
-}
-`;
+// ── Scripts ──────────────────────────────────────────────────────────────────
 
-const ICON = {
-  bell: `<svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M4 6.5a4 4 0 1 1 8 0c0 3.5 1.5 4.5 1.5 4.5h-11S4 10 4 6.5ZM6.5 13a1.6 1.6 0 0 0 3 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>`,
-  menu: `<svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 5.5h10M3 10.5h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>`,
-  close: `<svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>`,
-  check: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 12.5l4 4 8-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>`,
-};
+const scripts = [...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+const main = scripts.find((s) => s.includes("Prototype handlers"));
+if (!main) throw new Error("prototype script not found in library.html");
+const all = scripts.join("\n");
 
-// Demo JSX per template key. `C` is replaced with the exported component name.
-const DEMOS = {
-  p1: { jsx: `<C>${ICON.bell}</C>`, css: `.demo > button { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border-radius: 12px; }\n.t-badge-dot { min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #ff3b30; color: #fff; font-size: 10px; font-weight: 600; line-height: 16px; text-align: center; }` },
-  p2: { jsx: `<C />` },
-  p3: { jsx: `<C><div className="demo-surface" style={{ width: 200 }}><strong>Panel</strong><div className="demo-muted">Slides in from below.</div></div></C>` },
-  p4: { jsx: `<C />` },
-  p5: { jsx: `<C iconA={${ICON.menu}} iconB={${ICON.close}} />` },
-  p6: { jsx: `<C />` },
-  p7: { jsx: `<C><strong>Modal title</strong><p className="demo-muted" style={{ margin: "6px 0 12px" }}>Opens and closes with the modal transition.</p></C>`, css: `.t-modal { position: fixed; left: 50%; top: 50%; translate: -50% -50%; width: 220px; padding: 16px; border-radius: 16px; background: var(--stage-surface); box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.35), inset 0 0 0 1px var(--stage-border); }` },
-  p8: { jsx: `<C />` },
-  p9: { jsx: `<C value="128" />` },
-  p10: { jsx: `<C>${ICON.check}</C>`, css: `.t-success-check { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #22c55e; color: #fff; }` },
-  p11: { jsx: `<C items={["#ff8a65", "#7aa7ff", "#5ad1a0", "#f5c451"].map((c, i) => <span key={c} className="demo-avatar" style={{ background: c }}>{"ABCD"[i]}</span>)} />`, css: `.t-avatar-group { display: flex; }\n.t-avatar + .t-avatar { margin-left: -8px; }\n.demo-avatar { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: #fff; font-size: 13px; font-weight: 600; box-shadow: 0 0 0 2px var(--stage-bg); }` },
-  p12: { jsx: `<C message="Please enter a valid email."><input type="text" defaultValue="name@" aria-label="Email" /></C>`, css: `.t-input input { width: 200px; padding: 9px 12px; border: 0; border-radius: 10px; background: var(--stage-surface); color: var(--stage-fg); box-shadow: inset 0 0 0 1px var(--stage-border); font: inherit; outline: none; }\n.t-input.is-error input { box-shadow: inset 0 0 0 1.5px #e23014; }\n.t-error-msg { margin: 6px 0 0; color: #e23014; font-size: 12px; }` },
-  p13: { jsx: `<C defaultValue="Clear me with the x" placeholder="Type something" />` },
-  p14: { jsx: `<C skeleton={<div className="demo-skel"><span /><span /><span /></div>}><div className="demo-surface" style={{ width: 200 }}><strong>Loaded content</strong><div className="demo-muted">Revealed after the skeleton.</div></div></C>`, css: `.demo-skel { display: grid; gap: 8px; width: 200px; padding: 14px 16px; box-sizing: border-box; }\n.demo-skel span { height: 10px; border-radius: 6px; background: var(--stage-border); }\n.demo-skel span:nth-child(2) { width: 70%; }\n.demo-skel span:nth-child(3) { width: 40%; }` },
-  p15: { jsx: `<C>Thinking about motion…</C>` },
-  p16: { jsx: `<C tabs={["Overview", "Activity", "Settings"]} />` },
-  p17: { jsx: `<C id="demo" items={[{ label: "Copy", tooltip: "Copy link" }, { label: "Share", tooltip: "Share with team" }, { label: "Pin", tooltip: "Pin to top" }]} />` },
-  p18: { jsx: `<C primary="Motion that feels right" secondary="Staggered, soft and quick." />` },
-  p19: { jsx: `<C><div className="demo-tilt">Hover me</div></C>`, css: `.demo-tilt { display: grid; place-items: center; width: 180px; height: 120px; border-radius: 16px; background: linear-gradient(135deg, #7aa7ff, #b28dff); color: #fff; font-weight: 600; }` },
-  p20: { jsx: `<C><button type="button" role="menuitem">New file</button><button type="button" role="menuitem">Upload</button><button type="button" role="menuitem">Import</button></C>` },
-  p21: { jsx: `<div style={{ width: 240 }}><C title="What is a transition?">A change between two states, eased so the eye can follow it.</C></div>` },
-  p22: { jsx: `<C><div className="demo-surface">Saved to your library</div></C>` },
-  p23: { jsx: `<C />` },
-  p24: { jsx: `<C />` },
-  p25: { jsx: `<C label="Remember me" />` },
-  p26: { jsx: `<C target={128} />` },
-  p27: { jsx: `<C />`, css: `.t-toggle { display: block; width: 46px; height: 28px; padding: 3px; box-sizing: border-box; border-radius: 999px; background: var(--stage-border); box-shadow: none; }\n.t-toggle[data-on="true"] { background: #34c759; }\n.t-toggle-thumb { display: block; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }` },
-  p28: { jsx: `<C />` },
-  p29: { jsx: `<div style={{ width: 240 }}><C>Reading the component tree. Checking which states change. Comparing durations against the easing tokens. Drafting a smoother exit for the dropdown.</C></div>` },
-  p30: { jsx: `<div style={{ width: 240 }}><C text="Motion should explain what changed, never make you wait for it." /></div>` },
-  p33: { jsx: `<C />` },
-  p34: {
-    jsx: `<StackDemo />`,
-    extra: `
-function StackDemo() {
-  const [banners, setBanners] = useState([]);
-  const add = () => {
-    const n = banners.length + 1;
-    setBanners((b) => [...b, { id: String(n), node: <div className="demo-surface">Notification {n}</div> }]);
-  };
-  return (
-    <>
-      <C banners={banners} />
-      <button type="button" onClick={add}>Add banner</button>
-    </>
-  );
+// Source text cut at `at` loses its first line's indentation; put it back
+// (the column of `at`), then strip the common indent.
+function dedent(src, at, text) {
+  const lines = text.split("\n");
+  lines[0] = " ".repeat(at - src.lastIndexOf("\n", at) - 1) + lines[0].trimStart();
+  const pad = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length));
+  return lines.map((l) => l.slice(Math.min(pad, l.match(/^ */)[0].length))).join("\n");
 }
-`,
-  },
-};
+const indent = (text, n) => text.split("\n").map((l) => (l.trim() ? " ".repeat(n) + l : "")).join("\n");
 
-function withDemo(key, src) {
-  const name = (src.match(/export\s+(?:default\s+)?function\s+(\w+)/) || [])[1];
-  if (!name) return null;
-  const demo = DEMOS[key] || { jsx: `<${name} />` };
-  let code = src;
-  if (demo.extra && !/import\s*\{[^}]*\buseState\b/.test(code)) {
-    code = code.replace(/import\s*\{([^}]*)\}\s*from\s*"react";/, (m, g) => `import {${g.trimEnd()}, useState } from "react";`);
-    if (!/useState/.test(code.split("\n")[0])) code = `import { useState } from "react";\n` + code;
+function fn(src, name) {
+  const at = src.indexOf("function " + name + "(");
+  if (at < 0) throw new Error("helper not found: " + name);
+  return dedent(src, at, src.slice(at, closeBrace(src, src.indexOf("{", at))));
+}
+
+// "/* ── Prototype N: ..." sections: a prototype's helpers and its init.
+function section(n) {
+  const re = /\/\* ── Prototype (\d+)\b/g;
+  let m;
+  while ((m = re.exec(main))) {
+    if (m[1] !== n) continue;
+    const rest = main.slice(m.index + 1);
+    const ends = [
+      rest.search(/\/\* ── Prototype \d+/),
+      rest.search(/\n {6}var PROTO_TEMPLATES/),
+      rest.search(/\n {6}\/\* Per-prototype portable/),
+    ];
+    // Another prototype's init (with its leading comment) ends it too.
+    for (const o of rest.matchAll(/(?:\n {6}\/\/[^\n]*)*\n {6}\(function initP(\d+)/g)) {
+      if (o[1] !== n) { ends.push(o.index); break; }
+    }
+    return dedent(main, m.index, main.slice(m.index, m.index + 1 + Math.min(...ends.filter((i) => i >= 0))).trimEnd());
   }
-  const jsx = demo.jsx.replace(/<C\b/g, "<" + name).replace(/<\/C>/g, "</" + name + ">");
-  const extra = (demo.extra || "").replace(/<C\b/g, "<" + name).replace(/<\/C>/g, "</" + name + ">");
-  return {
-    jsx: code.trimEnd() + "\n\n// Demo: what the preview renders. Edit freely.\n" + extra.trim() + (extra.trim() ? "\n\n" : "") +
-      "export default function Demo() {\n  return (\n    <div className=\"demo\">\n      " + jsx + "\n    </div>\n  );\n}\n",
-    css: demo.css || "",
-  };
+  return "";
 }
+
+// "(function initP<N>...() { ... })();" blocks, anywhere in the page.
+function inits(n) {
+  const out = [];
+  const re = new RegExp(`\\(function initP${n}(?!\\d)\\w*\\(\\) \\{`, "g");
+  let m;
+  while ((m = re.exec(all))) {
+    const end = closeBrace(all, all.indexOf("{", m.index));
+    out.push({ raw: all.slice(m.index, end), text: dedent(all, m.index, all.slice(m.index, end) + ")();") });
+  }
+  return out;
+}
+
+// The page's click delegation, split into its commented segments.
+const clickAt = main.indexOf('document.addEventListener("click", function (e) {', main.indexOf("Prototype 8: token / back"));
+const clickBody = main.slice(main.indexOf("{", clickAt) + 1, closeBrace(main, main.indexOf("{", clickAt)) - 1);
+function segment(from, to) {
+  const a = clickBody.indexOf(from);
+  const b = to ? clickBody.indexOf(to) : clickBody.length;
+  if (a < 0 || b < 0) throw new Error("click segment not found: " + from);
+  return dedent(clickBody, a, clickBody.slice(a, b).trimEnd());
+}
+const p8At = clickBody.search(/\S/);
+const SEG = {
+  p8: dedent(clickBody, p8At, clickBody.slice(p8At, clickBody.indexOf("/* --- Animate buttons --- */")).trimEnd()),
+  like: segment("/* --- Prototype 23", "/* --- Prototype 25"),
+  checkbox: segment("/* --- Prototype 25", "/* --- Prototype 27"),
+  toggle: segment("/* --- Prototype 27", "/* --- Copy buttons"),
+};
+const animate = segment("/* --- Animate buttons --- */", "/* --- Prototype 23");
+function caseBlock(n) {
+  const at = animate.indexOf(`case "${n}": {`);
+  if (at < 0) return null;
+  return dedent(animate, at, animate.slice(at, closeBrace(animate, animate.indexOf("{", at))));
+}
+
+function scriptFor(c) {
+  const parts = [];
+  const sec = section(c.n);
+  if (sec) parts.push(sec);
+  if (c.n === "6") {
+    const at = main.indexOf("// ── Prototype 6 message cycle");
+    parts.push(dedent(main, at, main.slice(at, main.indexOf("\n\n", at)).trim()));
+  }
+  const handlers = [];
+  if (c.n === "8") handlers.push(SEG.p8);
+  const cb = caseBlock(c.n);
+  if (cb) {
+    handlers.push(
+      "var animateBtn = e.target.closest(\"button[data-proto]\");\n" +
+      "if (animateBtn) {\n" +
+      "  var proto = animateBtn.getAttribute(\"data-proto\");\n" +
+      "  var card = findCard(animateBtn);\n" +
+      "  if (!card) return;\n" +
+      "  switch (proto) {\n" + indent(cb, 4) + "\n  }\n" +
+      "  return;\n" +
+      "}"
+    );
+  }
+  if (c.n === "23") handlers.push(SEG.like);
+  if (c.n === "25") handlers.push(SEG.checkbox);
+  if (c.n === "27") handlers.push(SEG.toggle);
+  if (handlers.length) parts.push('document.addEventListener("click", function (e) {\n' + indent(handlers.join("\n\n"), 2) + "\n});");
+  // Inits that live inside the prototype's section are in already.
+  for (const it of inits(c.n)) {
+    const name = it.raw.match(/\(function (initP\w+)\(/)[1];
+    if (!sec.includes("(function " + name + "(")) parts.push(it.text);
+  }
+  if (!parts.length) return "";
+  const body = [fn(main, "findCard"), fn(main, "readMs"), ...parts].join("\n\n");
+  const js = "// " + c.title + ": the library card's own script, from library.html.\n(function () {\n" + indent(body, 2) + "\n})();\n";
+  new Function(js); // syntax check
+  return js;
+}
+
+// Class and attribute names the script sets, so state rules come along.
+function scriptTokens(js) {
+  const out = new Set();
+  for (const m of js.matchAll(/["']([a-z][\w-]*)["']/gi)) out.add(m[1]);
+  return [...out];
+}
+
+// ── Images ───────────────────────────────────────────────────────────────────
+
+const MIME = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml", ".gif": "image/gif" };
+// Large rasters are scaled down first (macOS sips) so a card stays well
+// under the 100 KB per-field limit; card images show at icon sizes.
+function dataUri(path) {
+  const clean = path.replace(/[?#].*$/, "");
+  const ext = extname(clean).toLowerCase();
+  let buf = readFileSync(join(root, clean));
+  if (buf.length > 16000 && (ext === ".png" || ext === ".jpg" || ext === ".jpeg")) {
+    const tmp = join(tmpdir(), "tdev-card-img" + ext);
+    try {
+      execFileSync("sips", ["-Z", "96", join(root, clean), "--out", tmp], { stdio: "ignore" });
+      const small = readFileSync(tmp);
+      if (small.length < buf.length) buf = small;
+    } catch (e) { /* no sips: keep the original */ }
+  }
+  return "data:" + MIME[ext] + ";base64," + buf.toString("base64");
+}
+const inlineImages = (s) => s
+  .replace(/(src=")(assets\/[^"]+)(")/g, (m, a, p, b) => a + dataUri(p) + b)
+  .replace(/url\((['"]?)(assets\/[^'")]+)\1\)/g, (m, q, p) => "url(" + q + dataUri(p) + q + ")");
+
+// ── CSS (from the page's style source) ─────────────────────────────────────
+// Read as written, not through CSSOM: CSSOM cannot serialize a shorthand
+// that uses var() (animation: x var(--d) ...) and drops its value.
+
+function stripComments(src) {
+  let out = "";
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (c === '"' || c === "'") {
+      const at = i;
+      for (i++; i < src.length && src[i] !== c; i++) if (src[i] === "\\") i++;
+      out += src.slice(at, i + 1);
+    } else if (c === "/" && src[i + 1] === "*") {
+      i = src.indexOf("*/", i + 2) + 1;
+      if (i <= 0) break;
+    } else out += c;
+  }
+  return out;
+}
+
+// Rules as a tree: { type: "rule", selector, body } | { type: "group", prelude,
+// children } (@media / @supports) | { type: "at", prelude, body } (@keyframes,
+// @property, @font-face ...).
+function parseCss(src) {
+  let i = 0;
+  function skipString(q) { for (i++; i < src.length && src[i] !== q; i++) if (src[i] === "\\") i++; }
+  function blockEnd() { // i is just past "{"; returns the body, i past "}"
+    const from = i;
+    let depth = 1;
+    for (; i < src.length; i++) {
+      const c = src[i];
+      if (c === '"' || c === "'") skipString(c);
+      else if (c === "{") depth++;
+      else if (c === "}" && --depth === 0) { i++; return src.slice(from, i - 1); }
+    }
+    return src.slice(from);
+  }
+  function block() {
+    const items = [];
+    while (i < src.length) {
+      while (i < src.length && /\s/.test(src[i])) i++;
+      if (i >= src.length) break;
+      if (src[i] === "}") { i++; break; }
+      const from = i;
+      let paren = 0;
+      while (i < src.length && !(paren === 0 && (src[i] === "{" || src[i] === ";" || src[i] === "}"))) {
+        const c = src[i];
+        if (c === '"' || c === "'") skipString(c);
+        else if (c === "(") paren++;
+        else if (c === ")") paren--;
+        i++;
+      }
+      const prelude = src.slice(from, i).trim();
+      if (src[i] !== "{") { if (src[i] === ";") i++; continue; } // @import / @charset
+      i++;
+      if (/^@(media|supports|container|layer)\b/.test(prelude)) items.push({ type: "group", prelude, children: block() });
+      else if (prelude.startsWith("@")) items.push({ type: "at", prelude, body: blockEnd() });
+      else items.push({ type: "rule", selector: prelude, body: blockEnd() });
+    }
+    return items;
+  }
+  return block();
+}
+
+function declarations(body) {
+  const out = [];
+  let depth = 0, cur = "";
+  for (let i = 0; i < body.length; i++) {
+    const c = body[i];
+    if (c === '"' || c === "'") {
+      const at = i;
+      for (i++; i < body.length && body[i] !== c; i++) if (body[i] === "\\") i++;
+      cur += body.slice(at, i + 1);
+      continue;
+    }
+    if (c === "(") depth++;
+    if (c === ")") depth--;
+    if (c === ";" && !depth) { if (cur.trim()) out.push(cur.trim()); cur = ""; } else cur += c;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out.map((d) => {
+    const at = d.indexOf(":");
+    return [d.slice(0, at).trim(), d.slice(at + 1).trim()];
+  });
+}
+
+const sheet = parseCss(stripComments([...page.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n")));
+
+function splitSelectors(sel) {
+  const out = [];
+  let depth = 0, cur = "";
+  for (const ch of sel) {
+    if (ch === "(" || ch === "[") depth++;
+    if (ch === ")" || ch === "]") depth--;
+    if (ch === "," && !depth) { out.push(cur.trim()); cur = ""; } else cur += ch;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+// The last compound selector (the subject), outside any brackets.
+function subject(sel) {
+  let depth = 0, cut = 0;
+  for (let i = 0; i < sel.length; i++) {
+    const ch = sel[i];
+    if (ch === "(" || ch === "[") depth++;
+    else if (ch === ")" || ch === "]") depth--;
+    else if (!depth && (ch === " " || ch === ">" || ch === "+" || ch === "~")) cut = i + 1;
+  }
+  return sel.slice(cut);
+}
+
+const CHROME = new Set(["card", "card-meta", "card-title", "card-subtitle", "card-copy", "cards"]);
+const ROOT = /^(:root|html)(\[data-theme=["']?(dark|light)["']?\])?$/;
+const PASS_ATTRS = /^(aria-[\w-]+|role|type|disabled|hidden|tabindex|open|checked)$/;
+
+// Every rule that can apply to the card, plus the keyframes, @property rules
+// and tokens they use (transitively).
+function collectCss(card, jsTokens) {
+  const markup = card.open + card.stage;
+  const own = new Set(), ids = new Set();
+  for (const m of markup.matchAll(/\sclass="([^"]*)"/g)) m[1].split(/\s+/).filter(Boolean).forEach((c) => own.add(c));
+  for (const m of markup.matchAll(/<[a-zA-Z][\w-]*((?:\s+[\w:-]+(?:="[^"]*")?)*)\s*\/?>/g)) {
+    for (const a of m[1].matchAll(/\s([\w:-]+)(?:=|\s|$)/g)) own.add(a[1]);
+  }
+  for (const m of markup.matchAll(/\sid="([^"]+)"/g)) ids.add(m[1]);
+  own.delete("class");
+  ["card-meta", "card-title", "card-subtitle", "card-copy"].forEach((c) => own.delete(c));
+  // Elements the card's script builds (reels, dots, banners) carry its own
+  // class prefix; their rules belong to the card too.
+  jsTokens.forEach((t) => { if (t.startsWith("p" + card.n + "-")) own.add(t); });
+  const allowed = new Set([...own, ...jsTokens]);
+
+  function keep(sel) {
+    const bare = sel.replace(/::?[\w-]+(\([^)]*\))?/g, "");
+    const classes = [...sel.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1]);
+    const attrs = [...sel.matchAll(/\[\s*([\w-]+)/g)].map((m) => m[1]);
+    const idList = [...sel.matchAll(/#([\w-]+)/g)].map((m) => m[1]);
+    if (idList.some((x) => !ids.has(x))) return false;
+    if (classes.some((c) => !allowed.has(c))) return false;
+    for (const a of attrs) {
+      if (a === "data-theme") { if (!/^(html|:root)\b/.test(sel)) return false; continue; }
+      if (PASS_ATTRS.test(a)) continue;
+      if (!allowed.has(a)) return false;
+    }
+    const specific = classes.some((c) => own.has(c) && !CHROME.has(c)) ||
+      attrs.some((a) => own.has(a) && a !== "data-theme" && !PASS_ATTRS.test(a)) || idList.length;
+    if (!specific) return false;
+    if ([...subject(bare.trim()).matchAll(/\.([\w-]+)/g)].some((m) => CHROME.has(m[1]))) return false;
+    return true;
+  }
+
+  const rules = [];      // { wrap: [preludes], text }
+  const tokens = [];     // { wrap, selector, decls }
+  const keyframes = {};
+  const properties = {};
+  (function walk(items, wrap) {
+    for (const it of items) {
+      if (it.type === "group") walk(it.children, wrap.concat(it.prelude));
+      else if (it.type === "at") {
+        const kf = it.prelude.match(/^@(?:-webkit-)?keyframes\s+([\w-]+)/);
+        if (kf) keyframes[kf[1]] = it.prelude + " {" + it.body + "}";
+        const pr = it.prelude.match(/^@property\s+(--[\w-]+)/);
+        if (pr) properties[pr[1]] = it.prelude + " {" + it.body + "}";
+      } else {
+        const sels = splitSelectors(it.selector);
+        if (sels.every((x) => ROOT.test(x))) {
+          const decls = declarations(it.body).filter(([n]) => n.startsWith("--"));
+          if (decls.length) tokens.push({ wrap, selector: it.selector, decls });
+          continue;
+        }
+        const kept = sels.filter(keep);
+        if (!kept.length) continue;
+        const body = declarations(it.body).map(([n, v]) => "  " + n + ": " + v + ";").join("\n");
+        rules.push({ wrap, text: kept.join(",\n") + " {\n" + body + "\n}" });
+      }
+    }
+  })(sheet, []);
+
+  const text = rules.map((r) => r.text).join("\n");
+  const usedFrames = new Set();
+  for (const m of text.matchAll(/animation(?:-name)?\s*:\s*([^;}]+)/g)) {
+    for (const w of m[1].split(/[\s,]+/)) if (keyframes[w]) usedFrames.add(w);
+  }
+  const frames = [...usedFrames].map((n) => keyframes[n]);
+  const vars = new Set(["--font-sans", "--text"]);
+  const scan = (str) => { for (const m of str.matchAll(/var\(\s*(--[\w-]+)/g)) vars.add(m[1]); };
+  scan(text); frames.forEach(scan);
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const t of tokens) for (const [name, value] of t.decls) {
+      if (!vars.has(name)) continue;
+      const before = vars.size;
+      scan(value);
+      if (vars.size > before) grew = true;
+    }
+  }
+  const nest = (css, wrap) => wrap.slice().reverse().reduce((acc, w) => w + " {\n" + acc + "\n}", css);
+  // --stage-* comes from the preview stage (same colors as the site's card
+  // stage), so the card never overrides it.
+  const tokenCss = tokens.map((t) => {
+    const decls = t.decls.filter(([n]) => vars.has(n) && !n.startsWith("--stage-"));
+    if (!decls.length) return "";
+    return nest(t.selector + " {\n" + decls.map(([n, v]) => "  " + n + ": " + v + ";").join("\n") + "\n}", t.wrap);
+  }).filter(Boolean);
+  const props = Object.keys(properties).filter((n) => vars.has(n)).map((n) => properties[n]);
+
+  // Kept rules in source order; consecutive ones sharing a wrapper grouped.
+  const blocks = [];
+  for (const r of rules) {
+    const w = r.wrap.join(" | ");
+    const last = blocks[blocks.length - 1];
+    if (last && last.w === w) last.items.push(r.text); else blocks.push({ w, wrap: r.wrap, items: [r.text] });
+  }
+  const ruleCss = blocks.map((b) => nest(b.items.join("\n"), b.wrap));
+  return { tokens: tokenCss, props, rules: ruleCss, frames };
+}
+
+// No html or body rules and no font import: the preview stage sets the page
+// (background, Inter, smoothing), as it does for every component.
+const BASE = `/* The library card, at its size: the stage of the card on library.html. */
+:where(.card), :where(.card) *, :where(.card) *::before, :where(.card) *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.card { position: relative; width: 296px; height: 260px; color: var(--text); font-family: var(--font-sans); }
+.card > .card-stage { inset: 0; width: auto; height: auto; max-width: none; border-radius: 0; }
+.card > .card-stage::after { content: none; }`;
+
+
+// ── Build ────────────────────────────────────────────────────────────────────
 
 const out = [];
-for (const [key, title] of Object.entries(names)) {
-  const src = react[key];
-  const md = skillByTitle[title.toLowerCase()];
-  if (!src || !md) { console.warn("skip", key, title, !src ? "(no React)" : "(no skill file)"); continue; }
-  const d = withDemo(key, src);
-  if (!d) { console.warn("skip", key, title, "(no export)"); continue; }
-  const shown = cardTitle(key) || title;
+for (const c of cards) {
+  const js = scriptFor(c);
+  const css = collectCss(c, scriptTokens(js));
+  const html =
+    `<div class="card" data-proto-card data-cat="${c.cat}">\n` +
+    c.stage.split("\n").map((l) => l.replace(/^ {6}/, "")).join("\n") + "\n</div>\n";
   out.push({
-    key,
-    slug: slug(shown),
-    title: shown,
-    jsx: d.jsx,
-    css: skillCss(md) + DEMO_CSS + (d.css ? d.css.trim() + "\n" : ""),
+    key: c.key,
+    slug: slug(c.title),
+    title: c.title,
+    desc: c.desc,
+    cat: c.cat,
+    html: inlineImages(html),
+    css: inlineImages([...css.tokens, BASE, ...css.props, ...css.rules, ...css.frames].join("\n\n") + "\n"),
+    js,
   });
 }
 
 writeFileSync(join(root, "assets/community/library.json"), JSON.stringify(out, null, 0) + "\n");
 console.log("wrote", out.length, "transitions to assets/community/library.json");
+for (const t of out) console.log("  " + t.key.padEnd(4) + t.slug.padEnd(30) + " html " + t.html.length + "  css " + t.css.length + "  js " + t.js.length);

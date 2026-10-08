@@ -1,4 +1,4 @@
-# Transitions Agent: motion score on every pull request, with fixes proposed
+# Transitions Motion Agent: motion score on every pull request, with fixes proposed
 # as a pull request into that branch (never main): merge it to apply, close it
 # to reject. Copy this file to .github/workflows/transitions-agent.yml.
 #
@@ -9,7 +9,7 @@
 #
 # Labels on a pull request: `revamp` installs the transitions.dev recipes
 # (Business plan), `polish` forces polish, `no-motion-fix` skips fixes.
-name: Transitions Agent
+name: Transitions Motion Agent
 
 on:
   pull_request:
