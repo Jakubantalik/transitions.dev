@@ -4377,6 +4377,60 @@
     html[data-theme="dark"] button.plan-pill:hover { filter: brightness(1.25); }
     button.plan-pill:focus-visible { outline: 2px solid #1651f4; outline-offset: 2px; }
 
+    /* Builder pill: "Builder" plus its monthly credits. On Pro the credits
+       part is a button that opens the credit picker (Menu dropdown recipe:
+       scale and fade from the top, 150ms). */
+    .plan-pill--builder { gap: 6px; }
+    /* The Builder pill sits on its own row, above the skill and Agent pills. */
+    .plan-pills-break { flex-basis: 100%; height: 0; margin-top: -8px; }
+    .plan-credits-static { font-weight: 400; opacity: 0.8; }
+    .plan-credits-wrap { position: relative; display: inline-flex; margin-right: -6px; }
+    .plan-credits {
+      display: inline-flex; align-items: center; gap: 2px; height: 20px; padding: 0 4px 0 6px;
+      border: 0; border-radius: 50px; background: rgba(22, 81, 244, 0.08); color: inherit;
+      font: 500 13px/16px var(--font-sans); white-space: nowrap; cursor: pointer;
+      transition: background-color 150ms var(--ease-smooth-out), transform 150ms var(--ease-smooth-out);
+    }
+    .plan-credits:hover, .plan-credits[aria-expanded="true"] { background: rgba(22, 81, 244, 0.14); }
+    .plan-credits:active { transform: scale(0.97); }
+    .plan-credits:focus-visible { outline: 2px solid #1651f4; outline-offset: 2px; }
+    html[data-theme="dark"] .plan-credits { background: rgba(138, 178, 255, 0.12); }
+    html[data-theme="dark"] .plan-credits:hover, html[data-theme="dark"] .plan-credits[aria-expanded="true"] { background: rgba(138, 178, 255, 0.2); }
+    .plan-credits svg { width: 16px; height: 16px; flex: none; }
+    .plan-credits-label { display: inline-flex; align-items: baseline; white-space: pre; }
+    .plan-credits .p9-number { font: inherit; color: inherit; }
+    .plan-credits .p9-digits { position: relative; display: inline-flex; align-items: baseline; }
+    .plan-credits .p9-digits .p9-ghost { inset: auto; left: 0; top: 0; }
+    .plan-credits-menu {
+      position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+      display: flex; flex-direction: column; min-width: 208px; padding: 4px;
+      border-radius: 14px; background: #fff; color: var(--text);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 8px 24px -4px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+      opacity: 0; transform: scale(0.96); transform-origin: top left; pointer-events: none; visibility: hidden;
+      transition: opacity 150ms var(--ease-smooth-out), transform 150ms var(--ease-smooth-out), visibility 0s linear 150ms;
+    }
+    html[data-theme="dark"] .plan-credits-menu { background: #1f1f1f; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.5); }
+    .plan-credits-menu[data-open] { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+    .plan-credits-menu button {
+      display: grid; grid-template-columns: 1fr auto 16px; align-items: center; gap: 12px;
+      height: 36px; padding: 0 8px 0 10px; border: 0; border-radius: 10px; background: none; color: inherit;
+      font: 400 13px/20px var(--font-sans); text-align: left; cursor: pointer;
+      transition: background-color 150ms var(--ease-smooth-out);
+    }
+    .plan-credits-menu button:hover, .plan-credits-menu button:focus-visible { background: rgba(0, 0, 0, 0.04); outline: none; }
+    html[data-theme="dark"] .plan-credits-menu button:hover, html[data-theme="dark"] .plan-credits-menu button:focus-visible { background: rgba(255, 255, 255, 0.06); }
+    .plan-credits-menu .pc-amt { font-weight: 500; white-space: nowrap; }
+    .plan-credits-menu .pc-price { color: var(--text-muted); white-space: nowrap; }
+    .plan-credits-menu .pc-tick { width: 16px; height: 16px; opacity: 0; }
+    .plan-credits-menu [aria-checked="true"] .pc-tick { opacity: 1; }
+    /* Lifetime is a one-time price: its credits stay at the base amount. */
+    .pro-price-card[data-lifetime] .plan-credits { pointer-events: none; background: none; padding-right: 6px; }
+    .pro-price-card[data-lifetime] .plan-credits svg { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .plan-credits-menu, .plan-credits { transition: none !important; }
+      .plan-credits:active { transform: none; }
+    }
+
     /* Comparison modal — transitions.dev modal recipe (skill 06-modal). */
     :root {
       --modal-open-dur: 250ms;
@@ -5606,6 +5660,8 @@
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
             <div class="pro-plan-pills">
+              <span class="plan-pill plan-pill--builder">Builder<span class="plan-credits-static">100 credits</span></span>
+              <span class="plan-pills-break" aria-hidden="true"></span>
               <button type="button" class="plan-pill" data-cmp="skill">Free skill</button>
               <button type="button" class="plan-pill" data-cmp="agent">Free Motion Agent</button>
             </div>
@@ -5616,6 +5672,7 @@
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Free Transitions skill for Claude Code, Cursor and Codex</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Motion Agent: unlimited motion scans, 10 hosted polish fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-1">i</button><span class="cmp-tip" id="tip-free-agent-1" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Motion Agent for personal use</span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Builder with 100 AI credits/mo to build and remix components<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What are Builder credits?" aria-describedby="tip-builder-1">i</button><span class="cmp-tip" id="tip-builder-1" role="tooltip">Credits pay for the AI that builds and edits your components in the Builder. Each draft or change uses a few, depending on its size. They renew every month.</span></span></span></li>
           </ul>
           <a class="pro-price-cta" href="#" data-plan="free">Start free</a>
         </div>
@@ -5628,6 +5685,13 @@
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
             <div class="pro-plan-pills">
+              <span class="plan-pill plan-pill--builder plan-pill--accent">Builder<span class="plan-credits-wrap"><button type="button" class="plan-credits" id="plan-credits" aria-haspopup="menu" aria-expanded="false" aria-controls="plan-credits-menu"><span class="plan-credits-label"><span class="p9-number" data-credits-num><span class="p9-static"></span><span class="p9-digits"><span class="p9-char">7</span><span class="p9-char" data-stagger="1">0</span><span class="p9-char" data-stagger="2">0</span></span></span> credits</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.5 10.5 12 15l4.5-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <span class="plan-credits-menu" id="plan-credits-menu" role="menu" aria-label="Builder credits a month">
+                  <button type="button" role="menuitemradio" aria-checked="true" data-credits="700"><span class="pc-amt">700 credits</span><span class="pc-price">$9/mo</span><svg class="pc-tick" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5.25 12.7033 9.40385 17.37 18.75 6.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  <button type="button" role="menuitemradio" aria-checked="false" data-credits="1200"><span class="pc-amt">1,200 credits</span><span class="pc-price">$15/mo</span><svg class="pc-tick" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5.25 12.7033 9.40385 17.37 18.75 6.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  <button type="button" role="menuitemradio" aria-checked="false" data-credits="2500"><span class="pc-amt">2,500 credits</span><span class="pc-price">$29/mo</span><svg class="pc-tick" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5.25 12.7033 9.40385 17.37 18.75 6.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </span></span></span>
+              <span class="plan-pills-break" aria-hidden="true"></span>
               <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
               <button type="button" class="plan-pill" data-cmp="agent">Free Motion Agent</button>
             </div>
@@ -5638,6 +5702,7 @@
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>43+ production-ready transitions ready for React, Next.js, Typescript</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Motion Agent included<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-2">i</button><span class="cmp-tip" id="tip-free-agent-2" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Builder with <span data-credits-text>700</span> AI credits/mo, private drafts and publishing<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What are Builder credits?" aria-describedby="tip-builder-2">i</button><span class="cmp-tip" id="tip-builder-2" role="tooltip">Credits pay for the AI that builds and edits your components in the Builder. Each draft or change uses a few, depending on its size. They renew every month.</span></span></span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Every future transition, free</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Commercial license, unlimited projects</li>
           </ul>
@@ -5652,6 +5717,8 @@
               <span class="pro-price-per p6-text" data-price-per>/mo</span>
             </div>
             <div class="pro-plan-pills">
+              <span class="plan-pill plan-pill--builder plan-pill--accent">Builder<span class="plan-credits-static">700 credits/seat</span></span>
+              <span class="plan-pills-break" aria-hidden="true"></span>
               <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
               <button type="button" class="plan-pill plan-pill--accent" data-cmp="agent">Full Motion Agent</button>
             </div>
@@ -5662,6 +5729,7 @@
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Everything in Pro, for 5 seats, +$9/mo per extra seat</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Full Motion Agent included: 200 hosted fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the full Agent?" aria-describedby="tip-full-agent">i</button><span class="cmp-tip" id="tip-full-agent" role="tooltip">200 fixes a month, polish and revamp modes, and fix pull requests from CI.</span></span></span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Polish + revamp modes, grounded in the Pro recipes</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Builder with 700 AI credits/mo for every seat<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What are Builder credits?" aria-describedby="tip-builder-3">i</button><span class="cmp-tip" id="tip-builder-3" role="tooltip">Credits pay for the AI that builds and edits your components in the Builder. Each draft or change uses a few, depending on its size. They renew every month.</span></span></span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>GitHub Action with pull-request motion gate</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Commercial license for the whole team</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Priority support</li>
@@ -5921,7 +5989,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p><strong>Free</strong> is the open library, the free skill, and the Free Motion Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $9/mo, a single seat with the full Pro library, and includes the Free Motion Agent. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $9/mo) plus the Full Motion Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase for Pro, $149 for a single seat, covering the library forever (the Free Motion Agent included); the Full Motion Agent stays subscription-only because every fix runs on live AI, so Business has no lifetime option.</p>
+            <p><strong>Free</strong> is the open library, the free skill, and the Free Motion Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $9/mo, a single seat with the full Pro library, and includes the Free Motion Agent. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $9/mo) plus the Full Motion Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase for Pro, $149 for a single seat, covering the library forever (the Free Motion Agent included); the Full Motion Agent stays subscription-only because every fix runs on live AI, so Business has no lifetime option. Every plan includes the <strong>Builder</strong>, with AI credits each month for building and editing components: 100 on Free, 700 on Pro (or 1,200 for $15/mo and 2,500 for $29/mo), and 700 per seat on Business.</p>
           </div></div>
         </div>
 
@@ -6712,7 +6780,74 @@ description: Production-ready CSS
         });
         positionBillingIndicator();
       }
-      function setBilling(b) { curBilling = b; renderPrice(); }
+      function setBilling(b) { curBilling = b; paintCredits(false); renderPrice(); }
+
+      // Builder credits on Pro: the picker sets the monthly credits and the
+      // price with them (Lifetime keeps the base 700).
+      var CREDIT_TIERS = {
+        700:  { label: "700", monthly: "$9",  annual: "$90" },
+        1200: { label: "1,200", monthly: "$15", annual: "$150" },
+        2500: { label: "2,500", monthly: "$29", annual: "$290" }
+      };
+      var credits = 700;
+      var creditsBtn = document.getElementById("plan-credits");
+      var creditsMenu = document.getElementById("plan-credits-menu");
+      var soloCard = document.querySelector('[data-plan-card="solo"]');
+      function paintCredits(animate) {
+        var n = curBilling === "lifetime" ? 700 : credits;
+        var t = CREDIT_TIERS[n];
+        PRICES.solo.monthly.v = t.monthly;
+        PRICES.solo.annual.v = t.annual;
+        if (soloCard) {
+          if (curBilling === "lifetime") soloCard.setAttribute("data-lifetime", ""); else soloCard.removeAttribute("data-lifetime");
+          var cta = soloCard.querySelector(".pro-price-cta");
+          if (cta) cta.setAttribute("data-credits", String(n));
+          // The amount pops in like the price (Number pop-in); " credits" stays.
+          var num = soloCard.querySelector("[data-credits-num]");
+          if (num && num.textContent !== t.label) setPriceNumber(num, t.label, animate);
+          var txt = soloCard.querySelector("[data-credits-text]");
+          if (txt) txt.textContent = t.label;
+        }
+        if (creditsMenu) creditsMenu.querySelectorAll("[data-credits]").forEach(function (b) {
+          b.setAttribute("aria-checked", +b.getAttribute("data-credits") === credits ? "true" : "false");
+        });
+      }
+      function setCreditsMenu(on) {
+        if (!creditsMenu) return;
+        if (on) creditsMenu.setAttribute("data-open", ""); else creditsMenu.removeAttribute("data-open");
+        creditsBtn.setAttribute("aria-expanded", on ? "true" : "false");
+        if (on) { var cur = creditsMenu.querySelector('[aria-checked="true"]'); if (cur) cur.focus(); }
+      }
+      if (creditsBtn && creditsMenu) {
+        creditsBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          setCreditsMenu(!creditsMenu.hasAttribute("data-open"));
+        });
+        creditsMenu.addEventListener("click", function (e) {
+          var b = e.target.closest("[data-credits]");
+          if (!b) return;
+          e.stopPropagation();
+          var n = +b.getAttribute("data-credits");
+          setCreditsMenu(false);
+          creditsBtn.focus();
+          if (n === credits) return;
+          credits = n;
+          paintCredits(true);
+          renderPrice();
+        });
+        creditsMenu.addEventListener("keydown", function (e) {
+          var items = Array.prototype.slice.call(creditsMenu.querySelectorAll("[data-credits]"));
+          var i = items.indexOf(document.activeElement);
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            items[(i + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length].focus();
+          } else if (e.key === "Escape") { setCreditsMenu(false); creditsBtn.focus(); }
+        });
+        document.addEventListener("click", function (e) {
+          if (creditsMenu.hasAttribute("data-open") && !creditsMenu.contains(e.target)) setCreditsMenu(false);
+        });
+      }
+      paintCredits(false);
       billingOpts.forEach(function (o) {
         o.addEventListener("click", function () { setBilling(o.getAttribute("data-billing-opt")); });
       });
