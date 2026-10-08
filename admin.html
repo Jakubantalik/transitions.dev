@@ -483,6 +483,7 @@
                 <th data-sort="fixes" class="num col-fixes" title="Hosted Agent fixes">Fixes<span class="arrow"></span></th>
                 <th data-sort="builder_drafts" class="num col-builder" title="Builder drafts that finished (failed ones in the tooltip)">Drafts<span class="arrow"></span></th>
                 <th data-sort="builder_credits" class="num col-builder" title="Builder credits spent (1 credit = $0.01 of AI)">Credits<span class="arrow"></span></th>
+                <th data-sort="builder_last" class="col-builder" title="Last Builder draft or component">Last used<span class="arrow"></span></th>
                 <th data-sort="community" class="col-community" title="Community components and Builder drafts">Community<span class="arrow"></span></th>
                 <th data-sort="errors" class="num col-errors" title="Errors in the last 30 days (Builder and Motion Agent)">Errors<span class="arrow"></span></th>
                 <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
@@ -697,6 +698,7 @@
         fixes: function (p) { return fixCount(p); },
         builder_drafts: function (p) { var c = p.community; return c ? (c.drafts || 0) + (c.failed || 0) / 1e3 : -1; },
         builder_credits: function (p) { var c = p.community; return c ? (c.credits || 0) + (c.drafts || 0) / 1e4 : -1; },
+        builder_last: function (p) { var c = p.community; return (c && c.last_at) || ""; },
         errors: function (p) { var e = p.errors; return e ? e.count * 1e3 + e.count_7d : 0; },
         community: function (p) { var c = p.community; return c ? c.pending * 1e6 + c.live * 1e3 + c.made + c.drafts / 1e3 : -1; },
         agent: function (p) { var a = p.agent; return a ? (a.fixes_month * 1e6 + (a.fixes_total || 0) * 1e3 + (a.last_used ? 1 : 0) + (a.key ? 0.5 : 0)) : -1; },
@@ -860,7 +862,9 @@
             return '<td class="num tnum col-builder" title="' + tip + '">' + (c.drafts || c.failed
                 ? esc(num(c.drafts || 0)) + (c.failed ? ' <span class="muted">+' + c.failed + "</span>" : "")
                 : '<span class="muted">·</span>') + "</td>" +
-              '<td class="num tnum col-builder">' + (c.credits ? esc(num(c.credits)) : '<span class="muted">' + (c.drafts ? "0" : "·") + "</span>") + "</td>";
+              '<td class="num tnum col-builder">' + (c.credits ? esc(num(c.credits)) : '<span class="muted">' + (c.drafts ? "0" : "·") + "</span>") + "</td>" +
+              '<td class="tnum col-builder"' + (c.last_at ? ' title="' + esc(new Date(c.last_at).toLocaleString()) + '"' : "") + ">" +
+                (c.last_at ? esc(ago(c.last_at)) : '<span class="muted">·</span>') + "</td>";
           })() +
           (function () {
             var c = p.community;
