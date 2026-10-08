@@ -4652,6 +4652,8 @@
       gap: 12px; min-height: 48px;
     }
     .settings-label { font-size: 13px; color: var(--text); }
+    .acc-packs-note { display: block; margin-top: 2px; font-size: 12px; color: var(--text-muted); }
+    .acc-packs .acc-provider { flex-wrap: wrap; justify-content: flex-end; }
     /* Name fields: the row-btn surface, as text inputs. */
     .settings-input {
       width: 220px; max-width: 58%; height: 32px; padding: 0 12px;
@@ -5114,6 +5116,19 @@
             <div class="settings-row" data-provider-row="chatgpt" hidden>
               <span class="settings-label">ChatGPT</span>
               <span class="acc-provider"><span class="settings-value" data-provider-state></span><button type="button" class="row-btn" data-provider-btn></button></span>
+            </div>
+            <!-- Builder credits: the balance, and credit packs for Pro and Business. -->
+            <div class="settings-row" id="acc-credits-row" hidden>
+              <span class="settings-label">Builder credits</span>
+              <span class="acc-provider"><span class="settings-value" id="acc-credits"></span><button type="button" class="row-btn" id="acc-credits-add" hidden>Add credits</button></span>
+            </div>
+            <div class="settings-row acc-packs" id="acc-packs" hidden>
+              <span class="settings-label">Credit packs<span class="acc-packs-note">Used after your monthly credits. Valid 12 months.</span></span>
+              <span class="acc-provider">
+                <button type="button" class="row-btn" data-pack="500">500 &middot; $10</button>
+                <button type="button" class="row-btn" data-pack="1200">1,200 &middot; $22</button>
+                <button type="button" class="row-btn" data-pack="2500">2,500 &middot; $42</button>
+              </span>
             </div>
             <div class="settings-row" id="acc-cancel-row">
               <span class="settings-label">Cancel plan</span>
@@ -6120,6 +6135,53 @@
           headers: { "content-type": "application/json" }, body: JSON.stringify(body || {}),
         }).then(function (r) { return r.json().catch(function () { return {}; }); });
       }
+      // Builder credits: balance from /community/me, packs from /billing/topup
+      // (Pro and Business), back here with ?topup=<credits>.
+      function paintCredits() {
+        fetch(TP.apiBase + "/community/me", { credentials: "include" })
+          .then(function (r) { return r.json(); })
+          .then(function (r) {
+            var q = r && r.quota;
+            if (!q) { el("acc-credits-row").hidden = true; return; }
+            var text = q.remaining.toLocaleString("en-US") + " left";
+            if (q.topup && q.topup.credits) {
+              text = (q.monthly_remaining || 0).toLocaleString("en-US") + " this month + " + q.topup.credits.toLocaleString("en-US") + " from packs";
+            } else if (q.resets_at) text += " this month";
+            el("acc-credits").textContent = text;
+            el("acc-credits-row").hidden = false;
+            el("acc-credits-add").hidden = !q.can_topup;
+            if (!q.can_topup) el("acc-packs").hidden = true;
+          })
+          .catch(function () {});
+      }
+      el("acc-credits-add").addEventListener("click", function () {
+        el("acc-packs").hidden = !el("acc-packs").hidden;
+      });
+      document.querySelectorAll("[data-pack]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var btns = document.querySelectorAll("[data-pack]");
+          btns.forEach(function (x) { x.disabled = true; });
+          postJSON("/billing/topup", { credits: +b.getAttribute("data-pack"), return_path: "/account.html" }).then(function (r) {
+            if (r && r.url) { location.href = r.url; return; }
+            btns.forEach(function (x) { x.disabled = false; });
+            setNote("acc-note", r && r.error === "topup_pro_only" ? "Credit packs are for Pro and Business plans."
+              : r && r.error === "prices_not_configured" ? "Credit packs aren't available yet. Try again soon."
+              : "Couldn't open checkout. Please try again.", "err");
+          });
+        });
+      });
+      (function () {
+        var q = new URLSearchParams(location.search), t = q.get("topup");
+        if (!t) return;
+        q.delete("topup");
+        history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q.toString() : ""));
+        if (t !== "cancelled") {
+          setNote("acc-note", (+t).toLocaleString("en-US") + " credits added. Thanks!", "ok");
+          setTimeout(paintCredits, 2500);
+          setTimeout(paintCredits, 8000);
+        }
+      })();
+
       function saveName() {
         var first = el("acc-first").value.replace(/\s+/g, " ").trim();
         var last = el("acc-last").value.replace(/\s+/g, " ").trim();
@@ -6200,6 +6262,7 @@
         // is still resolving (or the check failed transiently), show neither
         // the gate nor the tabs rather than flashing a wrong signed-out card.
         el("acc-signedout").hidden = !(s && s.resolved && !authed);
+        if (authed && s.resolved && !paintCredits.done) { paintCredits.done = true; paintCredits(); }
         if (!authed) {
           if (tabs.account) tabs.account.hidden = true;
           if (tabs.downloads) tabs.downloads.hidden = true;

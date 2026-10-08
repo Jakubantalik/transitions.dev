@@ -2412,6 +2412,20 @@ select.cm-ask-input {
   text-overflow: ellipsis;
   cursor: pointer;
 }
+/* Credit packs (Community.topupDialog). */
+.cm-topup p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 19px; text-wrap: pretty; }
+.cm-topup-packs { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.cm-topup-pack {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  height: 44px; padding: 0 14px; border: 0; border-radius: 12px; cursor: pointer;
+  background: var(--chip-bg); color: var(--text); font: 500 13px/16px var(--font-sans);
+  transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cm-topup-pack b { font-weight: 500; }
+.cm-topup-pack span { color: var(--text-muted); }
+.cm-topup-pack:hover:not(:disabled) { background: var(--chip-bg-hover, rgba(0, 0, 0, 0.08)); }
+.cm-topup-pack:disabled { cursor: default; opacity: 0.6; }
+.cm-topup-pack[aria-busy="true"] { opacity: 1; }
 .cm-ask-row { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 6px; }
 .cm-btn--danger { background: #d02c12; color: #fff; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2); }
 .cm-btn--danger:hover { background: #b9260f; }

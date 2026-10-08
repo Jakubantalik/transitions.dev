@@ -87,6 +87,9 @@
     update: function (id, c) { return call("/community/c/" + encodeURIComponent(id), "POST", c); },
     remove: function (id) { return call("/community/c/" + encodeURIComponent(id) + "/delete", "POST", {}); },
     like: function (id, liked) { return call("/community/c/" + encodeURIComponent(id) + "/like", "POST", { liked: liked }); },
+    // A one-time pack of Builder credits (Pro, Business): answers { url } of
+    // the Stripe checkout, which returns to returnPath with ?topup=<credits>.
+    topup: function (credits, returnPath) { return call("/billing/topup", "POST", { credits: credits, return_path: returnPath }); },
     reportProfile: function (handle, rep) { return call("/community/u/" + encodeURIComponent(handle) + "/report", "POST", rep); },
     // A notice under the EU Digital Services Act: { category, reason, good_faith }.
     report: function (id, notice) { return call("/community/c/" + encodeURIComponent(id) + "/report", "POST", notice); },
@@ -1314,6 +1317,9 @@
     review_queue_full: "You have 3 components waiting for review. Publish more once one of them is reviewed.",
     publish_daily_limit: "That's today's limit for sending components to review. Try again tomorrow.",
     own_profile: "You can't report your own profile.",
+    topup_pro_only: "Credit packs are for Pro and Business plans.",
+    unknown_pack: "That credit pack isn't available.",
+    prices_not_configured: "Credit packs aren't available yet. Try again soon.",
   };
   function errorText(code) { return ERRORS[code] || "Something went wrong. Please try again."; }
 
@@ -1329,7 +1335,68 @@
     if (q.remaining <= 0) return short ? "No credits left" : once ? "No AI credits left." : "No AI credits left this month. They renew on the 1st.";
     return short ? n + " credit" + (q.remaining === 1 ? "" : "s") + " left"
       : once ? n + " of your " + q.limit.toLocaleString() + " lifetime AI credits left."
-      : n + " of " + q.limit.toLocaleString() + " AI credits left this month. They renew on the 1st.";
+      : q.topup && q.topup.credits
+        ? (q.monthly_remaining || 0).toLocaleString() + " of " + q.limit.toLocaleString() + " AI credits left this month, plus " +
+          q.topup.credits.toLocaleString() + " from credit packs."
+        : n + " of " + q.limit.toLocaleString() + " AI credits left this month. They renew on the 1st.";
+  }
+
+  // Credit packs for Pro and Business: spent after the monthly credits, valid
+  // 12 months. Same price per credit as the monthly credit tiers.
+  var TOPUP_PACKS = [{ credits: 500, price: "$10" }, { credits: 1200, price: "$22" }, { credits: 2500, price: "$42" }];
+  // Where to come back after paying: this page, without an old ?topup=.
+  function topupReturnPath() {
+    var q = new URLSearchParams(location.search);
+    q.delete("topup");
+    var qs = q.toString();
+    return location.pathname + (qs ? "?" + qs : "");
+  }
+  function topupDialog(opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      var last = document.activeElement;
+      var wrap = document.createElement("div");
+      wrap.className = "st-dialog cm-ask";
+      wrap.innerHTML =
+        '<div class="st-dialog-card cm-ask-card cm-topup" role="dialog" aria-modal="true" aria-labelledby="cm-topup-title">' +
+          '<h2 id="cm-topup-title">' + esc(opts.title || "Add credits") + "</h2>" +
+          "<p>" + esc(opts.body || "Credit packs are used after your monthly credits run out, and stay valid for 12 months.") + "</p>" +
+          '<div class="cm-topup-packs">' + TOPUP_PACKS.map(function (p) {
+            return '<button type="button" class="cm-topup-pack" data-credits="' + p.credits + '"><b>' + p.credits.toLocaleString("en-US") +
+              " credits</b><span>" + p.price + "</span></button>";
+          }).join("") + "</div>" +
+          '<div class="cm-ask-row"><button type="button" class="cm-btn cm-btn--ghost" data-no>Not now</button></div>' +
+        "</div>";
+      document.body.appendChild(wrap);
+      var done = false;
+      function finish(v) {
+        if (done) return;
+        done = true;
+        wrap.classList.remove("is-open");
+        document.removeEventListener("keydown", onKey, true);
+        setTimeout(function () { wrap.remove(); if (last && last.focus) last.focus(); }, 200);
+        resolve(v);
+      }
+      function onKey(e) { if (e.key === "Escape") { e.stopPropagation(); finish(null); } }
+      document.addEventListener("keydown", onKey, true);
+      wrap.addEventListener("mousedown", function (e) { if (e.target === wrap) finish(null); });
+      wrap.querySelector("[data-no]").addEventListener("click", function () { finish(null); });
+      wrap.querySelectorAll(".cm-topup-pack").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var credits = +b.getAttribute("data-credits");
+          wrap.querySelectorAll(".cm-topup-pack").forEach(function (x) { x.disabled = true; });
+          b.setAttribute("aria-busy", "true");
+          api.topup(credits, topupReturnPath()).then(function (r) {
+            if (r && r.url) { location.href = r.url; return; }
+            wrap.querySelectorAll(".cm-topup-pack").forEach(function (x) { x.disabled = false; });
+            b.removeAttribute("aria-busy");
+            toast(errorText(r && r.error), "err");
+          });
+        });
+      });
+      requestAnimationFrame(function () { wrap.classList.add("is-open"); });
+      setTimeout(function () { var f = wrap.querySelector(".cm-topup-pack"); if (f) f.focus(); }, 30);
+    });
   }
 
   // Tooltips: the skill's Tooltip open/close (17-tooltip.md). One bubble per
@@ -1457,6 +1524,7 @@
     card: card,
     toast: toast,
     reportDialog: reportDialog,
+    topupDialog: topupDialog,
     confirmToast: confirmToast,
     dropdown: dropdown,
     library: library,

@@ -2543,8 +2543,13 @@
       var mins = Math.max(1, Math.ceil((r.retry_at - Date.now()) / 60000));
       msg = "That's a lot of edits in one hour. Try again in " + mins + (mins === 1 ? " minute." : " minutes.");
     }
+    var canTopup = code === "out_of_credits" && r.quota && r.quota.can_topup;
+    if (canTopup) msg = "You're out of AI credits. Add a credit pack to keep going, or wait for the 1st.";
     say("error", C.esc(msg));
-    if (code === "chatgpt_limit") {
+    if (canTopup) {
+      // Pro and Business can buy a pack and carry on.
+      C.topupDialog({ title: "You're out of credits", body: "Add a credit pack to keep building. Packs are used after your monthly credits and stay valid for 12 months." });
+    } else if (code === "chatgpt_limit") {
       // OpenAI's order: manage the plan's usage first, our credits second.
       C.confirm({
         title: "ChatGPT usage limit reached",
@@ -2707,6 +2712,20 @@
   }
   document.addEventListener("pro:me", loadMe);
   loadMe();
+
+  // Back from buying a credit pack (?topup=<credits>): say so, and read the
+  // balance again once Stripe's webhook has had a moment to add it.
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var t = q.get("topup");
+    if (!t) return;
+    q.delete("topup");
+    history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q.toString() : ""));
+    if (t === "cancelled") return;
+    C.toast((+t).toLocaleString("en-US") + " credits added. Thanks!");
+    setTimeout(loadMe, 2500);
+    setTimeout(loadMe, 8000);
+  })();
 
   // Signed out: the whole agent panel sits under a sign-in wall (as on the
   // library's detail page), with Join for free and Sign in. The preview and
