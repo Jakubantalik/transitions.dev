@@ -163,12 +163,12 @@ html[data-theme="dark"] .cm-btn--accent { color: #04131a; }
   border-radius: 20px;
 }
 
-/* Dark: the package's own dark values (border-beam "dark" preset); the
-   light tuning above stays light-only. Retune with the dev panel's Dark tab. */
+/* Dark: tuned in the dev panel's Dark tab (strength, core and bloom), the
+   rest the border-beam dark preset; the light tuning above stays light-only. */
 html[data-theme="dark"] .cm-beam {
-  --beam-strength: 1;
-  --beam-core-blur: 3px;
-  --beam-bloom-blur: 22.5px;
+  --beam-strength: 0.52;
+  --beam-core-blur: 5.5px;
+  --beam-bloom-blur: 12px;
   --beam-glow-brightness: 1.9;
   --beam-glow-saturate: 1.2;
   --beam-hue-base: 0deg;
