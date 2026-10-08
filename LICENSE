@@ -29,8 +29,17 @@ obtaining these transitions to:
 
 Restriction: you may not redistribute the library itself. You may not
 repackage, resell, or publish the collection (or a substantial part of it) as
-a competing transitions library, template pack, or component kit. Use the
+a competing transitions library, motion pack, or animation kit. Use the
 transitions in your products, not as a product of their own.
+
+Templates and themes: with a Pro, Business, or Lifetime plan you may use the
+transitions inside templates, themes, starter kits, and UI kits that you sell
+or give away, as long as (1) the transitions are part of a larger design, not
+the main thing being sold; (2) the template includes only the transitions it
+actually uses, not the library or a substantial part of it; and (3) the
+transitions.dev comment in each transition's code is kept. Buyers of your
+template may use those transitions as part of it. A motion or animation pack
+whose main selling point is the transitions is not allowed.
 
 Full terms: https://transitions.dev/terms.html
 
