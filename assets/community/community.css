@@ -175,14 +175,6 @@ html[data-theme="dark"] .cm-beam { --beam-strength: 0.71; --beam-core-blur: 22.5
   border-radius: 21px;
   clip-path: inset(0 round 21px);
 }
-/* Dark draws the composer's ring inside its edge, so the beam sits on the
-   edge itself, under that inset hairline. */
-html[data-theme="dark"] .cm-beam[data-beam][data-active]::after,
-html[data-theme="dark"] .cm-beam[data-beam][data-fading]::after {
-  inset: 0;
-  border-radius: 20px;
-  clip-path: inset(0 round 20px);
-}
 
 /* Figma 1696:36087: 371 x 104, r20, white; all shadows outside the edge
    (a 1px bottom edge, a 1px hairline ring, two soft drops), drawn over the
@@ -209,7 +201,9 @@ html[data-theme="dark"] .cm-beam[data-beam][data-fading]::after {
 }
 html[data-theme="dark"] .cm-composer {
   --cmp-edge: 0 0 0 0 transparent;
-  --cmp-ring: inset 0 1px 0 0 rgba(255, 255, 255, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  /* The hairline sits just outside the edge, as in light, so the beam (1px
+     out, under the composer) shows through it in both themes. */
+  --cmp-ring: inset 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 0 0 1px rgba(255, 255, 255, 0.06);
   --cmp-drop: 0 2px 6px 0 rgba(0, 0, 0, 0.05), 0 4px 42px 0 rgba(0, 0, 0, 0.24);
   --cmp-btn-ring: inset 0 1px 0 0 rgba(255, 255, 255, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
   --cmp-btn-drop: 0 1px 1px 0 rgba(0, 0, 0, 0.24);
@@ -217,7 +211,7 @@ html[data-theme="dark"] .cm-composer {
   background: #1b1b1b;
 }
 .cm-composer:focus-within { --cmp-ring: 0 0 0 1px rgba(0, 0, 0, 0.12); }
-html[data-theme="dark"] .cm-composer:focus-within { --cmp-ring: inset 0 1px 0 0 rgba(255, 255, 255, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
+html[data-theme="dark"] .cm-composer:focus-within { --cmp-ring: inset 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 0 0 1px rgba(255, 255, 255, 0.12); }
 .cm-composer textarea {
   display: block;
   width: 100%;
