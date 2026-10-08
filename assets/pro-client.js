@@ -1674,7 +1674,20 @@
     toCheckout({ plan: redeem === "yearly" ? "yearly" : "monthly" }, cta);
   }
 
-  function boot() { wire(); redeemFromUrl(); }
+  // A closed dropdown (the nav's 3-dot / avatar menu) is invisible, but its
+  // active page sets pointer-events: auto, so after it opened once its items
+  // (Profile, Account, Feedback…) kept catching clicks meant for whatever
+  // sits under it, like the Studio's Save draft and Publish. Closed means
+  // nothing inside takes a click, on every page.
+  function closedMenusInert() {
+    if (document.getElementById("tp-menu-inert")) return;
+    var st = document.createElement("style");
+    st.id = "tp-menu-inert";
+    st.textContent = ".tl-menu.t-dropdown:not(.is-open),.tl-menu.t-dropdown:not(.is-open) *{pointer-events:none!important}";
+    document.head.appendChild(st);
+  }
+
+  function boot() { closedMenusInert(); wire(); redeemFromUrl(); }
   if (document.readyState !== "loading") boot();
   else document.addEventListener("DOMContentLoaded", boot);
 })();

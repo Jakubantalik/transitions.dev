@@ -248,11 +248,12 @@
   var fileCopyTimer = null;
   $("st-file-copy").addEventListener("click", function () {
     var btn = this;
-    navigator.clipboard.writeText(S.files[S.file] || "").then(function () {
+    C.copyOrShow(S.files[S.file] || "", "Copy the code").then(function (ok) {
+      if (!ok) return;
       btn.setAttribute("data-copied", "true");
       clearTimeout(fileCopyTimer);
       fileCopyTimer = setTimeout(function () { btn.setAttribute("data-copied", "false"); }, 1400);
-    }, function () { C.toast("Could not copy"); });
+    });
   });
 
   var setModeMenu = dropdown(modeBtn, modeMenu);
@@ -1086,10 +1087,11 @@
 
   var copyBtn = $("st-copy");
   copyBtn.addEventListener("click", function () {
-    navigator.clipboard.writeText(promptText()).then(function () {
+    C.copyOrShow(promptText(), "Copy the prompt").then(function (ok) {
+      if (!ok) return;
       copyBtn.setAttribute("data-copied", "true");
       setTimeout(function () { copyBtn.removeAttribute("data-copied"); }, 1600);
-    }, function () { C.toast("Could not copy", "err"); });
+    });
   });
 
   menu.addEventListener("click", function (e) {
@@ -1131,7 +1133,7 @@
       var about = [S.description, credit.textContent.trim()].filter(Boolean).join("\n\n");
       C.confirm({ title: S.title || "Untitled", body: about, ok: "Close", cancel: false });
     } else if (act === "link") {
-      navigator.clipboard.writeText(location.origin + "/studio.html?id=" + encodeURIComponent(S.id)).then(function () { C.confirmToast("Link copied"); });
+      C.copyOrShow(location.origin + "/studio.html?id=" + encodeURIComponent(S.id), "Copy the link").then(function (ok) { if (ok) C.confirmToast("Link copied"); });
     } else if (act === "unpublish") {
       save(false, null);
     } else if (act === "delete") {
@@ -2196,12 +2198,13 @@
       var copyTimer = null;
       copyBtn.addEventListener("click", function () {
         var t = copyText != null ? copyText : el.textContent;
-        navigator.clipboard.writeText(t).then(function () {
+        C.copyOrShow(t, "Copy the message").then(function (ok) {
+          if (!ok) return;
           copyBtn.setAttribute("data-copied", "true");
           copyBtn.setAttribute("aria-label", "Copied");
           clearTimeout(copyTimer);
           copyTimer = setTimeout(function () { copyBtn.setAttribute("data-copied", "false"); copyBtn.setAttribute("aria-label", "Copy message"); }, 1400);
-        }, function () {});
+        });
       });
       turn.appendChild(el);
       turn.appendChild(meta);

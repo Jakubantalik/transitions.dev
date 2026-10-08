@@ -879,7 +879,38 @@
         finish(opts.input ? input.value.trim() : true);
       });
       requestAnimationFrame(function () { wrap.classList.add("is-open"); });
-      setTimeout(function () { (input || form.querySelector("[type=submit]")).focus(); }, 30);
+      setTimeout(function () { (input || form.querySelector("[type=submit]")).focus(); if (input && opts.select) input.select(); }, 30);
+    });
+  }
+
+  // Copies text: the Clipboard API, then the older execCommand path (for a
+  // browser or an embedding page that blocks the API). Resolves true when the
+  // text is on the clipboard. copyOrShow also opens the text, selected, in a
+  // dialog when neither works, so it can still be copied by hand.
+  function copyText(text) {
+    function legacy() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return legacy(); });
+    }
+    return Promise.resolve(legacy());
+  }
+  function copyOrShow(text, title) {
+    return copyText(text).then(function (ok) {
+      if (ok) return true;
+      dialog({ title: title || "Copy the prompt", body: "Your browser blocked copying. It's selected below: press Cmd+C (Ctrl+C on Windows).",
+        input: true, value: text, select: true, max: 200000, ok: "Done", cancel: false });
+      return false;
     });
   }
 
@@ -1435,6 +1466,8 @@
     attachments: attachments,
     imageStrip: imageStrip,
     confirm: function (opts) { return dialog(opts); },
+    copyText: copyText,
+    copyOrShow: copyOrShow,
     ask: function (opts) { return dialog(Object.assign({ input: true }, opts)); },
     errorText: errorText,
     quotaText: quotaText,
