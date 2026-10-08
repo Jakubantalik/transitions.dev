@@ -1264,6 +1264,8 @@
       "font-family:inherit;font-size:13px;line-height:1.4;color:#0f0f0f;" +
       "background:#fff;border:1px solid #dcdcdc;border-radius:60px;outline:none;" +
       "will-change:transform;transition:border-color 120ms ease}" +
+      // iOS zooms into any field under 16px on focus: 16px on phones.
+      "@media (max-width:767px),(pointer:coarse){.tp-modal-input{font-size:16px}}" +
       ".tp-modal-input::placeholder{color:#828282}" +
       ".tp-modal-input:focus{border:1.5px solid #585858;padding-left:11.5px}" +
       ".tp-modal-input.is-error,.tp-modal-input.is-error:focus{border:1.5px solid #e23014;padding-left:11.5px}" +
