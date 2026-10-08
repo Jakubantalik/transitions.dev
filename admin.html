@@ -412,6 +412,7 @@
 
       <div class="stats" id="stats"></div>
       <div id="agent-band"></div>
+      <div id="builder-band"></div>
       <div id="daily-view" hidden></div>
 
       <div class="toolbar" id="people-toolbar">
@@ -664,6 +665,45 @@
       $("subtitle").textContent = "Accounts and Stripe customers · updated " + (age < 60 ? "just now" : ago(d.generated_at)) +
         (d._stale ? " · refreshing…" : "");
     }
+    // Compact token counts: 950, 12.3k, 1.2M.
+    function tok(n) {
+      n = n || 0;
+      if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M";
+      if (n >= 1e3) return (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace(/\.0$/, "") + "k";
+      return String(n);
+    }
+    function num(n) { return (n || 0).toLocaleString("en-US"); }
+    function renderBuilder() {
+      var b = state.data.builder;
+      var el = $("builder-band");
+      if (!b) { el.innerHTML = ""; return; }
+      var T = b.tiers || {}, M = b.month || {}, C = b.components || {};
+      var all = ["free", "paid", "chatgpt"].reduce(function (s, k) {
+        var v = T[k] || {}; s.drafts += v.drafts || 0; s.failed += v.failed || 0; s.credits += v.credits || 0; return s;
+      }, { drafts: 0, failed: 0, credits: 0 });
+      var monthDrafts = ["free", "paid", "chatgpt"].reduce(function (s, k) { return s + ((M[k] || {}).drafts || 0); }, 0);
+      // Per person who drafted on that tier: tokens are input + output.
+      var perUser = function (label, k, credits) {
+        var v = T[k] || {}, m = M[k] || {};
+        return { label: label, value: v.users ? tok(v.avg_tokens) + " tokens" : "·",
+          sub: v.users
+            ? plural(v.users, "person", "people") + (credits ? " · " + num(v.avg_credits) + " credits each" : "") +
+              " · " + num(v.avg_drafts) + " drafts each" + (m.users ? " · this month " + tok(m.avg_tokens) : "")
+            : "no drafts yet" };
+      };
+      var cells = [
+        { label: "Builder drafts", value: num(all.drafts), sub: num(monthDrafts) + " this month" + (all.failed ? " · " + num(all.failed) + " failed" : "") },
+        perUser("Per free user", "free", true),
+        perUser("Per paid user", "paid", true),
+        perUser("Per ChatGPT plan user", "chatgpt", false),
+        { label: "Credits used", value: num(all.credits), sub: "$" + (all.credits / 100).toFixed(2) + " of AI · free " + num((T.free || {}).credits) + " · paid " + num((T.paid || {}).credits) },
+        { label: "Components", value: num(C.made), sub: num(C.drafts) + " drafts · " + num(C.live) + " live" + (C.in_review ? " · " + num(C.in_review) + " in review" : "") }
+      ];
+      el.innerHTML = '<div class="band-label"><strong>Transitions UI Builder</strong><span>tokens are input + output per person who drafted, all time</span></div>' +
+        '<div class="stats stats--agent">' + cells.map(function (c) {
+          return '<div class="stat"><span class="stat-label">' + esc(c.label) + '</span><span class="stat-value">' + esc(c.value) + '</span><span class="stat-sub">' + esc(c.sub) + "</span></div>";
+        }).join("") + "</div>";
+    }
     function renderAgent() {
       var a = state.data.agent;
       var el = $("agent-band");
@@ -807,7 +847,9 @@
           return '</dl><div class="insp-divider"></div><div class="insp-section">Community</div><dl>' +
             row("Profile", c.handle ? '<a href="/profile.html?u=' + encodeURIComponent(c.handle) + '" target="_blank" rel="noopener">@' + esc(c.handle) + "</a>" : '<span class="muted">None</span>') +
             row("Components", '<span class="tnum">' + esc(c.made + " made, " + c.live + " live" + (c.pending ? ", " + c.pending + " in review" : "")) + "</span>") +
-            row("Builder", c.drafts ? '<span class="tnum">' + esc(plural(c.drafts, "draft") + ", $" + c.ai_usd.toFixed(2) + " of AI") + "</span>" : '<span class="muted">No drafts</span>') +
+            row("Builder", c.drafts ? '<span class="tnum">' + esc(plural(c.drafts, "draft") + ", " + num(c.credits || 0) + " credits ($" + c.ai_usd.toFixed(2) + ")") + "</span>" : '<span class="muted">No drafts</span>') +
+            (c.drafts ? row("Tokens", '<span class="tnum">' + esc(tok((c.tokens_in || 0) + (c.tokens_out || 0)) + " (" + tok(c.tokens_in) + " in, " + tok(c.tokens_out) + " out)") + "</span>") : "") +
+            (c.tiers ? row("Drafted on", esc(Object.keys(c.tiers).map(function (k) { return c.tiers[k] + " " + ({ free: "free", paid: "paid", chatgpt: "ChatGPT plan" }[k] || k); }).join(", "))) : "") +
             (c.last_at ? row("Last active", esc(ago(c.last_at))) : "") +
             (c.recent && c.recent.length ? row("Recent", c.recent.map(function (r) {
               return '<a href="/studio.html?id=' + encodeURIComponent(r.id) + (r.state === "review" ? "&review=1" : "") + '" target="_blank" rel="noopener">' + esc(r.title || "Untitled") + "</a> " +
@@ -835,7 +877,8 @@
       return d.toLocaleDateString("en-US", withDay ? { weekday: "short", month: "short", day: "numeric" } : { month: "short", day: "numeric" });
     }
     function sumDays(days) {
-      var t = { new_people: 0, new_free: 0, new_paid: 0, renewals: 0, churned: 0, agent_keys: 0, agent_signups: 0, agent_fixes: 0, agent_blocked: 0, made: 0, published: 0, paid_by: {}, revenue: {} };
+      var t = { new_people: 0, new_free: 0, new_paid: 0, renewals: 0, churned: 0, agent_keys: 0, agent_signups: 0, agent_fixes: 0, agent_blocked: 0, made: 0, published: 0,
+        ai_drafts: 0, ai_credits_free: 0, ai_credits_paid: 0, ai_tokens_free: 0, ai_tokens_paid: 0, paid_by: {}, revenue: {} };
       days.forEach(function (d) {
         for (var k in t) if (typeof t[k] === "number") t[k] += d[k] || 0;
         for (var p in d.paid_by) t.paid_by[p] = (t.paid_by[p] || 0) + d.paid_by[p];
@@ -870,6 +913,8 @@
           line("Churned", t.churned) +
           line("Agent signups", t.agent_signups + (t.agent_keys > t.agent_signups ? ' <span class="muted">+' + (t.agent_keys - t.agent_signups) + " keys</span>" : "")) +
           line("Agent fixes", t.agent_fixes) +
+          line("Builder drafts", num(t.ai_drafts)) +
+          line("Credits free / paid", num(t.ai_credits_free) + " / " + num(t.ai_credits_paid)) +
           line("Components made", t.made) +
           line("Published", t.published) +
           "</dl></div>";
@@ -897,7 +942,7 @@
       var cell = function (n, extra) { return '<td class="num tnum' + (n ? "" : " zero") + (extra ? " " + extra : "") + '">' + (n || "0") + "</td>"; };
       html += '<div class="table-wrap"><table class="day-table"><thead><tr>' +
         '<th>Day</th><th class="num">New</th><th class="num">Free</th><th>New paying</th><th class="num">Revenue</th><th class="num">Renewals</th><th class="num">Churned</th>' +
-        '<th class="num col-agentday">Agent signups</th><th class="num col-agentday">Agent fixes</th><th class="num col-agentday">Agent active</th><th class="num">Made</th><th class="num">Published</th></tr></thead><tbody>' +
+        '<th class="num col-agentday">Agent signups</th><th class="num col-agentday">Agent fixes</th><th class="num col-agentday">Agent active</th><th class="num">Made</th><th class="num">Published</th><th class="num">Drafts</th><th class="num" title="Builder credits used, free + paid">Credits</th></tr></thead><tbody>' +
         days.map(function (d, i) {
           return '<tr data-day="' + esc(d.date) + '"' + (i === 0 ? ' class="is-today"' : "") + ' title="Show who joined this day">' +
             "<td>" + esc(i === 0 ? "Today" : i === 1 ? "Yesterday" : fmtDate(d.date, true)) + "</td>" +
@@ -906,7 +951,9 @@
             '<td class="num tnum' + (paidText(d.revenue) ? "" : " zero") + '">' + esc(paidText(d.revenue) || "$0") + "</td>" +
             cell(d.renewals) + cell(d.churned) +
             cell(d.agent_signups, "col-agentday") + cell(d.agent_fixes, "col-agentday") + cell(d.agent_active, "col-agentday") +
-            cell(d.made) + cell(d.published) +
+            cell(d.made) + cell(d.published) + cell(d.ai_drafts) +
+            '<td class="num tnum' + (d.ai_credits_free + d.ai_credits_paid ? "" : " zero") + '" title="' + esc("free " + num(d.ai_credits_free) + " (" + tok(d.ai_tokens_free) + " tokens), paid " + num(d.ai_credits_paid) + " (" + tok(d.ai_tokens_paid) + " tokens)") + '">' +
+              num(d.ai_credits_free + d.ai_credits_paid) + "</td>" +
             "</tr>";
         }).join("") + "</tbody></table></div>";
       el.innerHTML = html;
@@ -921,6 +968,7 @@
       var daily = v === "daily";
       $("daily-view").hidden = !daily;
       $("agent-band").hidden = daily;
+      $("builder-band").hidden = daily;
       $("people-toolbar").hidden = daily;
       $("people-body").hidden = daily;
       $("export-btn").hidden = daily;
@@ -933,7 +981,7 @@
         '<button type="button" id="day-clear" aria-label="Clear day filter"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></span>';
       $("day-clear").addEventListener("click", function () { state.day = null; renderDayFilter(); renderRows(); });
     }
-    function render() { renderStats(); renderAgent(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); }
+    function render() { renderStats(); renderAgent(); renderBuilder(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); }
     function select(email) {
       state.selected = state.selected === email ? null : email;
       document.querySelectorAll("#rows tr").forEach(function (tr) { tr.classList.toggle("selected", tr.getAttribute("data-email") === state.selected); });
@@ -943,7 +991,9 @@
     /* ─── CSV ───────────────────────────────────────────────── */
     function exportCsv() {
       var cols = ["name", "email", "company", "company_source", "plan", "plan_detail", "seats", "paid", "first_paid", "last_paid", "created_at", "last_sign_in", "country", "account", "abandoned_checkout", "stripe_customers",
-        "agent_key", "agent_plan", "agent_source", "agent_fixes", "agent_fixes_month", "agent_fixes_prev_month", "agent_fixes_total", "agent_last_used"];
+        "agent_key", "agent_plan", "agent_source", "agent_fixes", "agent_fixes_month", "agent_fixes_prev_month", "agent_fixes_total", "agent_last_used",
+        "builder_drafts", "builder_credits", "builder_tokens_in", "builder_tokens_out", "components_made", "components_live"];
+      var CM = { builder_drafts: "drafts", builder_credits: "credits", builder_tokens_in: "tokens_in", builder_tokens_out: "tokens_out", components_made: "made", components_live: "live" };
       var AG = { agent_key: "key", agent_plan: "plan", agent_source: "source", agent_fixes_month: "fixes_month", agent_fixes_prev_month: "fixes_prev_month", agent_fixes_total: "fixes_total", agent_last_used: "last_used" };
       var cell = function (v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
       var lines = [cols.join(",")].concat(visible().map(function (p) {
@@ -952,6 +1002,7 @@
           if (c === "stripe_customers") return cell((p.stripe_customers || []).join(" "));
           if (c === "agent_fixes") return cell(fixCount(p) || "");
           if (AG[c]) return cell(p.agent ? p.agent[AG[c]] : "");
+          if (CM[c]) return cell(p.community ? p.community[CM[c]] : "");
           return cell(p[c]);
         }).join(",");
       }));
