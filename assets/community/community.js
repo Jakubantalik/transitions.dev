@@ -1221,7 +1221,7 @@
     quota_exceeded: "You have used this month’s AI drafts. They reset on the 1st.",
     capacity: "AI drafts are busy today. Try again tomorrow.",
     out_of_credits: "You're out of AI credits for this month. They renew on the 1st, or get Pro for more.",
-    free_capacity: "Free AI credits are used up for today. Try again tomorrow, or get Pro.",
+    free_capacity: "The free Builder is at capacity right now, so free drafts are paused for a while. Your own credits are untouched. Try again later, or get Pro.",
     agent_pro: "The Opus agent needs a Pro or Business subscription.",
     invalid_x_handle: "That X handle doesn't look right. Use your @name, up to 15 letters, numbers or underscores.",
     busy: "The AI is busy right now. Try again in a minute.",
