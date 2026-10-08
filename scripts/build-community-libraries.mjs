@@ -351,14 +351,15 @@ const TRIGGERS = {
   "number-pop-in": ["number", "price", "pricing", "amount", "total", "count", "counter", "balance", "score", "stat", "value", "percent", "$", "€", "monthly", "yearly", "annual", "billing"],
   "notification-badge": ["badge", "notification", "unread", "bell", "dot"],
   "text-states-swap": ["text", "label", "status", "change", "swap", "switch", "state", "price", "pricing", "monthly", "yearly", "billing", "loading", "done", "tab"],
-  "menu-dropdown": ["dropdown", "menu", "popover", "select", "options", "more"],
+  "menu-dropdown": ["dropdown", "menu", "popover", "select", "options", "more", "3 dot", "3-dot", "three dot", "three-dot", "dots", "kebab", "overflow", "actions"],
   "modal": ["modal", "dialog", "popup", "overlay", "lightbox", "sheet"],
   "panel-reveal": ["panel", "drawer", "sidebar", "slide in", "slide-in", "bottom sheet", "reveal"],
   // Tab panels are pages too: switching tabs slides the content side by side.
   "page-side-by-side": ["page", "pages", "step", "steps", "wizard", "onboarding", "list detail", "navigate", "back", "tab", "tabs", "tab panel", "tabpanel", "panels", "screen", "screens", "view", "views", "segmented", "switch between"],
   "icon-swap": ["icon", "hamburger", "close", "play", "pause", "copy", "check", "toggle icon"],
   "success-check": ["success", "check", "done", "complete", "confirm", "paid", "uploaded"],
-  "avatar-group-hover": ["avatar", "avatars", "stack", "chips", "group", "team"],
+  // People shown as faces: any stack of avatars is this recipe.
+  "avatar-group-hover": ["avatar", "avatars", "stack", "chips", "group", "team", "people", "person", "likes", "liked", "liked by", "attendees", "attending", "members", "guests", "participants", "contributors", "collaborators", "followers", "friends", "faces", "facepile"],
   "error-state-shake": ["error", "invalid", "wrong", "shake", "validation", "required", "email", "password", "sign in", "log in", "login", "invite", "verification code", "form"],
   "input-clear-dissolve": ["clear", "search", "input", "field", "reset"],
   "skeleton-reveal": ["skeleton", "loading", "placeholder", "load"],
