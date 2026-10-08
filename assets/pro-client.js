@@ -728,6 +728,32 @@
     });
   }
 
+  // Pro cards' Remix (a[data-pro-remix]): opens the Pro recipe in the Studio
+  // (studio.html?lib=pro:<id>) for Pro members; for everyone else it stays
+  // greyed out with a "Pro only" tooltip, and a click does nothing.
+  function paintProRemix() {
+    document.querySelectorAll("a[data-pro-remix]").forEach(function (a) {
+      var tt = a.querySelector(".tt-text");
+      if (state.pro) {
+        a.href = "studio.html?lib=pro:" + encodeURIComponent(a.getAttribute("data-pro-remix"));
+        a.removeAttribute("aria-disabled");
+        if (tt) tt.textContent = "Remix";
+      } else {
+        a.removeAttribute("href");
+        a.setAttribute("aria-disabled", "true");
+        if (tt) tt.textContent = "Pro only";
+      }
+    });
+  }
+  function wireProRemix() {
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest ? e.target.closest('a[data-pro-remix][aria-disabled="true"]') : null;
+      if (a) e.preventDefault();
+    });
+    document.addEventListener("pro:me", paintProRemix);
+    paintProRemix();
+  }
+
   // ── Sign-in modal ──────────────────────────────────────────────────────────
   // Minimal, reusable email → magic-link dialog (placeholder styling; restyle later).
   // Replaces the old prompt()/alert() flow. Injected once, reused across pages.
@@ -1608,6 +1634,7 @@
     }
     mountProBadges();
     wireProCopy();
+    wireProRemix();
     wireFeedback();
     refreshMe();
     refreshGeo();

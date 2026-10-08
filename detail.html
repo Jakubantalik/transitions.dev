@@ -7054,9 +7054,9 @@
               <button type="button" class="proto-modal-tab" role="tab" data-detail-tab="react" aria-selected="false">React</button>
             </div>
             <div class="detail-actions">
-            <!-- Free transitions only: opens the transition in the Builder
-                 as a new component to remix. -->
-            <a class="detail-prompt detail-remix" id="detail-remix" href="builder.html" hidden>
+            <!-- Free transitions only: opens the transition in the Studio
+                 (the Builder app) as a new component to remix. -->
+            <a class="detail-prompt detail-remix" id="detail-remix" href="studio.html" hidden>
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></svg>
               Remix
             </a>
@@ -14118,7 +14118,7 @@ export function Surface({ open, children }) {
             var remixEl = document.getElementById("detail-remix");
             if (remixEl) {
               remixEl.hidden = !!it.pro || !it.key;
-              remixEl.href = "builder.html?remix=" + encodeURIComponent(it.slug);
+              remixEl.href = "studio.html?lib=" + encodeURIComponent(it.slug);
             }
             // Flag the stage so the dedicated corner Pro badge shows only
             // for Pro transitions.
@@ -17156,7 +17156,7 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: unlocks Pro code for entitled viewers (fires pro:me). -->
-  <script src="assets/pro-client.js?v=62" defer></script>
+  <script src="assets/pro-client.js?v=63" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
   <script src="assets/nav-products.js?v=7" defer></script>
 </body>

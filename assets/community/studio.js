@@ -868,7 +868,56 @@
   }
 
   // ── Library (remix a transition) ────────────────────────────────────────────
+  // A Pro transition (?lib=pro:<id>): its recipe comes from the API, for Pro
+  // members only, and its code blocks become the component: the HTML usage,
+  // the tunable variables and CSS (plus a dark mode block when there is one),
+  // and every JS block (the code, then its "wire it up" call).
+  function recipeComponent(md) {
+    var html = "", css = [], js = [], section = "";
+    var re = /^## (.*)$|^```(\w+)\n([\s\S]*?)^```/gm, m;
+    while ((m = re.exec(md))) {
+      if (m[1] !== undefined) { section = m[1].trim().toLowerCase(); continue; }
+      var lang = m[2], code = m[3].replace(/\s+$/, "");
+      if (lang === "html" && !html && section.indexOf("html") === 0) html = code;
+      else if (lang === "css" && /^(tunable|css$|dark mode)/.test(section)) css.push(code);
+      else if (lang === "js" && /^(js|javascript)$/.test(section)) js.push(code);
+    }
+    var code = js.join("\n\n");
+    // "Real use" lines call the app's own work (saveTask(), generateImage()).
+    // Each such function the recipe never defines gets a stand-in that
+    // finishes after 1.5s, so the demo plays instead of throwing.
+    // Only unindented calls: inside functions, a bare call is a parameter
+    // (fn()) or a method (destroy() {), never the app's own work.
+    var stubs = [], seen = {}, call = /^([A-Za-z_$][\w$]*)\([^)]*\)\s*(\.then\b|;)/gm, c;
+    while ((c = call.exec(code))) {
+      var name = c[1];
+      if (seen[name] || typeof window[name] !== "undefined") continue;
+      seen[name] = true;
+      var declared = new RegExp("(function\\s+|(const|let|var)\\s+)" + name + "\\b|\\b" + name + "\\s*=[^=]").test(code);
+      if (!declared) stubs.push("function " + name + "() { return new Promise(function (done) { setTimeout(done, 1500); }); }");
+    }
+    if (stubs.length) code = "// Stand-ins for your app's own work, so the demo plays.\n" + stubs.join("\n") + "\n\n" + code;
+    var title = (md.match(/^# (.+)$/m) || [])[1] || "Pro transition";
+    return { title: title.replace(/\s*\(Pro\)\s*$/i, ""), html: html, css: css.join("\n\n"), js: code };
+  }
+  function startFromPro(id) {
+    var TP = window.TransitionsPro;
+    if (!TP || !TP.fetchContent) { C.toast("That transition is not available to remix.", "err"); return Promise.resolve(false); }
+    return TP.fetchContent(id, "css").then(function (md) {
+      var t = recipeComponent(md);
+      if (!t.html) throw new Error("no html");
+      apply({ mode: "html", title: t.title + " remix", html: t.html, css: t.css, js: t.js }, { asNew: true, remix: { kind: "library", id: id, title: t.title } });
+      history.replaceState(null, "", "studio.html");
+      markDirty();
+      return true;
+    }, function (e) {
+      C.toast(e && (e.status === 401 || e.status === 403) ? "Remixing Pro transitions needs Pro." : "That transition is not available to remix.", "err");
+      return false;
+    });
+  }
+
   function startFromLibrary(slug) {
+    if (/^pro:/.test(slug)) return startFromPro(slug.slice(4));
     return C.library().then(function (items) {
       var t = items.filter(function (x) { return x.slug === slug; })[0];
       if (!t) { C.toast("That transition is not available to remix.", "err"); return false; }
@@ -2721,7 +2770,7 @@
       // A reload of an older ?lib= link keeps the draft made from that card.
       var draft = null;
       try { draft = JSON.parse(localStorage.getItem(SCRATCH_KEY) || "null"); } catch (e) {}
-      if (draft && draft.remix && draft.remix.kind === "library" && draft.remix.id === lib) {
+      if (draft && draft.remix && draft.remix.kind === "library" && draft.remix.id === lib.replace(/^pro:/, "")) {
         startNew(null, true);
         history.replaceState(null, "", "studio.html");
       } else {
