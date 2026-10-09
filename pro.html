@@ -6033,7 +6033,7 @@ description: Production-ready CSS
             <span class="t-acc-chevron" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg></span>
           </button>
           <div class="t-acc-panel"><div class="t-acc-panel-inner">
-            <p><strong>Free</strong> is the open library, the free skill, and the Free Motion Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $12/mo, a single seat with the full Pro library, and includes the Free Motion Agent. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $12/mo) plus the Full Motion Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase for Pro, $149 for a single seat, covering the library forever (the Free Motion Agent included); the Full Motion Agent stays subscription-only because every fix runs on live AI, so Business has no lifetime option. Every plan includes the <strong>Builder</strong>, with AI credits each month for building and editing components: 100 on Free, 600 on Pro (or 1,200 for $22/mo and 2,500 for $42/mo), and 900 per seat on Business (or 1,200 per seat for $89/mo and 2,500 per seat for $159/mo, with extra seats at $22 and $42). Lifetime includes 2,000 credits once, then the Free allowance.</p>
+            <p><strong>Free</strong> is the open library, the free skill, and the Free Motion Agent: unlimited motion scans plus 10 hosted polish fixes a month, no card needed. <strong>Pro</strong> is $12/mo, a single seat with the full Pro library, and includes the Free Motion Agent. <strong>Business</strong> is $59/mo: 5 Pro seats for one organization (each seat beyond 5 is an extra $12/mo) plus the Full Motion Agent, with 200 hosted fixes a month, both polish and revamp modes, and the GitHub pull-request gate. Prefer to pay once? <strong>Lifetime</strong> is a one-time purchase for Pro, $149 for a single seat, covering the library forever (the Free Motion Agent included); the Full Motion Agent stays subscription-only because every fix runs on live AI, so Business has no lifetime option. Every plan includes the <strong>Builder</strong>, with AI credits each month for building and editing components: 100 on Free, 600 on Pro (or 1,200 for $22/mo and 2,500 for $42/mo), and 900 per seat on Business (or 1,200 per seat for $89/mo and 2,500 per seat for $159/mo, with extra seats at $22 and $42). Lifetime includes 3,000 credits once, then the Free allowance.</p>
           </div></div>
         </div>
 
@@ -6847,8 +6847,8 @@ description: Production-ready CSS
       };
       var BASE = { solo: 600, team: 900 };
       var credits = { solo: 600, team: 900 };
-      // Lifetime Pro: 2,000 credits once (then Free's 100 a month).
-      var LIFETIME = { label: "2,000", n: 2000 };
+      // Lifetime Pro: 3,000 credits once (then Free's 100 a month).
+      var LIFETIME = { label: "3,000", n: 3000 };
       function paintCredits(animate) {
         ["solo", "team"].forEach(function (plan) {
           var card = document.querySelector('[data-plan-card="' + plan + '"]');
