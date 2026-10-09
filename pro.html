@@ -6702,6 +6702,9 @@ description: Production-ready CSS
           digitsEl.className = "p9-digits";
           el.appendChild(digitsEl);
         }
+        // Same number: nothing to pop.
+        var liveNow = Array.prototype.map.call(digitsEl.querySelectorAll(":scope > .p9-char"), function (n) { return n.textContent; }).join("");
+        if (liveNow === digits) return false;
 
         var cs = getComputedStyle(el);
         var dur = parseFloat(cs.getPropertyValue("--p9-dur")) || 500;
@@ -6937,14 +6940,21 @@ description: Production-ready CSS
       });
       paintCredits(false);
       // pro-client.js starts a subscriber's card on their own tier and interval.
+      // These start the page on a subscriber's own tier and interval once
+      // their account loads: the page settling into place, not a change the
+      // visitor made, so nothing pops.
+      function quietly(fn) {
+        var was = priceReady;
+        priceReady = false;
+        try { fn(); } finally { priceReady = was; }
+      }
       window.TDevPricing = {
         setCredits: function (plan, n) {
           if (!CREDIT_TIERS[plan] || !CREDIT_TIERS[plan][n]) return;
           credits[plan] = n;
-          paintCredits(false);
-          renderPrice();
+          quietly(function () { paintCredits(false); renderPrice(); });
         },
-        setBilling: function (b) { if (b !== curBilling) setBilling(b); }
+        setBilling: function (b) { if (b !== curBilling) quietly(function () { setBilling(b); }); }
       };
       billingOpts.forEach(function (o) {
         o.addEventListener("click", function () { setBilling(o.getAttribute("data-billing-opt")); });
