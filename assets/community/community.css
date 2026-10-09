@@ -2162,6 +2162,7 @@ html[data-theme="dark"] .ctl-cubic-cell:focus-within { box-shadow: inset 0 0 0 1
 html[data-theme="dark"] .st-lib-ico img.is-light, html:not([data-theme="dark"]) .st-lib-ico img.is-dark { display: none; }
 .st-pop-ico { width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 7px; background: var(--pg-control-bg); color: inherit; }
 .st-pop-ico svg { width: 15px; height: 15px; }
+.st-pop-ico svg.st-logo { width: 13px; height: 14.66px; }
 .st-pop-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .st-pop-main b { font-weight: 400; font-size: 13px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .st-pop-main span { font-size: 11px; line-height: 14px; color: #8b8b8b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

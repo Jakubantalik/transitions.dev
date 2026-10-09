@@ -1065,13 +1065,13 @@
   // Builder's library dialogs.
   var LIB_SVG = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">';
   var LIB_ICONS = {
-    beam: LIB_SVG + '<rect x="2.5" y="2.5" width="11" height="11" rx="3"/><path d="M9 2.5h1.5a3 3 0 0 1 3 3V7" stroke-width="2.2"/></svg>',
-    orbs: LIB_SVG + '<circle cx="8" cy="8" r="5" stroke-dasharray="0.1 2.6" stroke-width="1.8"/></svg>',
-    gooey: LIB_SVG + '<circle cx="5.5" cy="8" r="3"/><circle cx="10.5" cy="8" r="3"/></svg>',
+    beam: LIB_SVG + '<rect x="2.5" y="2.5" width="11" height="11" rx="3"/></svg>',
+    orbs: LIB_SVG + '<circle cx="8" cy="8" r="5" pathLength="8" stroke-dasharray="0 1" stroke-width="2"/></svg>',
+    gooey: LIB_SVG + '<path d="M13.96 7.42L13.79 6.73L13.56 6.20L13.24 5.72L12.83 5.29L12.40 4.98L11.77 4.70L10.71 4.57L9.92 4.73L9.25 5.05L8.76 5.44L7.86 6.49L7.32 6.74L6.58 6.59L5.74 5.83L5.10 5.51L4.22 5.41L3.58 5.57L2.91 5.97L2.39 6.60L2.10 7.28L2.00 8.18L2.17 9.03L2.56 9.75L3.13 10.29L3.77 10.60L4.62 10.69L5.18 10.56L5.76 10.25L6.59 9.44L6.93 9.28L7.23 9.26L7.61 9.35L7.88 9.54L8.69 10.50L9.32 10.99L10.19 11.36L11.16 11.43L11.77 11.30L12.40 11.02L12.81 10.73L13.32 10.18L13.67 9.58L13.94 8.76L14.00 8.25L13.96 7.42Z"/></svg>',
     voice: LIB_SVG + '<path d="M3 7v2M5.5 5v6M8 3v10M10.5 5v6M13 7v2"/></svg>',
     bots: LIB_SVG + '<rect x="3" y="4.5" width="10" height="8" rx="2.5"/><path d="M8 2.5v2"/><circle cx="6" cy="8.5" r=".6" fill="currentColor"/><circle cx="10" cy="8.5" r=".6" fill="currentColor"/></svg>',
     metal: LIB_SVG + '<path d="M8 2.5c2.3 3 3.8 5 3.8 7a3.8 3.8 0 0 1-7.6 0c0-2 1.5-4 3.8-7Z"/><path d="M6.4 10.2a1.7 1.7 0 0 0 1.4 1.4"/></svg>',
-    image: LIB_SVG + '<rect x="2.5" y="3" width="11" height="10" rx="2"/><circle cx="6" cy="6.5" r="1"/><path d="m3 11.5 3-3 2.5 2.5 1.5-1.5 2.5 2.5"/></svg>',
+    image: LIB_SVG + '<rect x="2" y="2" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="5.2" y="2" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none" opacity=".35"/><rect x="8.4" y="2" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="11.6" y="2" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="2" y="5.2" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="5.2" y="5.2" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="8.4" y="5.2" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="11.6" y="5.2" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none" opacity=".35"/><rect x="2" y="8.4" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none" opacity=".35"/><rect x="5.2" y="8.4" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="8.4" y="8.4" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none" opacity=".35"/><rect x="11.6" y="8.4" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="2" y="11.6" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="5.2" y="11.6" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none" opacity=".35"/><rect x="8.4" y="11.6" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/><rect x="11.6" y="11.6" width="2.4" height="2.4" rx=".6" fill="currentColor" stroke="none"/></svg>',
   };
 
   function pickLibrary() {

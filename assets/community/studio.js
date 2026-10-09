@@ -1187,7 +1187,8 @@
   var ICON_COPY = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.8" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 3.5v-.3A1.2 1.2 0 0 0 9.3 2H3.2A1.2 1.2 0 0 0 2 3.2v6.1a1.2 1.2 0 0 0 1.2 1.2h.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
   var ICON_EXT = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M11.5 9.5v2.5a1.5 1.5 0 0 1-1.5 1.5H4a1.5 1.5 0 0 1-1.5-1.5V6A1.5 1.5 0 0 1 4 4.5h2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var ICON_SPARK = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5l1.3 3.2 3.2 1.3-3.2 1.3L8 11.5 6.7 8.3 3.5 7l3.2-1.3L8 2.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M12.5 11v3M11 12.5h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
-  var ICON_STAR = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M7.5 2.3c.2-.4.8-.4 1 0l1.4 2.9 3.2.5c.5.1.7.6.3 1l-2.3 2.2.5 3.2c.1.5-.4.8-.8.6L8 11.2l-2.9 1.5c-.4.2-.9-.1-.8-.6l.5-3.2L2.6 6.7c-.4-.4-.2-.9.3-1l3.2-.5 1.4-2.9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+  // The Transitions logo, for the Transitions skills.
+  var ICON_LOGO = '<svg class="st-logo" viewBox="0 0 18 20.2947" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 0L12.5409 1.99176L11.5604 3.73491L10 2.8572V5.14735H8V2.8572L6.43962 3.73491L5.45909 1.99176L9 0ZM14.3613 3.01571L18 5.0625V9.14735H16V7.3794L14.0359 8.51337L13.0359 6.78132L14.9804 5.65867L13.3807 4.75886L14.3613 3.01571ZM4.61925 4.75887L3.01961 5.65867L4.9641 6.78132L3.9641 8.51337L2 7.3794L2 9.14735H0L1.54972e-06 5.0625L3.63873 3.01572L4.61925 4.75887ZM2 11.1473V12.9153L3.9641 11.7813L4.9641 13.5134L3.01961 14.636L4.61925 15.5358L3.63873 17.279L3.57628e-07 15.2322V11.1473H2ZM18 11.1473V15.2322L14.3613 17.279L13.3807 15.5358L14.9804 14.636L13.0359 13.5134L14.0359 11.7813L16 12.9153V11.1473H18ZM10 15.1473V17.4375L11.5604 16.5598L12.5409 18.3029L9 20.2947L5.45908 18.3029L6.43961 16.5598L8 17.4375V15.1473H10Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0981 9.51337L10 10.7247V13.1474H8V10.7247L5.90192 9.51337L6.90192 7.78132L9 8.99265L11.0981 7.78132L12.0981 9.51337Z" fill="currentColor"/></svg>';
   // Library glyphs: flat, one colour, same box as the skill rows.
   var LIB_ICONS = C.LIB_ICONS;
   var ICON_PLUS = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16" style="margin-right:8px;flex:none"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
@@ -1219,11 +1220,11 @@
     skillsMenu.innerHTML =
       '<p class="tl-menu-group">Skills the agent follows with every request</p>' +
       BUILTINS.map(function (b) {
-        return '<div class="tl-menu-item st-pop-row" data-skill="' + b.id + '"><span class="st-pop-ico">' + (b.id === "builtin" ? ICON_BOOK : ICON_SPARK) + "</span>" +
+        return '<div class="tl-menu-item st-pop-row" data-skill="' + b.id + '"><span class="st-pop-ico">' + (b.id === "builtin" ? ICON_LOGO : ICON_SPARK) + "</span>" +
           '<span class="st-pop-main"><b>' + b.name + "</b><span>" + b.sub + "</span></span>" +
           sw(skillOn(b.id), "Use the " + b.name + " skill") + "</div>";
       }).join("") +
-      '<div class="tl-menu-item st-pop-row' + (hasPro ? "" : " is-locked") + '" data-skill="pro"><span class="st-pop-ico">' + ICON_STAR + "</span>" +
+      '<div class="tl-menu-item st-pop-row' + (hasPro ? "" : " is-locked") + '" data-skill="pro"><span class="st-pop-ico">' + ICON_LOGO + "</span>" +
         '<span class="st-pop-main"><b>Transitions Pro</b><span>' + (hasPro ? "Built in: every Pro transition recipe" : "For Pro and Business plans") + "</span></span>" +
         (hasPro ? "" : '<a class="st-pop-badge" href="pro.html">Get Pro</a>') +
         '<button type="button" class="st-check" role="menuitemcheckbox" aria-checked="' + proOn() + '"' + (hasPro ? "" : " disabled") +
