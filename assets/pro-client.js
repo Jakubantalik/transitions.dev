@@ -977,6 +977,14 @@
               "err");
             return;
           }
+          if (data && (data.error === "email_ascii" || data.error === "email_undeliverable" || data.error === "invalid_email")) {
+            input.classList.add("is-error");
+            shake(input);
+            setModalNote(note, data.error === "email_ascii"
+              ? "We can’t send email to an address with accented or non-Latin letters before the @. Please use another address."
+              : "That email address doesn’t look right. Please check it.", "err");
+            return;
+          }
           if (data && data.error) {
             setModalNote(note, "Couldn’t send the code. Please try again.", "err");
             return;
