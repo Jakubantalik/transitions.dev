@@ -4614,7 +4614,8 @@
     .plan-modal [data-cmp-panel] { display: none; }
     .plan-modal[data-show="agent"] [data-cmp-panel="agent"],
     .plan-modal[data-show="skill"] [data-cmp-panel="skill"],
-    .plan-modal[data-show="builder"] [data-cmp-panel="builder"] { display: block; }
+    .plan-modal[data-show="builder"] [data-cmp-panel="builder"],
+    .plan-modal[data-show="library"] [data-cmp-panel="library"] { display: block; }
 
     /* Business has no lifetime: under the Lifetime toggle its card dims and
        the CTA goes inert instead of quietly selling the monthly plan. */
@@ -5679,6 +5680,7 @@
               <button type="button" class="plan-pill plan-pill--builder" data-cmp="builder">Free Builder<span class="plan-credits-static">100 credits/mo</span></button>
             </div>
             <div class="pro-plan-pills pro-plan-pills--rest">
+              <button type="button" class="plan-pill" data-cmp="library">Free library</button>
               <button type="button" class="plan-pill" data-cmp="skill">Free skill</button>
               <button type="button" class="plan-pill" data-cmp="agent">Free Motion Agent</button>
             </div>
@@ -5710,6 +5712,7 @@
                 </span></span></span>
             </div>
             <div class="pro-plan-pills pro-plan-pills--rest">
+              <button type="button" class="plan-pill plan-pill--accent" data-cmp="library">Pro library</button>
               <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
               <button type="button" class="plan-pill" data-cmp="agent">Free Motion Agent</button>
             </div>
@@ -5743,6 +5746,7 @@
                 </span></span></span>
             </div>
             <div class="pro-plan-pills pro-plan-pills--rest">
+              <button type="button" class="plan-pill plan-pill--accent" data-cmp="library">Pro library</button>
               <button type="button" class="plan-pill plan-pill--accent" data-cmp="skill">Pro skill</button>
               <button type="button" class="plan-pill plan-pill--accent" data-cmp="agent">Full Motion Agent</button>
             </div>
@@ -5808,6 +5812,18 @@
             <tr><td>Motion controls for every transition</td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td></tr>
           </table>
           <p class="plan-modal-note">Full Builder comes with the Pro and Business plans (900 credits per seat on Business). Try it in the <a href="/builder.html">Builder</a>.</p>
+        </div>
+        <div data-cmp-panel="library">
+          <table class="plan-cmp">
+            <tr><th></th><th>Free library</th><th>Pro library</th></tr>
+            <tr><td>Transitions</td><td>Core set</td><td>All 43+</td></tr>
+            <tr><td>Pro transitions, like Gooey plus menu and Smoky dissolve</td><td class="cmp-no">&#8212;</td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td></tr>
+            <tr><td>Code</td><td>Copy-ready snippets</td><td>CSS, React and TypeScript recipes</td></tr>
+            <tr><td>Remix in the Builder</td><td>Core set</td><td>Every transition</td></tr>
+            <tr><td>Every future transition</td><td class="cmp-no">&#8212;</td><td class="cmp-yes"><span class="cmp-check" role="img" aria-label="Included"><svg viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span></td></tr>
+            <tr><td>License</td><td>MIT core transitions</td><td>Commercial, unlimited projects</td></tr>
+          </table>
+          <p class="plan-modal-note">Pro library comes with the Pro and Business plans. Browse it in the <a href="/library.html">Library</a>.</p>
         </div>
         <div data-cmp-panel="skill">
           <table class="plan-cmp">
@@ -7086,7 +7102,8 @@ description: Production-ready CSS
       function open(kind, trigger) {
         lastTrigger = trigger || null;
         modal.setAttribute("data-show", kind);
-        if (title) title.textContent = kind === "skill" ? "Free skill vs Pro skill" : kind === "builder" ? "Free Builder vs Full Builder" : "Free Motion Agent vs Full Motion Agent";
+        if (title) title.textContent = kind === "skill" ? "Free skill vs Pro skill" : kind === "builder" ? "Free Builder vs Full Builder"
+          : kind === "library" ? "Free library vs Pro library" : "Free Motion Agent vs Full Motion Agent";
         overlay.setAttribute("data-open", "");
         modal.classList.remove("is-closing");
         overlay.classList.remove("is-closing");
