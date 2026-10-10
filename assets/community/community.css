@@ -543,6 +543,8 @@ html[data-theme="dark"] {
 .cm-feed { width: 100%; max-width: 1008px; margin: 64px auto 0; }
 .cm-feed-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 20px; }
 .cm-feed-head h2 { margin: 0; font: 500 16px/20px var(--font-sans); color: var(--text); }
+/* Phones: just "Components", so the heading and the sort tabs share one row. */
+@media (max-width: 639px) { .cm-feed-title-more { display: none; } }
 .cm-feed .cards { justify-content: start; }
 .cm-more { display: flex; justify-content: center; margin-top: 28px; }
 .cm-empty {
