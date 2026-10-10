@@ -225,6 +225,13 @@
     .err-where { font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
     .err-count { color: var(--err-fg); }
 
+    /* Libraries.dev view: Studio column instead of the transitions.dev ones. */
+    .col-studio { display: none; }
+    table.is-libraries .col-studio { display: table-cell; }
+    table.is-libraries .col-agent, table.is-libraries .col-fixes, table.is-libraries .col-community,
+    table.is-libraries .col-errors, table.is-libraries .col-builder { display: none; }
+    .product-seg { margin-right: 4px; }
+
     /* Range picker in the header: the Refine tool's select. */
     .range-select {
       appearance: none; -webkit-appearance: none; height: 32px; border: none; border-radius: 8px; cursor: pointer;
@@ -413,6 +420,7 @@
       </label>
       <p class="note-err" id="gate-err" role="status" hidden></p>
       <button type="submit" class="btn-primary" id="gate-btn">Open</button>
+      <button type="button" class="btn-ghost" id="gate-back" hidden style="align-self:center">Back to Transitions.dev</button>
     </form>
   </div>
 
@@ -421,8 +429,12 @@
     <section class="crm-panel">
       <header class="crm-head">
         <div class="crm-title">
-          <h1>Customers</h1>
+          <h1 id="crm-h1">Customers</h1>
           <p id="subtitle">Loading…</p>
+        </div>
+        <div class="seg product-seg" id="product-seg" role="tablist" aria-label="Product">
+          <button type="button" role="tab" class="seg-btn is-active" data-product="transitions" aria-selected="true">Transitions</button>
+          <button type="button" role="tab" class="seg-btn" data-product="libraries" aria-selected="false">Libraries</button>
         </div>
         <select class="range-select" id="range" aria-label="Joined within">
           <option value="0">All time</option>
@@ -434,7 +446,7 @@
         <div class="seg view-seg" id="view-seg" role="tablist" aria-label="View">
           <button type="button" role="tab" class="seg-btn is-active" data-view="people" aria-selected="true">People</button>
           <button type="button" role="tab" class="seg-btn" data-view="daily" aria-selected="false">Daily</button>
-          <button type="button" role="tab" class="seg-btn" data-view="errors" aria-selected="false">Errors</button>
+          <button type="button" role="tab" class="seg-btn" data-view="errors" aria-selected="false" id="errors-tab">Errors</button>
         </div>
         <button type="button" class="btn-sec" id="export-btn" title="Download the current view as CSV">
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5v7.5m0 0L5 7m3 3 3-3M3 12.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -458,6 +470,7 @@
       <div class="stats" id="stats"></div>
       <div id="agent-band"></div>
       <div id="builder-band"></div>
+      <div id="studio-band"></div>
       <div id="daily-view" hidden></div>
       <div id="errors-view" hidden></div>
 
@@ -485,6 +498,7 @@
                 <th data-sort="builder_credits" class="num col-builder" title="Builder credits spent (1 credit = $0.01 of AI)">Credits<span class="arrow"></span></th>
                 <th data-sort="builder_last" class="col-builder" title="Last Builder draft or component">Last used<span class="arrow"></span></th>
                 <th data-sort="community" class="col-community" title="Community components and Builder drafts">Community<span class="arrow"></span></th>
+                <th data-sort="studio" class="col-studio" title="Studio agent requests and AI spend this month">Studio<span class="arrow"></span></th>
                 <th data-sort="errors" class="num col-errors" title="Errors in the last 30 days (Builder and Motion Agent)">Errors<span class="arrow"></span></th>
                 <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
                 <th data-sort="created" class="col-signup">Joined<span class="arrow"></span></th>
@@ -517,10 +531,21 @@
   <script>
   (function () {
     "use strict";
-    var API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://localhost:8787" : "https://api.transitions.dev";
+    var LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    // Two products, one page: each has its own API and admin token (a
+    // Libraries.dev token falls back to the transitions.dev one).
+    var PRODUCTS = {
+      transitions: { label: "Transitions.dev", api: LOCAL ? "http://localhost:8787" : "https://api.transitions.dev" },
+      libraries: { label: "Libraries.dev", api: LOCAL ? "http://localhost:8790" : "https://api.libraries.dev" }
+    };
+    var product = (function () { try { return localStorage.getItem("tdev:crm-product") === "libraries" ? "libraries" : "transitions"; } catch (e) { return "transitions"; } })();
+    var API = PRODUCTS[product].api;
     var TOKEN_KEY = "tdev:admin-token";
+    function tokenKey() { return product === "libraries" ? "tdev:admin-token:libraries" : TOKEN_KEY; }
+    function loadToken() { return load(tokenKey()) || (product === "libraries" ? load(TOKEN_KEY) : null); }
     var PLAN_LABEL = { business: "Business", pro: "Pro", lifetime: "Lifetime", comp: "Comp", sponsor: "Sponsor", churned: "Churned", free: "Free" };
     var PLAN_ORDER = { business: 0, lifetime: 1, pro: 2, comp: 3, sponsor: 4, churned: 5, free: 6 };
+    var TR_ONLY_FILTERS = { agent: 1, "agent-fix": 1, makers: 1 };
     var FILTERS = [
       { id: "all", label: "All" },
       { id: "paying", label: "Paying" },
@@ -531,6 +556,7 @@
       { id: "agent", label: "Motion Agent" },
       { id: "agent-fix", label: "Agent fixes" },
       { id: "makers", label: "Makers" },
+      { id: "studio", label: "Studio" },
       { id: "free", label: "Free" }
     ];
     var PAYING = { business: 1, pro: 1, lifetime: 1, sponsor: 1 };
@@ -577,6 +603,7 @@
     var SRC_LABEL = { stripe: "from Stripe", team: "team name", domain: "email domain" };
     var KEY_SOURCE = { cli: "CLI signup", browser: "browser signup", account: "account page", purchase: "with a purchase" };
     // Anyone who used the Builder (even if every draft failed) or made a component.
+    function hasStudio(p) { var s = p.studio; return !!(s && (s.requests_month || s.requests_prev_month || s.lifetime_usd)); }
     function isMaker(p) { var c = p.community; return !!(c && (c.made || c.drafts || c.failed)); }
     function hasAgent(p) { return !!(p.agent && (p.agent.key || p.agent.last_used)); }
     // At least one hosted fix: this or last month's counter (from before the
@@ -605,7 +632,7 @@
     // The API answers from its saved copy at once; "stale" means a rebuild
     // has started on the server, and fresh=1 (refresh button) waits for one.
     function fetchCrm(token, fresh) {
-      return fetch(API + "/admin/crm?tz=" + new Date().getTimezoneOffset() + (fresh ? "&fresh=1" : ""), { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
+      return fetch(PRODUCTS[product].api + "/admin/crm?tz=" + new Date().getTimezoneOffset() + (fresh ? "&fresh=1" : ""), { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
         .then(function (r) {
           if (r.status === 403 || r.status === 401) throw new Error("forbidden");
           if (!r.ok) throw new Error("http " + r.status);
@@ -619,7 +646,9 @@
       clearTimeout(pollT);
       if (!tries) { state.data._stale = false; renderStats(); return; }
       pollT = setTimeout(function () {
+        var forProduct = product;
         fetchCrm(token).then(function (data) {
+          if (forProduct !== product || !state.data) return;
           if (data.generated_at === state.data.generated_at) return pollFresh(token, tries - 1);
           data._stale = false;
           state.data = data;
@@ -632,31 +661,37 @@
       $("gate").hidden = false;
       $("gate-err").hidden = !msg;
       $("gate-err").textContent = msg || "";
+      var gh = document.querySelector(".gate-card h1");
+      if (gh) gh.textContent = product === "libraries" ? "Libraries.dev CRM" : "Transitions CRM";
+      $("gate-back").hidden = product !== "libraries";
       $("gate-token").focus();
     }
     function open(token) {
       var btn = $("gate-btn");
       btn.disabled = true; btn.textContent = "Opening…";
+      var forProduct = product;
       return fetchCrm(token).then(function (data) {
-        store(TOKEN_KEY, token);
+        if (forProduct !== product) return;
+        store(tokenKey(), token);
         state.data = data;
         $("gate").hidden = true;
         $("app").hidden = false;
         render();
-        loadMod();
+        if (product === "transitions") loadMod();
         if (data._stale) pollFresh(token, 12);
       }).catch(function (e) {
-        showGate(e.message === "forbidden" ? "That token was not accepted." : "Could not reach the API. Try again.");
+        if (forProduct !== product) return;
+        showGate(e.message === "forbidden" ? "That " + PRODUCTS[product].label + " token was not accepted." : "Could not reach the API. Try again.");
       }).then(function () { btn.disabled = false; btn.textContent = "Open"; });
     }
     function refresh() {
-      var token = load(TOKEN_KEY);
+      var token = loadToken();
       if (!token) return showGate();
       var btn = $("refresh-btn");
       btn.classList.add("is-spinning");
       clearTimeout(pollT);
       fetchCrm(token, true).then(function (data) { state.data = data; render(); })
-        .catch(function (e) { if (e.message === "forbidden") { store(TOKEN_KEY, null); showGate("The saved token no longer works."); } })
+        .catch(function (e) { if (e.message === "forbidden") { store(tokenKey(), null); showGate("The saved token no longer works."); } })
         .then(function () { btn.classList.remove("is-spinning"); });
     }
 
@@ -685,7 +720,8 @@
         if (state.filter === "agent" && !hasAgent(p)) return false;
         if (state.filter === "agent-fix" && !hasAgentFix(p)) return false;
         if (state.filter === "makers" && !isMaker(p)) return false;
-        if (state.filter !== "all" && state.filter !== "paying" && state.filter !== "agent" && state.filter !== "agent-fix" && state.filter !== "makers" && p.plan !== state.filter) return false;
+        if (state.filter === "studio" && !hasStudio(p)) return false;
+        if (state.filter !== "all" && state.filter !== "paying" && state.filter !== "agent" && state.filter !== "agent-fix" && state.filter !== "makers" && state.filter !== "studio" && p.plan !== state.filter) return false;
         if (!q) return true;
         return [p.name, p.email, p.company, p.country, p.plan, p.community && p.community.handle].some(function (v) { return v && String(v).toLowerCase().indexOf(q) !== -1; });
       });
@@ -700,6 +736,7 @@
         builder_credits: function (p) { var c = p.community; return c ? (c.credits || 0) + (c.drafts || 0) / 1e4 : -1; },
         builder_last: function (p) { var c = p.community; return (c && c.last_at) || ""; },
         errors: function (p) { var e = p.errors; return e ? e.count * 1e3 + e.count_7d : 0; },
+        studio: function (p) { var s = p.studio; return s ? s.usd_month * 1e3 + s.requests_month + s.usd_prev_month / 1e3 : -1; },
         community: function (p) { var c = p.community; return c ? c.pending * 1e6 + c.live * 1e3 + c.made + c.drafts / 1e3 : -1; },
         agent: function (p) { var a = p.agent; return a ? (a.fixes_month * 1e6 + (a.fixes_total || 0) * 1e3 + (a.last_used ? 1 : 0) + (a.key ? 0.5 : 0)) : -1; },
         created: function (p) { return p.created_at || ""; },
@@ -776,6 +813,22 @@
           return '<div class="stat"><span class="stat-label">' + esc(c.label) + '</span><span class="stat-value">' + esc(c.value) + '</span><span class="stat-sub">' + esc(c.sub) + "</span></div>";
         }).join("") + "</div>";
     }
+    function renderStudio() {
+      var el = $("studio-band");
+      var s = state.data.studio;
+      if (!s) { el.innerHTML = ""; return; }
+      var cells = [
+        { label: "Studio users", value: num(s.users_month), sub: num(s.users_prev_month) + " last month" },
+        { label: "Requests", value: num(s.requests_month), sub: num(s.requests_prev_month) + " last month" },
+        { label: "AI spend this month", value: "$" + s.usd_month.toFixed(2), sub: "$" + s.usd_prev_month.toFixed(2) + " last month" },
+        { label: "Per user", value: s.users_month ? "$" + (s.usd_month / s.users_month).toFixed(2) : "·", sub: s.users_month ? num(Math.round(s.requests_month / s.users_month)) + " requests each, this month" : "no use this month" },
+        { label: "Spend counter", value: "$" + s.usd_total_pool_month.toFixed(2), sub: "all Studio spend this month" }
+      ];
+      el.innerHTML = '<div class="band-label"><strong>Libraries.dev Studio agent</strong><span>monthly counters: this and last month' + (s.truncated ? " · partial" : "") + "</span></div>" +
+        '<div class="stats stats--agent">' + cells.map(function (c) {
+          return '<div class="stat"><span class="stat-label">' + esc(c.label) + '</span><span class="stat-value">' + esc(c.value) + '</span><span class="stat-sub">' + esc(c.sub) + "</span></div>";
+        }).join("") + "</div>";
+    }
     function renderAgent() {
       var a = state.data.agent;
       var el = $("agent-band");
@@ -815,7 +868,10 @@
         "agent-fix": list.filter(hasAgentFix).length,
         makers: list.filter(isMaker).length
       };
-      $("filters").innerHTML = FILTERS.map(function (f) {
+      count.studio = list.filter(hasStudio).length;
+      $("filters").innerHTML = FILTERS.filter(function (f) {
+        return product === "libraries" ? !TR_ONLY_FILTERS[f.id] : f.id !== "studio";
+      }).map(function (f) {
         var n = f.id in count ? count[f.id] : (c[f.id] || 0);
         return '<button type="button" role="tab" class="seg-btn' + (state.filter === f.id ? " is-active" : "") + '" data-filter="' + f.id +
           '" aria-selected="' + (state.filter === f.id) + '">' + esc(f.label) + ' <span class="seg-count">' + n + "</span></button>";
@@ -824,6 +880,7 @@
     function renderRows() {
       var rows = visible();
       document.querySelector("#people-body table").classList.toggle("is-makers", state.filter === "makers");
+      document.querySelector("#people-body table").classList.toggle("is-libraries", product === "libraries");
       // The detail panel follows the list: a person filtered out closes it.
       if (state.selected && !rows.some(function (p) { return p.email === state.selected; })) {
         state.selected = null;
@@ -872,6 +929,12 @@
             var sub = [c.live ? c.live + " live" : "", c.pending ? c.pending + " in review" : "", c.drafts ? plural(c.drafts, "draft") : ""].filter(Boolean).join(" · ");
             return '<td class="col-community"><div class="agent-cell"><span class="agent-main">' + esc((c.handle ? "@" + c.handle + " · " : "") + plural(c.made, "component")) +
               (c.pending ? ' <span class="tag tag--warn">Review</span>' : "") + '</span><span class="agent-sub">' + esc(sub) + "</span></div></td>";
+          })() +
+          (function () {
+            var st = p.studio;
+            if (!st || !hasStudio(p)) return '<td class="col-studio"><span class="muted">·</span></td>';
+            return '<td class="col-studio"><div class="agent-cell"><span class="agent-main tnum">' + esc(plural(st.requests_month, "request") + " · $" + st.usd_month.toFixed(2)) +
+              '</span><span class="agent-sub">' + esc("last month " + plural(st.requests_prev_month, "request") + " · $" + st.usd_prev_month.toFixed(2)) + "</span></div></td>";
           })() +
           (function () {
             var e = p.errors;
@@ -932,6 +995,12 @@
             (a.mcp_calls ? row("MCP", esc(plural(a.mcp_calls, "call")) + (a.recipes ? ", " + esc(plural(a.recipes, "recipe")) + " fetched" : "")) : "") +
             row("Last used", a.last_used ? esc(ago(a.last_used)) : '<span class="muted">Never</span>');
         })(p.agent) : "") +
+        (p.studio ? (function (st) {
+          return '</dl><div class="insp-divider"></div><div class="insp-section">Studio agent</div><dl>' +
+            row("This month", '<span class="tnum">' + esc(plural(st.requests_month, "request") + ", $" + st.usd_month.toFixed(2) + " of AI") + "</span>") +
+            row("Last month", '<span class="tnum">' + esc(plural(st.requests_prev_month, "request") + ", $" + st.usd_prev_month.toFixed(2)) + "</span>") +
+            (st.lifetime_usd ? row("Lifetime bonus used", '<span class="tnum">$' + esc(st.lifetime_usd.toFixed(2)) + "</span>") : "");
+        })(p.studio) : "") +
         (p.community ? (function (c) {
           var states = { live: "Live", review: "In review", rejected: "Not published", hidden: "Hidden", draft: "Draft" };
           return '</dl><div class="insp-divider"></div><div class="insp-section">Community</div><dl>' +
@@ -1001,12 +1070,12 @@
           line("Revenue", esc(paidText(t.revenue) || "$0")) +
           line("Renewals", t.renewals) +
           line("Churned", t.churned) +
-          line("Agent signups", t.agent_signups + (t.agent_keys > t.agent_signups ? ' <span class="muted">+' + (t.agent_keys - t.agent_signups) + " keys</span>" : "")) +
+          (product === "libraries" ? "" : line("Agent signups", t.agent_signups + (t.agent_keys > t.agent_signups ? ' <span class="muted">+' + (t.agent_keys - t.agent_signups) + " keys</span>" : "")) +
           line("Agent fixes", t.agent_fixes) +
           line("Builder drafts", num(t.ai_drafts)) +
           line("Credits free / paid", num(t.ai_credits_free) + " / " + num(t.ai_credits_paid)) +
           line("Components made", t.made) +
-          line("Published", t.published) +
+          line("Published", t.published)) +
           "</dl></div>";
       }).join("") + "</div>";
 
@@ -1032,7 +1101,7 @@
       var cell = function (n, extra) { return '<td class="num tnum' + (n ? "" : " zero") + (extra ? " " + extra : "") + '">' + (n || "0") + "</td>"; };
       html += '<div class="table-wrap"><table class="day-table"><thead><tr>' +
         '<th>Day</th><th class="num">New</th><th class="num">Free</th><th>New paying</th><th class="num">Revenue</th><th class="num">Renewals</th><th class="num">Churned</th>' +
-        '<th class="num col-agentday">Agent signups</th><th class="num col-agentday">Agent fixes</th><th class="num col-agentday">Agent active</th><th class="num">Made</th><th class="num">Published</th><th class="num">Drafts</th><th class="num" title="Builder credits used, free + paid">Credits</th></tr></thead><tbody>' +
+        (product === "libraries" ? "" : '<th class="num col-agentday">Agent signups</th><th class="num col-agentday">Agent fixes</th><th class="num col-agentday">Agent active</th><th class="num">Made</th><th class="num">Published</th><th class="num">Drafts</th><th class="num" title="Builder credits used, free + paid">Credits</th>') + "</tr></thead><tbody>" +
         days.map(function (d, i) {
           return '<tr data-day="' + esc(d.date) + '"' + (i === 0 ? ' class="is-today"' : "") + ' title="Show who joined this day">' +
             "<td>" + esc(i === 0 ? "Today" : i === 1 ? "Yesterday" : fmtDate(d.date, true)) + "</td>" +
@@ -1040,10 +1109,11 @@
             "<td>" + (d.new_paid ? '<span class="mini">' + paidChips(d.paid_by) + "</span>" : '<span class="muted">0</span>') + "</td>" +
             '<td class="num tnum' + (paidText(d.revenue) ? "" : " zero") + '">' + esc(paidText(d.revenue) || "$0") + "</td>" +
             cell(d.renewals) + cell(d.churned) +
+            (product === "libraries" ? "" :
             cell(d.agent_signups, "col-agentday") + cell(d.agent_fixes, "col-agentday") + cell(d.agent_active, "col-agentday") +
             cell(d.made) + cell(d.published) + cell(d.ai_drafts) +
             '<td class="num tnum' + (d.ai_credits_free + d.ai_credits_paid ? "" : " zero") + '" title="' + esc("free " + num(d.ai_credits_free) + " (" + tok(d.ai_tokens_free) + " tokens), paid " + num(d.ai_credits_paid) + " (" + tok(d.ai_tokens_paid) + " tokens)") + '">' +
-              num(d.ai_credits_free + d.ai_credits_paid) + "</td>" +
+              num(d.ai_credits_free + d.ai_credits_paid) + "</td>") +
             "</tr>";
         }).join("") + "</tbody></table></div>";
       el.innerHTML = html;
@@ -1104,6 +1174,7 @@
       $("errors-view").hidden = !errs;
       $("agent-band").hidden = other;
       $("builder-band").hidden = other;
+      $("studio-band").hidden = other;
       $("people-toolbar").hidden = other;
       $("people-body").hidden = other;
       $("export-btn").hidden = other;
@@ -1117,7 +1188,7 @@
         '<button type="button" id="day-clear" aria-label="Clear day filter"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></span>';
       $("day-clear").addEventListener("click", function () { state.day = null; renderDayFilter(); renderRows(); });
     }
-    function render() { renderStats(); renderAgent(); renderBuilder(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); if (state.view === "errors") renderErrors(); }
+    function render() { renderStats(); renderAgent(); renderBuilder(); renderStudio(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); if (state.view === "errors") renderErrors(); }
     function select(email) {
       state.selected = state.selected === email ? null : email;
       document.querySelectorAll("#rows tr").forEach(function (tr) { tr.classList.toggle("selected", tr.getAttribute("data-email") === state.selected); });
@@ -1238,7 +1309,7 @@
       applyTheme();
     });
     $("forget-item").addEventListener("click", function () {
-      store(TOKEN_KEY, null);
+      store(tokenKey(), null);
       state.data = null; state.selected = null;
       toggleMenu(false);
       $("gate-token").value = "";
@@ -1258,7 +1329,7 @@
     var modFilter = "pending";
     function modCall(path, body) {
       var token = load(TOKEN_KEY);
-      return fetch(API + path, {
+      return fetch(PRODUCTS.transitions.api + path, {
         method: body ? "POST" : "GET",
         headers: body ? { Authorization: "Bearer " + token, "content-type": "application/json" } : { Authorization: "Bearer " + token },
         body: body ? JSON.stringify(body) : undefined,
@@ -1385,8 +1456,50 @@
     });
     $("refresh-btn").addEventListener("click", loadMod);
 
+    // Product switch: same page, the other API and its token.
+    function paintProduct() {
+      document.querySelectorAll("#product-seg .seg-btn").forEach(function (b) {
+        var on = b.getAttribute("data-product") === product;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      $("crm-h1").textContent = product === "libraries" ? "Libraries.dev customers" : "Customers";
+      $("errors-tab").hidden = product === "libraries";
+      var mod = document.querySelector(".mod-panel");
+      if (mod) mod.hidden = product === "libraries";
+    }
+    function boot() {
+      paintProduct();
+      var saved = loadToken();
+      if (!saved) return showGate();
+      $("gate").hidden = true;
+      $("app").hidden = false;
+      $("empty").textContent = "Loading customers…";
+      $("empty").hidden = false;
+      $("rows").innerHTML = "";
+      open(saved);
+    }
+    function switchProduct(next) {
+      if (next === product) return;
+      product = next;
+      try { localStorage.setItem("tdev:crm-product", product); } catch (err) {}
+      clearTimeout(pollT);
+      state.data = null; state.selected = null; state.filter = "all"; state.day = null;
+      if (state.view === "errors" && product === "libraries") setView("people");
+      ["stats", "agent-band", "builder-band", "studio-band"].forEach(function (id) { $(id).innerHTML = ""; });
+      $("inspector").hidden = true;
+      $("subtitle").textContent = "Loading…";
+      boot();
+    }
+    $("product-seg").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-product]");
+      if (b) switchProduct(b.getAttribute("data-product"));
+    });
+    $("gate-back").addEventListener("click", function () { $("gate-token").value = ""; switchProduct("transitions"); });
+
     applyTheme();
-    var saved = load(TOKEN_KEY);
+    var saved = loadToken();
+    paintProduct();
     if (saved) {
       // Show the shell while Stripe is read, instead of a blank page.
       $("gate").hidden = true;
