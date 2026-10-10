@@ -1189,6 +1189,17 @@
       el.innerHTML = html;
     }
     /* ─── Builder usage (Transitions) ──────────────────────── */
+    // Answer kinds as the API records them: base kind, "+repair" when the
+    // agent had to fix its own output afterwards.
+    function kindLabels(obj) {
+      var base = { full: "New component", patch: "Edit", patch_fallback: "Edit, rewritten", rewrite: "Rewrite", none: "No change" };
+      var out = {};
+      Object.keys(obj || {}).forEach(function (k) {
+        var parts = k.split("+"), name = base[parts[0]] || parts[0];
+        out[k] = parts[1] === "repair" ? name + ", auto-repaired" : name;
+      });
+      return out;
+    }
     function renderBuilderView() {
       var el = $("builder-view");
       var b = state.data.builder || {}, u = b.usage;
@@ -1211,7 +1222,7 @@
             ["Finished", num(u.drafts - u.failed)], ["Failed", num(u.failed) + " (" + pct(u.failed, u.drafts) + ")"],
             ["People", num(u.people)], ["Drafts per person", num(u.drafts_per_person)],
             ["Came back on another day", num(u.returning) + " (" + pct(u.returning, u.people) + ")"]]) },
-        { t: "What they ask for", s: "finished drafts", h: bars(u.by_kind, { full: "New component", patch: "Edit", "full+repair": "New, auto-repaired", patch_fallback: "Edit, rewritten", rewrite: "Rewrite" }) +
+        { t: "What they ask for", s: "finished drafts", h: bars(u.by_kind, kindLabels(u.by_kind)) +
             kv([["With images or drawings", num(u.with_images) + " (" + pct(u.with_images, u.drafts) + ")"], ["Average prompt", num(u.avg_prompt_chars) + " characters"]]) },
         { t: "Mode", s: "finished drafts", h: bars(u.by_mode, { html: "HTML, CSS, JS", react: "React", design_system: "Design system" }) },
         { t: "Model", s: "finished drafts", h: bars(u.by_model, { "sonnet-5-5": "Sonnet 5.5", "opus-5-5": "Opus 5.5", chatgpt: "ChatGPT plan" }) },
