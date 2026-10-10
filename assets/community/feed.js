@@ -424,7 +424,7 @@
     // ── Feed ────────────────────────────────────────────────────────────────────
     var grid = document.getElementById("cm-grid");
     var more = document.getElementById("cm-more");
-    var sort = "recent";
+    var sort = "popular"; // Most viewed first
     var next = 0;
     var loading = false;
     var seq = 0;
