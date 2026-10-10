@@ -524,7 +524,8 @@
                 <th data-sort="builder_credits" class="num col-builder" title="Builder credits spent (1 credit = $0.01 of AI)">Credits<span class="arrow"></span></th>
                 <th data-sort="builder_last" class="col-builder" title="Last Builder draft or component">Last used<span class="arrow"></span></th>
                 <th data-sort="community" class="col-community" title="Community components and Builder drafts">Community<span class="arrow"></span></th>
-                <th data-sort="studio" class="col-studio" title="Studio agent requests and AI spend this month">Studio<span class="arrow"></span></th>
+                <th data-sort="studio" class="col-studio" title="Studio agent requests this month">Studio<span class="arrow"></span></th>
+                <th data-sort="studio_credits" class="num col-studio" title="Studio credits used this month (1 credit = $0.01 of AI)">Credits<span class="arrow"></span></th>
                 <th data-sort="errors" class="num col-errors" title="Errors in the last 30 days (Builder and Motion Agent)">Errors<span class="arrow"></span></th>
                 <th data-sort="paid" class="num">Paid<span class="arrow"></span></th>
                 <th data-sort="created" class="col-signup">Joined<span class="arrow"></span></th>
@@ -629,6 +630,8 @@
     var SRC_LABEL = { stripe: "from Stripe", team: "team name", domain: "email domain" };
     var KEY_SOURCE = { cli: "CLI signup", browser: "browser signup", account: "account page", purchase: "with a purchase" };
     // Anyone who used the Builder (even if every draft failed) or made a component.
+    // Libraries.dev Studio credits: 1 credit = $0.01 of AI, same as Transitions.
+    function studioCredits(usd) { return Math.round((usd || 0) * 100); }
     function hasStudio(p) { var s = p.studio; return !!(s && (s.requests_month || s.requests_prev_month || s.lifetime_usd)); }
     function isMaker(p) { var c = p.community; return !!(c && (c.made || c.drafts || c.failed)); }
     function hasAgent(p) { return !!(p.agent && (p.agent.key || p.agent.last_used)); }
@@ -762,7 +765,8 @@
         builder_credits: function (p) { var c = p.community; return c ? (c.credits || 0) + (c.drafts || 0) / 1e4 : -1; },
         builder_last: function (p) { var c = p.community; return (c && c.last_at) || ""; },
         errors: function (p) { var e = p.errors; return e ? e.count * 1e3 + e.count_7d : 0; },
-        studio: function (p) { var s = p.studio; return s ? s.usd_month * 1e3 + s.requests_month + s.usd_prev_month / 1e3 : -1; },
+        studio: function (p) { var s = p.studio; return s ? s.requests_month * 1e3 + s.requests_prev_month : -1; },
+        studio_credits: function (p) { var s = p.studio; return s ? s.usd_month * 1e3 + s.usd_prev_month : -1; },
         community: function (p) { var c = p.community; return c ? c.pending * 1e6 + c.live * 1e3 + c.made + c.drafts / 1e3 : -1; },
         agent: function (p) { var a = p.agent; return a ? (a.fixes_month * 1e6 + (a.fixes_total || 0) * 1e3 + (a.last_used ? 1 : 0) + (a.key ? 0.5 : 0)) : -1; },
         created: function (p) { return p.created_at || ""; },
@@ -846,8 +850,8 @@
       var cells = [
         { label: "Studio users", value: num(s.users_month), sub: num(s.users_prev_month) + " last month" },
         { label: "Requests", value: num(s.requests_month), sub: num(s.requests_prev_month) + " last month" },
-        { label: "AI spend this month", value: "$" + s.usd_month.toFixed(2), sub: "$" + s.usd_prev_month.toFixed(2) + " last month" },
-        { label: "Per user", value: s.users_month ? "$" + (s.usd_month / s.users_month).toFixed(2) : "·", sub: s.users_month ? num(Math.round(s.requests_month / s.users_month)) + " requests each, this month" : "no use this month" },
+        { label: "Credits this month", value: num(studioCredits(s.usd_month)), sub: num(studioCredits(s.usd_prev_month)) + " last month · $" + s.usd_month.toFixed(2) + " of AI" },
+        { label: "Per user", value: s.users_month ? num(Math.round(studioCredits(s.usd_month) / s.users_month)) + " credits" : "·", sub: s.users_month ? num(Math.round(s.requests_month / s.users_month)) + " requests each, this month" : "no use this month" },
         { label: "Spend counter", value: "$" + s.usd_total_pool_month.toFixed(2), sub: "all Studio spend this month" }
       ];
       el.innerHTML = '<div class="band-label"><strong>Libraries.dev Studio agent</strong><span>monthly counters: this and last month' + (s.truncated ? " · partial" : "") + "</span></div>" +
@@ -958,9 +962,11 @@
           })() +
           (function () {
             var st = p.studio;
-            if (!st || !hasStudio(p)) return '<td class="col-studio"><span class="muted">·</span></td>';
-            return '<td class="col-studio"><div class="agent-cell"><span class="agent-main tnum">' + esc(plural(st.requests_month, "request") + " · $" + st.usd_month.toFixed(2)) +
-              '</span><span class="agent-sub">' + esc("last month " + plural(st.requests_prev_month, "request") + " · $" + st.usd_prev_month.toFixed(2)) + "</span></div></td>";
+            if (!st || !hasStudio(p)) return '<td class="col-studio"><span class="muted">·</span></td><td class="num col-studio"><span class="muted">·</span></td>';
+            return '<td class="col-studio"><div class="agent-cell"><span class="agent-main tnum">' + esc(plural(st.requests_month, "request")) +
+              '</span><span class="agent-sub">' + esc("last month " + plural(st.requests_prev_month, "request")) + "</span></div></td>" +
+              '<td class="num col-studio" title="' + esc("$" + st.usd_month.toFixed(2) + " this month, $" + st.usd_prev_month.toFixed(2) + " last month") + '"><div class="agent-cell"><span class="agent-main tnum">' + esc(num(studioCredits(st.usd_month))) +
+              '</span><span class="agent-sub">' + esc(num(studioCredits(st.usd_prev_month)) + " last month") + "</span></div></td>";
           })() +
           (function () {
             var e = p.errors;
@@ -1023,9 +1029,9 @@
         })(p.agent) : "") +
         (p.studio ? (function (st) {
           return '</dl><div class="insp-divider"></div><div class="insp-section">Studio agent</div><dl>' +
-            row("This month", '<span class="tnum">' + esc(plural(st.requests_month, "request") + ", $" + st.usd_month.toFixed(2) + " of AI") + "</span>") +
-            row("Last month", '<span class="tnum">' + esc(plural(st.requests_prev_month, "request") + ", $" + st.usd_prev_month.toFixed(2)) + "</span>") +
-            (st.lifetime_usd ? row("Lifetime bonus used", '<span class="tnum">$' + esc(st.lifetime_usd.toFixed(2)) + "</span>") : "");
+            row("This month", '<span class="tnum">' + esc(plural(st.requests_month, "request") + ", " + num(studioCredits(st.usd_month)) + " credits ($" + st.usd_month.toFixed(2) + ")") + "</span>") +
+            row("Last month", '<span class="tnum">' + esc(plural(st.requests_prev_month, "request") + ", " + num(studioCredits(st.usd_prev_month)) + " credits ($" + st.usd_prev_month.toFixed(2) + ")") + "</span>") +
+            (st.lifetime_usd ? row("Lifetime bonus used", '<span class="tnum">' + esc(num(studioCredits(st.lifetime_usd)) + " credits ($" + st.lifetime_usd.toFixed(2) + ")") + "</span>") : "");
         })(p.studio) : "") +
         (p.community ? (function (c) {
           var states = { live: "Live", review: "In review", rejected: "Not published", hidden: "Hidden", draft: "Draft" };
