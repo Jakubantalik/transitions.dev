@@ -468,7 +468,6 @@
 
     tabs(document.getElementById("cm-sort"), "data-sort", function (s) {
       sort = s;
-      document.getElementById("cm-feed-title").textContent = s === "popular" ? "Most viewed" : "Recently built";
       load(true);
     });
     more.addEventListener("click", function () { load(false); });
