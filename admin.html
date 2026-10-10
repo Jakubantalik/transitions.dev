@@ -207,6 +207,30 @@
     @media (max-width: 1100px) { .periods { grid-template-columns: repeat(2, minmax(0, 1fr)); } .period:nth-child(2) { border-right: none; } .period:nth-child(-n+2) { border-bottom: 1px solid var(--c-line); } }
     @media (max-width: 860px) { .day-table .col-agentday { display: none; } }
 
+    /* Tabs that do not apply to the current product keep their place. */
+    .seg-btn.is-off { visibility: hidden; pointer-events: none; }
+
+    /* Builder view: usage panels in the stat-cell look. */
+    .bu-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--c-line); }
+    .bu-card { padding: 14px 16px 16px; border-right: 1px solid var(--c-line); border-bottom: 1px solid var(--c-line); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .bu-card:nth-child(3n) { border-right: none; }
+    .bu-title { font-size: 13px; line-height: 16px; font-weight: 500; color: var(--c-text); display: flex; justify-content: space-between; gap: 8px; }
+    .bu-title span { font-size: 11px; font-weight: 400; color: var(--c-text-faint); }
+    .bu-bars { display: flex; flex-direction: column; gap: 7px; }
+    .bu-bar { display: grid; grid-template-columns: minmax(96px, 136px) minmax(40px, 1fr) auto; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; }
+    .bu-bar .lbl { color: var(--c-text-mut2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bu-bar .val { text-align: right; color: var(--c-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .bu-track { height: 6px; border-radius: 6px; background: var(--c-sec); overflow: hidden; }
+    .bu-track i { display: block; height: 100%; border-radius: inherit; background: #3097fd; }
+    html[data-theme="dark"] .bu-track i { background: #50a7ff; }
+    .bu-kv { display: grid; grid-template-columns: 1fr auto; row-gap: 7px; font-size: 12px; line-height: 16px; }
+    .bu-kv dt { color: var(--c-text-mut2); }
+    .bu-kv dd { margin: 0; text-align: right; color: var(--c-text); font-variant-numeric: tabular-nums; }
+    .bu-big { font-size: 20px; line-height: 24px; font-weight: 500; color: var(--c-text); font-variant-numeric: tabular-nums; }
+    .bu-note { padding: 12px 16px; font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
+    @media (max-width: 1100px) { .bu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bu-card:nth-child(3n) { border-right: 1px solid var(--c-line); } .bu-card:nth-child(2n) { border-right: none; } }
+    @media (max-width: 640px) { .bu-grid { grid-template-columns: 1fr; } .bu-card { border-right: none !important; } }
+
     /* Errors view. */
     .err-sum { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 12px; border-bottom: 1px solid var(--c-line); }
     .err-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: none; border-radius: 36px; cursor: pointer;
@@ -446,6 +470,7 @@
         <div class="seg view-seg" id="view-seg" role="tablist" aria-label="View">
           <button type="button" role="tab" class="seg-btn is-active" data-view="people" aria-selected="true">People</button>
           <button type="button" role="tab" class="seg-btn" data-view="daily" aria-selected="false">Daily</button>
+          <button type="button" role="tab" class="seg-btn" data-view="builder" aria-selected="false" id="builder-tab">Builder</button>
           <button type="button" role="tab" class="seg-btn" data-view="errors" aria-selected="false" id="errors-tab">Errors</button>
         </div>
         <button type="button" class="btn-sec" id="export-btn" title="Download the current view as CSV">
@@ -473,6 +498,7 @@
       <div id="studio-band"></div>
       <div id="daily-view" hidden></div>
       <div id="errors-view" hidden></div>
+      <div id="builder-view" hidden></div>
 
       <div class="toolbar" id="people-toolbar">
         <label class="field">
@@ -1162,6 +1188,46 @@
       }
       el.innerHTML = html;
     }
+    /* ─── Builder usage (Transitions) ──────────────────────── */
+    function renderBuilderView() {
+      var el = $("builder-view");
+      var b = state.data.builder || {}, u = b.usage;
+      if (!u) { el.innerHTML = '<div class="empty">No Builder usage yet.</div>'; return; }
+      // Shares of the total; a funnel (ofFirst) compares each step with the first.
+      var bars = function (obj, labels, ofFirst) {
+        var keys = Object.keys(obj || {}).filter(function (k) { return obj[k]; });
+        if (!ofFirst) keys.sort(function (a, c) { return obj[c] - obj[a]; });
+        var total = (ofFirst ? obj[keys[0]] : keys.reduce(function (s, k) { return s + obj[k]; }, 0)) || 1;
+        return '<div class="bu-bars">' + keys.map(function (k) {
+          var pct = Math.round(obj[k] / total * 100);
+          return '<div class="bu-bar"><span class="lbl" title="' + esc(k) + '">' + esc((labels && labels[k]) || k) + '</span><span class="bu-track"><i style="width:' + pct + '%"></i></span><span class="val">' + num(obj[k]) + " · " + pct + "%</span></div>";
+        }).join("") + "</div>";
+      };
+      var kv = function (rows) { return '<dl class="bu-kv">' + rows.map(function (r) { return "<dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd>"; }).join("") + "</dl>"; };
+      var pct = function (a, c) { return c ? Math.round(a / c * 100) + "%" : "·"; };
+      var f = u.funnel || {}, fa = u.free_allowance_month || {}, cp = u.credits_per_draft || {};
+      var cards = [
+        { t: "Drafts", s: "last " + u.days + " days", h: '<div class="bu-big">' + num(u.drafts) + "</div>" + kv([
+            ["Finished", num(u.drafts - u.failed)], ["Failed", num(u.failed) + " (" + pct(u.failed, u.drafts) + ")"],
+            ["People", num(u.people)], ["Drafts per person", num(u.drafts_per_person)],
+            ["Came back on another day", num(u.returning) + " (" + pct(u.returning, u.people) + ")"]]) },
+        { t: "What they ask for", s: "finished drafts", h: bars(u.by_kind, { full: "New component", patch: "Edit", "full+repair": "New, auto-repaired", patch_fallback: "Edit, rewritten", rewrite: "Rewrite" }) +
+            kv([["With images or drawings", num(u.with_images) + " (" + pct(u.with_images, u.drafts) + ")"], ["Average prompt", num(u.avg_prompt_chars) + " characters"]]) },
+        { t: "Mode", s: "finished drafts", h: bars(u.by_mode, { html: "HTML, CSS, JS", react: "React", design_system: "Design system" }) },
+        { t: "Model", s: "finished drafts", h: bars(u.by_model, { "sonnet-5-5": "Sonnet 5.5", "opus-5-5": "Opus 5.5", chatgpt: "ChatGPT plan" }) },
+        { t: "Credits per draft", s: "hosted drafts", h: '<div class="bu-big">' + num(cp.median) + ' <span class="muted" style="font-size:13px;font-weight:400">median</span></div>' + kv([
+            ["Average", num(cp.avg)], ["90% of drafts under", num(cp.p90)], ["Most expensive", num(cp.max)],
+            ["Prompt cache hits", (u.cache_share || 0) + "% of input"]]) },
+        { t: "Free allowance this month", s: num(fa.allowance) + " credits each", h: bars({ "Under 25%": fa.under_25, "25 to 50%": fa.to_50, "50 to 95%": fa.to_100, "Used it all": fa.at_limit }) +
+            kv([["Hit \"out of credits\"", num((u.out_of_credits_month || {}).users) + " people, " + num((u.out_of_credits_month || {}).n) + " times"]]) },
+        { t: "Funnel", s: "all time", h: bars({ "Drafted": f.drafted, "Saved a component": f.saved, "Published (live)": f.published }, null, true) +
+            kv([["Saved after drafting", pct(f.saved, f.drafted)], ["Published after drafting", pct(f.published, f.drafted)]]) },
+        { t: "Remixes", s: "components", h: bars({ "From the library": (u.remixes || {}).library, "From the community": (u.remixes || {}).community, "Original": (u.remixes || {}).none }) }
+      ];
+      el.innerHTML = '<div class="bu-grid">' + cards.map(function (c) {
+        return '<div class="bu-card"><div class="bu-title">' + esc(c.t) + "<span>" + esc(c.s || "") + "</span></div>" + c.h + "</div>";
+      }).join("") + '</div><div class="bu-note">Usage records only. Prompt text is not shown: the privacy notice keeps it for abuse prevention and credit limits.</div>';
+    }
     function setView(v) {
       state.view = v;
       document.querySelectorAll("#view-seg .seg-btn").forEach(function (b) {
@@ -1169,7 +1235,8 @@
         b.classList.toggle("is-active", on);
         b.setAttribute("aria-selected", on ? "true" : "false");
       });
-      var daily = v === "daily", errs = v === "errors", other = daily || errs;
+      var daily = v === "daily", errs = v === "errors", bview = v === "builder", other = daily || errs || bview;
+      $("builder-view").hidden = !bview;
       $("daily-view").hidden = !daily;
       $("errors-view").hidden = !errs;
       $("agent-band").hidden = other;
@@ -1180,6 +1247,7 @@
       $("export-btn").hidden = other;
       if (daily && state.data) renderDaily();
       if (errs && state.data) renderErrors();
+      if (bview && state.data) renderBuilderView();
     }
     function renderDayFilter() {
       var el = $("day-filter");
@@ -1188,7 +1256,7 @@
         '<button type="button" id="day-clear" aria-label="Clear day filter"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></span>';
       $("day-clear").addEventListener("click", function () { state.day = null; renderDayFilter(); renderRows(); });
     }
-    function render() { renderStats(); renderAgent(); renderBuilder(); renderStudio(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); if (state.view === "errors") renderErrors(); }
+    function render() { renderStats(); renderAgent(); renderBuilder(); renderStudio(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); if (state.view === "errors") renderErrors(); if (state.view === "builder") renderBuilderView(); }
     function select(email) {
       state.selected = state.selected === email ? null : email;
       document.querySelectorAll("#rows tr").forEach(function (tr) { tr.classList.toggle("selected", tr.getAttribute("data-email") === state.selected); });
@@ -1464,7 +1532,9 @@
         b.setAttribute("aria-selected", on ? "true" : "false");
       });
       $("crm-h1").textContent = product === "libraries" ? "Libraries.dev customers" : "Customers";
-      $("errors-tab").hidden = product === "libraries";
+      // Transitions-only tabs stay in place (hidden, not removed) so nothing shifts.
+      $("errors-tab").classList.toggle("is-off", product === "libraries");
+      $("builder-tab").classList.toggle("is-off", product === "libraries");
       var mod = document.querySelector(".mod-panel");
       if (mod) mod.hidden = product === "libraries";
     }
@@ -1485,7 +1555,7 @@
       try { localStorage.setItem("tdev:crm-product", product); } catch (err) {}
       clearTimeout(pollT);
       state.data = null; state.selected = null; state.filter = "all"; state.day = null;
-      if (state.view === "errors" && product === "libraries") setView("people");
+      if ((state.view === "errors" || state.view === "builder") && product === "libraries") setView("people");
       ["stats", "agent-band", "builder-band", "studio-band"].forEach(function (id) { $(id).innerHTML = ""; });
       $("inspector").hidden = true;
       $("subtitle").textContent = "Loading…";
