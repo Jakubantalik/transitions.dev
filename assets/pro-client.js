@@ -804,7 +804,7 @@
     // Sign-up header copy (Figma 1674:35924).
     return {
       title: "Get Started.",
-      sub: "Make your motion UI better",
+      sub: "Make your UI motion better",
       btn: plan && plan !== "free" ? "Continue to " + PLAN_NAMES[plan] : "Continue",
     };
   }
