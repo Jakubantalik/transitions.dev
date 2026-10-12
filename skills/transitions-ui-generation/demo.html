@@ -51,6 +51,8 @@
       return typeof v === "function" ? v.bind(target) : v;
     },
   });
+  // one card shadow for all three (the Music Player's), so the demo reads as one set
+  const CARD_SHADOW = "0 0 0 1px rgba(0,0,0,.07), 0 8px 32px -4px rgba(0,0,0,.08), 0 1px 3px 0 rgba(0,0,0,.07)";
   const stage = document.getElementById("stage");
   const items = JSON.parse(document.getElementById("components").textContent).map((c) => {
     const item = document.createElement("div"); item.className = "demo-item";
@@ -60,7 +62,9 @@
     const credit = Object.assign(document.createElement("a"), { className: "demo-credit", href: `https://transitions.dev/studio.html?id=${c.id}`, textContent: c.title });
     item.append(host, credit); stage.append(item);
     try { new Function("document", c.js)(scopedDocument(root, host)); } catch (e) { console.warn(c.title, e); }
-    return { el: [...root.children].find((n) => n.tagName !== "STYLE"), item, title: c.title };
+    const el = [...root.children].find((n) => n.tagName !== "STYLE");
+    el.style.boxShadow = CARD_SHADOW;
+    return { el, item, title: c.title };
   });
 
   let mode = "skeleton";
