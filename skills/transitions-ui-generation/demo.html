@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>UI generation demo</title>
+<link rel="stylesheet" href="./ui-generation.css" />
+<style>
+  :root { --bg: #fbfbfb; --card: #fff; --text: #0d0d0d; --muted: #6c6c6c; --line: rgba(0,0,0,0.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0b0b0c; --card: #181818; --text: #f2f2f2; --muted: #9b9b9b; --line: rgba(255,255,255,0.1); } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font: 400 14px/20px Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .bar { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; padding: 16px; }
+  .bar button { height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--line); color: var(--text); font: inherit; font-weight: 500; cursor: pointer; }
+  .bar button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+  .stage { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; justify-content: center; padding: 64px 16px 160px; }
+  .card { width: 300px; background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 0 0 1px rgba(0,0,0,0.07), 0 8px 32px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.07); }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 600; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .input { margin-top: 14px; height: 40px; border-radius: 12px; border: 1px solid var(--line); padding: 0 12px; display: flex; align-items: center; color: var(--muted); }
+  .btn { height: 34px; padding: 0 15px; border-radius: 999px; border: 0; background: var(--text); color: var(--bg); font: inherit; font-weight: 500; }
+  .btn.ghost { background: var(--line); color: var(--text); }
+  .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e6dfec; color: #37364f; display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+  .temp { font-size: 56px; line-height: 64px; font-weight: 500; letter-spacing: -0.04em; }
+  .days { display: flex; justify-content: space-between; margin-top: 14px; padding: 4px; border-radius: 14px; background: var(--line); }
+  .days span { flex: 1; text-align: center; padding: 6px 0; border-radius: 10px; font-size: 12px; }
+  .days span:first-child { background: var(--card); }
+  body.is-single .card:not(:first-child) { display: none; }
+  body.is-single .stage { padding-top: 120px; }
+</style>
+</head>
+<body>
+  <div class="bar" role="toolbar" aria-label="Demo controls">
+    <button data-mode="skeleton" aria-pressed="true">Skeleton</button>
+    <button data-mode="skeleton-texts" aria-pressed="false">Skeleton + generation texts</button>
+    <button id="layout" aria-pressed="false">One card</button>
+    <button id="replay">Replay</button>
+  </div>
+
+  <main class="stage">
+    <section class="card" aria-label="Invite modal">
+      <div class="row"><h3>Invite teammates</h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></div>
+      <p class="muted" style="margin:8px 0 0">Add people by email so they can view and comment on this project.</p>
+      <div class="input">name@company.com</div>
+      <div class="actions"><button class="btn ghost">Cancel</button><button class="btn">Send invite</button></div>
+    </section>
+
+    <section class="card" aria-label="Weather card">
+      <div class="row"><span class="muted">San Francisco</span><span class="muted">Today</span></div>
+      <div class="row" style="margin-top:6px"><span class="temp">18°</span>
+        <svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="#f0a020" stroke-width="2.4" stroke-linecap="round"><circle cx="24" cy="24" r="8.5"/><path d="M24 6.5v4M24 37.5v4M6.5 24h4M37.5 24h4M11.6 11.6l2.8 2.8M33.6 33.6l2.8 2.8M11.6 36.4l2.8-2.8M33.6 14.4l2.8-2.8"/></svg></div>
+      <div>Partly cloudy</div><div class="muted">H 21° L 12°</div>
+      <div class="days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span></div>
+    </section>
+
+    <section class="card" aria-label="Profile card">
+      <div class="row" style="justify-content:flex-start;gap:12px"><div class="avatar">MC</div><div><h3>Maya Chen</h3><div class="muted">Product designer</div></div></div>
+      <p class="muted" style="margin:14px 0 0">Designs motion systems and the components that use them.</p>
+      <div class="actions"><button class="btn ghost">Message</button><button class="btn">Follow</button></div>
+    </section>
+  </main>
+
+<script type="module">
+  import { generate } from "./ui-generation.js";
+  let mode = "skeleton";
+  const cards = [...document.querySelectorAll(".card")];
+  const play = () => cards.filter((c) => c.offsetParent).forEach((c, i) => generate(c, { mode, delay: i * 260 }));
+  document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
+    mode = b.dataset.mode;
+    document.querySelectorAll("[data-mode]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    play();
+  }));
+  document.getElementById("replay").addEventListener("click", play);
+  document.getElementById("layout").addEventListener("click", (e) => {
+    const on = document.body.classList.toggle("is-single"); e.currentTarget.setAttribute("aria-pressed", String(on));
+    cards.forEach((c) => c.__tGen && c.__tGen.cancel()); play();
+  });
+  play();
+</script>
+</body>
+</html>

@@ -52,6 +52,8 @@ npx skills add Jakubantalik/transitions.dev
 
 Skill source lives in [`skills/transitions-dev/`](./skills/transitions-dev) — `SKILL.md`, eighteen per-transition reference files (`01-card-resize.md` … `18-texts-reveal.md`), and `_root.css` (the universal install block on its own).
 
+The same command also installs [`skills/transitions-ui-generation/`](./skills/transitions-ui-generation): it makes any UI appear as if an agent is generating it. A dotted wireframe is drawn from the element's own structure, then the real UI is revealed. It has two modes, `skeleton` and `skeleton-texts` (with an agent log, the motion CSS being written and a step line), and one dependency-free runtime for any framework. Preview it with [`demo.html`](./skills/transitions-ui-generation/demo.html).
+
 The skill is generated from `index.html` so the snippets always match what the showcase site demonstrates. Re-run after editing the source site:
 
 ```bash
