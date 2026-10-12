@@ -311,7 +311,9 @@ function frame(G, p, t, D) {
   const sq = SMOOTH_OUT(win(PH.reveal, p)), y = sq * (h + 6) - 3, fq = SMOOTH_OUT(win([PH.reveal[0], PH.reveal[1] + 0.03], p)), es = G.el.style;
   const pad = 80; // keeps the element's own shadow inside the clip
   es.opacity = p < PH.reveal[0] ? 0 : f2(fq);
-  es.clipPath = p >= PH.reveal[1] ? G.prev.clipPath : `inset(-${pad}px -${pad}px ${f2(Math.max(0, h - y - 1))}px -${pad}px)`;
+  // past the bottom edge as the scan finishes, so the shadow below the element comes in with it (no pop when the clip goes)
+  const yc = y + smooth(0.6, 1, sq) * pad;
+  es.clipPath = p >= PH.reveal[1] ? G.prev.clipPath : `inset(-${pad}px -${pad}px ${f2(h - yc - 1)}px -${pad}px)`;
   es.filter = fq > 0 && fq < 0.99 ? `blur(${f2(3 * (1 - fq))}px)` : G.prev.filter;
   G.clipRect.setAttribute("y", f2(p < PH.reveal[0] ? -999 : y)); G.clipRect.setAttribute("height", f2(h + 999));
   G.wire.setAttribute("opacity", f2(1 - 0.6 * fq));
