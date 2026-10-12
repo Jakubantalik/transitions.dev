@@ -255,12 +255,15 @@ function buildOverlay(el, M, opts) {
   return G;
 }
 
+// does `node` contain `el`, across shadow roots (so web components and shadow-DOM hosts count as containers)?
+function holds(node, el) { for (let x = el; x; x = x.parentNode || x.host) if (x === node) return true; return false; }
+
 // is this viewport rect empty page (nothing but the element's own containers)? Overlays never count: they take no input.
 function isFree(el, x0, y0, x1, y1) {
   if (x0 < 0 || y0 < 0 || x1 > innerWidth || y1 > innerHeight + 400) return false;
   for (let i = 0; i <= 3; i++) for (let j = 0; j <= 4; j++) {
     const x = lerp(x0, x1, i / 3), y = Math.min(innerHeight - 1, lerp(y0, y1, j / 4)), hit = document.elementFromPoint(x, y);
-    if (hit && hit !== document.body && hit !== document.documentElement && !hit.contains(el)) return false;
+    if (hit && hit !== document.body && hit !== document.documentElement && !holds(hit, el)) return false;
   }
   return true;
 }

@@ -55,7 +55,7 @@ Same as `transitions generate` with `mode: "skeleton-texts"`. Mention that the t
 
 ### transitions generate preview
 
-Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` in this directory) to see both modes on sample cards, with a one-card layout that shows the side panels.
+Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` in this directory) to see both modes on three components published on the transitions.dev Community (Heart Rate Monitor, Chart card, Music Player Likes), with a one-card layout that shows the side panels. Each component is mounted in its own shadow root, so its styles and scripts stay as published.
 
 ## Install
 
@@ -181,4 +181,4 @@ Keep the drawing monochrome. Grey dots read as "the agent's working layer"; the 
 - [02-skeleton-texts.md](./02-skeleton-texts.md): the generation texts and where they go.
 - [ui-generation.js](./ui-generation.js): the runtime (ES module; also `window.UIGeneration`).
 - [ui-generation.css](./ui-generation.css): the overlay styles and variables.
-- [demo.html](./demo.html): both modes on sample cards.
+- [demo.html](./demo.html): both modes on three Community components.
