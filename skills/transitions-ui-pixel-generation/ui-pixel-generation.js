@@ -77,19 +77,30 @@ function makeFilter(el, w, h, pad) {
     <feComposite x="${-pad}" y="${-pad}" width="8" height="8"/>
     <feTile result="grid"/>
     <feComposite in="avg" in2="grid" operator="in"/>
-    <feMorphology operator="dilate" radius="4"/>
+    <feMorphology operator="dilate" radius="4" result="px"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0 0.045" numOctaves="1" seed="1" result="noise"/>
+    <feColorMatrix in="noise" type="matrix" values="1 0 0 0 0  0 0 0 0 0.5  0 0 0 0 0  0 0 0 0 1" result="bands"/>
+    <feDisplacementMap in="px" in2="bands" scale="0" xChannelSelector="R" yChannelSelector="G"/>
   </filter>`;
   host.appendChild(s);
-  const [avg, flood, cell, , , grow] = s.querySelector("filter").children;
+  const [avg, flood, cell, , , grow, noise, , shift] = s.querySelector("filter").children;
+  let B = 8;
   // block size b: the UI blurred to about a block's average, sampled at the middle of each b × b cell,
   // then dilated back to the full cell (a real downscale, so each block carries its area's colour)
   const set = (b) => {
+    B = b;
     avg.setAttribute("stdDeviation", (b * 0.32).toFixed(2));
     flood.setAttribute("x", -pad + Math.floor(b / 2)); flood.setAttribute("y", -pad + Math.floor(b / 2));
     cell.setAttribute("width", b); cell.setAttribute("height", b);
     grow.setAttribute("radius", (b / 2).toFixed(2));
   };
-  return { id, svg: s, set };
+  // the pixels move: the sample point drifts inside its cell (blocks shimmer and shift), and horizontal bands
+  // of blocks slip sideways (a displacement driven by noise that only varies down the element)
+  const motion = (jx, jy, glitch, seed) => {
+    flood.setAttribute("x", -pad + Math.floor(B / 2) + jx); flood.setAttribute("y", -pad + Math.floor(B / 2) + jy);
+    noise.setAttribute("seed", seed); shift.setAttribute("scale", glitch.toFixed(2));
+  };
+  return { id, svg: s, set, motion };
 }
 
 // ─── HUD canvas over the element: grid, flicker cells, scan line, brackets, readouts ───
@@ -169,7 +180,7 @@ export function generate(el, options = {}) {
     }
     // resolution passes across the passes phase; the first block size also covers the materialise phase
     const passT = res.map((_, i) => lerp(PH.passes[0], PH.passes[1], i / res.length));
-    let lastB = 0, lastMaskKey = "", t0 = performance.now();
+    let lastB = 0, lastMaskKey = "", lastStep = -1, t0 = performance.now();
     const tick = (now) => {
       if (stopped) return;
       const t = now - t0, p = t / D;
@@ -184,6 +195,13 @@ export function generate(el, options = {}) {
         lastMaskKey = key;
         if (mp >= 1) { el.style.maskImage = el.style.webkitMaskImage = prev.mask || ""; }
         else { const u = `url(${maskURL(mc, w, h, mb, mp, pad)})`; el.style.maskImage = el.style.webkitMaskImage = u; }
+      }
+      // pixel motion, stepped like a renderer's frames (every 70ms), strongest early and gone by the last pass
+      const step = Math.floor(t / 70);
+      if (b > 1 && step !== lastStep) {
+        lastStep = step;
+        const amp = 1 - smooth(0.3, 0.88, p), r1 = hashN(step * 1.7), r2 = hashN(step * 2.3 + 5), r3 = hashN(step * 3.1 + 9);
+        F.motion(Math.round((r1 - 0.5) * b * 0.7 * amp), Math.round((r2 - 0.5) * b * 0.4 * amp), b * 2.4 * amp * (r3 > 0.55 ? 1 : 0.2), step % 97);
       }
       el.style.opacity = p < PH.materialize[0] ? 0 : "";
       hud(p, t, b, pi, mp, crisp);
@@ -221,6 +239,58 @@ export function generate(el, options = {}) {
           ctx.globalAlpha = (0.25 + 0.5 * hashN(i + tick)) * show; ctx.fillStyle = flash; ctx.fillRect(x, y, cs, cs);
         }
       }
+      // generation lines: dotted guides along the edges, running past the corners, drawn out from each corner
+      const gq = SMOOTH_OUT(win([0.02, 0.22], p)), E = 22;
+      ctx.save(); ctx.globalAlpha = 0.55 * show; ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.setLineDash([1, 4]); ctx.lineCap = "round"; ctx.beginPath();
+      [[-E, 0, w + E, 0], [w, -E, w, h + E], [w + E, h, -E, h], [0, h + E, 0, -E]].forEach(([x1, y1, x2, y2]) => { ctx.moveTo(x1, y1); ctx.lineTo(lerp(x1, x2, gq), lerp(y1, y2, gq)); });
+      ctx.stroke(); ctx.restore();
+      // ruler: a tick every block along the top and left edges, a coordinate every 64px
+      if (!crisp) {
+        ctx.save(); ctx.globalAlpha = 0.6 * show * gq; ctx.fillStyle = strong;
+        for (let x = 0; x <= w; x += b) ctx.fillRect(x - 0.25, -4, 0.5, x % 64 < b ? 4 : 2);
+        for (let y = 0; y <= h; y += b) ctx.fillRect(-4, y - 0.25, y % 64 < b ? 4 : 2, 0.5);
+        ctx.restore();
+      }
+      // incoming pixels: tiny squares fly in from around the element and land where blocks are appearing
+      if (p < PH.materialize[1] + 0.02) {
+        ctx.save(); ctx.fillStyle = strong;
+        for (let k = 0; k < 42; k++) {
+          const s0 = PH.materialize[0] + (k / 42) * (PH.materialize[1] - PH.materialize[0] - 0.08), s1 = s0 + 0.09, q = clamp((p - s0) / (s1 - s0));
+          if (q <= 0 || q >= 1) continue;
+          const cb = res[0], tx = Math.floor(hashN(k * 4.3) * (w / cb)) * cb + cb / 2, ty = SMOOTH_OUT(win(PH.materialize, s1)) * h;
+          const ang = hashN(k * 7.9) * Math.PI * 2, dist = 40 + 60 * hashN(k * 2.2), e = SMOOTH_OUT(q), sz = 2 + Math.round(hashN(k * 5.5) * 2);
+          ctx.globalAlpha = show * Math.min(1, q * 4) * (1 - smooth(0.85, 1, q));
+          ctx.fillRect(Math.round(lerp(tx + Math.cos(ang) * dist, tx, e)) - sz / 2, Math.round(lerp(ty + Math.sin(ang) * dist, ty, e)) - sz / 2, sz, sz);
+        }
+        ctx.restore();
+      }
+      // "+" markers flickering at grid points around the scan line
+      if (sq > 0 && sq < 1 && b >= 5) {
+        ctx.save(); ctx.strokeStyle = strong; ctx.lineWidth = 1;
+        const row0 = Math.max(0, Math.floor(sy / b) - 3), fl = Math.floor(t / 90);
+        for (let r = row0; r <= row0 + 4; r++) for (let c = 0; c <= Math.ceil(w / b); c++) {
+          if (hashN(c * 3.3 + r * 7.7 + fl) > 0.16) continue;
+          const x = c * b, y = r * b; if (y > h) continue;
+          ctx.globalAlpha = 0.7 * show; ctx.beginPath(); ctx.moveTo(x - 2.5, y); ctx.lineTo(x + 2.5, y); ctx.moveTo(x, y - 2.5); ctx.lineTo(x, y + 2.5); ctx.stroke();
+        }
+        ctx.restore();
+      }
+      // targeting: a bracket locks onto a block behind the scan line, joined to the readout by an elbow line,
+      // with the block's coordinates; it jumps to a new block every 160ms
+      if (!crisp && sq > 0.05) {
+        const jt = Math.floor(t / 160), cb = Math.max(b, 5), cols2 = Math.max(1, Math.floor(w / cb));
+        const tc = Math.floor(hashN(jt * 6.1) * cols2), tr = Math.max(0, Math.floor(sy / cb) - 1 - Math.floor(hashN(jt * 2.9) * 3));
+        const bx = tc * cb, by = tr * cb, L2 = Math.max(3, cb * 0.35);
+        ctx.save(); ctx.globalAlpha = show; ctx.strokeStyle = strong; ctx.lineWidth = 1.2; ctx.beginPath();
+        [[bx, by, 1, 1], [bx + cb, by, -1, 1], [bx + cb, by + cb, -1, -1], [bx, by + cb, 1, -1]].forEach(([x, y, dx, dy]) => { ctx.moveTo(x, y + dy * L2); ctx.lineTo(x, y); ctx.lineTo(x + dx * L2, y); });
+        ctx.stroke();
+        ctx.globalAlpha = 0.6 * show; ctx.lineWidth = 1; ctx.setLineDash([1, 3]); ctx.beginPath();
+        ctx.moveTo(bx + cb / 2, by); ctx.lineTo(bx + cb / 2, -14); ctx.lineTo(Math.min(w, bx + cb / 2 + 26), -14); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 0.9 * show; ctx.fillStyle = strong;
+        ctx.font = `500 7.5px ${css(el, "--pxg-font", "ui-monospace, SFMono-Regular, Menlo, monospace")}`; ctx.textBaseline = "middle";
+        ctx.fillText(`${String(tc).padStart(2, "0")}:${String(tr).padStart(2, "0")}`, Math.min(w - 24, bx + cb / 2 + 30), -14);
+        ctx.restore();
+      }
       // corner brackets and readouts
       ctx.globalAlpha = show; ctx.strokeStyle = strong; ctx.lineWidth = 1.2; ctx.lineCap = "round";
       const L = 10, o = -6; ctx.beginPath();
@@ -228,8 +298,8 @@ export function generate(el, options = {}) {
       ctx.stroke();
       ctx.font = `500 9px ${css(el, "--pxg-font", "ui-monospace, SFMono-Regular, Menlo, monospace")}`; ctx.fillStyle = strong; ctx.textBaseline = "bottom";
       const cols = Math.ceil(w / Math.max(1, b)), rows = Math.ceil(h / Math.max(1, b));
-      ctx.fillText(`RES ${String(crisp ? 1 : b).padStart(2, "0")}PX   ${cols}×${rows}   PASS ${Math.min(pi + 1, opts.resolutions.length)}/${opts.resolutions.length}`, 0, o - 6);
-      ctx.textAlign = "right"; ctx.fillText(`${Math.round(Math.min(1, p) * 100)}%`, w, o - 6);
+      ctx.fillText(`RES ${String(crisp ? 1 : b).padStart(2, "0")}PX   ${cols}×${rows}   PASS ${Math.min(pi + 1, opts.resolutions.length)}/${opts.resolutions.length}`, 0, o - 22);
+      ctx.textAlign = "right"; ctx.fillText(`${Math.round(Math.min(1, p) * 100)}%`, w, o - 22);
       ctx.restore();
     };
     const texts = (p, pi, crisp) => {

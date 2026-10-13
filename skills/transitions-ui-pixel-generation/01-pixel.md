@@ -21,10 +21,19 @@ Phases as fractions of `duration` (default `2200ms`).
 
 | Phase | Window | What happens |
 | --- | --- | --- |
-| HUD | 0 to 0.14 | Corner brackets, the pixel grid and the readout (`RES 32PX   11×11   PASS 1/5   23%`) fade in. |
-| Materialise | 0.04 to 0.46 | 32px blocks of the real UI appear, led by a scan front from the top with blocks scattered ahead of it (`--ease-smooth-out`). The element's shadow arrives as blocks too. |
-| Passes | 0.42 to 0.90 | One pass per entry in `resolutions` (32, 20, 12, 8, 5). Each pass swaps to the smaller block size and sweeps a scan line down with cells flickering behind it. |
+| HUD | 0 to 0.14 | Corner brackets, dotted edge guides, ruler ticks (one per block), the pixel grid and the readout (`RES 32PX   11×11   PASS 1/5   23%`) fade in. |
+| Materialise | 0.04 to 0.46 | 32px blocks of the real UI appear, led by a scan front from the top with blocks scattered ahead of it (`--ease-smooth-out`). Tiny squares fly in from around the element to the front. The element's shadow arrives as blocks too. |
+| Passes | 0.42 to 0.90 | One pass per entry in `resolutions` (32, 20, 12, 8, 5). Each pass swaps to the smaller block size and sweeps a scan line down with cells flickering behind it, `+` marks along it and a targeting bracket that jumps between blocks with its `col:row` label. |
 | Crisp | 0.90 to 1 | The filter comes off, the HUD fades out, the real UI is there. |
+
+## Moving pixels
+
+The mosaic never sits still while it is coarse. Every `70ms`:
+
+- the sample point inside each block jumps a little, so blocks shimmer between nearby colours of the real UI;
+- a band of rows slides sideways (`feTurbulence` stretched into horizontal bands driving `feDisplacementMap`), the scan-glitch look.
+
+Both calm down over the passes (fully still by 0.88) so the last passes read clean before the UI turns crisp.
 
 ## Where the pixels come from
 

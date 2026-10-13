@@ -16,9 +16,11 @@ Works in every agent that reads skills (Claude Code, Cursor, Codex, and others):
 
 Over one build (default `2200ms`):
 
-1. **HUD.** Corner brackets lock onto the element, with a readout of the current resolution, the grid size in blocks, the pass and the progress.
-2. **Materialise.** 32px blocks of the real UI pop in, led by a scan front from the top with blocks scattered ahead of it.
-3. **Passes.** The resolution steps down, 32 → 20 → 12 → 8 → 5px. Each pass sweeps a scan line down the element with cells flickering just behind it, and the pixel grid shrinks with the blocks.
+1. **HUD.** Corner brackets lock onto the element, dotted guides run out along its edges and ruler ticks mark every block, with a readout of the current resolution, the grid size in blocks, the pass and the progress.
+2. **Materialise.** 32px blocks of the real UI pop in, led by a scan front from the top with blocks scattered ahead of it, while tiny squares fly in to the front.
+3. **Passes.** The resolution steps down, 32 → 20 → 12 → 8 → 5px. Each pass sweeps a scan line down the element with cells flickering just behind it, `+` marks along it and a targeting bracket hopping between blocks with a `col:row` label. The pixel grid shrinks with the blocks.
+
+While it is coarse the mosaic keeps moving: blocks shimmer as their sample point jumps and bands of rows glitch sideways, settling down before the last passes.
 4. **Crisp.** The filter comes off and the real, interactive UI is there, untouched.
 
 ## Options
@@ -150,7 +152,7 @@ In [`ui-pixel-generation.css`](./ui-pixel-generation.css). They only style the H
 
 ## How it works (for debugging)
 
-- **The filter** (`feGaussianBlur` → `feFlood` + `feComposite` + `feTile` → `feComposite in` → `feMorphology dilate`) is created in the element's own tree (the document, or its shadow root, so `filter: url(#…)` resolves) and removed at the end.
+- **The filter** (`feGaussianBlur` → `feFlood` + `feComposite` + `feTile` → `feComposite in` → `feMorphology dilate` → `feDisplacementMap` fed by banded `feTurbulence`) is created in the element's own tree (the document, or its shadow root, so `filter: url(#…)` resolves) and removed at the end.
 - **The materialise mask** is a canvas the element's size with one rectangle per revealed block, applied as `mask-image`; it covers the element's shadow too, so the shadow arrives as pixels with the rest.
 - **The HUD** is one canvas over the element (40px around it), `aria-hidden`, with no pointer input.
 
