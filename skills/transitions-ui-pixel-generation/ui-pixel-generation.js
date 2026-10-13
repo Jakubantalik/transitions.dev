@@ -3,8 +3,9 @@
  *
  * Makes an element appear as if an agent is generating it pixel by pixel. Every pixel comes from the element's
  * own rendering: an SVG filter samples the real UI on a grid and blows each sample up into a block, so the colours,
- * images and text are the component's. Blocks materialise in a scattered, scan-led order, then the resolution
- * steps down (32px to 1px) with a scan sweep and flickering cells on every pass, until the real UI is crisp.
+ * images and text are the component's. Blocks materialise in a scattered, top-down order with rows and columns
+ * of blocks turned out of place like a Rubik's cube face, turning home one block at a time, then the resolution
+ * steps down (32px to 5px) pass by pass, with a few turns on each, until the real UI is crisp.
  *
  * Modes
  *   "pixel"         the pixel build with its HUD (corner brackets, pixel grid, resolution readout)
@@ -71,39 +72,81 @@ function makeFilter(el, w, h, pad) {
   const s = document.createElementNS(NS, "svg");
   s.setAttribute("width", "0"); s.setAttribute("height", "0"); s.setAttribute("aria-hidden", "true");
   s.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none";
+  // the puzzle: two displacement maps (columns, then rows) move whole blocks before they are sampled, so a
+  // turned row or column shows the real blocks in new places. Each map is a neutral flood with one flood per
+  // displaced stretch on top; a band uses two (the part that slid and the part that wrapped round)
+  const pool = (k) => Array.from({ length: POOL }, (_, i) => `<feFlood data-k="${k}" flood-opacity="0" x="0" y="0" width="1" height="1" result="${k}${i}"/>`).join("")
+    + `<feMerge result="${k}map"><feMergeNode in="${k}base"/>${Array.from({ length: POOL }, (_, i) => `<feMergeNode in="${k}${i}"/>`).join("")}</feMerge>`;
   s.innerHTML = `<filter id="${id}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="${-pad}" y="${-pad}" width="${w + 2 * pad}" height="${h + 2 * pad}" color-interpolation-filters="sRGB">
     <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="avg"/>
-    <feFlood x="0" y="0" width="1" height="1" flood-color="#000"/>
-    <feComposite x="${-pad}" y="${-pad}" width="8" height="8"/>
+    <feFlood flood-color="rgb(128,128,0)" result="cbase"/>${pool("c")}
+    <feDisplacementMap data-k="cmove" in="avg" in2="cmap" scale="0" xChannelSelector="R" yChannelSelector="G" result="a1"/>
+    <feFlood flood-color="rgb(128,128,0)" result="rbase"/>${pool("r")}
+    <feDisplacementMap data-k="rmove" in="a1" in2="rmap" scale="0" xChannelSelector="R" yChannelSelector="G" result="a2"/>
+    <feFlood data-k="dot" x="0" y="0" width="1" height="1" flood-color="#000"/>
+    <feComposite data-k="cell" x="${-pad}" y="${-pad}" width="8" height="8"/>
     <feTile result="grid"/>
-    <feComposite in="avg" in2="grid" operator="in"/>
-    <feMorphology operator="dilate" radius="4" result="px"/>
-    <feTurbulence type="fractalNoise" baseFrequency="0 0.045" numOctaves="1" seed="1" result="noise"/>
-    <feColorMatrix in="noise" type="matrix" values="1 0 0 0 0  0 0 0 0 0.5  0 0 0 0 0  0 0 0 0 1" result="bands"/>
-    <feDisplacementMap in="px" in2="bands" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+    <feComposite in="a2" in2="grid" operator="in"/>
+    <feMorphology data-k="grow" operator="dilate" radius="4"/>
   </filter>`;
   host.appendChild(s);
-  const [avg, flood, cell, , , grow, noise, , shift] = s.querySelector("filter").children;
-  let B = 8;
+  const q = (k) => s.querySelector(`[data-k="${k}"]`), avg = s.querySelector("feGaussianBlur"), flood = q("dot"), cell = q("cell"), grow = q("grow");
+  const slots = { c: [...s.querySelectorAll('[data-k="c"]')], r: [...s.querySelectorAll('[data-k="r"]')] }, move = { c: q("cmove"), r: q("rmove") };
   // block size b: the UI blurred to about a block's average, sampled at the middle of each b × b cell,
   // then dilated back to the full cell (a real downscale, so each block carries its area's colour)
   const set = (b) => {
-    B = b;
     avg.setAttribute("stdDeviation", (b * 0.32).toFixed(2));
     flood.setAttribute("x", -pad + Math.floor(b / 2)); flood.setAttribute("y", -pad + Math.floor(b / 2));
     cell.setAttribute("width", b); cell.setAttribute("height", b);
     grow.setAttribute("radius", (b / 2).toFixed(2));
   };
-  // the pixels move: the sample point drifts inside its cell (blocks shimmer and shift), and horizontal bands
-  // of blocks slip sideways (a displacement driven by noise that only varies down the element)
-  const motion = (jx, jy, glitch, seed) => {
-    flood.setAttribute("x", -pad + Math.floor(B / 2) + jx); flood.setAttribute("y", -pad + Math.floor(B / 2) + jy);
-    noise.setAttribute("seed", seed); shift.setAttribute("scale", glitch.toFixed(2));
+  // band `bd` turned by n blocks: output block k (from the band's first block) shows source block (k - n) mod N
+  const band = (bd, slot, n) => {
+    const [fa, fb] = [slots[bd.k][slot * 2], slots[bd.k][slot * 2 + 1]], m = ((n % bd.N) + bd.N) % bd.N;
+    if (!m) { fa.setAttribute("flood-opacity", "0"); fb.setAttribute("flood-opacity", "0"); return; }
+    const a = -pad + bd.i0 * bd.b, c = -pad + bd.j * bd.b, v = (d) => Math.round(255 * clamp(0.5 + d / bd.S));
+    [[fa, a, m * bd.b, (bd.N - m) * bd.b], [fb, a + m * bd.b, (bd.N - m) * bd.b, -m * bd.b]].forEach(([f, x, len, d]) => {
+      const col = bd.k === "r" ? `rgb(${v(d)},128,0)` : `rgb(128,${v(d)},0)`;
+      if (bd.k === "r") { f.setAttribute("x", x); f.setAttribute("y", c); f.setAttribute("width", len); f.setAttribute("height", bd.b); }
+      else { f.setAttribute("x", c); f.setAttribute("y", x); f.setAttribute("width", bd.b); f.setAttribute("height", len); }
+      f.setAttribute("flood-color", col); f.setAttribute("flood-opacity", "1");
+    });
   };
-  return { id, svg: s, set, motion };
+  const scale = (k, S) => move[k].setAttribute("scale", S);
+  const reset = () => { [...slots.c, ...slots.r].forEach((f) => f.setAttribute("flood-opacity", "0")); scale("c", 0); scale("r", 0); };
+  return { id, svg: s, set, band, scale, reset };
 }
 
-// ─── HUD canvas over the element: grid, flicker cells, scan line, brackets, readouts ───
+// ─── the puzzle plan: which rows and columns start turned on each pass, by how many blocks, and when they turn home ───
+const POOL = 16, MAXBANDS = POOL / 2, TURN = 0.018; // one block per TURN of the duration (about 40ms)
+function plan(w, h, pad, res, passT) {
+  return res.map((b, i) => {
+    if (i === res.length - 1) return [];
+    const a = i === 0 ? PH.materialize[0] : passT[i], z = passT[i + 1], light = i > 0 && i === res.length - 2;
+    const axes = i === 0 || light ? ["r", "c"] : [i % 2 ? "c" : "r"], out = [];
+    axes.forEach((k) => {
+      // cells along the turn (the band wraps within them) and the bands across it; only whole cells inside the
+      // element turn, so no block of the UI ever lands on the shadow outside its edge
+      const along = k === "r" ? w : h, across = k === "r" ? h : w;
+      const i0 = Math.ceil(pad / b), N = Math.floor((pad + along) / b) - i0, j0 = Math.ceil(pad / b), nb = Math.floor((pad + across) / b) - j0;
+      if (N < 3) return;
+      const count = Math.min(light ? 3 : MAXBANDS, Math.max(1, Math.round(nb * 0.6)));
+      const pick = Array.from({ length: nb }, (_, j) => j0 + j).sort((x, y) => hashN(x * 5.3 + b + (k === "r" ? 0 : 3.7)) - hashN(y * 5.3 + b + (k === "r" ? 0 : 3.7))).slice(0, count);
+      const maxN = i === 0 ? 3 : light ? 1 : 2;
+      pick.forEach((j, s) => {
+        const r1 = hashN(j * 9.7 + b * 1.3 + (k === "r" ? 0 : 50)), r2 = hashN(j * 3.1 + b * 7.7 + (k === "r" ? 20 : 70));
+        const n0 = (r1 < 0.5 ? -1 : 1) * Math.min(N - 1, 1 + Math.floor(r2 * maxN));
+        // pass one: rows turn home first, then columns; later passes turn early in the pass so they land before the next
+        const ps = i === 0 ? (k === "r" ? lerp(0.08, 0.26, r2) : lerp(0.22, 0.36, r1)) : a + (z - a) * (0.05 + 0.4 * hashN(j * 4.1 + b));
+        out.push({ k, b, i0, N, j, n0, ps, slot: s, S: 2 * N * b + 4 });
+      });
+    });
+    return out;
+  });
+}
+const turned = (bd, p) => (p < bd.ps ? bd.n0 : Math.sign(bd.n0) * Math.max(0, Math.abs(bd.n0) - Math.floor((p - bd.ps) / TURN) - 1));
+
+// ─── HUD canvas over the element: grid, turning bands, brackets, markers, readouts ───
 function makeHud(el, w, h, opts) {
   const R = el.getBoundingClientRect(), M = 40, dpr = Math.min(2, devicePixelRatio || 1);
   const layer = document.createElement("div");
@@ -180,7 +223,8 @@ export function generate(el, options = {}) {
     }
     // resolution passes across the passes phase; the first block size also covers the materialise phase
     const passT = res.map((_, i) => lerp(PH.passes[0], PH.passes[1], i / res.length));
-    let lastB = 0, lastMaskKey = "", lastStep = -1, t0 = performance.now();
+    const plans = plan(w, h, pad, res, passT);
+    let lastB = 0, lastMaskKey = "", lastPi = -1, t0 = performance.now();
     const tick = (now) => {
       if (stopped) return;
       const t = now - t0, p = t / D;
@@ -196,13 +240,15 @@ export function generate(el, options = {}) {
         if (mp >= 1) { el.style.maskImage = el.style.webkitMaskImage = prev.mask || ""; }
         else { const u = `url(${maskURL(mc, w, h, mb, mp, pad)})`; el.style.maskImage = el.style.webkitMaskImage = u; }
       }
-      // pixel motion, stepped like a renderer's frames (every 70ms), strongest early and gone by the last pass
-      const step = Math.floor(t / 70);
-      if (b > 1 && step !== lastStep) {
-        lastStep = step;
-        const amp = 1 - smooth(0.3, 0.88, p), r1 = hashN(step * 1.7), r2 = hashN(step * 2.3 + 5), r3 = hashN(step * 3.1 + 9);
-        F.motion(Math.round((r1 - 0.5) * b * 0.7 * amp), Math.round((r2 - 0.5) * b * 0.4 * amp), b * 2.4 * amp * (r3 > 0.55 ? 1 : 0.2), step % 97);
-      }
+      // the puzzle: this pass's turned rows and columns step home one block at a time
+      if (pi !== lastPi) { lastPi = pi; F.reset(); (plans[pi] || []).forEach((bd) => (bd.last = 0)); }
+      const live = { r: 0, c: 0 };
+      if (!crisp) (plans[pi] || []).forEach((bd) => {
+        const n = turned(bd, p);
+        if (n) live[bd.k] = bd.S;
+        if (n !== bd.last) { bd.last = n; F.band(bd, bd.slot, n); }
+      });
+      F.scale("r", live.r); F.scale("c", live.c);
       el.style.opacity = p < PH.materialize[0] ? 0 : "";
       hud(p, t, b, pi, mp, crisp);
       if (logEl) texts(p, pi, crisp);
@@ -215,30 +261,46 @@ export function generate(el, options = {}) {
       const show = smooth(PH.hud[0], PH.hud[1], p) * (1 - smooth(PH.settle[0], PH.settle[1], p));
       if (show <= 0) return;
       ctx.save(); ctx.translate(M, M);
-      // pixel grid at the current block size, brightest where the scan front is
+      // pixel grid at the current block size, on the filter's own block edges
+      const g0 = ((-pad % b) + b) % b;
       if (!crisp && b >= 3) {
         ctx.globalAlpha = 0.22 * show; ctx.strokeStyle = line; ctx.lineWidth = 0.5; ctx.beginPath();
-        for (let x = 0; x <= w; x += b) { ctx.moveTo(x + 0.25, 0); ctx.lineTo(x + 0.25, h); }
-        for (let y = 0; y <= h; y += b) { ctx.moveTo(0, y + 0.25); ctx.lineTo(w, y + 0.25); }
+        for (let x = g0; x <= w; x += b) { ctx.moveTo(x + 0.25, 0); ctx.lineTo(x + 0.25, h); }
+        for (let y = g0; y <= h; y += b) { ctx.moveTo(0, y + 0.25); ctx.lineTo(w, y + 0.25); }
         ctx.stroke();
       }
-      // a scan sweep on each pass (and the materialise front), with cells flickering just behind it
-      const passStart = pi >= 0 ? lerp(PH.passes[0], PH.passes[1], pi / opts.resolutions.length) : 0;
-      const sq = p < PH.passes[0] ? mp : SMOOTH_OUT(clamp((p - passStart) / ((PH.passes[1] - PH.passes[0]) / opts.resolutions.length)));
-      const sy = sq * h;
-      if (sq > 0 && sq < 1) {
-        const g = ctx.createLinearGradient(0, sy - 26, 0, sy);
-        g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(1, flash);
-        ctx.globalAlpha = 0.35 * show; ctx.fillStyle = g; ctx.fillRect(0, sy - 26, w, 26);
-        ctx.globalAlpha = 0.9 * show; ctx.fillStyle = strong; ctx.fillRect(-14, sy - 0.5, w + 28, 1);
-        ctx.fillRect(-3, sy - 3, 6, 6); ctx.fillRect(w - 3, sy - 3, 6, 6);
-        const cs = Math.max(3, b), tick = Math.floor(t / 70);
-        for (let i = 0; i < 26; i++) {
-          const x = Math.floor(hashN(i * 3.7 + tick) * (w / cs)) * cs, y = sy - cs - Math.floor(hashN(i * 9.1 + tick * 1.3) * 4) * cs;
-          if (y < 0) continue;
-          ctx.globalAlpha = (0.25 + 0.5 * hashN(i + tick)) * show; ctx.fillStyle = flash; ctx.fillRect(x, y, cs, cs);
+      // turning bands: brackets on the ends of the row or column while it turns, a flash on every block step,
+      // chevrons outside the edge it turns towards and its label (R07, C03)
+      if (!crisp) (plans[pi] || []).forEach((bd) => {
+        const turns = Math.abs(bd.n0), q = (p - bd.ps) / (turns * TURN);
+        if (q < 0 || q > 1.25) return;
+        const fade = q > 1 ? 1 - (q - 1) / 0.25 : 1, st = (p - bd.ps) / TURN, fl = q > 1 ? 0 : 1 - (st - Math.floor(st));
+        const a = Math.max(0, -pad + bd.i0 * bd.b), c0 = -pad + bd.j * bd.b, row = bd.k === "r";
+        const z = Math.min(row ? w : h, -pad + (bd.i0 + bd.N) * bd.b), u0 = Math.max(0, c0), u1 = Math.min(row ? h : w, c0 + bd.b);
+        if (u1 <= u0) return;
+        const [x, y, rw, rh] = row ? [a, u0, z - a, u1 - u0] : [u0, a, u1 - u0, z - a];
+        ctx.save();
+        ctx.globalAlpha = 0.3 * fl * fade * show; ctx.fillStyle = flash; ctx.fillRect(x, y, rw, rh);
+        // brackets on the band's two ends
+        const L3 = Math.min(6, bd.b * 0.4);
+        ctx.globalAlpha = 0.85 * fade * show; ctx.strokeStyle = strong; ctx.lineWidth = 1; ctx.beginPath();
+        [[x, y, 1, 1], [x + rw, y, -1, 1], [x + rw, y + rh, -1, -1], [x, y + rh, 1, -1]].forEach(([px, py, dx, dy]) => { ctx.moveTo(px + 0.5 * dx, py + dy * L3); ctx.lineTo(px + 0.5 * dx, py + 0.5 * dy); ctx.lineTo(px + dx * L3, py + 0.5 * dy); });
+        ctx.stroke();
+        // content slides towards the lower index when n0 > 0
+        const dir = -Math.sign(bd.n0), mid = (u0 + u1) / 2, edge = dir < 0 ? -9 : (row ? w : h) + 9;
+        ctx.beginPath();
+        for (let k = 0; k < 2; k++) {
+          const e = edge + dir * k * 4;
+          if (row) { ctx.moveTo(e - dir * 3, mid - 3); ctx.lineTo(e, mid); ctx.lineTo(e - dir * 3, mid + 3); }
+          else { ctx.moveTo(mid - 3, e - dir * 3); ctx.lineTo(mid, e); ctx.lineTo(mid + 3, e - dir * 3); }
         }
-      }
+        ctx.stroke();
+        ctx.fillStyle = strong; ctx.font = `500 7.5px ${css(el, "--pxg-font", "ui-monospace, SFMono-Regular, Menlo, monospace")}`; ctx.textBaseline = "middle";
+        const label = (row ? "R" : "C") + String(bd.j).padStart(2, "0");
+        if (row) { ctx.textAlign = dir < 0 ? "right" : "left"; ctx.fillText(label, edge + dir * 10, mid); }
+        else { ctx.textAlign = "center"; ctx.fillText(label, mid, edge + dir * 12); }
+        ctx.restore();
+      });
       // generation lines: dotted guides along the edges, running past the corners, drawn out from each corner
       const gq = SMOOTH_OUT(win([0.02, 0.22], p)), E = 22;
       ctx.save(); ctx.globalAlpha = 0.55 * show; ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.setLineDash([1, 4]); ctx.lineCap = "round"; ctx.beginPath();
@@ -247,8 +309,8 @@ export function generate(el, options = {}) {
       // ruler: a tick every block along the top and left edges, a coordinate every 64px
       if (!crisp) {
         ctx.save(); ctx.globalAlpha = 0.6 * show * gq; ctx.fillStyle = strong;
-        for (let x = 0; x <= w; x += b) ctx.fillRect(x - 0.25, -4, 0.5, x % 64 < b ? 4 : 2);
-        for (let y = 0; y <= h; y += b) ctx.fillRect(-4, y - 0.25, y % 64 < b ? 4 : 2, 0.5);
+        for (let x = g0; x <= w; x += b) ctx.fillRect(x - 0.25, -4, 0.5, x % 64 < b ? 4 : 2);
+        for (let y = g0; y <= h; y += b) ctx.fillRect(-4, y - 0.25, y % 64 < b ? 4 : 2, 0.5);
         ctx.restore();
       }
       // incoming pixels: tiny squares fly in from around the element and land where blocks are appearing
@@ -264,31 +326,28 @@ export function generate(el, options = {}) {
         }
         ctx.restore();
       }
-      // "+" markers flickering at grid points around the scan line
-      if (sq > 0 && sq < 1 && b >= 5) {
-        ctx.save(); ctx.strokeStyle = strong; ctx.lineWidth = 1;
-        const row0 = Math.max(0, Math.floor(sy / b) - 3), fl = Math.floor(t / 90);
-        for (let r = row0; r <= row0 + 4; r++) for (let c = 0; c <= Math.ceil(w / b); c++) {
-          if (hashN(c * 3.3 + r * 7.7 + fl) > 0.16) continue;
-          const x = c * b, y = r * b; if (y > h) continue;
-          ctx.globalAlpha = 0.7 * show; ctx.beginPath(); ctx.moveTo(x - 2.5, y); ctx.lineTo(x + 2.5, y); ctx.moveTo(x, y - 2.5); ctx.lineTo(x, y + 2.5); ctx.stroke();
+      // "+" markers flickering at block corners across the element
+      if (!crisp && b >= 5 && p > PH.materialize[0] + 0.04) {
+        ctx.save(); ctx.strokeStyle = strong; ctx.lineWidth = 1; ctx.globalAlpha = 0.7 * show; ctx.beginPath();
+        const fl = Math.floor(t / 90), nc = Math.floor((w - g0) / b) + 1, nr = Math.floor((h - g0) / b) + 1;
+        for (let i = 0; i < 9; i++) {
+          const x = g0 + Math.floor(hashN(i * 3.3 + fl * 1.7) * nc) * b, y = g0 + Math.floor(hashN(i * 7.7 + fl * 2.9) * nr) * b;
+          ctx.moveTo(x - 2.5, y); ctx.lineTo(x + 2.5, y); ctx.moveTo(x, y - 2.5); ctx.lineTo(x, y + 2.5);
         }
-        ctx.restore();
+        ctx.stroke(); ctx.restore();
       }
-      // targeting: a bracket locks onto a block behind the scan line, joined to the readout by an elbow line,
-      // with the block's coordinates; it jumps to a new block every 160ms
-      if (!crisp && sq > 0.05) {
-        const jt = Math.floor(t / 160), cb = Math.max(b, 5), cols2 = Math.max(1, Math.floor(w / cb));
-        const tc = Math.floor(hashN(jt * 6.1) * cols2), tr = Math.max(0, Math.floor(sy / cb) - 1 - Math.floor(hashN(jt * 2.9) * 3));
-        const bx = tc * cb, by = tr * cb, L2 = Math.max(3, cb * 0.35);
+      // targeting: a bracket locks onto a block with its coordinates, jumping to a new block every 160ms
+      if (!crisp && p > PH.materialize[0] + 0.06) {
+        const jt = Math.floor(t / 160), cb = Math.max(b, 5), nc = Math.max(1, Math.floor((w - g0) / cb)), nr = Math.max(1, Math.floor((h - g0) / cb));
+        const tc = Math.floor(hashN(jt * 6.1) * nc), tr = Math.floor(hashN(jt * 2.9 + 4) * Math.min(nr, Math.ceil(nr * Math.max(0.2, mp))));
+        const bx = g0 + tc * cb, by = g0 + tr * cb, L2 = Math.max(3, cb * 0.35);
         ctx.save(); ctx.globalAlpha = show; ctx.strokeStyle = strong; ctx.lineWidth = 1.2; ctx.beginPath();
         [[bx, by, 1, 1], [bx + cb, by, -1, 1], [bx + cb, by + cb, -1, -1], [bx, by + cb, 1, -1]].forEach(([x, y, dx, dy]) => { ctx.moveTo(x, y + dy * L2); ctx.lineTo(x, y); ctx.lineTo(x + dx * L2, y); });
         ctx.stroke();
-        ctx.globalAlpha = 0.6 * show; ctx.lineWidth = 1; ctx.setLineDash([1, 3]); ctx.beginPath();
-        ctx.moveTo(bx + cb / 2, by); ctx.lineTo(bx + cb / 2, -14); ctx.lineTo(Math.min(w, bx + cb / 2 + 26), -14); ctx.stroke();
-        ctx.setLineDash([]); ctx.globalAlpha = 0.9 * show; ctx.fillStyle = strong;
-        ctx.font = `500 7.5px ${css(el, "--pxg-font", "ui-monospace, SFMono-Regular, Menlo, monospace")}`; ctx.textBaseline = "middle";
-        ctx.fillText(`${String(tc).padStart(2, "0")}:${String(tr).padStart(2, "0")}`, Math.min(w - 24, bx + cb / 2 + 30), -14);
+        ctx.globalAlpha = 0.9 * show; ctx.fillStyle = strong;
+        ctx.font = `500 7.5px ${css(el, "--pxg-font", "ui-monospace, SFMono-Regular, Menlo, monospace")}`; ctx.textBaseline = "bottom";
+        ctx.textAlign = bx + cb + 30 > w ? "right" : "left";
+        ctx.fillText(`${String(tc).padStart(2, "0")}:${String(tr).padStart(2, "0")}`, bx + cb + 30 > w ? bx + cb : bx, by - 3);
         ctx.restore();
       }
       // corner brackets and readouts

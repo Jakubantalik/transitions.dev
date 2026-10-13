@@ -1,7 +1,7 @@
 ---
 name: transitions-ui-pixel-generation
 license: Free for personal and commercial use; see LICENSE.txt (no redistribution of the library itself)
-description: Make any UI appear as if an AI agent is rendering it pixel by pixel. Every pixel comes from the real UI (an SVG filter samples the element's own rendering, so colours, images and text are the component's), blocks materialise in a scattered scan-led order, then the resolution steps down 32px to crisp with a scan sweep and flickering cells on every pass, under a HUD (corner brackets, pixel grid, resolution readout). Two modes, pixel and pixel + generation texts (a render log of every pass and a step line). One dependency-free runtime for any framework (vanilla, React, Next.js, Vue, Svelte). Use when the user asks for a "pixel generation animation", "pixelated reveal", "UI rendering in pixels", "depixelate", "resolution build-up", "low-res to high-res reveal", "8-bit materialise", "AI rendering the UI", "futuristic pixel reveal", or for an AI product that should show its output being rendered. Also the commands transitions pixelate, transitions pixelate texts and transitions pixelate preview. For the dotted wireframe version, use transitions-ui-generation.
+description: Make any UI appear as if an AI agent is rendering it pixel by pixel. Every pixel comes from the real UI (an SVG filter samples the element's own rendering, so colours, images and text are the component's), blocks materialise top down while rows and columns of blocks turn into place like a Rubik's cube, then the resolution steps down 32px to crisp with more turns on each pass, under a HUD (corner brackets, pixel grid, resolution readout). Two modes, pixel and pixel + generation texts (a render log of every pass and a step line). One dependency-free runtime for any framework (vanilla, React, Next.js, Vue, Svelte). Use when the user asks for a "pixel generation animation", "pixelated reveal", "UI rendering in pixels", "depixelate", "resolution build-up", "low-res to high-res reveal", "8-bit materialise", "AI rendering the UI", "futuristic pixel reveal", or for an AI product that should show its output being rendered. Also the commands transitions pixelate, transitions pixelate texts and transitions pixelate preview. For the dotted wireframe version, use transitions-ui-generation.
 ---
 
 # Transitions UI pixel generation
@@ -17,10 +17,10 @@ Works in every agent that reads skills (Claude Code, Cursor, Codex, and others):
 Over one build (default `2200ms`):
 
 1. **HUD.** Corner brackets lock onto the element, dotted guides run out along its edges and ruler ticks mark every block, with a readout of the current resolution, the grid size in blocks, the pass and the progress.
-2. **Materialise.** 32px blocks of the real UI pop in, led by a scan front from the top with blocks scattered ahead of it, while tiny squares fly in to the front.
-3. **Passes.** The resolution steps down, 32 → 20 → 12 → 8 → 5px. Each pass sweeps a scan line down the element with cells flickering just behind it, `+` marks along it and a targeting bracket hopping between blocks with a `col:row` label. The pixel grid shrinks with the blocks.
+2. **Materialise.** 32px blocks of the real UI pop in from the top down, while rows and columns that start turned out of place, like the face of a Rubik's cube, turn home one block at a time. Tiny squares fly in from around the element.
+3. **Passes.** The resolution steps down, 32 → 20 → 12 → 8 → 5px, and each pass but the last turns a few more rows or columns home. Brackets and chevrons mark each turning band, `+` marks flicker at block corners and a targeting bracket hops between blocks with a `col:row` label. The pixel grid shrinks with the blocks.
 
-While it is coarse the mosaic keeps moving: blocks shimmer as their sample point jumps and bands of rows glitch sideways, settling down before the last passes.
+The blocks only ever move as whole blocks of the real UI; nothing is distorted.
 4. **Crisp.** The filter comes off and the real, interactive UI is there, untouched.
 
 ## Options
@@ -146,13 +146,13 @@ In [`ui-pixel-generation.css`](./ui-pixel-generation.css). They only style the H
 | --- | --- | --- |
 | `--pxg-line` | `#9a9a9a` | The pixel grid. |
 | `--pxg-strong` | `#6c6c6c` | Scan line, brackets, readouts. |
-| `--pxg-flash` | `rgba(255, 255, 255, 0.75)` | Flickering cells and the glow behind the scan line. Lower it on light-on-light UI, raise it on dark UI. |
+| `--pxg-flash` | `rgba(255, 255, 255, 0.75)` | The flash on a turning band at every step. Lower it on light-on-light UI, raise it on dark UI. |
 | `--pxg-text` / `--pxg-muted` | `#0d0d0d` / `#8b8b8b` | Log heading and copy (`pixel-texts`). |
 | `--pxg-font` | Roboto Mono, monospace | HUD and texts. |
 
 ## How it works (for debugging)
 
-- **The filter** (`feGaussianBlur` → `feFlood` + `feComposite` + `feTile` → `feComposite in` → `feMorphology dilate` → `feDisplacementMap` fed by banded `feTurbulence`) is created in the element's own tree (the document, or its shadow root, so `filter: url(#…)` resolves) and removed at the end.
+- **The filter** (`feGaussianBlur` → two `feDisplacementMap`s for the column and row turns, each fed by merged `feFlood`s → `feFlood` + `feComposite` + `feTile` → `feComposite in` → `feMorphology dilate`) is created in the element's own tree (the document, or its shadow root, so `filter: url(#…)` resolves) and removed at the end.
 - **The materialise mask** is a canvas the element's size with one rectangle per revealed block, applied as `mask-image`; it covers the element's shadow too, so the shadow arrives as pixels with the rest.
 - **The HUD** is one canvas over the element (40px around it), `aria-hidden`, with no pointer input.
 

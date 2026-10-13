@@ -2,8 +2,8 @@
    The pixels themselves come from the element, through an SVG filter; these variables only style the HUD. */
 :root {
   --pxg-line: #9a9a9a;                 /* the pixel grid */
-  --pxg-strong: #6c6c6c;               /* scan line, corner brackets, readouts */
-  --pxg-flash: rgba(255, 255, 255, 0.75); /* flickering cells and the glow behind the scan line */
+  --pxg-strong: #6c6c6c;               /* corner brackets, turning bands, markers, readouts */
+  --pxg-flash: rgba(255, 255, 255, 0.75); /* the flash on a turning band at every step */
   --pxg-text: #0d0d0d;                 /* log heading */
   --pxg-muted: #8b8b8b;                /* log and step copy */
   --pxg-font: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
