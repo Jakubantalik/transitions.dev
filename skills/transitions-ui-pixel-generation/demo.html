@@ -29,6 +29,7 @@
   <div class="demo-bar" role="toolbar" aria-label="Demo controls">
     <button data-mode="pixel" aria-pressed="true">Pixel</button>
     <button data-mode="pixel-texts" aria-pressed="false">Pixel + generation texts</button>
+    <button id="cube" aria-pressed="false">3D cube</button>
     <button id="layout" aria-pressed="false">One card</button>
     <button id="replay">Replay</button>
   </div>
@@ -67,10 +68,10 @@
     return { el, item, title: c.title };
   });
 
-  let mode = "pixel";
+  let mode = "pixel", motion = "slide";
   const play = async () => {
     await document.fonts.ready;
-    items.filter((it) => it.item.offsetParent).forEach((it, i) => generate(it.el, { mode, delay: i * 260, done: it.title + " ready" }));
+    items.filter((it) => it.item.offsetParent).forEach((it, i) => generate(it.el, { mode, motion, delay: i * 260, done: it.title + " ready" }));
   };
   document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
     mode = b.dataset.mode;
@@ -78,6 +79,10 @@
     play();
   }));
   document.getElementById("replay").addEventListener("click", play);
+  document.getElementById("cube").addEventListener("click", (e) => {
+    motion = motion === "cube" ? "slide" : "cube"; e.currentTarget.setAttribute("aria-pressed", String(motion === "cube"));
+    play();
+  });
   document.getElementById("layout").addEventListener("click", (e) => {
     const on = document.body.classList.toggle("is-single"); e.currentTarget.setAttribute("aria-pressed", String(on));
     items.forEach((it) => it.el.__tPxg && it.el.__tPxg.cancel()); play();

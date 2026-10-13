@@ -11,6 +11,10 @@
  *   "pixel"         the pixel build with its HUD (corner brackets, pixel grid, resolution readout)
  *   "pixel-texts"   the same, plus a render log of every pass and a step line
  *
+ * Motion
+ *   "slide"         turned rows and columns slide home flat, one block at a time (default)
+ *   "cube"          every block is a little cube; turning rows and columns rotate in 3D like a Rubik's cube layer
+ *
  * Usage
  *   import { generate } from "./ui-pixel-generation.js";
  *   const run = generate(el, { mode: "pixel" });
@@ -29,6 +33,7 @@ const DEFAULTS = {
   duration: 2200,         // ms for the whole build
   delay: 0,               // ms before it starts
   resolutions: [32, 20, 12, 8, 5], // block sizes, coarse to fine; after the last one the UI is crisp
+  motion: "slide",        // "slide" (turned rows and columns slide home flat) | "cube" (every block turns in 3D, like a Rubik's cube)
   steps: ["Sampling pixels", "Resolving layout", "Sharpening detail", "Final pass"],
   done: "Ready",
   onDone: null,
@@ -67,7 +72,7 @@ function isFree(el, x0, y0, x1, y1) {
 
 // ─── the pixelate filter: samples the element on a grid and grows each sample into a block ───
 // It lives in the element's own tree (the document, or its shadow root) so `filter: url(#…)` resolves.
-function makeFilter(el, w, h, pad) {
+function makeFilter(el, w, h, pad, cube) {
   const id = "t-pxg-" + ++N, host = el.getRootNode() instanceof ShadowRoot ? el.getRootNode() : document.body;
   const s = document.createElementNS(NS, "svg");
   s.setAttribute("width", "0"); s.setAttribute("height", "0"); s.setAttribute("aria-hidden", "true");
@@ -77,6 +82,28 @@ function makeFilter(el, w, h, pad) {
   // displaced stretch on top; a band uses two (the part that slid and the part that wrapped round)
   const pool = (k) => Array.from({ length: POOL }, (_, i) => `<feFlood data-k="${k}" flood-opacity="0" x="0" y="0" width="1" height="1" result="${k}${i}"/>`).join("")
     + `<feMerge result="${k}map"><feMergeNode in="${k}base"/>${Array.from({ length: POOL }, (_, i) => `<feMergeNode in="${k}${i}"/>`).join("")}</feMerge>`;
+  const fn = (k) => ["R", "G", "B"].map((c) => `<feFunc${c} data-k="${k}" type="linear" slope="1"/>`).join("");
+  // cube motion: the state one turn on ("to") is the current state shifted one block along each turning band
+  // (a third displacement map, "s"), sampled into a second mosaic. Inside the turning bands every block shows
+  // two faces: the current block shrinking away and the next one turning in, split by a tiled stripe one block
+  // wide, each shaded for its angle. Blocks are flat colour, so a face only needs its width, never a stretch.
+  const cubeFx = !cube ? "" : `
+    <feFlood flood-color="rgb(128,128,0)" result="sbase"/>${pool("s")}
+    <feMerge result="sreg">${Array.from({ length: POOL }, (_, i) => `<feMergeNode in="s${i}"/>`).join("")}</feMerge>
+    <feDisplacementMap data-k="smove" in="a2" in2="smap" scale="0" xChannelSelector="R" yChannelSelector="G" result="a3"/>
+    <feComposite in="a3" in2="grid" operator="in"/>
+    <feMorphology data-k="grow2" operator="dilate" radius="4" result="pxTo"/>
+    <feComponentTransfer in="pxTo" result="toS">${fn("lb")}</feComponentTransfer>
+    <feComponentTransfer in="pxFrom" result="fromS">${fn("la")}</feComponentTransfer>
+    <feFlood data-k="stripe" flood-opacity="0" x="0" y="0" width="1" height="1" flood-color="#000"/>
+    <feComposite data-k="scell" x="${-pad}" y="${-pad}" width="8" height="8"/>
+    <feTile result="stripes"/>
+    <feComposite in="toS" in2="stripes" operator="in" result="bF"/>
+    <feComposite in="fromS" in2="stripes" operator="out" result="aF"/>
+    <feMerge result="faces"><feMergeNode in="aF"/><feMergeNode in="bF"/></feMerge>
+    <feComposite in="faces" in2="sreg" operator="in" result="mov"/>
+    <feComposite in="pxFrom" in2="sreg" operator="out" result="rest"/>
+    <feMerge><feMergeNode in="rest"/><feMergeNode in="mov"/></feMerge>`;
   s.innerHTML = `<filter id="${id}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="${-pad}" y="${-pad}" width="${w + 2 * pad}" height="${h + 2 * pad}" color-interpolation-filters="sRGB">
     <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="avg"/>
     <feFlood flood-color="rgb(128,128,0)" result="cbase"/>${pool("c")}
@@ -87,11 +114,13 @@ function makeFilter(el, w, h, pad) {
     <feComposite data-k="cell" x="${-pad}" y="${-pad}" width="8" height="8"/>
     <feTile result="grid"/>
     <feComposite in="a2" in2="grid" operator="in"/>
-    <feMorphology data-k="grow" operator="dilate" radius="4"/>
+    <feMorphology data-k="grow" operator="dilate" radius="4" result="pxFrom"/>${cubeFx}
   </filter>`;
   host.appendChild(s);
   const q = (k) => s.querySelector(`[data-k="${k}"]`), avg = s.querySelector("feGaussianBlur"), flood = q("dot"), cell = q("cell"), grow = q("grow");
-  const slots = { c: [...s.querySelectorAll('[data-k="c"]')], r: [...s.querySelectorAll('[data-k="r"]')] }, move = { c: q("cmove"), r: q("rmove") };
+  const all = (k) => [...s.querySelectorAll(`[data-k="${k}"]`)];
+  const slots = { c: all("c"), r: all("r"), s: all("s") }, move = { c: q("cmove"), r: q("rmove"), s: q("smove") };
+  const grow2 = q("grow2"), stripe = q("stripe"), scell = q("scell"), shadeA = all("la"), shadeB = all("lb");
   // block size b: the UI blurred to about a block's average, sampled at the middle of each b × b cell,
   // then dilated back to the full cell (a real downscale, so each block carries its area's colour)
   const set = (b) => {
@@ -99,6 +128,7 @@ function makeFilter(el, w, h, pad) {
     flood.setAttribute("x", -pad + Math.floor(b / 2)); flood.setAttribute("y", -pad + Math.floor(b / 2));
     cell.setAttribute("width", b); cell.setAttribute("height", b);
     grow.setAttribute("radius", (b / 2).toFixed(2));
+    if (cube) { grow2.setAttribute("radius", (b / 2).toFixed(2)); scell.setAttribute("width", b); scell.setAttribute("height", b); }
   };
   // band `bd` turned by n blocks: output block k (from the band's first block) shows source block (k - n) mod N
   const band = (bd, slot, n) => {
@@ -112,18 +142,47 @@ function makeFilter(el, w, h, pad) {
       f.setAttribute("flood-color", col); f.setAttribute("flood-opacity", "1");
     });
   };
-  const scale = (k, S) => move[k].setAttribute("scale", S);
-  const reset = () => { [...slots.c, ...slots.r].forEach((f) => f.setAttribute("flood-opacity", "0")); scale("c", 0); scale("r", 0); };
-  return { id, svg: s, set, band, scale, reset };
+  // cube: band `bd` (now turned by n) is one turn into its next state; its "to" blocks are its current blocks one
+  // along, wrapping round: output block k shows current block k + sign(n)
+  const step = (bd, slot, n) => {
+    const [fa, fb] = [slots.s[slot * 2], slots.s[slot * 2 + 1]];
+    if (!n) { fa.setAttribute("flood-opacity", "0"); fb.setAttribute("flood-opacity", "0"); return; }
+    const g = Math.sign(n), a = -pad + bd.i0 * bd.b, c = -pad + bd.j * bd.b, v = (d) => Math.round(255 * clamp(0.5 + d / bd.S));
+    // the wrapping block: the last one (moving to lower indices) or the first
+    const wrapAt = g > 0 ? a + (bd.N - 1) * bd.b : a, restAt = g > 0 ? a : a + bd.b;
+    [[fa, wrapAt, bd.b, -g * (bd.N - 1) * bd.b], [fb, restAt, (bd.N - 1) * bd.b, g * bd.b]].forEach(([f, x, len, d]) => {
+      if (bd.k === "r") { f.setAttribute("x", x); f.setAttribute("y", c); f.setAttribute("width", len); f.setAttribute("height", bd.b); f.setAttribute("flood-color", `rgb(${v(d)},128,0)`); }
+      else { f.setAttribute("x", c); f.setAttribute("y", x); f.setAttribute("width", bd.b); f.setAttribute("height", len); f.setAttribute("flood-color", `rgb(128,${v(d)},0)`); }
+      f.setAttribute("flood-opacity", "1");
+    });
+  };
+  // the turn: angle e (0 to 1 of a quarter turn), the incoming face on the side the blocks come from
+  const turn = (k, g, e, b) => {
+    const th = e * Math.PI / 2, sn = Math.sin(th), cs = Math.cos(th), wB = b * sn / (sn + cs);
+    if (wB < 0.5) { stripe.setAttribute("flood-opacity", "0"); }
+    else {
+      const off = g > 0 ? b - wB : 0; // moving to lower indices: the next block turns in from the far side
+      stripe.setAttribute("flood-opacity", "1");
+      if (k === "r") { stripe.setAttribute("x", -pad + off); stripe.setAttribute("y", -pad); stripe.setAttribute("width", wB); stripe.setAttribute("height", b); }
+      else { stripe.setAttribute("x", -pad); stripe.setAttribute("y", -pad + off); stripe.setAttribute("width", b); stripe.setAttribute("height", wB); }
+    }
+    shadeA.forEach((f) => f.setAttribute("slope", (1 - 0.2 * sn).toFixed(3)));
+    shadeB.forEach((f) => f.setAttribute("slope", (0.8 + 0.2 * sn).toFixed(3)));
+  };
+  const scale = (k, S) => move[k] && move[k].setAttribute("scale", S);
+  const reset = () => { [...slots.c, ...slots.r, ...slots.s].forEach((f) => f.setAttribute("flood-opacity", "0")); scale("c", 0); scale("r", 0); scale("s", 0); };
+  return { id, svg: s, set, band, step, turn, scale, reset };
 }
 
 // ─── the puzzle plan: which rows and columns start turned on each pass, by how many blocks, and when they turn home ───
-const POOL = 16, MAXBANDS = POOL / 2, TURN = 0.018; // one block per TURN of the duration (about 40ms)
-function plan(w, h, pad, res, passT) {
+const POOL = 16, MAXBANDS = POOL / 2, TURN = 0.018, TURN3 = 0.04; // one block per turn: about 40ms flat, a quarter turn of about 90ms as a cube
+function plan(w, h, pad, res, passT, cube) {
+  const T = cube ? TURN3 : TURN;
   return res.map((b, i) => {
     if (i === res.length - 1) return [];
     const a = i === 0 ? PH.materialize[0] : passT[i], z = passT[i + 1], light = i > 0 && i === res.length - 2;
-    const axes = i === 0 || light ? ["r", "c"] : [i % 2 ? "c" : "r"], out = [];
+    // cube turns run one axis at a time, every band of it the same way round and in step, like a Rubik's layer
+    const axes = i === 0 || (light && !cube) ? ["r", "c"] : [i % 2 ? "c" : "r"], out = [];
     axes.forEach((k) => {
       // cells along the turn (the band wraps within them) and the bands across it; only whole cells inside the
       // element turn, so no block of the UI ever lands on the shadow outside its edge
@@ -132,19 +191,26 @@ function plan(w, h, pad, res, passT) {
       if (N < 3) return;
       const count = Math.min(light ? 3 : MAXBANDS, Math.max(1, Math.round(nb * 0.6)));
       const pick = Array.from({ length: nb }, (_, j) => j0 + j).sort((x, y) => hashN(x * 5.3 + b + (k === "r" ? 0 : 3.7)) - hashN(y * 5.3 + b + (k === "r" ? 0 : 3.7))).slice(0, count);
-      const maxN = i === 0 ? 3 : light ? 1 : 2;
+      const maxN = i === 0 ? 3 : light || cube ? 1 : 2, way = hashN(b * 2.7 + (k === "r" ? 1 : 2)) < 0.5 ? -1 : 1;
       pick.forEach((j, s) => {
         const r1 = hashN(j * 9.7 + b * 1.3 + (k === "r" ? 0 : 50)), r2 = hashN(j * 3.1 + b * 7.7 + (k === "r" ? 20 : 70));
-        const n0 = (r1 < 0.5 ? -1 : 1) * Math.min(N - 1, 1 + Math.floor(r2 * maxN));
+        const n0 = (cube ? way : r1 < 0.5 ? -1 : 1) * Math.min(N - 1, 1 + Math.floor(r2 * maxN));
         // pass one: rows turn home first, then columns; later passes turn early in the pass so they land before the next
-        const ps = i === 0 ? (k === "r" ? lerp(0.08, 0.26, r2) : lerp(0.22, 0.36, r1)) : a + (z - a) * (0.05 + 0.4 * hashN(j * 4.1 + b));
-        out.push({ k, b, i0, N, j, n0, ps, slot: s, S: 2 * N * b + 4 });
+        let ps = i === 0 ? (k === "r" ? lerp(0.08, cube ? 0.14 : 0.26, r2) : lerp(cube ? 0.29 : 0.22, cube ? 0.34 : 0.36, r1)) : a + (z - a) * (cube ? 0.02 : 0.05 + 0.4 * hashN(j * 4.1 + b));
+        if (cube) ps = Math.ceil(ps / T) * T; // on the shared beat, so every turning band is at the same angle
+        out.push({ k, b, i0, N, j, n0, ps, T, slot: s, S: 2 * N * b + 4 });
       });
     });
     return out;
   });
 }
 const turned = (bd, p) => (p < bd.ps ? bd.n0 : Math.sign(bd.n0) * Math.max(0, Math.abs(bd.n0) - Math.floor((p - bd.ps) / TURN) - 1));
+// cube: whole turns done so far (the band's state) and how far into the current quarter turn it is
+const turnedCube = (bd, p) => {
+  if (p < bd.ps) return { n: bd.n0, e: 0 };
+  const q = (p - bd.ps) / bd.T, done = Math.floor(q), n = Math.sign(bd.n0) * Math.max(0, Math.abs(bd.n0) - done);
+  return { n, e: n ? q - done : 0 };
+};
 
 // ─── HUD canvas over the element: grid, turning bands, brackets, markers, readouts ───
 function makeHud(el, w, h, opts) {
@@ -204,7 +270,8 @@ export function generate(el, options = {}) {
   function start() {
     const w = el.offsetWidth, h = el.offsetHeight, pad = 48, D = Math.max(800, +opts.duration || DEFAULTS.duration);
     const res = opts.resolutions.slice(), mc = document.createElement("canvas");
-    F = makeFilter(el, w, h, pad); HUD = makeHud(el, w, h, opts);
+    const cube = opts.motion === "cube";
+    F = makeFilter(el, w, h, pad, cube); HUD = makeHud(el, w, h, opts);
     const line = css(el, "--pxg-line", "#9a9a9a"), strong = css(el, "--pxg-strong", "#6c6c6c"), flash = css(el, "--pxg-flash", "rgba(255,255,255,0.75)");
     // the element: pixelated through the filter, its blocks masked in as they materialise (the mask also covers its shadow)
     Object.assign(el.style, { filter: `url(#${F.id})`, maskRepeat: "no-repeat", webkitMaskRepeat: "no-repeat",
@@ -223,7 +290,7 @@ export function generate(el, options = {}) {
     }
     // resolution passes across the passes phase; the first block size also covers the materialise phase
     const passT = res.map((_, i) => lerp(PH.passes[0], PH.passes[1], i / res.length));
-    const plans = plan(w, h, pad, res, passT);
+    const plans = plan(w, h, pad, res, passT, cube);
     let lastB = 0, lastMaskKey = "", lastPi = -1, t0 = performance.now();
     const tick = (now) => {
       if (stopped) return;
@@ -241,14 +308,22 @@ export function generate(el, options = {}) {
         else { const u = `url(${maskURL(mc, w, h, mb, mp, pad)})`; el.style.maskImage = el.style.webkitMaskImage = u; }
       }
       // the puzzle: this pass's turned rows and columns step home one block at a time
-      if (pi !== lastPi) { lastPi = pi; F.reset(); (plans[pi] || []).forEach((bd) => (bd.last = 0)); }
-      const live = { r: 0, c: 0 };
+      if (pi !== lastPi) { lastPi = pi; F.reset(); (plans[pi] || []).forEach((bd) => { bd.last = 0; bd.moving = false; bd.stepN = 0; }); }
+      const live = { r: 0, c: 0, s: 0 };
+      let spin = null;
       if (!crisp) (plans[pi] || []).forEach((bd) => {
-        const n = turned(bd, p);
+        const { n, e } = cube ? turnedCube(bd, p) : { n: turned(bd, p), e: 0 };
         if (n) live[bd.k] = bd.S;
         if (n !== bd.last) { bd.last = n; F.band(bd, bd.slot, n); }
+        // cube: a band mid-turn gets its next state and the shared angle (one axis turns at a time)
+        const moving = cube && p >= bd.ps && n !== 0;
+        if (cube && moving !== bd.moving) { bd.moving = moving; F.step(bd, bd.slot, moving ? n : 0); }
+        else if (moving && n !== bd.stepN) F.step(bd, bd.slot, n);
+        bd.stepN = moving ? n : 0;
+        if (moving) { live.s = Math.max(live.s, bd.S); if (!spin) spin = { k: bd.k, g: Math.sign(n), e, b: bd.b }; }
       });
       F.scale("r", live.r); F.scale("c", live.c);
+      if (cube) { F.scale("s", live.s); if (spin) F.turn(spin.k, spin.g, smooth(0, 1, spin.e), spin.b); else F.turn("r", 1, 0, b); }
       el.style.opacity = p < PH.materialize[0] ? 0 : "";
       hud(p, t, b, pi, mp, crisp);
       if (logEl) texts(p, pi, crisp);
@@ -272,15 +347,24 @@ export function generate(el, options = {}) {
       // turning bands: brackets on the ends of the row or column while it turns, a flash on every block step,
       // chevrons outside the edge it turns towards and its label (R07, C03)
       if (!crisp) (plans[pi] || []).forEach((bd) => {
-        const turns = Math.abs(bd.n0), q = (p - bd.ps) / (turns * TURN);
+        const turns = Math.abs(bd.n0), q = (p - bd.ps) / (turns * bd.T);
         if (q < 0 || q > 1.25) return;
-        const fade = q > 1 ? 1 - (q - 1) / 0.25 : 1, st = (p - bd.ps) / TURN, fl = q > 1 ? 0 : 1 - (st - Math.floor(st));
+        const fade = q > 1 ? 1 - (q - 1) / 0.25 : 1, st = (p - bd.ps) / bd.T, fl = q > 1 || cube ? 0 : 1 - (st - Math.floor(st));
         const a = Math.max(0, -pad + bd.i0 * bd.b), c0 = -pad + bd.j * bd.b, row = bd.k === "r";
         const z = Math.min(row ? w : h, -pad + (bd.i0 + bd.N) * bd.b), u0 = Math.max(0, c0), u1 = Math.min(row ? h : w, c0 + bd.b);
         if (u1 <= u0) return;
         const [x, y, rw, rh] = row ? [a, u0, z - a, u1 - u0] : [u0, a, u1 - u0, z - a];
         ctx.save();
         ctx.globalAlpha = 0.3 * fl * fade * show; ctx.fillStyle = flash; ctx.fillRect(x, y, rw, rh);
+        // cube: a bright edge where each block's two faces meet
+        if (cube && q < 1) {
+          const e = smooth(0, 1, st - Math.floor(st)), th = e * Math.PI / 2, wB = bd.b * Math.sin(th) / (Math.sin(th) + Math.cos(th));
+          if (wB > 0.5 && wB < bd.b - 0.5) {
+            const g = Math.sign(bd.n0), off = g > 0 ? bd.b - wB : wB, n = Math.round((row ? rw : rh) / bd.b);
+            ctx.globalAlpha = 0.8 * fade * show * Math.sin(th * 2); ctx.fillStyle = flash;
+            for (let k = 0; k < n; k++) { const at = (row ? x : y) + k * bd.b + off; if (row) ctx.fillRect(at - 0.5, y, 1, rh); else ctx.fillRect(x, at - 0.5, rw, 1); }
+          }
+        }
         // brackets on the band's two ends
         const L3 = Math.min(6, bd.b * 0.4);
         ctx.globalAlpha = 0.85 * fade * show; ctx.strokeStyle = strong; ctx.lineWidth = 1; ctx.beginPath();
@@ -387,7 +471,7 @@ export function generate(el, options = {}) {
 
 export function auto(root = document) {
   const els = [...root.querySelectorAll("[data-t-pixel-generate]")].filter((e) => !e.__tPxgAuto);
-  const play = (e) => generate(e, { mode: e.dataset.tPixelGenerate || "pixel", duration: +e.dataset.tPixelGenerateDuration || undefined, delay: +e.dataset.tPixelGenerateDelay || 0 });
+  const play = (e) => generate(e, { mode: e.dataset.tPixelGenerate || "pixel", motion: e.dataset.tPixelGenerateMotion || "slide", duration: +e.dataset.tPixelGenerateDuration || undefined, delay: +e.dataset.tPixelGenerateDelay || 0 });
   els.forEach((e) => { e.__tPxgAuto = true; e.__tPxgOpacity = e.style.opacity; e.style.opacity = 0; });
   if (!("IntersectionObserver" in window)) { els.forEach(play); return; }
   const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) { io.unobserve(en.target); play(en.target); } }), { threshold: 0.35 });
