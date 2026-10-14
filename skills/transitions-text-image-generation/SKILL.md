@@ -66,7 +66,7 @@ Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx se
 2. Import the CSS once, globally.
 3. Import `generate` (and `auto` for the attribute API) where the element lives.
 
-Do not rewrite the runtime or its timings: the glyph tracing, the ink, the halftone and the wipes are tuned together.
+Do not rewrite the runtime or its timings: the glyph tracing, the fades, the sketch, the halftone and the colour are tuned together.
 
 ## Wiring
 
