@@ -1,11 +1,11 @@
 /*
  * transitions.dev / text and image generation
  *
- * The dotted "agent is generating this" drawing, made for large bold type and images. Every glyph of a headline
- * is traced along its real outline in small flowing dots (each character is drawn in the element's own font on a
- * canvas and traced with marching squares), over typographic guides (cap height, x-height, baseline, descender).
- * Every image is drawn as a halftone of its own pixels inside a dotted frame. Then the ink rises into each glyph
- * and each image wipes in under a scan line.
+ * The dotted "agent is generating this" drawing, made for large bold type and images. Every glyph of a headline is
+ * traced along its real outline in small flowing dots (each character is drawn in the element's own font on a canvas
+ * and traced with marching squares), over typographic guides (cap height, x-height, baseline, descender). Every image
+ * is sketched in lines of equal tone, built up as a fine halftone of its own pixels, and turned into a dot matrix of
+ * its own colours. Then each glyph fades in, and each photo resolves over its colour dots.
  *
  * Modes
  *   "trace"         the dotted drawing and the ink

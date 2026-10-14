@@ -23,7 +23,6 @@
 .t-tig-sketch { stroke-width: calc(var(--tig-dot) * 0.75); } /* an image's contour sketch: finer dots */
 .t-tig-wire { fill: none; stroke: var(--tig-line); stroke-linecap: round; stroke-linejoin: round; } /* drawn as round dots */
 .t-tig-guide { fill: none; stroke: var(--tig-line); stroke-width: 1.5; stroke-linecap: round; }
-.t-tig-guide--scan { stroke-dasharray: 0 5; }
 .t-tig-head, .t-tig-flyer { fill: var(--tig-strong); }
 .t-tig-handle { fill: var(--tig-surface); stroke: var(--tig-strong); stroke-width: 1; }
 .t-tig-reticle { fill: none; stroke: var(--tig-strong); stroke-width: 1.2; stroke-linecap: round; }
