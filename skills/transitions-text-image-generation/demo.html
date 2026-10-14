@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Text and image generation demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Inter+Tight:wght@600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./text-image-generation.css" />
+<style>
+  :root { --bg: #fbfbfb; --fg: #0d0d0d; --muted: #6c6c6c; --soft: rgba(0,0,0,.06); --line: rgba(0,0,0,.08); color-scheme: light; }
+  html[data-theme="dark"] { --bg: #0b0b0c; --fg: #f2f2f2; --muted: rgba(202,202,202,.7); --soft: rgba(255,255,255,.08); --line: rgba(255,255,255,.1); color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 400 15px/24px Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  img { display: block; max-width: 100%; }
+
+  .bar { position: sticky; top: 0; z-index: 2147483647; /* above the generation overlay */ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 14px 16px;
+    background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .bar button { height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--soft); color: var(--fg); font: 500 14px/1 Inter, sans-serif; cursor: pointer;
+    transition: background-color 150ms cubic-bezier(.22, 1, .36, 1), transform 150ms cubic-bezier(.22, 1, .36, 1); }
+  .bar button:active { transform: scale(.97); }
+  .bar button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 24px 160px; }
+  .hero { display: grid; grid-template-columns: 1.08fr .92fr; gap: 64px; align-items: center; }
+  .eyebrow, .meta, .tag { font: 500 11px/16px "Roboto Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+  .display { margin: 22px 0 26px; font: 800 92px/.94 "Inter Tight", Inter, sans-serif; letter-spacing: -.045em; }
+  .lede { margin: 0 0 30px; max-width: 420px; font-size: 17px; line-height: 27px; color: var(--muted); }
+  .hero-img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 22px; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 150px; }
+  .card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 18px; }
+  .card h2 { margin: 26px 0 10px; font: 750 48px/1 "Inter Tight", Inter, sans-serif; letter-spacing: -.04em; }
+  .card p { margin: 0; max-width: 440px; color: var(--muted); }
+  .card .tag { margin-top: 22px; }
+
+  .quote { margin: 150px auto 0; max-width: 900px; text-align: center; font: 700 64px/1.02 "Inter Tight", Inter, sans-serif; letter-spacing: -.04em; }
+  .quote span { color: var(--muted); }
+  .credit { margin-top: 40px; text-align: center; }
+
+  @media (max-width: 860px) {
+    .hero, .row { grid-template-columns: 1fr; gap: 40px; }
+    .display { font-size: 60px; }
+    .card h2 { font-size: 38px; }
+    .quote { font-size: 40px; }
+    .row, .quote { margin-top: 96px; }
+  }
+</style>
+<script>if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.dataset.theme = "dark";</script>
+</head>
+<body>
+  <div class="bar" role="toolbar" aria-label="Demo controls">
+    <button data-mode="trace" aria-pressed="true">Trace</button>
+    <button data-mode="trace-texts" aria-pressed="false">Trace + generation texts</button>
+    <button id="replay">Replay</button>
+  </div>
+
+  <main class="page">
+    <section class="hero demo-gen">
+      <div>
+        <p class="eyebrow">Field notes · Issue 07</p>
+        <h1 class="display">Light finds the quiet places.</h1>
+        <p class="lede">A short story told in type and image, generated in front of you: every glyph traced along its own outline, every photo drawn from its own pixels.</p>
+        <p class="meta">4 min read · Spring 2026</p>
+      </div>
+      <img class="hero-img" src="./demo/canyon.jpg" alt="Sunlight through a narrow gap in a red rock canyon" />
+    </section>
+
+    <section class="row">
+      <article class="card demo-gen">
+        <img src="./demo/tulips.jpg" alt="Five pink tulips on long stems against a pale blue sky" />
+        <h2>Five tulips</h2>
+        <p>Stems leaning into the same light, each one a little taller than the last.</p>
+        <p class="tag">Plate 02</p>
+      </article>
+      <article class="card demo-gen">
+        <img src="./demo/marten.jpg" alt="A pine marten walking along a mossy branch" />
+        <h2>Pine marten</h2>
+        <p>Out along a mossy branch at first light, gone before the shutter closed twice.</p>
+        <p class="tag">Plate 03</p>
+      </article>
+    </section>
+
+    <p class="quote demo-gen">Every frame is made twice: <span>once by the light, once by you.</span></p>
+    <p class="meta credit">transitions-text-image-generation</p>
+  </main>
+
+<script type="module">
+  import { generate } from "./text-image-generation.js";
+  const els = [...document.querySelectorAll(".demo-gen")];
+  let mode = "trace";
+  // everything waits for its fonts and photos, so glyphs are traced in the real face and images sampled from real pixels
+  const ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode().catch(() => {}))]);
+  els.forEach((e) => { e.__tTigOpacity = ""; e.style.opacity = 0; }); // hidden until each plays; restored to visible after
+  const seen = new Set();
+  const play = async (e, delay = 0) => { await ready; generate(e, { mode, delay }); };
+  const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+    if (!en.isIntersecting || seen.has(en.target)) return;
+    seen.add(en.target);
+    const i = els.indexOf(en.target);
+    play(en.target, en.target.classList.contains("card") && i % 2 === 0 ? 260 : 0);
+  }), { threshold: 0.3 });
+  els.forEach((e) => io.observe(e));
+  const replay = () => {
+    const vis = els.filter((e) => { const r = e.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; });
+    vis.forEach((e, i) => play(e, i * 260));
+  };
+  document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
+    mode = b.dataset.mode;
+    document.querySelectorAll("[data-mode]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    replay();
+  }));
+  document.getElementById("replay").addEventListener("click", replay);
+</script>
+</body>
+</html>
