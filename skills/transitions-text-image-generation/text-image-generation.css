@@ -20,6 +20,7 @@
 .t-tig-svg, .t-tig-canvas { position: absolute; left: 0; top: 0; overflow: visible; }
 
 .t-tig-wireframe { stroke-width: var(--tig-dot); }
+.t-tig-sketch { stroke-width: calc(var(--tig-dot) * 0.75); } /* an image's contour sketch: finer dots */
 .t-tig-wire { fill: none; stroke: var(--tig-line); stroke-linecap: round; stroke-linejoin: round; } /* drawn as round dots */
 .t-tig-guide { fill: none; stroke: var(--tig-line); stroke-width: 1.5; stroke-linecap: round; }
 .t-tig-guide--scan { stroke-dasharray: 0 5; }

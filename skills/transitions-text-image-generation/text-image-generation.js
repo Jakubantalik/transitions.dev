@@ -36,8 +36,9 @@ const DEFAULTS = {
 };
 
 // phases as fractions of `duration`
-const PH = { guides: [0, 0.26], glyphs: [0.06, 0.76], lines: [0.12, 0.78], images: [0.04, 0.2], ink: 0.14, clean: [0.86, 1.04] };
-const HALFTONE = 0.36, WIPE = 0.28; // an image's halftone sweep, then its wipe (fractions of duration)
+const PH = { guides: [0, 0.26], glyphs: [0.06, 0.76], lines: [0.12, 0.78], images: [0.04, 0.16], ink: 0.16, clean: [0.86, 1.04] };
+// an image's own timeline, from its start: frame, contour sketch, halftone, colour, photo (fractions of duration)
+const IMG = { frame: 0.2, sketch: [0.08, 0.38], screen: [0.2, 0.56], colour: [0.52, 0.68], photo: [0.64, 0.88] };
 const END = 1.06;
 
 const clamp = (x) => Math.max(0, Math.min(1, x));
@@ -210,39 +211,98 @@ function measure(el, opts) {
   return { w: R.width, h: R.height, glyphs, lines, images, hosts, rows };
 }
 
-// ─── 3. an image's halftone: one dot per cell, sized by how dark its own pixels are there ───
-function halftone(im, cell, light) {
-  const cols = Math.max(1, Math.floor(im.w / cell)), rows = Math.max(1, Math.floor(im.h / cell));
-  const ox = (im.w - cols * cell) / 2, oy = (im.h - rows * cell) / 2;
-  let lum = null;
+// ─── 3. images: their own pixels, read for a contour sketch and a halftone ───
+// the image as it is shown (object-fit cover, contain or fill, and object-position) at cols × rows; null if unreadable
+function readImage(im, cols, rows) {
   try {
     const c = document.createElement("canvas"); c.width = cols; c.height = rows;
     const g = c.getContext("2d", { willReadFrequently: true }), src = im.el;
     const sw = src.naturalWidth || src.videoWidth || src.width, sh = src.naturalHeight || src.videoHeight || src.height;
-    if (sw && sh) {
-      // object-fit: cover (the common case), contain and fill; object-position from its percentages
-      let sx = 0, sy = 0, cw = sw, ch = sh, dx = 0, dy = 0, dw = cols, dh = rows;
-      const [px, py] = String(im.pos || "50% 50%").split(" ").map((v) => (/%$/.test(v) ? parseFloat(v) / 100 : 0.5));
-      if (im.fit === "cover") { const k = Math.max(im.w / sw, im.h / sh); cw = im.w / k; ch = im.h / k; sx = (sw - cw) * px; sy = (sh - ch) * (py ?? 0.5); }
-      else if (im.fit === "contain") { const k = Math.min(im.w / sw, im.h / sh); dw = (sw * k) / cell; dh = (sh * k) / cell; dx = (cols - dw) * px; dy = (rows - dh) * (py ?? 0.5); }
-      g.drawImage(src, sx, sy, cw, ch, dx, dy, dw, dh);
-      const d = g.getImageData(0, 0, cols, rows).data; lum = new Float32Array(cols * rows);
-      let lo = 1, hi = 0;
-      for (let i = 0; i < lum.length; i++) { const a = d[i * 4 + 3] / 255, v = a ? (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255 : 1; lum[i] = v; lo = Math.min(lo, v); hi = Math.max(hi, v); }
-      for (let i = 0; i < lum.length; i++) lum[i] = (lum[i] - lo) / Math.max(0.1, hi - lo); // stretched, so a soft photo still reads
-    }
-  } catch (e) { lum = null; } // a cross-origin image without CORS can't be read: an even dot screen instead
-  const dots = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-    const v = lum ? lum[r * cols + c] : 0.55 + 0.1 * hashN(r * 7.1 + c * 3.3), dark = Math.pow(light ? v : 1 - v, 0.85); // light dots on a dark page grow with brightness
-    if (dark < 0.06) continue;
-    const y = oy + (r + 0.5) * cell;
-    dots.push({ x: im.x + ox + (c + 0.5) * cell, y: im.y + y, r: Math.max(0.5, cell * 0.5 * dark), at: 0.72 * (y / im.h) + 0.28 * hashN(r * 12.9 + c * 78.2) });
+    if (!sw || !sh) return null;
+    let sx = 0, sy = 0, cw = sw, ch = sh, dx = 0, dy = 0, dw = cols, dh = rows;
+    const [px, py = 0.5] = String(im.pos || "50% 50%").split(" ").map((v) => (/%$/.test(v) ? parseFloat(v) / 100 : 0.5));
+    if (im.fit === "cover") { const k = Math.max(im.w / sw, im.h / sh); cw = im.w / k; ch = im.h / k; sx = (sw - cw) * px; sy = (sh - ch) * py; }
+    else if (im.fit === "contain") { const k = Math.min(im.w / sw, im.h / sh); dw = (sw * k * cols) / im.w; dh = (sh * k * rows) / im.h; dx = (cols - dw) * px; dy = (rows - dh) * py; }
+    g.imageSmoothingQuality = "high";
+    g.drawImage(src, sx, sy, cw, ch, dx, dy, dw, dh);
+    return g.getImageData(0, 0, cols, rows).data;
+  } catch (e) { return null; } // a cross-origin image without CORS can't be read
+}
+// luminance 0..1, stretched between the image's own 1st and 99th percentile so a soft photo still has range
+function luminance(d, n, cols) {
+  const lum = new Float32Array(n), hist = new Uint32Array(256);
+  for (let i = 0; i < n; i++) {
+    const v = d ? (d[i * 4 + 3] ? (0.2126 * d[i * 4] + 0.7152 * d[i * 4 + 1] + 0.0722 * d[i * 4 + 2]) / 255 : 1) : 0.35 + 0.3 * ((i % cols) / cols);
+    lum[i] = v; hist[Math.min(255, Math.round(v * 255))]++;
   }
-  return dots;
+  let lo = 0, hi = 255, acc = 0;
+  for (let k = 0; k < 256; k++) { acc += hist[k]; if (acc >= n * 0.01) { lo = k; break; } }
+  acc = 0; for (let k = 255; k >= 0; k--) { acc += hist[k]; if (acc >= n * 0.01) { hi = k; break; } }
+  for (let i = 0; i < n; i++) lum[i] = clamp((lum[i] * 255 - lo) / Math.max(20, hi - lo));
+  return lum;
+}
+function boxBlur(a, W, H) {
+  const o = new Float32Array(a.length);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    let s = 0, n = 0;
+    for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) { const X = x + i, Y = y + j; if (X >= 0 && Y >= 0 && X < W && Y < H) { s += a[Y * W + X]; n++; } }
+    o[y * W + x] = s / n;
+  }
+  return o;
+}
+const chaikin = (p) => (p.length < 3 ? p : [p[0], ...p.slice(0, -1).flatMap((a, i) => { const b = p[i + 1]; return [[a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25], [a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]]; }), p[p.length - 1]]);
+const polyLen = (p) => p.reduce((s, q, i) => (i ? s + Math.hypot(q[0] - p[i - 1][0], q[1] - p[i - 1][1]) : 0), 0);
+
+// the contour sketch: lines of equal tone (shadows, midtones, highlights) through the softened photo, like a
+// topographic drawing of it; edges of the image are left to the frame. Longest lines kept within `budget` px.
+function sketch(im, light, budget) {
+  const S = 3, cols = Math.max(2, Math.round(im.w / S)), rows = Math.max(2, Math.round(im.h / S)), sx = im.w / cols, sy = im.h / rows;
+  const d = readImage(im, cols, rows); if (!d) return [];
+  const lum = boxBlur(luminance(d, cols * rows, cols), cols, rows), out = [];
+  for (const lv of [0.14, 0.28, 0.42, 0.56, 0.7, 0.84]) {
+    const a = new Uint8Array(cols * rows);
+    for (let i = 0; i < a.length; i++) a[i] = Math.round(clamp(0.5 + ((light ? lum[i] : 1 - lum[i]) - lv) * 4) * 255);
+    for (const loop of marching(a, cols, rows)) {
+      let run = [];
+      const flush = () => { if (run.length > 3) out.push(run); run = []; };
+      for (const [x, y] of loop) { if (x < 1.2 || y < 1.2 || x > cols - 1.2 || y > rows - 1.2) flush(); else run.push([x * sx, y * sy]); }
+      flush();
+    }
+  }
+  // long contours are cut into strokes of up to 240px, so the sketch builds up in many places at once
+  const pieces = [];
+  for (const p of out.map((q) => chaikin(rdp(q, 0.8)))) {
+    let cur = [p[0]], L = 0;
+    for (let i = 1; i < p.length; i++) {
+      L += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); cur.push(p[i]);
+      if (L > 240 && p.length - i > 4) { pieces.push(cur); cur = [p[i]]; L = 0; }
+    }
+    pieces.push(cur);
+  }
+  const lines = pieces.map((p) => ({ p, L: polyLen(p), y: Math.min(...p.map((q) => q[1])) })).filter((o) => o.L > 16).sort((a, b) => b.L - a.L);
+  const keep = []; let total = 0;
+  for (const o of lines) { if (total + o.L > budget) continue; keep.push(o); total += o.L; }
+  return keep.sort((a, b) => a.y + hashN(a.L) * 60 - b.y - hashN(b.L) * 60).map((o) => "M" + o.p.map(([x, y]) => `${f2(im.x + x)} ${f2(im.y + y)}`).join("L"));
+}
+
+// the halftone: one dot per cell, its area following how dark the photo is there (bright on a dark page), with the
+// local contrast lifted so texture survives the screen; it sweeps in from the top left. Plus the cells' own colours.
+function halftone(im, cell, light) {
+  const cols = Math.max(1, Math.floor(im.w / cell)), rows = Math.max(1, Math.floor(im.h / cell)), ox = (im.w - cols * cell) / 2, oy = (im.h - rows * cell) / 2;
+  const d = readImage(im, cols, rows), lum = luminance(d, cols * rows, cols), dots = [];
+  const soft = boxBlur(boxBlur(boxBlur(lum, cols, rows), cols, rows), cols, rows);
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const i = r * cols + c, v = clamp(lum[i] + 2 * (lum[i] - soft[i])), dark = Math.pow(light ? v : 1 - v, 1.3); // shadows keep their steps
+    if (dark < 0.04) continue;
+    const x = (c + 0.5) / cols, y = (r + 0.5) / rows;
+    dots.push({ x: ox + (c + 0.5) * cell, y: oy + (r + 0.5) * cell, r: Math.max(0.3, cell * 0.46 * Math.sqrt(dark)), at: 0.8 * ((x * 0.4 + y * 0.6)) + 0.2 * hashN(r * 12.9 + c * 78.2) });
+  }
+  dots.sort((a, b) => a.at - b.at);
+  return { dots, d, cols, rows, ox, oy };
 }
 
 // ─── 4. the overlay ───
+const MPAD = 64, MASK_PROPS = ["maskImage", "webkitMaskImage", "maskSize", "webkitMaskSize", "maskPosition", "webkitMaskPosition", "maskRepeat", "webkitMaskRepeat", "maskClip", "webkitMaskClip"];
 function build(el, M, opts) {
   const R = el.getBoundingClientRect(), w = M.w, h = M.h, DOT_GAP = 4.6;
   const layer = document.createElement("div");
@@ -293,19 +353,31 @@ function build(el, M, opts) {
     G.lines.push({ s, b: ln, t0, t1: t0 + ldur, ti: t0 + ldur * 0.7, host: ln.host });
   });
 
-  // images: a dotted frame drawn from the top in both directions, a placeholder cross, handles, size label, halftone
-  const cell = Math.max(5, Math.min(8, Math.round(Math.sqrt(Math.max(...M.images.map((m) => m.w * m.h), 1)) / 70)));
+  // images: a dotted frame with handles and a label, a contour sketch of the photo in flowing dots, a fine halftone
+  // of its own pixels arriving shadows first, the dots taking the photo's colours, then the photo itself over them
   M.images.forEach((im, i) => {
     const t0 = M.images.length > 1 ? lerp(PH.images[0], PH.images[1], i / (M.images.length - 1)) : PH.images[0];
+    const cell = Math.max(3, Math.min(5, Math.round(Math.sqrt(im.w * im.h) / 160)));
     const frame = [1, 0].map((dir) => Object.assign(stroke(rrHalf(im.x, im.y, im.w, im.h, im.r, dir), wires), { head: head(wires, 2.6) }));
-    const cross = [`M${f2(im.x)} ${f2(im.y)}L${f2(im.x + im.w)} ${f2(im.y + im.h)}`, `M${f2(im.x + im.w)} ${f2(im.y)}L${f2(im.x)} ${f2(im.y + im.h)}`].map((d) => stroke(d, wires, "t-tig-guide", 6));
     const handles = [[im.x, im.y], [im.x + im.w, im.y], [im.x + im.w, im.y + im.h], [im.x, im.y + im.h]].map(([x, y]) => ({ el: svg("rect", { x: -2.5, y: -2.5, width: 5, height: 5, class: "t-tig-handle", transform: `translate(${f2(x)} ${f2(y)}) scale(0)` }, root), x, y }));
     const label = svg("text", { x: f2(im.x), y: f2(im.y - 8), class: "t-tig-label", opacity: 0 }, root);
-    const scan = svg("g", { opacity: 0 }, root);
-    svg("path", { d: `M${f2(im.x - 14)} 0H${f2(im.x + im.w + 14)}`, class: "t-tig-guide t-tig-guide--scan" }, scan);
-    svg("circle", { cx: f2(im.x), cy: 0, r: 2.3, class: "t-tig-head" }, scan); svg("circle", { cx: f2(im.x + im.w), cy: 0, r: 2.3, class: "t-tig-head" }, scan);
-    G.images.push({ im, frame, cross, handles, label, scan, dots: halftone(im, cell, G.light), t0, th: t0 + 0.08, tr: t0 + 0.08 + HALFTONE, cell,
-      prev: { clipPath: im.el.style.clipPath, filter: im.el.style.filter } });
+    const status = svg("text", { x: f2(im.x + im.w), y: f2(im.y - 8), class: "t-tig-label t-tig-label--small", "text-anchor": "end", opacity: 0 }, root);
+    const sk = svg("g", { class: "t-tig-sketch" }, wires);
+    const paths = sketch(im, G.light, (im.w + im.h) * 13), ns = paths.length, sd = 0.12, [a0, a1] = IMG.sketch;
+    const lines = paths.map((d, k) => Object.assign(stroke(d, sk, "t-tig-wire", 3.4), { t0: t0 + a0 + (ns > 1 ? (a1 - a0 - sd) * (k / (ns - 1)) : 0), head: k % 3 ? null : head(sk, 1.6) }));
+    // the two finished screens are drawn once: the grey dots as they settle, and the colour dot matrix
+    const screen = (fill) => { const c = document.createElement("canvas"); c.width = Math.ceil(im.w * dpr); c.height = Math.ceil(im.h * dpr); const g = c.getContext("2d"); g.scale(dpr, dpr); if (fill) g.fillStyle = fill; return [c, g]; };
+    const ht = halftone(im, cell, G.light), [settled, sg] = screen(G.ink), [colour, cg] = screen();
+    if (ht.d) {
+      const buckets = new Map(), cr = cell * 0.48;
+      for (let r = 0; r < ht.rows; r++) for (let c = 0; c < ht.cols; c++) {
+        const j = (r * ht.cols + c) * 4, key = `rgb(${ht.d[j] & 0xf8},${ht.d[j + 1] & 0xf8},${ht.d[j + 2] & 0xf8})`;
+        (buckets.get(key) || buckets.set(key, []).get(key)).push([ht.ox + (c + 0.5) * cell, ht.oy + (r + 0.5) * cell]);
+      }
+      for (const [col, pts] of buckets) { cg.fillStyle = col; cg.beginPath(); for (const [x, y] of pts) { cg.moveTo(x + cr, y); cg.arc(x, y, cr, 0, Math.PI * 2); } cg.fill(); }
+    }
+    G.images.push({ im, frame, handles, label, status, sk, lines, dots: ht.dots, k: 0, settled, sg, colour: ht.d ? colour : null, cell, t0,
+      prev: { opacity: im.el.style.opacity, filter: im.el.style.filter } });
   });
 
   // reticle on the glyph being traced, coordinate readout on its moving dot, particles landing on each glyph
@@ -317,7 +389,18 @@ function build(el, M, opts) {
   });
 
   // the blocks the text is revealed through, with their own clip
-  G.hosts = M.hosts.map((hel) => { const r = hel.getBoundingClientRect(); return { el: hel, x: r.left - R.left, y: r.top - R.top, prev: hel.style.clipPath }; });
+  G.hosts = M.hosts.map((hel) => {
+    const r = hel.getBoundingClientRect(), st = hel.style, W = r.width + 2 * MPAD, H = r.height + 2 * MPAD;
+    const prev = {}; MASK_PROPS.forEach((k) => (prev[k] = st[k]));
+    Object.assign(st, { maskSize: `${f2(W)}px ${f2(H)}px`, webkitMaskSize: `${f2(W)}px ${f2(H)}px`, maskPosition: `${-MPAD}px ${-MPAD}px`, webkitMaskPosition: `${-MPAD}px ${-MPAD}px`,
+      maskRepeat: "no-repeat", webkitMaskRepeat: "no-repeat", maskClip: "no-clip", webkitMaskClip: "no-clip" });
+    return { el: hel, x: r.left - R.left, y: r.top - R.top, W, H, prev };
+  });
+  // each glyph fades in through its own box: its cell across (its ink box at the ends of a line), its ink box down
+  for (const g of G.glyphs) {
+    const b = g.b, k = b.ink, row = M.rows.find((r) => r.host === b.host && Math.abs(r.base - b.base) < 2 && r.font === b.font);
+    g.box = { x0: b.x <= row.x0 + 0.5 ? Math.min(b.x, k.x0) - 2 : b.x, x1: b.x + b.w >= row.x1 - 0.5 ? Math.max(b.x + b.w, k.x1) + 2 : b.x + b.w, y0: k.y0 - 2, y1: k.y1 + 2 };
+  }
   G.inkEnd = Math.max(0, ...G.glyphs.map((g) => g.ti + PH.ink), ...G.lines.map((l) => l.ti + PH.ink));
   if (opts.mode === "trace-texts") buildTexts(G, el, opts);
   return G;
@@ -343,7 +426,7 @@ function buildTexts(G, el, opts) {
   const hex = (k) => "0x" + Math.floor(hashN(k * 5.3 + 17.1) * 65535).toString(16).padStart(4, "0");
   const sz = (b) => `${String(Math.round(b.w)).padStart(3, "0")}×${String(Math.round(b.h)).padStart(3, "0")}`;
   G.log = [
-    ...G.images.map((m, i) => ({ head: `${hex(i + 90)}  image  ${sz(m.im)}  ${String(m.dots.length).padStart(5, " ")} DOTS  `, t0: m.t0, t1: m.tr })),
+    ...G.images.map((m, i) => ({ head: `${hex(i + 90)}  image  ${sz(m.im)}  ${String(m.dots.length).padStart(5, " ")} DOTS  ${String(m.lines.length).padStart(2, " ")} LINES  `, t0: m.t0, t1: m.t0 + IMG.colour[1] })),
     ...G.glyphs.map((g, i) => ({ head: `${hex(i)}  glyph  "${g.b.ch}"  ${sz(g.b)}  ${String(g.strokes.length).padStart(2, " ")} PATHS  `, t0: g.t0, t1: g.t1 })),
     ...G.lines.map((l, i) => ({ head: `${hex(i + 50)}  line   ${sz({ w: l.b.x2 - l.b.x, h: l.b.h })}  `, t0: l.t0, t1: l.t1 })),
   ].sort((a, b) => a.t0 - b.t0);
@@ -363,10 +446,9 @@ function drawStroke(s, q, t) {
     if (live) { s.pt = s.el.getPointAtLength(Math.floor((s.L * q) / s.gap) * s.gap); s.head.setAttribute("cx", f2(s.pt.x)); s.head.setAttribute("cy", f2(s.pt.y)); }
   }
 }
-const rect = (x, y, w, h) => (w > 0.2 && h > 0.2 ? `M${f2(x)} ${f2(y)}h${f2(w)}v${f2(h)}h${f2(-w)}Z` : "");
 
 function frame(G, p, t, D) {
-  const clean = 1 - smooth(PH.clean[0], PH.clean[1], p), ink = (x) => SMOOTH_OUT(clamp((p - x) / PH.ink));
+  const clean = 1 - smooth(PH.clean[0], PH.clean[1], p), ink = (x) => smooth(0, 1, clamp((p - x) / PH.ink));
 
   // type guides: drawn out early, gone once their line has its ink
   for (const R of G.rows) {
@@ -375,7 +457,7 @@ function frame(G, p, t, D) {
     R.guides.forEach((g) => { const q = OUT(clamp((p - R.t0 - g.k * 0.025) / 0.18)); drawStroke(g, q, t); g.label.setAttribute("opacity", f2(smooth(0.6, 1, q))); });
     R.spec.setAttribute("opacity", f2(smooth(R.t0 + 0.04, R.t0 + 0.12, p)));
   }
-  // glyphs: traced loop by loop, then the dots fade as the ink rises in
+  // glyphs: traced loop by loop, then the dots fade as the letter fades in
   let cur = null;
   for (const g of G.glyphs) {
     const q = clamp((p - g.t0) / (g.t1 - g.t0)), iq = ink(g.ti);
@@ -388,57 +470,61 @@ function frame(G, p, t, D) {
     if (l.s.el.style.opacity === "1") l.s.el.style.opacity = f2((1 - 0.85 * ink(l.ti)) * clean);
   }
 
-  // the text blocks: each glyph's ink rises from its descender, smaller lines wipe in left to right
+  // the text blocks: each glyph and each smaller line fades in through its own box in the block's mask
   for (const H of G.hosts) {
-    if (p >= G.inkEnd) { if (!H.done) { H.done = true; H.el.style.clipPath = H.prev; } continue; }
-    let d = "";
-    for (const g of G.glyphs) {
-      if (g.host !== H.el) continue;
-      const iq = ink(g.ti); if (iq <= 0) continue;
-      const k = g.b.ink, y0 = k.y0 - 2, y1 = k.y1 + 2;
-      d += rect(k.x0 - 2 - H.x, y1 - (y1 - y0) * iq - H.y, k.x1 - k.x0 + 4, (y1 - y0) * iq);
+    if (p >= G.inkEnd) { if (!H.done) { H.done = true; Object.assign(H.el.style, H.prev); } continue; }
+    let s = "";
+    const add = (x, y, w, h, a) => { if (w > 0.2 && h > 0.2 && a > 0.003) s += `<rect x='${f2(x - H.x + MPAD)}' y='${f2(y - H.y + MPAD)}' width='${f2(w)}' height='${f2(h)}'${a < 0.997 ? ` fill-opacity='${a.toFixed(3)}'` : ""}/>`; };
+    for (const g of G.glyphs) if (g.host === H.el) add(g.box.x0, g.box.y0, g.box.x1 - g.box.x0, g.box.y1 - g.box.y0, ink(g.ti));
+    for (const l of G.lines) if (l.host === H.el) add(l.b.x - 3, l.b.y - 4, l.b.x2 - l.b.x + 6, l.b.h + 8, ink(l.ti));
+    for (const m of G.images) if (holds(H.el, m.im.el)) add(m.im.x - 2, m.im.y - 2, m.im.w + 4, m.im.h + 4, 1); // images keep their own reveal
+    if (s !== H.key) {
+      H.key = s;
+      const url = `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${f2(H.W)}' height='${f2(H.H)}'>${s}</svg>`)}")`;
+      H.el.style.maskImage = url; H.el.style.webkitMaskImage = url;
     }
-    for (const l of G.lines) {
-      if (l.host !== H.el) continue;
-      const iq = ink(l.ti); if (iq <= 0) continue;
-      d += rect(l.b.x - 3 - H.x, l.b.y - 4 - H.y, (l.b.x2 - l.b.x + 6) * iq, l.b.h + 8);
-    }
-    // images inside the block keep their own wipe
-    for (const m of G.images) if (holds(H.el, m.im.el)) d += rect(m.im.x - H.x - 2, m.im.y - H.y - 2, m.im.w + 4, m.im.h + 4);
-    H.el.style.clipPath = d ? `path("${d}")` : "polygon(0 0, 0 0, 0 0)";
   }
 
-  // images: frame, cross and handles, then the halftone of their own pixels, then the photo wipes in under a scan line
+  // images: frame and handles, the contour sketch, the halftone settling shadows first, the colour dot matrix, the photo
   const { ctx } = G; ctx.clearRect(0, 0, G.w, G.h);
   for (const m of G.images) {
-    const fq = OUT(clamp((p - m.t0) / 0.22)), wq = SMOOTH_OUT(clamp((p - m.tr) / WIPE)), gone = 1 - smooth(0.55, 1, wq), es = m.im.el.style;
+    const { im } = m, at = (r) => [m.t0 + r[0], m.t0 + r[1]], es = im.el.style;
+    const fq = OUT(clamp((p - m.t0) / IMG.frame)), hq = clamp((p - at(IMG.screen)[0]) / (IMG.screen[1] - IMG.screen[0]));
+    const cq = SMOOTH_OUT(clamp((p - at(IMG.colour)[0]) / (IMG.colour[1] - IMG.colour[0]))), pq = SMOOTH_OUT(clamp((p - at(IMG.photo)[0]) / (IMG.photo[1] - IMG.photo[0])));
+    const gone = 1 - pq;
     m.frame.forEach((s) => { drawStroke(s, fq, t); if (s.el.style.opacity === "1") s.el.style.opacity = f2(gone * clean); });
-    m.cross.forEach((s, k) => { const q = OUT(clamp((p - m.t0 - 0.04 - k * 0.03) / 0.2)); drawStroke(s, q, t); s.el.style.opacity = q > 0 ? f2(0.55 * (1 - smooth(0, 0.5, clamp((p - m.th) / HALFTONE))) * clean) : 0; });
     m.handles.forEach((hd) => hd.el.setAttribute("transform", `translate(${f2(hd.x)} ${f2(hd.y)}) scale(${f2(OUT(clamp((p - m.t0 - 0.06) / 0.1)) * gone)})`));
     m.label.setAttribute("opacity", f2(smooth(m.t0, m.t0 + 0.06, p) * gone));
-    m.label.textContent = `IMAGE ${Math.round(m.im.w * fq)}×${Math.round(m.im.h * fq)}  ${m.im.fit === "fill" ? "" : m.im.fit.toUpperCase()}  ${m.cell}PX SCREEN`;
-    // halftone: dots arrive top down (scattered a little), pop large and dark, then settle; the wipe takes them
-    const hq = (p - m.th) / HALFTONE, yWipe = m.im.y + wq * (m.im.h + 4) - 2;
-    if (hq > 0 && wq < 1) {
-      for (const pass of [0, 1]) {
-        ctx.beginPath(); ctx.fillStyle = pass ? G.lit : G.ink;
-        for (const d of m.dots) {
-          if (d.y < yWipe) continue;
-          const a = clamp((hq - d.at * 0.85) / 0.15); if (a <= 0 || (a < 1) !== !!pass) continue;
-          const r = d.r * (a < 1 ? OUT(a) * (1 + 0.5 * (1 - a)) : 1);
-          ctx.moveTo(d.x + r, d.y); ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
-        }
-        ctx.fill();
+    m.label.textContent = `IMAGE ${Math.round(im.w * fq)}×${Math.round(im.h * fq)}  ${im.fit === "fill" ? "" : im.fit.toUpperCase() + "  "}${m.cell}PX SCREEN`;
+    m.status.setAttribute("opacity", f2(smooth(m.t0 + 0.04, m.t0 + 0.1, p) * gone));
+    m.status.textContent = pq > 0 ? `RESOLVING ${Math.round(pq * 100)}%` : cq > 0 ? `COLOUR ${Math.round(cq * 100)}%` : hq > 0 ? `SCREEN ${String(Math.min(m.k, m.dots.length)).padStart(5, "0")} DOTS` : `SKETCH ${m.lines.filter((s) => p >= s.t0).length}/${m.lines.length}`;
+    // the sketch: tone lines traced in flowing dots, quieter as the dots arrive
+    m.lines.forEach((s) => drawStroke(s, OUT(clamp((p - s.t0) / 0.12)), t));
+    m.sk.setAttribute("opacity", f2((1 - 0.55 * hq) * (1 - 0.6 * cq) * gone * clean));
+    // dots that have landed are drawn once into the settled screen; the ones landing now pop in large and dark
+    if (hq > 0) {
+      const land = (d) => clamp((hq - d.at * 0.8) / 0.2);
+      let any = false; m.sg.beginPath();
+      while (m.k < m.dots.length && land(m.dots[m.k]) >= 1) { const d = m.dots[m.k++]; m.sg.moveTo(d.x + d.r, d.y); m.sg.arc(d.x, d.y, d.r, 0, Math.PI * 2); any = true; }
+      if (any) m.sg.fill();
+    }
+    if (hq > 0 && pq < 1) {
+      ctx.globalAlpha = gone * (m.colour ? 1 - cq : 1);
+      ctx.drawImage(m.settled, im.x, im.y, im.w, im.h);
+      ctx.beginPath(); ctx.fillStyle = G.lit;
+      for (let j = m.k; j < m.dots.length; j++) {
+        const d = m.dots[j], a = clamp((hq - d.at * 0.8) / 0.2); if (a <= 0) break;
+        const r = d.r * OUT(a) * (1 + 0.25 * (1 - a));
+        ctx.moveTo(im.x + d.x + r, im.y + d.y); ctx.arc(im.x + d.x, im.y + d.y, r, 0, Math.PI * 2);
       }
+      ctx.fill();
+      if (m.colour && cq > 0) { ctx.globalAlpha = gone * cq; ctx.drawImage(m.colour, im.x, im.y, im.w, im.h); }
+      ctx.globalAlpha = 1;
     }
-    m.scan.setAttribute("opacity", f2(wq > 0 && wq < 1 ? smooth(0, 0.1, wq) * (1 - smooth(0.85, 1, wq)) : 0));
-    m.scan.setAttribute("transform", `translate(0 ${f2(yWipe)})`);
-    if (wq >= 1) { if (!m.done) { m.done = true; Object.assign(es, m.prev); } }
-    else {
-      es.clipPath = wq <= 0 ? "inset(0 0 100% 0)" : `inset(0 0 ${f2((1 - wq) * 100)}% 0${m.im.r ? ` round ${f2(m.im.r)}px` : ""})`;
-      es.filter = wq > 0 ? `blur(${f2(5 * (1 - wq))}px)` : m.prev.filter;
-    }
-    if (p >= m.t0 && p < m.tr) cur = cur || { b: { ch: null, ...m.im }, image: true };
+    // the photo fades in over its colour dots, sharpening from a soft blur
+    if (pq >= 1) { if (!m.done) { m.done = true; Object.assign(es, m.prev); } }
+    else { es.opacity = pq > 0 ? f2(pq) : "0"; es.filter = pq > 0 ? `blur(${f2(6 * (1 - pq))}px)` : m.prev.filter; }
+    if (p >= m.t0 && p < m.t0 + IMG.frame) cur = cur || { b: { ch: null, ...im }, image: true };
   }
 
   // reticle and readouts on whatever is being drawn now
@@ -451,6 +537,7 @@ function frame(G, p, t, D) {
     G.tag.textContent = cur.image ? "" : `"${b.ch}" ${Math.round(b.w)}×${Math.round(b.m.cap)}`;
   }
   let live = null; for (const g of G.glyphs) for (const s of g.strokes) if (s.live) live = s;
+  if (!live) for (const m of G.images) for (const s of m.lines) if (s.live && s.head) live = s;
   G.read.setAttribute("opacity", live ? 1 : 0);
   if (live) { G.read.setAttribute("x", f2(live.pt.x + 6)); G.read.setAttribute("y", f2(live.pt.y - 5)); G.read.textContent = `${String(Math.round(live.pt.x)).padStart(3, "0")}·${String(Math.round(live.pt.y)).padStart(3, "0")}`; }
   for (const q of G.flyers) {
@@ -496,7 +583,7 @@ export function generate(el, options = {}) {
   const finish = () => {
     if (stopped) return; stopped = true; cancelAnimationFrame(raf); clearTimeout(timer);
     if (el.__tTigLayer) el.__tTigLayer.remove();
-    if (G) { G.hosts.forEach((H) => (H.el.style.clipPath = H.prev)); G.images.forEach((m) => Object.assign(m.im.el.style, m.prev)); }
+    if (G) { G.hosts.forEach((H) => Object.assign(H.el.style, H.prev)); G.images.forEach((m) => Object.assign(m.im.el.style, m.prev)); }
     Object.assign(el.style, prev); el.__tTig = null; if (opts.onDone) opts.onDone(el); resolve(el);
   };
   const run = { finished, cancel: finish, element: el };
