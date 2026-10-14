@@ -1,7 +1,7 @@
 ---
 name: transitions-text-image-generation
 license: Free for personal and commercial use; see LICENSE.txt (no redistribution of the library itself)
-description: Make large bold type and images appear as if an AI agent is generating them, in the dotted style of transitions-ui-generation. Every glyph of a headline is traced along its real outline in small flowing dots (drawn in the element's own font and traced, so the outline is the actual letter) over typographic guides (cap height, x-height, baseline, descender, font spec); smaller text gets a dotted line; every image is framed, crossed and drawn as a halftone of its own pixels. Then ink rises into each glyph and each photo wipes in under a scan line. Two modes, trace and trace + generation texts (an agent log of every glyph and image, and a step line). One dependency-free runtime for any framework (vanilla, React, Next.js, Vue, Svelte). Use when the user asks for a "headline generation animation", "text being generated", "letters drawn in dots", "type tracing", "glyph outline reveal", "image generation reveal", "halftone image reveal", "hero generation", "editorial generation animation", "AI writing the headline", or for a landing page, article or launch moment where big type and photos should look generated. Also the commands transitions trace, transitions trace texts and transitions trace preview. For cards and UI components, use transitions-ui-generation.
+description: Make large bold type and images appear as if an AI agent is generating them, in the dotted style of transitions-ui-generation. Every glyph of a headline is traced along its real outline in small flowing dots (drawn in the element's own font and traced, so the outline is the actual letter) over typographic guides (cap height, x-height, baseline, descender, font spec); smaller text gets a dotted line; every image is framed, sketched in tone lines and built up as a fine halftone of its own pixels that takes on the photo's colours. Then each glyph fades in and each photo resolves over its colour dots. Two modes, trace and trace + generation texts (an agent log of every glyph and image, and a step line). One dependency-free runtime for any framework (vanilla, React, Next.js, Vue, Svelte). Use when the user asks for a "headline generation animation", "text being generated", "letters drawn in dots", "type tracing", "glyph outline reveal", "image generation reveal", "halftone image reveal", "image sketch reveal", "hero generation", "editorial generation animation", "AI writing the headline", or for a landing page, article or launch moment where big type and photos should look generated. Also the commands transitions trace, transitions trace texts and transitions trace preview. For cards and UI components, use transitions-ui-generation.
 ---
 
 # Transitions text and image generation
@@ -19,8 +19,11 @@ Over one build (default `3000ms`, about `3.2s` in all):
 1. **Type guides.** For every display line: dotted guides for cap height, x-height, baseline and descender, running past both ends, labelled on the first line of each block with the font spec (`INTER TIGHT 800  92/86`).
 2. **Glyphs.** Each letter is traced along its outline in small flowing dots, outer shape first and then its counters, left to right in overlapping waves. A dot flies in to where each letter starts, a reticle locks onto the current letter (`"g" 46×67`) and a readout follows the moving dot.
 3. **Text lines.** Text under the display size (`32px` by default) gets one dotted line per line, like the wireframe skill.
-4. **Images.** A dotted frame is drawn from the top centre in both directions, a placeholder cross and corner handles appear with a label (`IMAGE 516×387  COVER  8PX SCREEN`), then a halftone of the photo's own pixels arrives top down: dots pop in large and dark, then settle to their size.
-5. **Ink.** Each glyph fills with ink from its descender up, just after it is traced, and the dots fade. Smaller lines wipe in left to right. Each photo wipes in top down under a dotted scan line, sharpening from a soft blur, and takes its halftone with it.
+4. **Images.** A dotted frame is drawn from the top centre in both directions with corner handles, a label (`IMAGE 464×580  COVER  3PX SCREEN`) and a live status (`SKETCH 42/108`, `SCREEN 24935 DOTS`, `COLOUR 64%`, `RESOLVING 80%`). Then, all from the photo's own pixels:
+   - **Sketch.** Lines of equal tone (six levels through the softened photo, like a topographic drawing) are traced in fine flowing dots, in many short strokes at once.
+   - **Screen.** A fine halftone (3 to 5px cells) sweeps in from the top left, every dot sized by the tone under it with the local contrast lifted, so texture survives.
+   - **Colour.** The grey dots turn into a dot matrix in the photo's own colours.
+5. **Ink.** Each glyph fades in through its own box just after it is traced, and its dots fade out. Smaller lines fade in the same way. Each photo fades in over its colour dots, sharpening from a soft blur.
 
 ## Options
 
@@ -67,7 +70,7 @@ Do not rewrite the runtime or its timings: the glyph tracing, the ink, the halft
 
 ## Wiring
 
-Call `generate` **after fonts and images have loaded**: glyphs are traced in the font the page renders, and the halftone reads the image's pixels. The element is hidden until its drawing starts; its text blocks and images are then held behind their own `clip-path` until their ink, and restored after.
+Call `generate` **after fonts and images have loaded**: glyphs are traced in the font the page renders, and the sketch and halftone read the image's pixels. The element is hidden until its drawing starts; its text blocks are then held behind a `mask` and its images at `opacity: 0` until they come in, and restored after.
 
 **Vanilla**
 
@@ -160,8 +163,8 @@ In [`text-image-generation.css`](./text-image-generation.css). Dark values switc
 ## How it works (for debugging)
 
 - **Glyph outlines:** each character's range gives its box; its baseline comes from the font's ascent and descent. The character is drawn alone on a canvas in the computed `font-style font-weight font-size font-family` (`text-transform` applied), its alpha traced with marching squares and simplified (Ramer-Douglas-Peucker, `0.3px`). Outer shapes are traced before counters.
-- **Ink:** each block that holds text gets a `clip-path: path(…)` made of one rectangle per glyph (its own ink box from `measureText`, so it never reaches the line above or below) rising from the bottom, plus a growing rectangle per smaller line.
-- **Halftone:** the image is drawn into a canvas one pixel per cell (honouring `object-fit` cover, contain and fill and `object-position`), its luminance stretched to the full range. A cross-origin image without CORS can't be read, so it gets an even dot screen instead.
+- **Ink:** each block that holds text gets a `mask-image`: an SVG with one rectangle per glyph (its cell across, its own ink box from `measureText` down, so it never reaches the line above or below) and one per smaller line, each at its own `fill-opacity`. `mask-clip: no-clip` and a padded mask keep descenders that overflow the block visible.
+- **Images:** the image is drawn into a canvas at the size needed (honouring `object-fit` cover, contain and fill and `object-position`), its luminance stretched between its 1st and 99th percentile. The sketch is marching squares at six tone levels on a 3px grid, simplified, smoothed (Chaikin) and cut into strokes of up to 240px. The screen lifts local contrast (the tone minus its blur) before sizing the dots; landed dots are drawn once into a settled canvas, and the colour dot matrix is drawn once up front. A cross-origin image without CORS can't be read: no sketch, an even dot screen.
 - **The overlay** is an SVG and a canvas over the element, `aria-hidden`, with no pointer input.
 
 ## Accessibility
@@ -172,10 +175,10 @@ In [`text-image-generation.css`](./text-image-generation.css). Dark values switc
 ## Common mistakes to avoid
 
 - **Running before fonts load.** The glyphs are traced in the fallback font and don't match the letters that arrive. Await `document.fonts.ready` first.
-- **Running before images decode.** Their halftone is empty. Await `img.decode()`.
+- **Running before images decode.** Their sketch and halftone are empty. Await `img.decode()`.
 - **Variable fonts with optical sizing.** If the page uses an `opsz` axis automatically, the canvas may draw a different optical size and the outlines differ slightly. Load the font without the `opsz` axis, or set `font-optical-sizing: none` on the headline.
 - **Tracing body copy.** Hundreds of glyphs make a busy, slow drawing. Trace the headline; let paragraphs get their dotted lines (they're under `display`).
-- **Your own `clip-path` or entrance animation on the text blocks or images.** The runtime owns them during the run and restores them after.
+- **Your own `mask` on the text blocks, or `opacity` / `filter` on the images, or an entrance animation on either.** The runtime owns them during the run and restores them after.
 - **Importing on the server.** It needs `window` and the DOM.
 
 ## Reference files

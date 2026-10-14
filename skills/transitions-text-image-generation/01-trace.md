@@ -2,7 +2,7 @@
 
 ## When to use
 
-The default mode. Big type is traced along its real outlines and photos are drawn as halftones of their own pixels, then the ink and the photos come in. Use it for a hero, an article header, an image card, a pull quote.
+The default mode. Big type is traced along its real outlines; photos are sketched in tone lines and built up as a halftone of their own pixels that turns into their colours. Then the letters fade in and the photos resolve. Use it for a hero, an article header, an image card, a pull quote.
 
 ## Usage
 
@@ -22,12 +22,14 @@ Phases as fractions of `duration` (default `3000ms`).
 | Phase | Window | What happens |
 | --- | --- | --- |
 | Type guides | 0 to 0.26 | Cap height, x-height, baseline and descender guides draw out for each display line, a little after the one above. The first line of each block shows the labels and the font spec. |
-| Images | from 0.04 to 0.2 (staggered) | Each image: a dotted frame from the top centre in both directions, a placeholder cross, corner handles and a size label. |
+| Images | from 0.04 to 0.16 (staggered) | Each image: a dotted frame from the top centre in both directions, corner handles, a size label and a live status. |
 | Glyphs | 0.06 to 0.76 | Letters traced in order, about `0.16` each and overlapping, outer shape first then counters (`--ease-out`), with a reticle, a readout and a dot flying in to each start. |
 | Text lines | 0.12 to 0.78 | Smaller text: one dotted line per line. |
-| Halftone | about `0.36` per image | Dots arrive top down with some scatter, popping in large and dark, then settling. |
-| Ink | just after each glyph | The glyph fills from its descender up over `0.14` (`--ease-smooth-out`) and its dots fade. Smaller lines wipe in left to right. |
-| Photo | `0.28` per image, after its halftone | Wipes in top down under a dotted scan line, sharpening from a `5px` blur. |
+| Sketch | image start + 0.08 to 0.38 | Tone lines at six levels, traced in fine dots, many short strokes at once. |
+| Screen | image start + 0.2 to 0.56 | A fine halftone sweeps in from the top left, dots landing slightly large and dark, then settling. |
+| Colour | image start + 0.52 to 0.68 | The grey dots cross into a dot matrix in the photo's own colours (`--ease-smooth-out`). |
+| Ink | just after each glyph | The glyph fades in over `0.16` through its own box and its dots fade. Smaller lines fade in the same way. |
+| Photo | image start + 0.64 to 0.88 | Fades in over its colour dots, sharpening from a `6px` blur. |
 | Clean | 0.86 to 1.04 | Guides and leftover dots fade out. |
 
 ## Tuning

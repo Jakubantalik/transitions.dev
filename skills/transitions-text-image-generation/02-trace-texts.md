@@ -19,7 +19,7 @@ generate(element, { mode: "trace-texts", done: "Issue 07 ready" });
 
 | Text | Where | What it shows |
 | --- | --- | --- |
-| **Agent log** | Left of the element, else right, else under it | `AGENT.LOG // 12/31`, then one line per item as it starts: an id, `glyph "L"` with its size and path count, `image` with its size and dot count, or `line`, and a progress bar ending in `[  ok  ]`. The last 11 lines show. |
+| **Agent log** | Left of the element, else right, else under it | `AGENT.LOG // 12/31`, then one line per item as it starts: an id, `glyph "L"` with its size and path count, `image` with its size, dot count and sketch line count, or `line`, and a progress bar ending in `[  ok  ]`. The last 11 lines show. |
 | **Step line** | Under the element | One step at a time with a pulsing dot: the `steps` option, then `done`. |
 
 ## Placement
