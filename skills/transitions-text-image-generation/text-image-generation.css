@@ -1,0 +1,49 @@
+/* transitions.dev / text and image generation: the overlay text-image-generation.js draws over an element while it
+   "generates". Tune it with the variables below; everything else reads from them. */
+:root {
+  --tig-line: #9a9a9a;               /* dotted lines: glyph outlines, text lines, image frames, guides */
+  --tig-strong: #6c6c6c;             /* moving dot heads, handles, reticle, labels, halftone dots as they land */
+  --tig-ink: rgba(13, 13, 13, 0.5);  /* halftone dots once they settle */
+  --tig-surface: #ffffff;            /* fill of the corner handles */
+  --tig-text: #0d0d0d;               /* panel headings */
+  --tig-muted: #8b8b8b;              /* panel copy */
+  --tig-dot: 2.1px;                  /* dot size on the traced lines */
+  --tig-font: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --tig-line: #6f6f6f; --tig-strong: #a3a3a3; --tig-ink: rgba(245, 245, 245, 0.5); --tig-surface: #181818; --tig-text: #f2f2f2; --tig-muted: #8f8f8f; }
+}
+[data-theme="dark"] { --tig-line: #6f6f6f; --tig-strong: #a3a3a3; --tig-ink: rgba(245, 245, 245, 0.5); --tig-surface: #181818; --tig-text: #f2f2f2; --tig-muted: #8f8f8f; }
+
+/* the overlay sits exactly over the element, above the page, and never takes input */
+.t-tig { position: absolute; z-index: 2147483000; pointer-events: none; }
+.t-tig-svg, .t-tig-canvas { position: absolute; left: 0; top: 0; overflow: visible; }
+
+.t-tig-wireframe { stroke-width: var(--tig-dot); }
+.t-tig-sketch { stroke-width: calc(var(--tig-dot) * 0.75); } /* an image's contour sketch: finer dots */
+.t-tig-wire { fill: none; stroke: var(--tig-line); stroke-linecap: round; stroke-linejoin: round; } /* drawn as round dots */
+.t-tig-guide { fill: none; stroke: var(--tig-line); stroke-width: 1.5; stroke-linecap: round; }
+.t-tig-head, .t-tig-flyer { fill: var(--tig-strong); }
+.t-tig-handle { fill: var(--tig-surface); stroke: var(--tig-strong); stroke-width: 1; }
+.t-tig-reticle { fill: none; stroke: var(--tig-strong); stroke-width: 1.2; stroke-linecap: round; }
+.t-tig-label { font-family: var(--tig-font); font-size: 9px; fill: var(--tig-line); letter-spacing: 0.04em; }
+.t-tig-label--small { font-size: 7.5px; fill: var(--tig-strong); }
+.t-tig-label--tag { font-size: 7.5px; fill: var(--tig-strong); letter-spacing: 0.05em; }
+
+/* trace-texts: the agent log (beside or under the element) and the step line (under it) */
+.t-tig-panel { position: absolute; top: 0; font-family: var(--tig-font); font-size: 7.5px; line-height: 11px; color: var(--tig-muted);
+  letter-spacing: 0.03em; white-space: pre; overflow: hidden; opacity: 0; }
+.t-tig-panel--left { text-align: right; }
+.t-tig-panel--below { top: calc(100% + 64px); left: 0; right: 0; text-align: center; }
+.t-tig-panel-head { color: var(--tig-text); letter-spacing: 0.08em; padding-bottom: 4px; margin-bottom: 4px;
+  background: radial-gradient(circle, var(--tig-line) 0.6px, transparent 0.9px) 0 100% / 4px 2px repeat-x; }
+.t-tig-steps { position: absolute; left: 50%; top: calc(100% + 24px); height: 18px; }
+.t-tig-step { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 8px; white-space: nowrap; opacity: 0;
+  font-family: var(--tig-font); font-size: 11px; line-height: 18px; color: var(--tig-muted); }
+.t-tig-step i { width: 6px; height: 6px; border-radius: 50%; background: var(--tig-line); animation: t-tig-pulse 560ms ease-in-out infinite alternate; }
+.t-tig-step.is-done i { animation: none; }
+@keyframes t-tig-pulse { from { transform: scale(0.6); } to { transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .t-tig { display: none; } /* text-image-generation.js also skips the drawing and fades the element in instead */
+}

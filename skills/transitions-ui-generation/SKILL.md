@@ -35,6 +35,7 @@ In order, over one build (default `2400ms` of drawing, about `2.6s` in all):
 - **Several elements at once** (a grid of results) → `skeleton` on each with a `delay` of about `260ms` per item. The texts only fit around one element at a time.
 - **Small inline UI** (a badge, a single button, anything under about 120px) or **UI that appears often** (every route change, every list row) → don't use this. Use the `transitions-dev` skeleton reveal (`14-skeleton-reveal.md`) or texts reveal instead: a generation animation is a moment, not a loading state.
 - **Unsure which mode** → `skeleton`. Ask before adding the texts.
+- **Big bold headlines and photos** (a hero, an article header, an image card) → `transitions-text-image-generation`: it traces the real letter outlines and halftones the images.
 
 ## Commands
 

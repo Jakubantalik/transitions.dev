@@ -54,6 +54,8 @@ Skill source lives in [`skills/transitions-dev/`](./skills/transitions-dev) — 
 
 The same command also installs [`skills/transitions-ui-generation/`](./skills/transitions-ui-generation): it makes any UI appear as if an agent is generating it. A dotted wireframe is drawn from the element's own structure, then the real UI is revealed. It has two modes, `skeleton` and `skeleton-texts` (with an agent log, the motion CSS being written and a step line), and one dependency-free runtime for any framework. Preview it with [`demo.html`](./skills/transitions-ui-generation/demo.html).
 
+For big type and photos there is [`skills/transitions-text-image-generation/`](./skills/transitions-text-image-generation): every glyph of a headline is traced along its real outline in dots over typographic guides, every image is sketched in tone lines and built up as a fine halftone of its own pixels that turns into its colours, then the letters fade in and the photos resolve. Two modes, `trace` and `trace-texts`. Preview it with [`demo.html`](./skills/transitions-text-image-generation/demo.html).
+
 The skill is generated from `index.html` so the snippets always match what the showcase site demonstrates. Re-run after editing the source site:
 
 ```bash
