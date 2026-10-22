@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Text and image generation demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Inter+Tight:wght@600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="./text-image-generation.css" />
 <style>
-  :root { --bg: #fbfbfb; --fg: #0d0d0d; --muted: #6c6c6c; --soft: rgba(0,0,0,.06); --line: rgba(0,0,0,.08); color-scheme: light; }
+  /* Saans Medium, from the transitions.dev repo (falls back to Inter when the demo is served on its own) */
+  @font-face { font-family: "Saans"; src: url("../../assets/fonts/Saans-Medium.woff2") format("woff2"), url("../../assets/fonts/Saans-Medium.woff") format("woff"); font-weight: 500; font-style: normal; font-display: block; }
+  :root { --bg: #ffffff; --fg: #0f0f0f; --muted: #6c6c6c; --soft: rgba(0,0,0,.06); --line: rgba(0,0,0,.08); color-scheme: light; }
   html[data-theme="dark"] { --bg: #0b0b0c; --fg: #f2f2f2; --muted: rgba(202,202,202,.7); --soft: rgba(255,255,255,.08); --line: rgba(255,255,255,.1); color-scheme: dark; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 400 15px/24px Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
@@ -25,25 +27,26 @@
   .page { max-width: 1120px; margin: 0 auto; padding: 56px 24px 160px; }
   .hero { display: grid; grid-template-columns: 1.08fr .92fr; gap: 64px; align-items: center; }
   .eyebrow, .meta, .tag { font: 500 11px/16px "Roboto Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; }
-  .display { margin: 22px 0 26px; font: 800 92px/.94 "Inter Tight", Inter, sans-serif; letter-spacing: -.045em; }
+  /* titles: the Portfolio "Generation skill" style, Saans Medium 54.081 / 42.324 */
+  .display { margin: 24px 0 28px; font: 500 54.081px/42.324px "Saans", Inter, sans-serif; }
   .lede { margin: 0 0 30px; max-width: 420px; font-size: 17px; line-height: 27px; color: var(--muted); }
   .hero-img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 22px; }
 
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 150px; }
   .card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 18px; }
-  .card h2 { margin: 26px 0 10px; font: 750 48px/1 "Inter Tight", Inter, sans-serif; letter-spacing: -.04em; }
+  .card h2 { margin: 28px 0 12px; font: 500 40px/31.3px "Saans", Inter, sans-serif; }
   .card p { margin: 0; max-width: 440px; color: var(--muted); }
   .card .tag { margin-top: 22px; }
 
-  .quote { margin: 150px auto 0; max-width: 900px; text-align: center; font: 700 64px/1.02 "Inter Tight", Inter, sans-serif; letter-spacing: -.04em; }
+  .quote { margin: 150px auto 0; max-width: 900px; text-align: center; font: 500 54.081px/56px "Saans", Inter, sans-serif; }
   .quote span { color: var(--muted); }
   .credit { margin-top: 40px; text-align: center; }
 
   @media (max-width: 860px) {
     .hero, .row { grid-template-columns: 1fr; gap: 40px; }
-    .display { font-size: 60px; }
-    .card h2 { font-size: 38px; }
-    .quote { font-size: 40px; }
+    .display { font-size: 44px; line-height: 34.4px; }
+    .card h2 { font-size: 34px; line-height: 26.6px; }
+    .quote { font-size: 36px; line-height: 38px; }
     .row, .quote { margin-top: 96px; }
   }
 </style>
@@ -61,7 +64,7 @@
     <section class="hero demo-gen">
       <div>
         <p class="eyebrow">Field notes · Issue 07</p>
-        <h1 class="display">Light finds the quiet places.</h1>
+        <h1 class="display">Generation skill</h1>
         <p class="lede">A short story told in type and image, generated in front of you: every glyph traced along its own outline, every photo drawn from its own pixels.</p>
         <p class="meta">4 min read · Spring 2026</p>
       </div>
