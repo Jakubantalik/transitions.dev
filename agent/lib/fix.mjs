@@ -241,7 +241,11 @@ export async function runFix(root, result, opts) {
   report.usage = data.usage || null;
   const proposed = (data.files || []).filter((f) => f.path && typeof f.content === "string")
     .map((f) => ({ ...f, content: withTokenFallbacks(f.content) }));
-  if (!proposed.length) { console.log(c.yellow("The service proposed no changes.")); return done(0, "no-changes", "the service proposed no changes"); }
+  if (!proposed.length) {
+    console.log(c.yellow("The service proposed no changes.") + (data.summary ? " " + data.summary : ""));
+    if (data.usage) console.log(c.dim(`Fixes used this month: ${data.usage.used}/${data.usage.quota}`));
+    return done(0, "no-changes", "the service proposed no changes");
+  }
 
   // Show each proposal as a diff. Nothing is written yet.
   for (const p of proposed) showDiff(root, p);
