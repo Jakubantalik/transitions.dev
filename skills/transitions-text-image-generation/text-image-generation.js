@@ -32,6 +32,7 @@ const DEFAULTS = {
   maxGlyphs: 140,           // most glyphs traced (the rest only ink in)
   fade: 200,                // ms: how long each character (or word) takes to fade in
   fadeBy: "character",      // "character" | "word": a word fades in once its last character is in
+  fadeDelay: 150,           // ms between a character's dotted drawing finishing and its fade starting
   guides: true,             // type guides: cap height, x-height, baseline, descender, font spec
   focus: true,              // the focus bracket on the glyph or image being drawn, with its label
   readout: true,            // the coordinate readout on the moving dot
@@ -423,14 +424,15 @@ function build(el, M, opts) {
     const b = g.b, k = b.ink, row = M.rows.find((r) => r.host === b.host && Math.abs(r.base - b.base) < 2 && r.font === b.font);
     g.box = { x0: b.x <= row.x0 + 0.5 ? Math.min(b.x, k.x0) - 2 : b.x, x1: b.x + b.w >= row.x1 - 0.5 ? Math.max(b.x + b.w, k.x1) + 2 : b.x + b.w, y0: k.y0 - 2, y1: k.y1 + 2 };
   }
-  // the real text fades in character by character (a display glyph once it is traced, a smaller character as its
-  // line's dotted stroke passes it), or word by word (each word once its last character would)
-  for (const g of G.glyphs) g.wi = g.ti;
+  // the real text fades in character by character (a display glyph `fadeDelay` after it is traced, a smaller
+  // character that long after its line's dotted stroke passes it), or word by word (each word once its last would)
+  const wait = Math.max(0, +(opts.fadeDelay ?? DEFAULTS.fadeDelay) || 0) / opts.duration;
+  for (const g of G.glyphs) g.wi = g.t1 + wait;
   G.words = M.words.map((wd) => {
     const r0 = wd.rects[0] || { x: 0, y: 0, w: 0, h: 0 }, last = wd.rects[wd.rects.length - 1] || r0;
     const ln = G.lines.find((l) => l.host === wd.host && Math.abs(l.b.y - last.y) < 2 && last.x >= l.b.x - 1 && last.x <= l.b.x2 + 1) || G.lines[0];
     const f = ln ? clamp((last.x + last.w - ln.b.x) / Math.max(1, ln.b.x2 - ln.b.x)) : 1;
-    return { rects: wd.rects, host: wd.host, word: wd.word, wi: ln ? ln.t0 + (ln.t1 - ln.t0) * f : PH.lines[0] };
+    return { rects: wd.rects, host: wd.host, word: wd.word, wi: (ln ? ln.t0 + (ln.t1 - ln.t0) * f : PH.lines[0]) + wait };
   });
   if (opts.fadeBy === "word") {
     const end = new Map();
@@ -647,7 +649,7 @@ export function generate(el, options = {}) {
       if (stopped) return;
       const t = now - t0, p = t / D;
       frame(G, p, t, D);
-      if (p >= END) return finish();
+      if (p >= Math.max(END, G.inkEnd + 0.01)) return finish(); // a long fade delay runs past the build
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -656,11 +658,11 @@ export function generate(el, options = {}) {
 }
 
 // Plays every [data-t-trace] element once it scrolls into view.
-// data-t-trace="trace" | "trace-texts", optional data-t-trace-duration / -delay / -fade (ms) and data-t-trace-fade-by.
+// data-t-trace="trace" | "trace-texts", optional data-t-trace-duration / -delay / -fade / -fade-delay (ms) and data-t-trace-fade-by.
 export function auto(root = document) {
   const els = [...root.querySelectorAll("[data-t-trace]")].filter((e) => !e.__tTigAuto);
   const play = (e) => generate(e, { mode: e.dataset.tTrace || "trace", duration: +e.dataset.tTraceDuration || undefined, delay: +e.dataset.tTraceDelay || 0,
-    fade: +e.dataset.tTraceFade || undefined, fadeBy: e.dataset.tTraceFadeBy || "character" });
+    fade: +e.dataset.tTraceFade || undefined, fadeBy: e.dataset.tTraceFadeBy || "character", fadeDelay: e.dataset.tTraceFadeDelay !== undefined ? +e.dataset.tTraceFadeDelay : undefined });
   els.forEach((e) => { e.__tTigAuto = true; e.__tTigOpacity = e.style.opacity; e.style.opacity = 0; });
   if (!("IntersectionObserver" in window)) { els.forEach(play); return; }
   const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) { io.unobserve(en.target); play(en.target); } }), { threshold: 0.3 });

@@ -2,6 +2,7 @@
 // available) and handed to onChange, which replays the demo.
 const FIELDS = [
   { key: "duration", label: "Build duration", type: "range", min: 1500, max: 6000, step: 100, unit: "ms", value: 3000 },
+  { key: "fadeDelay", label: "Delay before fade", type: "range", min: 0, max: 1500, step: 10, unit: "ms", value: 150 },
   { key: "fade", label: "Fade in", type: "range", min: 50, max: 1000, step: 10, unit: "ms", value: 200 },
   { key: "fadeBy", label: "Fade by", type: "segment", options: [["character", "Character"], ["word", "Word"]], value: "character" },
   { key: "focus", label: "Focus bracket", type: "switch", value: true },

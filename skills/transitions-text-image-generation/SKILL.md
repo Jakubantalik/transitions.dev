@@ -23,7 +23,7 @@ Over one build (default `3000ms`, about `3.2s` in all):
    - **Sketch.** Lines of equal tone (six levels through the softened photo, like a topographic drawing) are traced in fine flowing dots, in many short strokes at once.
    - **Screen.** A fine halftone (3 to 5px cells) sweeps in from the top left, every dot sized by the tone under it with the local contrast lifted, so texture survives.
    - **Colour.** The grey dots turn into a dot matrix in the photo's own colours.
-5. **Ink.** The real text fades in character by character, `200ms` each: a display glyph as soon as it is traced (its dots fade out with it), a smaller character as its line's dotted stroke passes it. Each photo fades in over its colour dots, sharpening from a soft blur.
+5. **Ink.** The real text fades in character by character, `200ms` each: a display glyph `150ms` after it is traced (`fadeDelay`; its dots fade out with it), a smaller character that long after its line's dotted stroke passes it. Each photo fades in over its colour dots, sharpening from a soft blur.
 
 ## Options
 
@@ -58,7 +58,7 @@ Same, with `mode: "trace-texts"`. Mention that the log needs empty space beside 
 
 ### transitions trace preview
 
-Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative effect skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative effect skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark. Both demos have a settings panel on the right (build duration, fade duration, fade by character or word, and switches for the focus bracket, coordinates, type guides and flying dots), remembered per browser.
+Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative effect skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative effect skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark. Both demos have a settings panel on the right (build duration, delay before the fade, fade duration, fade by character or word, and switches for the focus bracket, coordinates, type guides and flying dots), remembered per browser.
 
 ## Install
 
@@ -141,6 +141,7 @@ export function tracing(node, mode = "trace") { let run; document.fonts.ready.th
 | `display` | `32` | px. Text at this size or larger is traced glyph by glyph; smaller text gets a dotted line. |
 | `maxGlyphs` | `140` | Most glyphs traced; the rest only ink in. |
 | `fade` | `200` | ms each character (or word) takes to fade in. |
+| `fadeDelay` | `150` | ms between a character's dotted drawing finishing and its fade starting. A long delay runs the build past `duration`. |
 | `fadeBy` | `"character"` | `"character"` or `"word"`: a word fades in once its last character would. A word runs across inline elements and ends at whitespace or a new block. |
 | `guides` | `true` | Type guides (cap height, x-height, baseline, descender, font spec). |
 | `focus` | `true` | The focus bracket on the glyph or image being drawn, with its label. |
@@ -150,7 +151,7 @@ export function tracing(node, mode = "trace") { let run; document.fonts.ready.th
 | `done` | `"Ready"` | The last step. |
 | `onDone` | `null` | Called with the element when the run ends. |
 
-Mark any child with `data-t-trace-skip` to leave it out. Attributes: `data-t-trace="trace" | "trace-texts"`, `data-t-trace-duration`, `data-t-trace-delay`, `data-t-trace-fade`, `data-t-trace-fade-by`.
+Mark any child with `data-t-trace-skip` to leave it out. Attributes: `data-t-trace="trace" | "trace-texts"`, `data-t-trace-duration`, `data-t-trace-delay`, `data-t-trace-fade`, `data-t-trace-fade-delay`, `data-t-trace-fade-by`.
 
 ## Tunable variables
 
