@@ -92,13 +92,15 @@
 
 <script type="module">
   import { generate } from "./text-image-generation.js";
+  import { settingsPanel } from "./demo-panel.js";
   const els = [...document.querySelectorAll(".demo-gen")];
   let mode = "trace";
   // everything waits for its fonts and photos, so glyphs are traced in the real face and images sampled from real pixels
   const ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode().catch(() => {}))]);
   els.forEach((e) => { e.__tTigOpacity = ""; e.style.opacity = 0; }); // hidden until each plays; restored to visible after
   const seen = new Set();
-  const play = async (e, delay = 0) => { await ready; generate(e, { mode, delay }); };
+  const settings = settingsPanel(() => replay());
+  const play = async (e, delay = 0) => { await ready; generate(e, { ...settings.values, mode, delay }); };
   const io = new IntersectionObserver((entries) => entries.forEach((en) => {
     if (!en.isIntersecting || seen.has(en.target)) return;
     seen.add(en.target);

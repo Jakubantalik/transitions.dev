@@ -58,7 +58,7 @@ Same, with `mode: "trace-texts"`. Mention that the log needs empty space beside 
 
 ### transitions trace preview
 
-Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative effect skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative effect skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark.
+Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative effect skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative effect skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark. Both demos have a settings panel on the right (build duration, fade duration, fade by character or word, and switches for the focus bracket, coordinates, type guides and flying dots), remembered per browser.
 
 ## Install
 
@@ -140,11 +140,17 @@ export function tracing(node, mode = "trace") { let run; document.fonts.ready.th
 | `delay` | `0` | ms before it starts. |
 | `display` | `32` | px. Text at this size or larger is traced glyph by glyph; smaller text gets a dotted line. |
 | `maxGlyphs` | `140` | Most glyphs traced; the rest only ink in. |
+| `fade` | `200` | ms each character (or word) takes to fade in. |
+| `fadeBy` | `"character"` | `"character"` or `"word"`: a word fades in once its last character would. A word runs across inline elements and ends at whitespace or a new block. |
+| `guides` | `true` | Type guides (cap height, x-height, baseline, descender, font spec). |
+| `focus` | `true` | The focus bracket on the glyph or image being drawn, with its label. |
+| `readout` | `true` | The coordinate readout on the moving dot. |
+| `particles` | `true` | Dots flying in to where each glyph starts. |
 | `steps` | `["Setting type", "Tracing glyphs", "Sampling images", "Inking"]` | The step line (`trace-texts`). |
 | `done` | `"Ready"` | The last step. |
 | `onDone` | `null` | Called with the element when the run ends. |
 
-Mark any child with `data-t-trace-skip` to leave it out. Attributes: `data-t-trace="trace" | "trace-texts"`, `data-t-trace-duration`, `data-t-trace-delay`.
+Mark any child with `data-t-trace-skip` to leave it out. Attributes: `data-t-trace="trace" | "trace-texts"`, `data-t-trace-duration`, `data-t-trace-delay`, `data-t-trace-fade`, `data-t-trace-fade-by`.
 
 ## Tunable variables
 
@@ -189,3 +195,4 @@ In [`text-image-generation.css`](./text-image-generation.css). Dark values switc
 - [text-image-generation.css](./text-image-generation.css): overlay styles and variables.
 - [demo.html](./demo.html): an editorial page in both modes.
 - [demo-text.html](./demo-text.html): one title in Saans, in both modes.
+- [demo-panel.js](./demo-panel.js): the demos' settings panel.

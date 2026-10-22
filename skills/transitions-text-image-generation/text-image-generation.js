@@ -30,6 +30,12 @@ const DEFAULTS = {
   delay: 0,                 // ms before it starts
   display: 32,              // px: text this size or larger is traced glyph by glyph, smaller text as lines
   maxGlyphs: 140,           // most glyphs traced (the rest only ink in)
+  fade: 200,                // ms: how long each character (or word) takes to fade in
+  fadeBy: "character",      // "character" | "word": a word fades in once its last character is in
+  guides: true,             // type guides: cap height, x-height, baseline, descender, font spec
+  focus: true,              // the focus bracket on the glyph or image being drawn, with its label
+  readout: true,            // the coordinate readout on the moving dot
+  particles: true,          // dots flying in to where each glyph starts
   steps: ["Setting type", "Tracing glyphs", "Sampling images", "Inking"],
   done: "Ready",
   onDone: null,
@@ -178,25 +184,34 @@ function measure(el, opts) {
   if (!el.matches("img, video, canvas")) {
     const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (!n.nodeValue.trim() || n.parentElement.closest("script, style, noscript, template, svg, [data-t-trace-skip]") || hidden(n.parentElement) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
     const rg = document.createRange();
-    // display text is measured glyph by glyph, smaller text character by character (its fades)
+    // display text is measured glyph by glyph, smaller text character by character (their fades). Every character
+    // carries a word id: a word runs across inline elements and ends at whitespace or a new block.
+    let wid = 0, open = false, lastHost = null;
     for (let n = tw.nextNode(); n; n = tw.nextNode()) {
       const cs = getComputedStyle(n.parentElement), size = parseFloat(cs.fontSize), host = addHost(hostOf(n));
+      if (host !== lastHost || /^\s/.test(n.nodeValue)) open = false;
+      lastHost = host;
       if (size >= opts.display) {
         const font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`, m = metric(font), s = n.nodeValue, tt = cs.textTransform;
         for (let i = 0; i < s.length;) {
           const len = s.codePointAt(i) > 0xffff ? 2 : 1, ch = s.substr(i, len); i += len;
-          if (/\s/.test(ch)) continue;
+          if (/\s/.test(ch)) { open = false; continue; }
+          if (!open) { wid++; open = true; }
           rg.setStart(n, i - len); rg.setEnd(n, i);
           const r = rg.getClientRects()[0]; if (!r || !r.width) continue;
           const b = rel(r), base = b.y + (b.h - (m.asc + m.desc)) / 2 + m.asc, c = tt === "uppercase" ? ch.toUpperCase() : tt === "lowercase" ? ch.toLowerCase() : ch;
           mctx.font = font; const k = mctx.measureText(c); // the glyph's own ink box, so its ink never reaches the line above or below
           b.ink = { x0: b.x - k.actualBoundingBoxLeft, x1: b.x + k.actualBoundingBoxRight, y0: base - k.actualBoundingBoxAscent, y1: base + k.actualBoundingBoxDescent };
-          glyphs.push({ ch: tt === "uppercase" ? ch.toUpperCase() : tt === "lowercase" ? ch.toLowerCase() : ch, ...b, base, font, size, m, host, family: cs.fontFamily.split(",")[0].replace(/["']/g, "").trim(), weight: cs.fontWeight, lh: parseFloat(cs.lineHeight) || size * 1.2 });
+          glyphs.push({ ch: tt === "uppercase" ? ch.toUpperCase() : tt === "lowercase" ? ch.toLowerCase() : ch, ...b, base, font, size, m, host, family: cs.fontFamily.split(",")[0].replace(/["']/g, "").trim(), weight: cs.fontWeight, lh: parseFloat(cs.lineHeight) || size * 1.2, word: wid });
         }
       } else {
+        let end = -1;
         for (const mt of n.nodeValue.matchAll(/\S/gu)) {
-          rg.setStart(n, mt.index); rg.setEnd(n, mt.index + mt[0].length);
-          words.push({ rects: [...rg.getClientRects()].filter((q) => q.width).map(rel), host });
+          if (end !== -1 && mt.index !== end) open = false; // whitespace inside the node ends the word
+          if (!open) { wid++; open = true; }
+          end = mt.index + mt[0].length;
+          rg.setStart(n, mt.index); rg.setEnd(n, end);
+          words.push({ rects: [...rg.getClientRects()].filter((q) => q.width).map(rel), host, word: wid });
         }
         rg.selectNodeContents(n);
         for (const q of rg.getClientRects()) {
@@ -205,6 +220,7 @@ function measure(el, opts) {
           else lines.push({ x: q.left - R.left, x2: q.right - R.left, y, h: q.height, host });
         }
       }
+      open = !/\s$/.test(n.nodeValue);
     }
   }
   // display lines: glyphs that share a baseline in the same block get one set of type guides
@@ -308,7 +324,6 @@ function halftone(im, cell, light) {
 }
 
 // ─── 4. the overlay ───
-const FADE = 200; // ms: each character's fade in
 const MPAD = 64, MASK_PROPS = ["maskImage", "webkitMaskImage", "maskSize", "webkitMaskSize", "maskPosition", "webkitMaskPosition", "maskRepeat", "webkitMaskRepeat", "maskClip", "webkitMaskClip"];
 function build(el, M, opts) {
   const R = el.getBoundingClientRect(), w = M.w, h = M.h, DOT_GAP = 4.6;
@@ -330,7 +345,7 @@ function build(el, M, opts) {
   const wires = svg("g", { class: "t-tig-wireframe" }, root);
 
   // type guides: cap height, x-height, baseline and descender for each display line, past both ends
-  M.rows.forEach((row, i) => {
+  if (opts.guides !== false) M.rows.forEach((row, i) => {
     // the first line of each block carries the labels; the lines under it only their guides
     const first = M.rows.findIndex((r) => r.host === row.host && r.font === row.font) === i, E = 26, ys = [["CAP", row.base - row.m.cap], ["X", row.base - row.m.xh], ["BASE", row.base], ["DESC", row.base + row.m.low]];
     const g = svg("g", { opacity: 0 }, root);
@@ -390,7 +405,7 @@ function build(el, M, opts) {
   // reticle on the glyph being traced, coordinate readout on its moving dot, particles landing on each glyph
   G.ret = svg("path", { class: "t-tig-reticle", opacity: 0 }, root); G.tag = svg("text", { class: "t-tig-label t-tig-label--tag", opacity: 0 }, root);
   G.read = svg("text", { class: "t-tig-label t-tig-label--small", opacity: 0 }, root);
-  G.flyers = G.glyphs.filter((g) => g.strokes.length).map((g, i) => {
+  G.flyers = opts.particles === false ? [] : G.glyphs.filter((g) => g.strokes.length).map((g, i) => {
     const pt = g.strokes[0].el.getPointAtLength(0), ang = hashN(i * 9.1) * Math.PI * 2, dist = 28 + 50 * hashN(i * 4.7);
     return { el: svg("circle", { r: 1.6, class: "t-tig-flyer", opacity: 0 }, root), x0: pt.x + Math.cos(ang) * dist, y0: pt.y + Math.sin(ang) * dist, x1: pt.x, y1: pt.y, arr: g.t0, s0: g.t0 - 0.08 };
   });
@@ -408,16 +423,23 @@ function build(el, M, opts) {
     const b = g.b, k = b.ink, row = M.rows.find((r) => r.host === b.host && Math.abs(r.base - b.base) < 2 && r.font === b.font);
     g.box = { x0: b.x <= row.x0 + 0.5 ? Math.min(b.x, k.x0) - 2 : b.x, x1: b.x + b.w >= row.x1 - 0.5 ? Math.max(b.x + b.w, k.x1) + 2 : b.x + b.w, y0: k.y0 - 2, y1: k.y1 + 2 };
   }
-  // the real text comes in character by character: a display glyph once it is traced, a smaller character as its
-  // line's dotted stroke passes it
+  // the real text fades in character by character (a display glyph once it is traced, a smaller character as its
+  // line's dotted stroke passes it), or word by word (each word once its last character would)
   for (const g of G.glyphs) g.wi = g.ti;
   G.words = M.words.map((wd) => {
     const r0 = wd.rects[0] || { x: 0, y: 0, w: 0, h: 0 }, last = wd.rects[wd.rects.length - 1] || r0;
     const ln = G.lines.find((l) => l.host === wd.host && Math.abs(l.b.y - last.y) < 2 && last.x >= l.b.x - 1 && last.x <= l.b.x2 + 1) || G.lines[0];
     const f = ln ? clamp((last.x + last.w - ln.b.x) / Math.max(1, ln.b.x2 - ln.b.x)) : 1;
-    return { rects: wd.rects, host: wd.host, wi: ln ? ln.t0 + (ln.t1 - ln.t0) * f : PH.lines[0] };
+    return { rects: wd.rects, host: wd.host, word: wd.word, wi: ln ? ln.t0 + (ln.t1 - ln.t0) * f : PH.lines[0] };
   });
-  G.inkEnd = Math.max(0, ...G.glyphs.map((g) => g.wi), ...G.words.map((w) => w.wi), ...G.lines.map((l) => l.t1)) + FADE / opts.duration;
+  if (opts.fadeBy === "word") {
+    const end = new Map();
+    for (const o of [...G.glyphs.map((g) => ({ word: g.b.word, wi: g.wi })), ...G.words]) end.set(o.word, Math.max(end.get(o.word) || 0, o.wi));
+    G.glyphs.forEach((g) => (g.wi = end.get(g.b.word))); G.words.forEach((w) => (w.wi = end.get(w.word)));
+  }
+  G.focus = opts.focus !== false; G.readout = opts.readout !== false;
+  G.fade = Math.max(16, +opts.fade || DEFAULTS.fade);
+  G.inkEnd = Math.max(0, ...G.glyphs.map((g) => g.wi), ...G.words.map((w) => w.wi), ...G.lines.map((l) => l.t1)) + G.fade / opts.duration;
   if (opts.mode === "trace-texts") buildTexts(G, el, opts);
   return G;
 }
@@ -464,7 +486,7 @@ function drawStroke(s, q, t) {
 }
 
 function frame(G, p, t, D) {
-  const clean = 1 - smooth(PH.clean[0], PH.clean[1], p), ink = (x) => EASE_OUT(clamp(((p - x) * D) / FADE)); // FADE ms from x
+  const clean = 1 - smooth(PH.clean[0], PH.clean[1], p), ink = (x) => EASE_OUT(clamp(((p - x) * D) / G.fade)); // G.fade ms from x
 
   // type guides: drawn out early, gone once their line has its ink
   for (const R of G.rows) {
@@ -544,7 +566,7 @@ function frame(G, p, t, D) {
   }
 
   // reticle and readouts on whatever is being drawn now
-  const rOp = cur ? 1 - smooth(0.78, 0.86, p) : 0;
+  const rOp = cur && G.focus ? 1 - smooth(0.78, 0.86, p) : 0;
   G.ret.setAttribute("opacity", f2(rOp)); G.tag.setAttribute("opacity", f2(rOp));
   if (cur) {
     const b = cur.b, P = 4, X = b.x - P, Y = (cur.image ? b.y : b.base - b.m.cap) - P, RW = b.w + 2 * P, RH = (cur.image ? b.h : b.m.cap) + 2 * P, l = Math.min(7, RW / 3, RH / 3);
@@ -554,6 +576,7 @@ function frame(G, p, t, D) {
   }
   let live = null; for (const g of G.glyphs) for (const s of g.strokes) if (s.live) live = s;
   if (!live) for (const m of G.images) for (const s of m.lines) if (s.live && s.head) live = s;
+  if (!G.readout) live = null;
   G.read.setAttribute("opacity", live ? 1 : 0);
   if (live) { G.read.setAttribute("x", f2(live.pt.x + 6)); G.read.setAttribute("y", f2(live.pt.y - 5)); G.read.textContent = `${String(Math.round(live.pt.x)).padStart(3, "0")}·${String(Math.round(live.pt.y)).padStart(3, "0")}`; }
   for (const q of G.flyers) {
@@ -633,10 +656,11 @@ export function generate(el, options = {}) {
 }
 
 // Plays every [data-t-trace] element once it scrolls into view.
-// data-t-trace="trace" | "trace-texts", optional data-t-trace-duration / -delay (ms).
+// data-t-trace="trace" | "trace-texts", optional data-t-trace-duration / -delay / -fade (ms) and data-t-trace-fade-by.
 export function auto(root = document) {
   const els = [...root.querySelectorAll("[data-t-trace]")].filter((e) => !e.__tTigAuto);
-  const play = (e) => generate(e, { mode: e.dataset.tTrace || "trace", duration: +e.dataset.tTraceDuration || undefined, delay: +e.dataset.tTraceDelay || 0 });
+  const play = (e) => generate(e, { mode: e.dataset.tTrace || "trace", duration: +e.dataset.tTraceDuration || undefined, delay: +e.dataset.tTraceDelay || 0,
+    fade: +e.dataset.tTraceFade || undefined, fadeBy: e.dataset.tTraceFadeBy || "character" });
   els.forEach((e) => { e.__tTigAuto = true; e.__tTigOpacity = e.style.opacity; e.style.opacity = 0; });
   if (!("IntersectionObserver" in window)) { els.forEach(play); return; }
   const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) { io.unobserve(en.target); play(en.target); } }), { threshold: 0.3 });
