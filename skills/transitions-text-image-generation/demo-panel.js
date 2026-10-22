@@ -1,5 +1,5 @@
-// The demos' settings panel: the generate() options worth tweaking by eye. Remembered per browser (when storage is
-// available) and handed to onChange, which replays the demo.
+// The demos' settings panel: the generate() options worth tweaking by eye. Each demo can pass its own defaults and
+// storage key; changes are remembered per browser (when storage is available) and handed to onChange, which replays.
 const FIELDS = [
   { key: "duration", label: "Build duration", type: "range", min: 1500, max: 6000, step: 100, unit: "ms", value: 3000 },
   { key: "fadeDelay", label: "Delay before fade", type: "range", min: 0, max: 1500, step: 10, unit: "ms", value: 150 },
@@ -10,7 +10,6 @@ const FIELDS = [
   { key: "guides", label: "Type guides", type: "switch", value: true },
   { key: "particles", label: "Flying dots", type: "switch", value: true },
 ];
-const STORE = "tig-demo-settings";
 
 const CSS = `
 .tig-panel { position: fixed; top: 64px; right: 16px; z-index: 2147483647; width: 248px; padding: 14px 14px 12px; border-radius: 14px;
@@ -39,10 +38,11 @@ html[data-theme="dark"] .tig-panel { --panel-bg: #181818; box-shadow: 0 0 0 1px 
 @media (max-width: 900px) { .tig-panel { position: static; width: auto; margin: 0 16px 24px; } }
 `;
 
-export function settingsPanel(onChange) {
+export function settingsPanel(onChange, { defaults = {}, store = "tig-demo-settings" } = {}) {
+  const base = (f) => (f.key in defaults ? defaults[f.key] : f.value), STORE = store;
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(STORE) || "{}") || {}; } catch (e) { saved = {}; }
-  const values = Object.fromEntries(FIELDS.map((f) => [f.key, f.key in saved ? saved[f.key] : f.value]));
+  const values = Object.fromEntries(FIELDS.map((f) => [f.key, f.key in saved ? saved[f.key] : base(f)]));
   const style = document.createElement("style"); style.textContent = CSS; document.head.appendChild(style);
   const panel = document.createElement("aside"); panel.className = "tig-panel"; panel.setAttribute("aria-label", "Effect settings");
   const changed = () => { try { localStorage.setItem(STORE, JSON.stringify(values)); } catch (e) {} onChange(values); };
@@ -69,7 +69,7 @@ export function settingsPanel(onChange) {
       }
       panel.appendChild(row);
     }
-    panel.querySelector("[data-reset]").addEventListener("click", () => { FIELDS.forEach((f) => (values[f.key] = f.value)); render(); changed(); });
+    panel.querySelector("[data-reset]").addEventListener("click", () => { FIELDS.forEach((f) => (values[f.key] = base(f))); render(); changed(); });
   };
   render();
   document.body.appendChild(panel);
