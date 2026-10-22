@@ -58,7 +58,7 @@ Same, with `mode: "trace-texts"`. Mention that the log needs empty space beside 
 
 ### transitions trace preview
 
-Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for the text alone with room for the agent log. The editorial page: a hero with a three-line display headline and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark.
+Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generation skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with a three-line display headline and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark.
 
 ## Install
 
@@ -188,4 +188,4 @@ In [`text-image-generation.css`](./text-image-generation.css). Dark values switc
 - [text-image-generation.js](./text-image-generation.js): the runtime (ES module; also `window.TextImageGeneration`).
 - [text-image-generation.css](./text-image-generation.css): overlay styles and variables.
 - [demo.html](./demo.html): an editorial page in both modes.
-- [demo-text.html](./demo-text.html): the hero copy alone, in both modes.
+- [demo-text.html](./demo-text.html): one title in Saans, in both modes.

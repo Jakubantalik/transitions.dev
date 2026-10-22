@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Text generation demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Inter+Tight:wght@800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="./text-image-generation.css" />
 <style>
-  :root { --bg: #fbfbfb; --fg: #0d0d0d; --muted: #6c6c6c; --soft: rgba(0,0,0,.06); color-scheme: light; }
+  /* Saans Medium, from the transitions.dev repo (falls back to Inter when the demo is served on its own) */
+  @font-face { font-family: "Saans"; src: url("../../assets/fonts/Saans-Medium.woff2") format("woff2"), url("../../assets/fonts/Saans-Medium.woff") format("woff"); font-weight: 500; font-style: normal; font-display: block; }
+  :root { --bg: #ffffff; --fg: #0f0f0f; --muted: #6c6c6c; --soft: rgba(0,0,0,.06); color-scheme: light; }
   html[data-theme="dark"] { --bg: #0b0b0c; --fg: #f2f2f2; --muted: rgba(202,202,202,.7); --soft: rgba(255,255,255,.08); color-scheme: dark; }
   * { box-sizing: border-box; }
   body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); color: var(--fg); font: 400 15px/24px Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
@@ -19,12 +21,10 @@
   .bar button:active, .bar a:active { transform: scale(.97); }
   .bar button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
-  .stage { flex: 1; display: grid; place-items: center; padding: 48px 24px 140px; }
-  .copy { width: min(544px, 100%); } /* the hero column, so the headline sets in the same three lines */
-  .eyebrow, .meta { font: 500 11px/16px "Roboto Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; }
-  .display { margin: 22px 0 26px; font: 800 92px/.94 "Inter Tight", Inter, sans-serif; letter-spacing: -.045em; }
-  .lede { margin: 0 0 30px; max-width: 420px; font-size: 17px; line-height: 27px; color: var(--muted); }
-  @media (max-width: 640px) { .display { font-size: 60px; } }
+  .stage { flex: 1; display: grid; place-items: center; padding: 48px 24px 120px; }
+  /* the Portfolio frame "Generation skill": Saans Medium 54.081 / 42.324, #0f0f0f on white */
+  .display { margin: 0; font: 500 54.081px/42.324px "Saans", Inter, sans-serif; color: var(--fg); text-align: center; }
+  @media (max-width: 480px) { .display { font-size: 40px; line-height: 32px; } }
 </style>
 <script>if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.dataset.theme = "dark";</script>
 </head>
@@ -37,12 +37,7 @@
   </div>
 
   <main class="stage">
-    <div class="copy" id="copy">
-      <p class="eyebrow">Field notes · Issue 07</p>
-      <h1 class="display">Light finds the quiet places.</h1>
-      <p class="lede">A short story told in type and image, generated in front of you: every glyph traced along its own outline, every photo drawn from its own pixels.</p>
-      <p class="meta">4 min read · Spring 2026</p>
-    </div>
+    <h1 class="display" id="copy">Generation skill</h1>
   </main>
 
 <script type="module">
@@ -50,7 +45,7 @@
   const copy = document.getElementById("copy");
   let mode = "trace";
   copy.__tTigOpacity = ""; copy.style.opacity = 0; // hidden until it plays; restored to visible after
-  const play = async () => { await document.fonts.ready; generate(copy, { mode, done: "Issue 07 ready" }); };
+  const play = async () => { await document.fonts.ready; generate(copy, { mode, done: "Generation skill ready" }); };
   document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
     mode = b.dataset.mode;
     document.querySelectorAll("[data-mode]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
