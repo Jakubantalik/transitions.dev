@@ -20,6 +20,7 @@
     transition: background-color 150ms cubic-bezier(.22, 1, .36, 1), transform 150ms cubic-bezier(.22, 1, .36, 1); }
   .bar button:active { transform: scale(.97); }
   .bar button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .bar a { height: 34px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 999px; background: var(--soft); color: var(--fg); font: 500 14px/1 Inter, sans-serif; text-decoration: none; }
 
   .page { max-width: 1120px; margin: 0 auto; padding: 56px 24px 160px; }
   .hero { display: grid; grid-template-columns: 1.08fr .92fr; gap: 64px; align-items: center; }
@@ -53,6 +54,7 @@
     <button data-mode="trace" aria-pressed="true">Trace</button>
     <button data-mode="trace-texts" aria-pressed="false">Trace + generation texts</button>
     <button id="replay">Replay</button>
+    <a href="./demo-text.html">Text only</a>
   </div>
 
   <main class="page">
