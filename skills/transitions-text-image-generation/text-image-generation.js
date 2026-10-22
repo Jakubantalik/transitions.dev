@@ -53,7 +53,7 @@ function bezier(x1, y1, x2, y2) {
 }
 const OUT = bezier(0.16, 1, 0.3, 1);          // drawing: a soft, quick-settling ease-out
 const SMOOTH_OUT = bezier(0.22, 1, 0.36, 1);  // ink and wipes: --ease-smooth-out
-const EASE_OUT = bezier(0, 0, 0.58, 1);       // word fades: ease-out, so the 200ms reads as 200ms
+const EASE_OUT = bezier(0, 0, 0.58, 1);       // character fades: ease-out, so the 200ms reads as 200ms
 const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const css = (el, name, fb) => { const v = getComputedStyle(el).getPropertyValue(name).trim(); return v || fb; };
 
@@ -178,30 +178,23 @@ function measure(el, opts) {
   if (!el.matches("img, video, canvas")) {
     const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (!n.nodeValue.trim() || n.parentElement.closest("script, style, noscript, template, svg, [data-t-trace-skip]") || hidden(n.parentElement) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
     const rg = document.createRange();
-    // words: display glyphs carry a word id (a word can run across inline elements, so it only ends at whitespace
-    // or a new block); smaller text is measured word by word
-    let wid = 0, open = false, lastHost = null;
+    // display text is measured glyph by glyph, smaller text character by character (its fades)
     for (let n = tw.nextNode(); n; n = tw.nextNode()) {
       const cs = getComputedStyle(n.parentElement), size = parseFloat(cs.fontSize), host = addHost(hostOf(n));
-      if (host !== lastHost || /^\s/.test(n.nodeValue)) open = false;
-      lastHost = host;
       if (size >= opts.display) {
         const font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`, m = metric(font), s = n.nodeValue, tt = cs.textTransform;
         for (let i = 0; i < s.length;) {
           const len = s.codePointAt(i) > 0xffff ? 2 : 1, ch = s.substr(i, len); i += len;
-          if (/\s/.test(ch)) { open = false; continue; }
-          if (!open) { wid++; open = true; }
+          if (/\s/.test(ch)) continue;
           rg.setStart(n, i - len); rg.setEnd(n, i);
           const r = rg.getClientRects()[0]; if (!r || !r.width) continue;
           const b = rel(r), base = b.y + (b.h - (m.asc + m.desc)) / 2 + m.asc, c = tt === "uppercase" ? ch.toUpperCase() : tt === "lowercase" ? ch.toLowerCase() : ch;
           mctx.font = font; const k = mctx.measureText(c); // the glyph's own ink box, so its ink never reaches the line above or below
           b.ink = { x0: b.x - k.actualBoundingBoxLeft, x1: b.x + k.actualBoundingBoxRight, y0: base - k.actualBoundingBoxAscent, y1: base + k.actualBoundingBoxDescent };
-          glyphs.push({ ch: tt === "uppercase" ? ch.toUpperCase() : tt === "lowercase" ? ch.toLowerCase() : ch, ...b, base, font, size, m, host, family: cs.fontFamily.split(",")[0].replace(/["']/g, "").trim(), weight: cs.fontWeight, lh: parseFloat(cs.lineHeight) || size * 1.2, word: wid });
+          glyphs.push({ ch: tt === "uppercase" ? ch.toUpperCase() : tt === "lowercase" ? ch.toLowerCase() : ch, ...b, base, font, size, m, host, family: cs.fontFamily.split(",")[0].replace(/["']/g, "").trim(), weight: cs.fontWeight, lh: parseFloat(cs.lineHeight) || size * 1.2 });
         }
-        open = !/\s$/.test(n.nodeValue);
       } else {
-        open = false;
-        for (const mt of n.nodeValue.matchAll(/\S+/g)) {
+        for (const mt of n.nodeValue.matchAll(/\S/gu)) {
           rg.setStart(n, mt.index); rg.setEnd(n, mt.index + mt[0].length);
           words.push({ rects: [...rg.getClientRects()].filter((q) => q.width).map(rel), host });
         }
@@ -315,7 +308,7 @@ function halftone(im, cell, light) {
 }
 
 // ─── 4. the overlay ───
-const FADE = 200; // ms: each word's fade in
+const FADE = 200; // ms: each character's fade in
 const MPAD = 64, MASK_PROPS = ["maskImage", "webkitMaskImage", "maskSize", "webkitMaskSize", "maskPosition", "webkitMaskPosition", "maskRepeat", "webkitMaskRepeat", "maskClip", "webkitMaskClip"];
 function build(el, M, opts) {
   const R = el.getBoundingClientRect(), w = M.w, h = M.h, DOT_GAP = 4.6;
@@ -415,11 +408,9 @@ function build(el, M, opts) {
     const b = g.b, k = b.ink, row = M.rows.find((r) => r.host === b.host && Math.abs(r.base - b.base) < 2 && r.font === b.font);
     g.box = { x0: b.x <= row.x0 + 0.5 ? Math.min(b.x, k.x0) - 2 : b.x, x1: b.x + b.w >= row.x1 - 0.5 ? Math.max(b.x + b.w, k.x1) + 2 : b.x + b.w, y0: k.y0 - 2, y1: k.y1 + 2 };
   }
-  // the real text comes in word by word: a display word once its last letter is traced, a smaller word as its line's
-  // dotted stroke passes its end
-  const wordAt = new Map();
-  for (const g of G.glyphs) wordAt.set(g.b.word, Math.max(wordAt.get(g.b.word) || 0, g.ti));
-  for (const g of G.glyphs) g.wi = wordAt.get(g.b.word);
+  // the real text comes in character by character: a display glyph once it is traced, a smaller character as its
+  // line's dotted stroke passes it
+  for (const g of G.glyphs) g.wi = g.ti;
   G.words = M.words.map((wd) => {
     const r0 = wd.rects[0] || { x: 0, y: 0, w: 0, h: 0 }, last = wd.rects[wd.rects.length - 1] || r0;
     const ln = G.lines.find((l) => l.host === wd.host && Math.abs(l.b.y - last.y) < 2 && last.x >= l.b.x - 1 && last.x <= l.b.x2 + 1) || G.lines[0];
@@ -501,7 +492,7 @@ function frame(G, p, t, D) {
     let s = "";
     const add = (x, y, w, h, a) => { if (w > 0.2 && h > 0.2 && a > 0.003) s += `<rect x='${f2(x - H.x + MPAD)}' y='${f2(y - H.y + MPAD)}' width='${f2(w)}' height='${f2(h)}'${a < 0.997 ? ` fill-opacity='${a.toFixed(3)}'` : ""}/>`; };
     for (const g of G.glyphs) if (g.host === H.el) add(g.box.x0, g.box.y0, g.box.x1 - g.box.x0, g.box.y1 - g.box.y0, ink(g.wi));
-    for (const w of G.words) if (w.host === H.el) { const a = ink(w.wi); for (const r of w.rects) add(r.x - 2, r.y - 3, r.w + 4, r.h + 6, a); }
+    for (const w of G.words) if (w.host === H.el) { const a = ink(w.wi); for (const r of w.rects) add(r.x - 0.5, r.y - 3, r.w + 1, r.h + 6, a); }
     for (const m of G.images) if (holds(H.el, m.im.el)) add(m.im.x - 2, m.im.y - 2, m.im.w + 4, m.im.h + 4, 1); // images keep their own reveal
     if (s !== H.key) {
       H.key = s;
