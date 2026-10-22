@@ -426,13 +426,20 @@ function build(el, M, opts) {
   }
   // the real text fades in character by character (a display glyph `fadeDelay` after it is traced, a smaller
   // character that long after its line's dotted stroke passes it), or word by word (each word once its last would)
+  // "drawn" is when the eased stroke looks finished (98% of its length), not when its time runs out: the ease-out
+  // leaves a long, invisible tail
   const wait = Math.max(0, +(opts.fadeDelay ?? DEFAULTS.fadeDelay) || 0) / opts.duration;
-  for (const g of G.glyphs) g.wi = g.t1 + wait;
+  const inv = (f) => { let lo = 0, hi = 1; for (let i = 0; i < 26; i++) { const m = (lo + hi) / 2; if (OUT(m) < f) lo = m; else hi = m; } return hi; };
+  const looks = inv(0.98);
+  for (const g of G.glyphs) {
+    const n = g.strokes.n || 1, q = Math.min(1, ((n - 1) * 0.75 + looks) / n); // the last loop starts at (n - 1) × 0.75 of n
+    g.wi = g.t0 + (g.t1 - g.t0) * q + wait;
+  }
   G.words = M.words.map((wd) => {
     const r0 = wd.rects[0] || { x: 0, y: 0, w: 0, h: 0 }, last = wd.rects[wd.rects.length - 1] || r0;
     const ln = G.lines.find((l) => l.host === wd.host && Math.abs(l.b.y - last.y) < 2 && last.x >= l.b.x - 1 && last.x <= l.b.x2 + 1) || G.lines[0];
     const f = ln ? clamp((last.x + last.w - ln.b.x) / Math.max(1, ln.b.x2 - ln.b.x)) : 1;
-    return { rects: wd.rects, host: wd.host, word: wd.word, wi: (ln ? ln.t0 + (ln.t1 - ln.t0) * f : PH.lines[0]) + wait };
+    return { rects: wd.rects, host: wd.host, word: wd.word, wi: (ln ? ln.t0 + (ln.t1 - ln.t0) * inv(f) : PH.lines[0]) + wait };
   });
   if (opts.fadeBy === "word") {
     const end = new Map();
