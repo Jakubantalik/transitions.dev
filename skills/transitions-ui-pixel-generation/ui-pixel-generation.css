@@ -1,0 +1,34 @@
+/* transitions.dev / UI pixel generation: the HUD and texts ui-pixel-generation.js draws while an element builds.
+   The pixels themselves come from the element, through an SVG filter; these variables only style the HUD. */
+:root {
+  --pxg-line: #9a9a9a;                 /* the pixel grid */
+  --pxg-strong: #6c6c6c;               /* corner brackets, turning bands, markers, readouts */
+  --pxg-flash: rgba(255, 255, 255, 0.75); /* the flash on a turning band at every step */
+  --pxg-text: #0d0d0d;                 /* log heading */
+  --pxg-muted: #8b8b8b;                /* log and step copy */
+  --pxg-font: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --pxg-line: #6f6f6f; --pxg-strong: #a3a3a3; --pxg-flash: rgba(255, 255, 255, 0.35); --pxg-text: #f2f2f2; --pxg-muted: #8f8f8f; }
+}
+[data-theme="dark"] { --pxg-line: #6f6f6f; --pxg-strong: #a3a3a3; --pxg-flash: rgba(255, 255, 255, 0.35); --pxg-text: #f2f2f2; --pxg-muted: #8f8f8f; }
+
+/* the HUD sits over the element (40px around it), above the page, and never takes input */
+.t-pxg { position: absolute; z-index: 2147483000; pointer-events: none; }
+.t-pxg canvas { position: absolute; left: 0; top: 0; }
+
+/* pixel-texts: the render log beside the element and the step line under it */
+.t-pxg-log { position: absolute; top: 40px; right: calc(100% + 8px); font-family: var(--pxg-font); font-size: 8px; line-height: 12px;
+  color: var(--pxg-muted); letter-spacing: 0.03em; white-space: pre; text-align: right; opacity: 0; }
+.t-pxg-log-head { color: var(--pxg-text); letter-spacing: 0.08em; padding-bottom: 4px; margin-bottom: 4px;
+  background: linear-gradient(90deg, var(--pxg-line) 50%, transparent 0) 0 100% / 4px 1px repeat-x; }
+.t-pxg-steps { position: absolute; left: 50%; top: calc(100% - 12px); height: 18px; }
+.t-pxg-step { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 8px; white-space: nowrap; opacity: 0;
+  font-family: var(--pxg-font); font-size: 11px; line-height: 18px; color: var(--pxg-muted); }
+.t-pxg-step i { width: 6px; height: 6px; background: var(--pxg-line); animation: t-pxg-blink 420ms steps(2, jump-none) infinite; }
+.t-pxg-step.is-done i { animation: none; }
+@keyframes t-pxg-blink { from { opacity: 1; } to { opacity: 0.3; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .t-pxg { display: none; } /* ui-pixel-generation.js also skips the build and fades the element in */
+}

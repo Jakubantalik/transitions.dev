@@ -54,6 +54,8 @@ Skill source lives in [`skills/transitions-dev/`](./skills/transitions-dev) — 
 
 The same command also installs [`skills/transitions-ui-generation/`](./skills/transitions-ui-generation): it makes any UI appear as if an agent is generating it. A dotted wireframe is drawn from the element's own structure, then the real UI is revealed. It has two modes, `skeleton` and `skeleton-texts` (with an agent log, the motion CSS being written and a step line), and one dependency-free runtime for any framework. Preview it with [`demo.html`](./skills/transitions-ui-generation/demo.html).
 
+Its pixel sibling, [`skills/transitions-ui-pixel-generation/`](./skills/transitions-ui-pixel-generation), renders the UI instead: it starts as a coarse mosaic of the component's own pixels (sampled from the real element by an SVG filter) and resolves pass by pass, 32px to crisp, under a HUD. Modes `pixel` and `pixel-texts`; preview it with [`demo.html`](./skills/transitions-ui-pixel-generation/demo.html).
+
 The skill is generated from `index.html` so the snippets always match what the showcase site demonstrates. Re-run after editing the source site:
 
 ```bash
