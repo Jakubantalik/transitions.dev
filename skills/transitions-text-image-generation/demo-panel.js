@@ -6,7 +6,7 @@ const FIELDS = [
   { key: "fade", label: "Fade in", type: "range", min: 50, max: 1000, step: 10, unit: "ms", value: 200 },
   // its first stop means "follow the tracing" (sent to generate() as null)
   { key: "fadeStagger", label: "Delay between characters", type: "range", min: -10, max: 300, step: 10, unit: "ms", value: -10, auto: "Follow trace" },
-  { key: "sequenceEase", label: "Sequence easing", type: "segment", options: [["linear", "Linear"], ["ease-in", "In"], ["ease-out", "Out"], ["ease-in-out", "In-out"]], value: "ease-in-out" },
+  { key: "sequenceEase", label: "Sequence easing", type: "segment", options: [["linear", "Linear"], ["ease-in", "In"], ["ease-out", "Out"], ["ease-in-out", "In-out"], ["smooth-out", "Smooth out"]], value: "ease-in-out" },
   { key: "fadeBy", label: "Fade by", type: "segment", options: [["character", "Character"], ["word", "Word"], ["gradient", "Gradient"]], value: "character" },
   { key: "focus", label: "Focus bracket", type: "switch", value: true },
   { key: "readout", label: "Coordinates", type: "switch", value: true },
@@ -23,11 +23,11 @@ html[data-theme="dark"] .tig-panel { --panel-bg: #181818; box-shadow: 0 0 0 1px 
 .tig-panel-head b { font-weight: 600; }
 .tig-panel-head button { border: 0; background: none; padding: 0; color: var(--muted, #6c6c6c); font: inherit; cursor: pointer; }
 .tig-row { padding: 9px 0; border-top: 1px solid var(--soft, rgba(0,0,0,.06)); }
-.tig-row-top { display: flex; justify-content: space-between; color: var(--muted, #6c6c6c); }
-.tig-row-top output { color: var(--fg, #0f0f0f); font-variant-numeric: tabular-nums; }
+.tig-row-top { display: flex; justify-content: space-between; gap: 8px; color: var(--muted, #6c6c6c); }
+.tig-row-top output { color: var(--fg, #0f0f0f); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tig-row input[type="range"] { width: 100%; margin: 8px 0 0; accent-color: var(--fg, #0f0f0f); }
-.tig-seg { display: grid; grid-auto-flow: column; gap: 2px; margin-top: 8px; padding: 2px; border-radius: 9px; background: var(--soft, rgba(0,0,0,.06)); }
-.tig-seg button { height: 28px; border: 0; border-radius: 7px; background: none; color: var(--muted, #6c6c6c); font: inherit; cursor: pointer;
+.tig-seg { display: grid; grid-template-columns: repeat(var(--cols, 3), 1fr); gap: 2px; margin-top: 8px; padding: 2px; border-radius: 9px; background: var(--soft, rgba(0,0,0,.06)); }
+.tig-seg button { height: 28px; padding: 0 6px; border: 0; white-space: nowrap; border-radius: 7px; background: none; color: var(--muted, #6c6c6c); font: inherit; cursor: pointer;
   transition: background-color 150ms cubic-bezier(.22, 1, .36, 1), color 150ms cubic-bezier(.22, 1, .36, 1); }
 .tig-seg button[aria-pressed="true"] { background: var(--panel-bg, #fff); color: var(--fg, #0f0f0f); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 .tig-switch { display: flex; align-items: center; justify-content: space-between; color: var(--muted, #6c6c6c); cursor: pointer; }
@@ -62,7 +62,11 @@ export function settingsPanel(onChange, { defaults = {}, store = "tig-demo-setti
         input.addEventListener("input", () => { values[f.key] = +input.value; out.textContent = show(input.value); });
         input.addEventListener("change", changed); // replay once the slider is let go
       } else if (f.type === "segment") {
-        row.innerHTML = `<div class="tig-row-top"><span>${f.label}</span></div><div class="tig-seg" role="group" aria-label="${f.label}">${f.options.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${values[f.key] === v}">${l}</button>`).join("")}</div>`;
+        row.innerHTML = `<div class="tig-row-top"><span>${f.label}</span></div><div class="tig-seg" role="group" aria-label="${f.label}" style="--cols: ${Math.min(3, f.options.length)}">${f.options.map(([v, l], i, all) => {
+          // up to three a row; the last one stretches across what its row has left
+          const span = all.length > 3 && i === all.length - 1 ? 3 - ((all.length - 1) % 3) : 1;
+          return `<button type="button" data-v="${v}" aria-pressed="${values[f.key] === v}"${span > 1 ? ` style="grid-column: span ${span}"` : ""}>${l}</button>`;
+        }).join("")}</div>`;
         row.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
           values[f.key] = b.dataset.v; row.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); changed();
         }));

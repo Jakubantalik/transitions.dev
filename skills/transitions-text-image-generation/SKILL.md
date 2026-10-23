@@ -143,7 +143,7 @@ export function tracing(node, mode = "trace") { let run; document.fonts.ready.th
 | `fade` | `200` | ms each character (or word) takes to fade in. |
 | `fadeDelay` | `150` | ms between a character's dotted drawing finishing and its fade starting. A long delay runs the build past `duration`. |
 | `fadeStagger` | `null` | ms between one character's fade and the next (one word's with `fadeBy: "word"`; with `"gradient"` it sets the sweep's pace). `null` follows the tracing. |
-| `sequenceEase` | `"ease-in-out"` | How the starts of the glyphs, smaller lines and images (and so their fades) spread over the build: `"linear"`, `"ease-in"` (sparse first, then crowding in), `"ease-out"` (a burst first, then settling) or `"ease-in-out"`. Also shapes `fadeStagger`, keeping its total. |
+| `sequenceEase` | `"ease-in-out"` | How the starts of the glyphs, smaller lines and images (and so their fades) spread over the build: `"linear"`, `"ease-in"` (sparse first, then crowding in), `"ease-out"` (a burst first, then settling), `"ease-in-out"` or `"smooth-out"` (`--ease-smooth-out`: most of the text in early, the last characters settling slowly). Also shapes `fadeStagger`, keeping its total. |
 | `fadeBy` | `"character"` | `"character"`, `"word"` (a word fades in once its last character would; a word runs across inline elements and ends at whitespace or a new block) or `"gradient"` (a soft gradient mask sweeps left to right along each line, its edge reaching each character when that character would start to fade, as wide as the front travels in `fade`). |
 | `guides` | `true` | Type guides (cap height, x-height, baseline, descender, font spec). |
 | `focus` | `true` | The focus bracket on the glyph or image being drawn, with its label. |

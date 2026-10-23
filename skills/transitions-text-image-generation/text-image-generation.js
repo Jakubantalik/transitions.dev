@@ -35,7 +35,7 @@ const DEFAULTS = {
                             // gradient mask sweeping left to right along each line behind the tracing
   fadeDelay: 150,           // ms between a character's dotted drawing finishing and its fade starting
   fadeStagger: null,        // ms between one character's (or word's) fade and the next; null: follow the tracing
-  sequenceEase: "ease-in-out", // how the starts spread over the build: "linear" | "ease-in" | "ease-out" | "ease-in-out"
+  sequenceEase: "ease-in-out", // how the starts spread over the build: "linear" | "ease-in" | "ease-out" | "ease-in-out" | "smooth-out"
   guides: true,             // type guides: cap height, x-height, baseline, descender, font spec
   focus: true,              // the focus bracket on the glyph or image being drawn, with its label
   readout: true,            // the coordinate readout on the moving dot
@@ -65,7 +65,8 @@ const OUT = bezier(0.16, 1, 0.3, 1);          // drawing: a soft, quick-settling
 const SMOOTH_OUT = bezier(0.22, 1, 0.36, 1);  // ink and wipes: --ease-smooth-out
 const EASE_OUT = bezier(0, 0, 0.58, 1);       // character fades: ease-out, so the 200ms reads as 200ms
 // the sequence: where each glyph, line and image starts across the build (and so where each fade lands)
-const SEQUENCE = { linear: (x) => x, "ease-in": bezier(0.42, 0, 1, 1), "ease-out": bezier(0, 0, 0.58, 1), "ease-in-out": bezier(0.42, 0, 0.58, 1) };
+const SEQUENCE = { linear: (x) => x, "ease-in": bezier(0.42, 0, 1, 1), "ease-out": bezier(0, 0, 0.58, 1), "ease-in-out": bezier(0.42, 0, 0.58, 1),
+  "smooth-out": SMOOTH_OUT }; // --ease-smooth-out: most of the text in early, the last characters settling slowly
 const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const css = (el, name, fb) => { const v = getComputedStyle(el).getPropertyValue(name).trim(); return v || fb; };
 
