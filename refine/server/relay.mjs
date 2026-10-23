@@ -781,6 +781,8 @@ const server = createServer(async (req, res) => {
       agentReason: ai.cmd ? null : ai.reason,
       cliInstalled: cursorCliInstalled(),
       jobs: jobs.size,
+      // The panel waits at least this long on a scan or apply job.
+      agentTimeoutMs: AGENT_TIMEOUT_MS,
     });
   }
 

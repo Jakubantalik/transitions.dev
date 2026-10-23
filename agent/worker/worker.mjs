@@ -212,6 +212,9 @@ function modelFailure(e, detail) {
   if (e?.kind === "too_large") {
     return { status: 413, body: { error: "too_large", detail: "This run had more code than one fix can rewrite. " + counted + " Run it again with fewer files: the CLI retries with a smaller batch on its own." } };
   }
+  if (e?.kind === "unreadable") {
+    return { status: 502, body: { error: "model_unreadable", detail: "The AI answer could not be read. " + counted + " Try again." } };
+  }
   // Anthropic does not serve some regions (China, Hong Kong, Russia and
   // others) and answers 403 "Request not allowed" there. Say so plainly
   // instead of blaming our side. (Status 502 so every CLI shows the detail.)
@@ -315,9 +318,13 @@ async function proposeFixes(env, findings, files, mode, recipes, model, componen
     }
     truncated = true;
   } else {
+    // No readable answer is a failed run, not an empty one: it is not counted.
     const match = text.match(/\{[\s\S]*\}/);
-    if (!match) return { summary: "The model returned no changes.", files: [] };
-    try { parsed = JSON.parse(match[0]); } catch { return { summary: "The model response could not be parsed.", files: [] }; }
+    try { parsed = JSON.parse(match ? match[0] : ""); } catch {
+      const err = new Error("unreadable model answer");
+      err.kind = "unreadable";
+      throw err;
+    }
   }
   const { files: changed, skipped, broken } = applyEdits(files, parsed.edits || []);
   // Older answers in the whole-file shape still work.
