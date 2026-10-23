@@ -151,7 +151,7 @@ tl.seek(1200); // e.g. from the video's render loop
 | `maxGlyphs` | `140` | Most glyphs traced; the rest only ink in. |
 | `fade` | `200` | ms each character (or word) takes to fade in. |
 | `fadeDelay` | `150` | ms between a character's dotted drawing finishing and its fade starting. A long delay runs the build past `duration`. |
-| `fadeStagger` | `null` | ms between one character's fade and the next (one word's with `fadeBy: "word"`; with `"gradient"` it sets the sweep's pace). `null` follows the tracing. |
+| `fadeStagger` | `null` | ms between one character's fade and the next (one word's with `fadeBy: "word"`; with `"gradient"` it sets the sweep's pace). `null` follows the tracing. A character never fades in before its own drawing is done. |
 | `sequenceEase` | `"ease-in-out"` | How the starts of the glyphs, smaller lines and images (and so their fades) spread over the build: `"linear"`, `"ease-in"` (sparse first, then crowding in), `"ease-out"` (a burst first, then settling), `"ease-in-out"` or `"smooth-out"` (`--ease-smooth-out`: most of the text in early, the last characters settling slowly), or your own curve as `[x1, y1, x2, y2]` or `"cubic-bezier(x1, y1, x2, y2)"`. Also shapes `fadeStagger`, keeping its total. |
 | `fadeBy` | `"character"` | `"character"`, `"word"` (a word fades in once its last character would; a word runs across inline elements and ends at whitespace or a new block) or `"gradient"` (a soft gradient mask sweeps left to right along each line, its edge reaching each character when that character would start to fade, as wide as the front travels in `fade`). |
 | `guides` | `true` | Type guides (cap height, x-height, baseline, descender, font spec). |
