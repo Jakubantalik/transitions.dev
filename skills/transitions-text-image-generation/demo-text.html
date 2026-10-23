@@ -22,7 +22,7 @@
   .bar button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
   .stage { flex: 1; display: grid; place-items: center; padding: 48px 24px 120px; }
-  /* the Portfolio frame "Generative effect skill": Saans Medium 54.081 / 42.324, #0f0f0f on white */
+  /* the Portfolio frame "Generative skill": Saans Medium 54.081 / 42.324, #0f0f0f on white */
   .display { margin: 0; font: 500 54.081px/42.324px "Saans", Inter, sans-serif; color: var(--fg); text-align: center; }
   @media (max-width: 480px) { .display { font-size: 40px; line-height: 32px; } }
 </style>
@@ -37,7 +37,7 @@
   </div>
 
   <main class="stage">
-    <h1 class="display" id="copy">Generative effect skill</h1>
+    <h1 class="display" id="copy">Generative skill</h1>
   </main>
 
 <script type="module">
@@ -51,7 +51,7 @@
     store: "tig-demo-text-settings",
     defaults: { duration: 3000, fadeDelay: 0, fade: 110, fadeBy: "character", focus: false, readout: false, guides: false, particles: true },
   });
-  const play = async () => { await document.fonts.ready; generate(copy, { ...settings.values, mode, done: "Generative effect skill ready" }); };
+  const play = async () => { await document.fonts.ready; generate(copy, { ...settings.values, mode, done: "Generative skill ready" }); };
   document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
     mode = b.dataset.mode;
     document.querySelectorAll("[data-mode]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));

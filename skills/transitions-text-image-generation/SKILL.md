@@ -58,7 +58,7 @@ Same, with `mode: "trace-texts"`. Mention that the log needs empty space beside 
 
 ### transitions trace preview
 
-Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative effect skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative effect skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark. Both demos have a settings panel on the right (build duration, delay before the fade, fade duration, fade by character, word or gradient, and switches for the focus bracket, coordinates, type guides and flying dots), remembered per browser.
+Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark. Both demos have a settings panel on the right (build duration, delay before the fade, fade duration, fade by character, word or gradient, and switches for the focus bracket, coordinates, type guides and flying dots), remembered per browser.
 
 ## Install
 
