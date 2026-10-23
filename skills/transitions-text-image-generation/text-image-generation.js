@@ -35,6 +35,7 @@ const DEFAULTS = {
                             // gradient mask sweeping left to right along each line behind the tracing
   fadeDelay: 150,           // ms between a character's dotted drawing finishing and its fade starting
   fadeStagger: null,        // ms between one character's (or word's) fade and the next; null: follow the tracing
+  sequenceEase: "ease-in-out", // how the starts spread over the build: "linear" | "ease-in" | "ease-out" | "ease-in-out"
   guides: true,             // type guides: cap height, x-height, baseline, descender, font spec
   focus: true,              // the focus bracket on the glyph or image being drawn, with its label
   readout: true,            // the coordinate readout on the moving dot
@@ -63,6 +64,8 @@ function bezier(x1, y1, x2, y2) {
 const OUT = bezier(0.16, 1, 0.3, 1);          // drawing: a soft, quick-settling ease-out
 const SMOOTH_OUT = bezier(0.22, 1, 0.36, 1);  // ink and wipes: --ease-smooth-out
 const EASE_OUT = bezier(0, 0, 0.58, 1);       // character fades: ease-out, so the 200ms reads as 200ms
+// the sequence: where each glyph, line and image starts across the build (and so where each fade lands)
+const SEQUENCE = { linear: (x) => x, "ease-in": bezier(0.42, 0, 1, 1), "ease-out": bezier(0, 0, 0.58, 1), "ease-in-out": bezier(0.42, 0, 0.58, 1) };
 const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const css = (el, name, fb) => { const v = getComputedStyle(el).getPropertyValue(name).trim(); return v || fb; };
 
@@ -359,9 +362,13 @@ function build(el, M, opts) {
   });
 
   // glyphs: their own outlines, traced loop by loop
+  // the easing describes the reveal's progress (how much of the text is in over time), so an item's start is the
+  // time at which progress reaches its place in the order: the inverse of the curve
+  const ease = SEQUENCE[opts.sequenceEase] || SEQUENCE.linear;
+  const seq = (f) => { let lo = 0, hi = 1; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (ease(m) < f) lo = m; else hi = m; } return (lo + hi) / 2; };
   const traced = M.glyphs.slice(0, opts.maxGlyphs), n = M.glyphs.length, span = PH.glyphs[1] - PH.glyphs[0], dur = Math.min(0.16, span * 0.45);
   M.glyphs.forEach((g, i) => {
-    const t0 = PH.glyphs[0] + (n > 1 ? (span - dur) * (i / (n - 1)) : 0), gg = svg("g", {}, wires);
+    const t0 = PH.glyphs[0] + (n > 1 ? (span - dur) * seq(i / (n - 1)) : 0), gg = svg("g", {}, wires);
     let strokes = [];
     if (traced.includes(g)) { try { strokes = glyphLoops(g).map((d) => stroke(d, gg)); } catch (e) { strokes = []; } }
     strokes.forEach((s, k) => { s.idx = k; s.head = head(gg); });
@@ -374,14 +381,14 @@ function build(el, M, opts) {
   M.lines.forEach((ln, i) => {
     const y = ln.y + ln.h * 0.56, s = stroke(`M${f2(ln.x)} ${f2(y)}H${f2(ln.x2)}`, wires);
     s.head = head(wires, 1.8); s.idx = 0;
-    const t0 = PH.lines[0] + (nl > 1 ? (lspan - ldur) * (i / (nl - 1)) : 0);
+    const t0 = PH.lines[0] + (nl > 1 ? (lspan - ldur) * seq(i / (nl - 1)) : 0);
     G.lines.push({ s, b: ln, t0, t1: t0 + ldur, ti: t0 + ldur * 0.7, host: ln.host });
   });
 
   // images: a dotted frame with handles and a label, a contour sketch of the photo in flowing dots, a fine halftone
   // of its own pixels arriving shadows first, the dots taking the photo's colours, then the photo itself over them
   M.images.forEach((im, i) => {
-    const t0 = M.images.length > 1 ? lerp(PH.images[0], PH.images[1], i / (M.images.length - 1)) : PH.images[0];
+    const t0 = M.images.length > 1 ? lerp(PH.images[0], PH.images[1], seq(i / (M.images.length - 1))) : PH.images[0];
     const cell = Math.max(3, Math.min(5, Math.round(Math.sqrt(im.w * im.h) / 160)));
     const frame = [1, 0].map((dir) => Object.assign(stroke(rrHalf(im.x, im.y, im.w, im.h, im.r, dir), wires), { head: head(wires, 2.6) }));
     const handles = [[im.x, im.y], [im.x + im.w, im.y], [im.x + im.w, im.y + im.h], [im.x, im.y + im.h]].map(([x, y]) => ({ el: svg("rect", { x: -2.5, y: -2.5, width: 5, height: 5, class: "t-tig-handle", transform: `translate(${f2(x)} ${f2(y)}) scale(0)` }, root), x, y }));
@@ -448,7 +455,10 @@ function build(el, M, opts) {
   if (opts.fadeStagger != null && +opts.fadeStagger >= 0) {
     const units = [...G.glyphs.map((g) => ({ o: g, word: g.b.word, t: g.wi })), ...G.words.map((w) => ({ o: w, word: w.word, t: w.wi }))].sort((a, b) => a.t - b.t);
     const base = units.length ? units[0].t : 0, step = +opts.fadeStagger / opts.duration, order = new Map();
-    units.forEach((u, k) => { if (!order.has(u.word)) order.set(u.word, order.size); u.o.wi = base + (opts.fadeBy === "word" ? order.get(u.word) : k) * step; });
+    units.forEach((u) => { if (!order.has(u.word)) order.set(u.word, order.size); });
+    // the same total as an even stagger, spread along the sequence easing
+    const N = opts.fadeBy === "word" ? order.size : units.length;
+    units.forEach((u, k) => { const j = opts.fadeBy === "word" ? order.get(u.word) : k; u.o.wi = base + (N > 1 ? (N - 1) * step * seq(j / (N - 1)) : 0); });
   }
   if (opts.fadeBy === "word") {
     const end = new Map();

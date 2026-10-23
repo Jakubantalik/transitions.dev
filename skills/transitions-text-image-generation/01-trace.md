@@ -23,7 +23,7 @@ Phases as fractions of `duration` (default `3000ms`).
 | --- | --- | --- |
 | Type guides | 0 to 0.26 | Cap height, x-height, baseline and descender guides draw out for each display line, a little after the one above. The first line of each block shows the labels and the font spec. |
 | Images | from 0.04 to 0.16 (staggered) | Each image: a dotted frame from the top centre in both directions, corner handles, a size label and a live status. |
-| Glyphs | 0.06 to 0.76 | Letters traced in order, about `0.16` each and overlapping, outer shape first then counters (`--ease-out`), with a reticle, a readout and a dot flying in to each start. |
+| Glyphs | 0.06 to 0.76 | Letters traced in order, about `0.16` each and overlapping, their starts spread along `sequenceEase` (`ease-in-out`), outer shape first then counters (`--ease-out`), with a reticle, a readout and a dot flying in to each start. |
 | Text lines | 0.12 to 0.78 | Smaller text: one dotted line per line. |
 | Sketch | image start + 0.08 to 0.38 | Tone lines at six levels, traced in fine dots, many short strokes at once. |
 | Screen | image start + 0.2 to 0.56 | A fine halftone sweeps in from the top left, dots landing slightly large and dark, then settling. |

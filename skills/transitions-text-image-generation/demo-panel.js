@@ -6,6 +6,7 @@ const FIELDS = [
   { key: "fade", label: "Fade in", type: "range", min: 50, max: 1000, step: 10, unit: "ms", value: 200 },
   // its first stop means "follow the tracing" (sent to generate() as null)
   { key: "fadeStagger", label: "Delay between characters", type: "range", min: -10, max: 300, step: 10, unit: "ms", value: -10, auto: "Follow trace" },
+  { key: "sequenceEase", label: "Sequence easing", type: "segment", options: [["linear", "Linear"], ["ease-in", "In"], ["ease-out", "Out"], ["ease-in-out", "In-out"]], value: "ease-in-out" },
   { key: "fadeBy", label: "Fade by", type: "segment", options: [["character", "Character"], ["word", "Word"], ["gradient", "Gradient"]], value: "character" },
   { key: "focus", label: "Focus bracket", type: "switch", value: true },
   { key: "readout", label: "Coordinates", type: "switch", value: true },
