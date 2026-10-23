@@ -41,6 +41,7 @@ const DEFAULTS = {
   focus: true,              // the focus bracket on the glyph or image being drawn, with its label
   readout: true,            // the coordinate readout on the moving dot
   particles: true,          // dots flying in to where each glyph starts
+  dotScale: 1,              // scales the dots, their spacing and the moving heads (e.g. with the type in a scaled scene)
   steps: ["Setting type", "Tracing glyphs", "Sampling images", "Inking"],
   done: "Ready",
   onDone: null,
@@ -334,7 +335,7 @@ function halftone(im, cell, light) {
 // ─── 4. the overlay ───
 const MPAD = 64, MASK_PROPS = ["maskImage", "webkitMaskImage", "maskSize", "webkitMaskSize", "maskPosition", "webkitMaskPosition", "maskRepeat", "webkitMaskRepeat", "maskClip", "webkitMaskClip"];
 function build(el, M, opts) {
-  const R = el.getBoundingClientRect(), w = M.w, h = M.h, DOT_GAP = 4.6;
+  const DS = Math.max(0.2, +opts.dotScale || 1), R = el.getBoundingClientRect(), w = M.w, h = M.h, DOT_GAP = 4.6 * DS;
   const layer = document.createElement("div");
   layer.className = "t-tig" + (opts.mode === "trace-texts" ? " t-tig--texts" : "");
   layer.setAttribute("aria-hidden", "true");
@@ -351,7 +352,8 @@ function build(el, M, opts) {
   G.ink = css(el, "--tig-ink", "rgba(13, 13, 13, 0.5)"); G.lit = css(el, "--tig-strong", "#6c6c6c");
   const rgb = (G.ink.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map(Number); G.light = rgb[0] + rgb[1] + rgb[2] > 384;
   const stroke = (d, parent, cls = "t-tig-wire", gap = DOT_GAP) => { const e = svg("path", { d, class: cls }, parent); return { el: e, L: e.getTotalLength(), gap }; };
-  const head = (parent, r = 2.2) => svg("circle", { r, class: "t-tig-head", opacity: 0 }, parent);
+  const head = (parent, r = 2.2) => svg("circle", { r: f2(r * DS), class: "t-tig-head", opacity: 0 }, parent);
+  if (DS !== 1) layer.style.setProperty("--tig-dot", f2((parseFloat(css(el, "--tig-dot", "2.1")) || 2.1) * DS) + "px");
   const wires = svg("g", { class: "t-tig-wireframe" }, root);
 
   // type guides: cap height, x-height, baseline and descender for each display line, past both ends
@@ -402,7 +404,7 @@ function build(el, M, opts) {
     const status = svg("text", { x: f2(im.x + im.w), y: f2(im.y - 8), class: "t-tig-label t-tig-label--small", "text-anchor": "end", opacity: 0 }, root);
     const sk = svg("g", { class: "t-tig-sketch" }, wires);
     const paths = sketch(im, G.light, (im.w + im.h) * 13), ns = paths.length, sd = 0.12, [a0, a1] = IMG.sketch;
-    const lines = paths.map((d, k) => Object.assign(stroke(d, sk, "t-tig-wire", 3.4), { t0: t0 + a0 + (ns > 1 ? (a1 - a0 - sd) * (k / (ns - 1)) : 0), head: k % 3 ? null : head(sk, 1.6) }));
+    const lines = paths.map((d, k) => Object.assign(stroke(d, sk, "t-tig-wire", 3.4 * DS), { t0: t0 + a0 + (ns > 1 ? (a1 - a0 - sd) * (k / (ns - 1)) : 0), head: k % 3 ? null : head(sk, 1.6) }));
     // the two finished screens are drawn once: the grey dots as they settle, and the colour dot matrix
     const screen = (fill) => { const c = document.createElement("canvas"); c.width = Math.ceil(im.w * dpr); c.height = Math.ceil(im.h * dpr); const g = c.getContext("2d"); g.scale(dpr, dpr); if (fill) g.fillStyle = fill; return [c, g]; };
     const ht = halftone(im, cell, G.light), [settled, sg] = screen(G.ink), [colour, cg] = screen();
@@ -423,7 +425,7 @@ function build(el, M, opts) {
   G.read = svg("text", { class: "t-tig-label t-tig-label--small", opacity: 0 }, root);
   G.flyers = opts.particles === false ? [] : G.glyphs.filter((g) => g.strokes.length).map((g, i) => {
     const pt = g.strokes[0].el.getPointAtLength(0), ang = hashN(i * 9.1) * Math.PI * 2, dist = 28 + 50 * hashN(i * 4.7);
-    return { el: svg("circle", { r: 1.6, class: "t-tig-flyer", opacity: 0 }, root), x0: pt.x + Math.cos(ang) * dist, y0: pt.y + Math.sin(ang) * dist, x1: pt.x, y1: pt.y, arr: g.t0, s0: g.t0 - 0.08 };
+    return { el: svg("circle", { r: f2(1.6 * DS), class: "t-tig-flyer", opacity: 0 }, root), x0: pt.x + Math.cos(ang) * dist, y0: pt.y + Math.sin(ang) * dist, x1: pt.x, y1: pt.y, arr: g.t0, s0: g.t0 - 0.08 };
   });
 
   // the blocks the text is revealed through, with their own clip
