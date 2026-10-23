@@ -35,7 +35,8 @@ const DEFAULTS = {
                             // gradient mask sweeping left to right along each line behind the tracing
   fadeDelay: 150,           // ms between a character's dotted drawing finishing and its fade starting
   fadeStagger: null,        // ms between one character's (or word's) fade and the next; null: follow the tracing
-  sequenceEase: "ease-in-out", // how the starts spread over the build: "linear" | "ease-in" | "ease-out" | "ease-in-out" | "smooth-out"
+  sequenceEase: "ease-in-out", // how the starts spread over the build: "linear" | "ease-in" | "ease-out" | "ease-in-out" |
+                               // "smooth-out", or your own curve: [x1, y1, x2, y2] or "cubic-bezier(x1, y1, x2, y2)"
   guides: true,             // type guides: cap height, x-height, baseline, descender, font spec
   focus: true,              // the focus bracket on the glyph or image being drawn, with its label
   readout: true,            // the coordinate readout on the moving dot
@@ -365,7 +366,9 @@ function build(el, M, opts) {
   // glyphs: their own outlines, traced loop by loop
   // the easing describes the reveal's progress (how much of the text is in over time), so an item's start is the
   // time at which progress reaches its place in the order: the inverse of the curve
-  const ease = SEQUENCE[opts.sequenceEase] || SEQUENCE.linear;
+  // a preset name, a [x1, y1, x2, y2] curve, or a "cubic-bezier(…)" string
+  const se = opts.sequenceEase, nums = Array.isArray(se) ? se : typeof se === "string" && /^cubic-bezier/.test(se) ? se.match(/-?[\d.]+/g).map(Number) : null;
+  const ease = nums && nums.length === 4 ? bezier(...nums) : SEQUENCE[se] || SEQUENCE.linear;
   const seq = (f) => { let lo = 0, hi = 1; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (ease(m) < f) lo = m; else hi = m; } return (lo + hi) / 2; };
   const traced = M.glyphs.slice(0, opts.maxGlyphs), n = M.glyphs.length, span = PH.glyphs[1] - PH.glyphs[0], dur = Math.min(0.16, span * 0.45);
   M.glyphs.forEach((g, i) => {
