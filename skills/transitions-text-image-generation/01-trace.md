@@ -28,7 +28,7 @@ Phases as fractions of `duration` (default `3000ms`).
 | Sketch | image start + 0.08 to 0.38 | Tone lines at six levels, traced in fine dots, many short strokes at once. |
 | Screen | image start + 0.2 to 0.56 | A fine halftone sweeps in from the top left, dots landing slightly large and dark, then settling. |
 | Colour | image start + 0.52 to 0.68 | The grey dots cross into a dot matrix in the photo's own colours (`--ease-smooth-out`). |
-| Ink | per character (or per word with `fadeBy: "word"`) | Each character fades in over `fade` (`200ms`, `ease-out`): a display glyph `fadeDelay` (`150ms`) after it is traced, with its dots fading out; a smaller character that long after its line's dotted stroke passes it. |
+| Ink | per character (per word with `fadeBy: "word"`, or a left to right gradient sweep per line with `fadeBy: "gradient"`) | Each character fades in over `fade` (`200ms`, `ease-out`): a display glyph `fadeDelay` (`150ms`) after it is traced, with its dots fading out; a smaller character that long after its line's dotted stroke passes it. |
 | Photo | image start + 0.64 to 0.88 | Fades in over its colour dots, sharpening from a `6px` blur. |
 | Clean | 0.86 to 1.04 | Guides and leftover dots fade out. |
 

@@ -31,7 +31,8 @@ const DEFAULTS = {
   display: 32,              // px: text this size or larger is traced glyph by glyph, smaller text as lines
   maxGlyphs: 140,           // most glyphs traced (the rest only ink in)
   fade: 200,                // ms: how long each character (or word) takes to fade in
-  fadeBy: "character",      // "character" | "word": a word fades in once its last character is in
+  fadeBy: "character",      // "character" | "word" | "gradient": a word once its last character is in, or a soft
+                            // gradient mask sweeping left to right along each line behind the tracing
   fadeDelay: 150,           // ms between a character's dotted drawing finishing and its fade starting
   guides: true,             // type guides: cap height, x-height, baseline, descender, font spec
   focus: true,              // the focus bracket on the glyph or image being drawn, with its label
@@ -439,7 +440,7 @@ function build(el, M, opts) {
     const r0 = wd.rects[0] || { x: 0, y: 0, w: 0, h: 0 }, last = wd.rects[wd.rects.length - 1] || r0;
     const ln = G.lines.find((l) => l.host === wd.host && Math.abs(l.b.y - last.y) < 2 && last.x >= l.b.x - 1 && last.x <= l.b.x2 + 1) || G.lines[0];
     const f = ln ? clamp((last.x + last.w - ln.b.x) / Math.max(1, ln.b.x2 - ln.b.x)) : 1;
-    return { rects: wd.rects, host: wd.host, word: wd.word, wi: (ln ? ln.t0 + (ln.t1 - ln.t0) * inv(f) : PH.lines[0]) + wait };
+    return { rects: wd.rects, host: wd.host, word: wd.word, ln, wi: (ln ? ln.t0 + (ln.t1 - ln.t0) * inv(f) : PH.lines[0]) + wait };
   });
   if (opts.fadeBy === "word") {
     const end = new Map();
@@ -449,6 +450,28 @@ function build(el, M, opts) {
   G.focus = opts.focus !== false; G.readout = opts.readout !== false;
   G.fade = Math.max(16, +opts.fade || DEFAULTS.fade);
   G.inkEnd = Math.max(0, ...G.glyphs.map((g) => g.wi), ...G.words.map((w) => w.wi), ...G.lines.map((l) => l.t1)) + G.fade / opts.duration;
+  // gradient: one band per line of text, shown through a soft edge that sweeps left to right, reaching each
+  // character's right side when that character would start to fade; the edge is as wide as the front travels in
+  // `fade` ms, so every point still takes about `fade` to come in
+  G.bands = [];
+  if (opts.fadeBy === "gradient") {
+    const fp = G.fade / opts.duration, band = (host, items, y0, y1) => {
+      if (!items.length) return;
+      items.sort((a, b) => a.x - b.x);
+      let t = 0; const pts = items.map((o) => [(t = Math.max(t, o.t)), o.x]);
+      const x0 = Math.min(...items.map((o) => o.x0)), x1 = Math.max(...items.map((o) => o.x));
+      const v = (x1 - x0) / Math.max(1e-3, pts[pts.length - 1][0] - pts[0][0] + fp), soft = Math.max(6, Math.min(240, v * fp));
+      pts.unshift([pts[0][0] - (pts[0][1] - x0) / Math.max(v, 1e-3), x0]); pts.push([pts[pts.length - 1][0] + fp, x1 + soft]);
+      G.bands.push({ host, pts, soft, x0: x0 - 2, x1: x1 + soft, y0, y1 });
+    };
+    const rowsOf = new Map();
+    for (const g of G.glyphs) { const k = [...rowsOf.keys()].find((r) => r.host === g.host && Math.abs(r.base - g.b.base) < 2) || { host: g.host, base: g.b.base }; (rowsOf.get(k) || rowsOf.set(k, []).get(k)).push(g); }
+    for (const [r, gs] of rowsOf) band(r.host, gs.map((g) => ({ t: g.wi, x: g.box.x1, x0: g.box.x0 })), Math.min(...gs.map((g) => g.box.y0)), Math.max(...gs.map((g) => g.box.y1)));
+    for (const l of G.lines) {
+      const cs = G.words.filter((w) => w.ln === l).flatMap((w) => w.rects.map((r) => ({ t: w.wi, x: r.x + r.w, x0: r.x })));
+      band(l.host, cs, l.b.y - 3, l.b.y + l.b.h + 3);
+    }
+  }
   if (opts.mode === "trace-texts") buildTexts(G, el, opts);
   return G;
 }
@@ -517,13 +540,25 @@ function frame(G, p, t, D) {
     if (l.s.el.style.opacity === "1") l.s.el.style.opacity = f2((1 - 0.85 * ink(l.t1)) * clean);
   }
 
-  // the text blocks: each glyph and each smaller line fades in through its own box in the block's mask
+  // the text blocks: each glyph and each smaller character (or word, or line band) fades in through the block's mask
   for (const H of G.hosts) {
     if (p >= G.inkEnd) { if (!H.done) { H.done = true; Object.assign(H.el.style, H.prev); } continue; }
     let s = "";
     const add = (x, y, w, h, a) => { if (w > 0.2 && h > 0.2 && a > 0.003) s += `<rect x='${f2(x - H.x + MPAD)}' y='${f2(y - H.y + MPAD)}' width='${f2(w)}' height='${f2(h)}'${a < 0.997 ? ` fill-opacity='${a.toFixed(3)}'` : ""}/>`; };
-    for (const g of G.glyphs) if (g.host === H.el) add(g.box.x0, g.box.y0, g.box.x1 - g.box.x0, g.box.y1 - g.box.y0, ink(g.wi));
-    for (const w of G.words) if (w.host === H.el) { const a = ink(w.wi); for (const r of w.rects) add(r.x - 0.5, r.y - 3, r.w + 1, r.h + 6, a); }
+    if (G.bands.length) {
+      // gradient: each line's band through a linear gradient whose soft edge sits at the front
+      G.bands.forEach((b, i) => {
+        if (b.host !== H.el || p <= b.pts[0][0]) return;
+        let f = b.pts[b.pts.length - 1][1];
+        for (let k = 1; k < b.pts.length; k++) if (p < b.pts[k][0]) { const [ta, xa] = b.pts[k - 1], [tb, xb] = b.pts[k]; f = lerp(xa, xb, (p - ta) / Math.max(1e-6, tb - ta)); break; }
+        const X = (x) => f2(x - H.x + MPAD), Y = (y) => f2(y - H.y + MPAD);
+        s += `<linearGradient id='b${i}' gradientUnits='userSpaceOnUse' x1='${X(f - b.soft)}' y1='0' x2='${X(f)}' y2='0'><stop offset='0' stop-color='#000'/><stop offset='1' stop-color='#000' stop-opacity='0'/></linearGradient>`
+          + `<rect x='${X(b.x0)}' y='${Y(b.y0)}' width='${f2(b.x1 - b.x0)}' height='${f2(b.y1 - b.y0)}' fill='url(#b${i})'/>`;
+      });
+    } else {
+      for (const g of G.glyphs) if (g.host === H.el) add(g.box.x0, g.box.y0, g.box.x1 - g.box.x0, g.box.y1 - g.box.y0, ink(g.wi));
+      for (const w of G.words) if (w.host === H.el) { const a = ink(w.wi); for (const r of w.rects) add(r.x - 0.5, r.y - 3, r.w + 1, r.h + 6, a); }
+    }
     for (const m of G.images) if (holds(H.el, m.im.el)) add(m.im.x - 2, m.im.y - 2, m.im.w + 4, m.im.h + 4, 1); // images keep their own reveal
     if (s !== H.key) {
       H.key = s;

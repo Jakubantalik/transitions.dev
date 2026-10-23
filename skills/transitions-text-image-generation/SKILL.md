@@ -58,7 +58,7 @@ Same, with `mode: "trace-texts"`. Mention that the log needs empty space beside 
 
 ### transitions trace preview
 
-Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative effect skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative effect skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark. Both demos have a settings panel on the right (build duration, delay before the fade, fade duration, fade by character or word, and switches for the focus bracket, coordinates, type guides and flying dots), remembered per browser.
+Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative effect skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative effect skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark. Both demos have a settings panel on the right (build duration, delay before the fade, fade duration, fade by character, word or gradient, and switches for the focus bracket, coordinates, type guides and flying dots), remembered per browser.
 
 ## Install
 
@@ -142,7 +142,7 @@ export function tracing(node, mode = "trace") { let run; document.fonts.ready.th
 | `maxGlyphs` | `140` | Most glyphs traced; the rest only ink in. |
 | `fade` | `200` | ms each character (or word) takes to fade in. |
 | `fadeDelay` | `150` | ms between a character's dotted drawing finishing and its fade starting. A long delay runs the build past `duration`. |
-| `fadeBy` | `"character"` | `"character"` or `"word"`: a word fades in once its last character would. A word runs across inline elements and ends at whitespace or a new block. |
+| `fadeBy` | `"character"` | `"character"`, `"word"` (a word fades in once its last character would; a word runs across inline elements and ends at whitespace or a new block) or `"gradient"` (a soft gradient mask sweeps left to right along each line, its edge reaching each character when that character would start to fade, as wide as the front travels in `fade`). |
 | `guides` | `true` | Type guides (cap height, x-height, baseline, descender, font spec). |
 | `focus` | `true` | The focus bracket on the glyph or image being drawn, with its label. |
 | `readout` | `true` | The coordinate readout on the moving dot. |
