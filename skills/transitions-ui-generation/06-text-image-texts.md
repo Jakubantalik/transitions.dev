@@ -1,4 +1,4 @@
-# Generation texts (mode: "trace-texts")
+# Generation texts for the text and image variants (mode: "skeleton-texts")
 
 ## When to use
 
@@ -7,12 +7,12 @@ Any variant, plus text that tells the story of an agent setting the type and sam
 ## Usage
 
 ```js
-import { generate } from "./text-image-generation.js";
-generate(element, { mode: "trace-texts", done: "Issue 07 ready" });
+import { generate } from "./ui-generation.js";
+generate(element, { variant: "auto", mode: "skeleton-texts", done: "Issue 07 ready" });
 ```
 
 ```html
-<section data-t-trace="trace-texts">…</section>
+<section data-t-generate="skeleton-texts" data-t-generate-variant="auto">…</section>
 ```
 
 ## The texts

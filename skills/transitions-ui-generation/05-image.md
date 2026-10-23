@@ -11,7 +11,7 @@ generate(photo, { variant: "image" });       // an <img>, <video> or <canvas>, o
 ```
 
 ```html
-<img data-t-trace="trace" data-t-trace-variant="image" src="cover.jpg" alt="…" />
+<img data-t-generate="skeleton" data-t-generate-variant="image" src="cover.jpg" alt="…" />
 ```
 
 ## How it builds

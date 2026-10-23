@@ -6,6 +6,7 @@
 <title>Text generation demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./ui-generation.css" />
 <link rel="stylesheet" href="./text-image-generation.css" />
 <style>
   /* Saans Medium, from the transitions.dev repo (falls back to Inter when the demo is served on its own) */
@@ -33,7 +34,7 @@
     <button data-mode="trace" aria-pressed="true">Trace</button>
     <button data-mode="trace-texts" aria-pressed="false">Trace + generation texts</button>
     <button id="replay">Replay</button>
-    <a href="./demo.html">Text and images</a>
+    <a href="./demo-editorial.html">Text and images</a>
   </div>
 
   <main class="stage">
@@ -41,7 +42,7 @@
   </main>
 
 <script type="module">
-  import { generate } from "./text-image-generation.js";
+  import { generate } from "./ui-generation.js"; // the variant (text, small-text, image, auto) comes from the panel
   import { settingsPanel } from "./demo-panel.js";
   const copy = document.getElementById("copy");
   let mode = "trace";

@@ -6,6 +6,7 @@
 <title>Text and image generation demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./ui-generation.css" />
 <link rel="stylesheet" href="./text-image-generation.css" />
 <style>
   /* Saans Medium, from the transitions.dev repo (falls back to Inter when the demo is served on its own) */
@@ -58,6 +59,7 @@
     <button data-mode="trace-texts" aria-pressed="false">Trace + generation texts</button>
     <button id="replay">Replay</button>
     <a href="./demo-text.html">Text only</a>
+    <a href="./demo.html">UI components</a>
   </div>
 
   <main class="page">
@@ -87,11 +89,11 @@
     </section>
 
     <p class="quote demo-gen">Every frame is made twice: <span>once by the light, once by you.</span></p>
-    <p class="meta credit">transitions-text-image-generation</p>
+    <p class="meta credit">transitions-ui-generation</p>
   </main>
 
 <script type="module">
-  import { generate } from "./text-image-generation.js";
+  import { generate } from "./ui-generation.js"; // the variant (text, small-text, image, auto) comes from the panel
   import { settingsPanel } from "./demo-panel.js";
   const els = [...document.querySelectorAll(".demo-gen")];
   let mode = "trace";

@@ -11,7 +11,7 @@ generate(subtitle, { variant: "small-text" });
 ```
 
 ```html
-<p data-t-trace="trace" data-t-trace-variant="small-text">Field notes · Issue 07</p>
+<p data-t-generate="skeleton" data-t-generate-variant="small-text">Field notes · Issue 07</p>
 ```
 
 ## How it looks

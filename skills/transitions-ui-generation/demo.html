@@ -16,6 +16,7 @@
   .demo-bar { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; padding: 16px; font-size: 14px; }
   .demo-bar button { height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--stage-border); color: var(--stage-fg); font: inherit; font-weight: 500; cursor: pointer; }
   .demo-bar button[aria-pressed="true"] { background: var(--stage-fg); color: var(--stage-bg); }
+  .demo-bar a { height: 34px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 999px; background: var(--stage-border); color: var(--stage-fg); font-weight: 500; text-decoration: none; }
   .demo-stage { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; justify-content: center; padding: 64px 16px 180px; }
   .demo-item { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .demo-credit { font-size: 12px; color: var(--stage-muted); text-decoration: none; }
@@ -31,6 +32,8 @@
     <button data-mode="skeleton-texts" aria-pressed="false">Skeleton + generation texts</button>
     <button id="layout" aria-pressed="false">One card</button>
     <button id="replay">Replay</button>
+    <a href="./demo-text.html">Text</a>
+    <a href="./demo-editorial.html">Text and images</a>
   </div>
 
   <!-- three components published on the transitions.dev Community, mounted as published -->

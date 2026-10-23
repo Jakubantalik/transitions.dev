@@ -1,4 +1,4 @@
-# Text (default variant)
+# Text variant
 
 ## When to use
 
@@ -7,12 +7,12 @@ Headlines and display type: a hero title, an article header, a pull quote, a sli
 ## Usage
 
 ```js
-import { generate } from "./text-image-generation.js";
-generate(headline); // variant: "text" is the default
+import { generate } from "./ui-generation.js";
+generate(headline, { variant: "text" });
 ```
 
 ```html
-<h1 data-t-trace="trace">Generative skill</h1>
+<h1 data-t-generate="skeleton" data-t-generate-variant="text">Generative skill</h1>
 ```
 
 ## Defaults

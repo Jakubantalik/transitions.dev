@@ -6,6 +6,13 @@
  * (boxes, text lines, icon paths) are traced in small flowing dots, then the real UI is revealed behind a
  * scan line with a fade and a smooth ease-out.
  *
+ * Variants (variant option)
+ *   "ui"              the default: the component's dotted wireframe (outline, boxes, text lines, icons), then the reveal
+ *   "text"            big type: every glyph traced along its real outline, then fading in    } handled by
+ *   "small-text"      a dotted line through each line of text, the characters fading in      } text-image-generation.js,
+ *   "image"           a frame, a tone sketch, a halftone of its pixels, colour dots, the photo } which ships alongside
+ *   "auto"            text by size and images, in one block                                  }
+ *
  * Modes
  *   "skeleton"        the dotted drawing and the reveal
  *   "skeleton-texts"  the same, plus generation texts: an agent log, the motion CSS being written, a step line
@@ -22,7 +29,14 @@
  * Respects prefers-reduced-motion (a plain fade instead).
  */
 
+import * as TIG from "./text-image-generation.js";
+
 const NS = "http://www.w3.org/2000/svg";
+const TEXT_IMAGE = ["text", "small-text", "image", "auto"]; // the variants text-image-generation.js draws
+// the text and image variants take the same modes: skeleton → trace, skeleton-texts → trace-texts
+const toTrace = (o) => Object.assign({}, o, { mode: /texts$/.test(o.mode || "") ? "trace-texts" : "trace" });
+// a scrubbable build of the text and image variants (seek(ms)), for video tools: see 03-text.md
+export const timeline = (el, options = {}) => TIG.timeline(el, toTrace(Object.assign({ variant: "text" }, options)));
 
 // ─── timing: phases of a build, as fractions of `duration` (the reveal runs a little past 1) ───
 const PH = {
@@ -423,6 +437,7 @@ function texts(G, p, t, D) {
 
 // ─── 5. run ───
 export function generate(el, options = {}) {
+  if (TEXT_IMAGE.includes(options.variant)) return TIG.generate(el, toTrace(options));
   const opts = Object.assign({}, DEFAULTS, options);
   if (typeof el === "string") el = document.querySelector(el);
   if (!el) throw new Error("UIGeneration: no element");
@@ -462,14 +477,15 @@ export function generate(el, options = {}) {
 }
 
 // Plays every [data-t-generate] element once it scrolls into view.
-// data-t-generate="skeleton" | "skeleton-texts", optional data-t-generate-duration / -delay (ms).
+// data-t-generate="skeleton" | "skeleton-texts", optional data-t-generate-variant (ui | text | small-text | image | auto)
+// and data-t-generate-duration / -delay (ms).
 export function auto(root = document) {
   const els = [...root.querySelectorAll("[data-t-generate]")].filter((e) => !e.__tGenAuto);
-  const play = (e) => generate(e, { mode: e.dataset.tGenerate || "skeleton", duration: +e.dataset.tGenerateDuration || undefined, delay: +e.dataset.tGenerateDelay || 0 });
-  els.forEach((e) => { e.__tGenAuto = true; e.__tGenOpacity = e.style.opacity; e.style.opacity = 0; }); // hidden until it plays
+  const play = (e) => generate(e, { mode: e.dataset.tGenerate || "skeleton", variant: e.dataset.tGenerateVariant || "ui", duration: +e.dataset.tGenerateDuration || undefined, delay: +e.dataset.tGenerateDelay || 0 });
+  els.forEach((e) => { e.__tGenAuto = true; e.__tGenOpacity = e.__tTigOpacity = e.style.opacity; e.style.opacity = 0; }); // hidden until it plays
   if (!("IntersectionObserver" in window)) { els.forEach(play); return; }
   const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) { io.unobserve(en.target); play(en.target); } }), { threshold: 0.35 });
   els.forEach((e) => io.observe(e));
 }
 
-if (typeof window !== "undefined") window.UIGeneration = { generate, auto };
+if (typeof window !== "undefined") window.UIGeneration = { generate, auto, timeline };

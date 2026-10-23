@@ -1,5 +1,6 @@
 /*
- * transitions.dev / text and image generation
+ * transitions.dev / UI generation: the text and image variants (ui-generation.js passes variant "text",
+ * "small-text", "image" and "auto" here; it can also be used on its own)
  *
  * The dotted "agent is generating this" drawing, made for large bold type and images. Every glyph of a headline is
  * traced along its real outline in small flowing dots (each character is drawn in the element's own font on a canvas
