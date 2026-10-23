@@ -605,7 +605,6 @@ function frame(G, p, t, D) {
     // a small image keeps only its size, so the label and the status beside it never meet
     m.label.textContent = `IMAGE ${Math.round(im.w * fq)}×${Math.round(im.h * fq)}` + (im.w < 300 ? "" : `  ${im.fit === "fill" ? "" : im.fit.toUpperCase() + "  "}${m.cell}PX SCREEN`);
     m.status.setAttribute("opacity", f2(smooth(m.t0 + 0.04, m.t0 + 0.1, p) * gone));
-    m.status.textContent = pq > 0 ? `RESOLVING ${Math.round(pq * 100)}%` : cq > 0 ? `COLOUR ${Math.round(cq * 100)}%` : hq > 0 ? `SCREEN ${String(Math.min(m.k, m.dots.length)).padStart(5, "0")} DOTS` : `SKETCH ${m.lines.filter((s) => p >= s.t0).length}/${m.lines.length}`;
     // the sketch: tone lines traced in flowing dots, quieter as the dots arrive
     m.lines.forEach((s) => drawStroke(s, OUT(clamp((p - s.t0) / 0.12)), t));
     m.sk.setAttribute("opacity", f2((1 - 0.55 * hq) * (1 - 0.6 * cq) * gone * clean));
@@ -616,6 +615,8 @@ function frame(G, p, t, D) {
       while (m.k < m.dots.length && land(m.dots[m.k]) >= 1) { const d = m.dots[m.k++]; m.sg.moveTo(d.x + d.r, d.y); m.sg.arc(d.x, d.y, d.r, 0, Math.PI * 2); any = true; }
       if (any) m.sg.fill();
     }
+    // the status reads this frame's count, so a frame is the same however the timeline got there
+    m.status.textContent = pq > 0 ? `RESOLVING ${Math.round(pq * 100)}%` : cq > 0 ? `COLOUR ${Math.round(cq * 100)}%` : hq > 0 ? `SCREEN ${String(Math.min(m.k, m.dots.length)).padStart(5, "0")} DOTS` : `SKETCH ${m.lines.filter((s) => p >= s.t0).length}/${m.lines.length}`;
     if (hq > 0 && pq < 1) {
       ctx.globalAlpha = gone * (m.colour ? 1 - cq : 1);
       ctx.drawImage(m.settled, im.x, im.y, im.w, im.h);
