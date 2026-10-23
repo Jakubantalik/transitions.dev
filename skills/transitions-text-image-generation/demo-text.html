@@ -46,10 +46,10 @@
   const copy = document.getElementById("copy");
   let mode = "trace";
   copy.__tTigOpacity = ""; copy.style.opacity = 0; // hidden until it plays; restored to visible after
-  // this demo's defaults: a quick, quiet build with only the flying dots around the type, letters 90ms apart, eased out
+  // this demo's defaults: a quick, quiet build with only the flying dots around the type, letters 90ms apart on a gentle in-out curve
   const settings = settingsPanel(() => play(), {
     store: "tig-demo-text-settings",
-    defaults: { duration: 3000, fadeDelay: 140, fade: 90, fadeStagger: 90, sequenceEase: "ease-out", fadeBy: "character", focus: false, readout: false, guides: false, particles: true },
+    defaults: { duration: 3000, fadeDelay: 140, fade: 90, fadeStagger: 90, sequenceEase: "custom", sequenceCurve: [0.15, -0.02, 0.71, 1.01], fadeBy: "character", focus: false, readout: false, guides: false, particles: true },
   });
   const play = async () => { await document.fonts.ready; generate(copy, { ...settings.options(), mode, done: "Generative skill ready" }); };
   document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {

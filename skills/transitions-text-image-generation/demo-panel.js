@@ -51,7 +51,7 @@ html[data-theme="dark"] .tig-panel { --panel-bg: #181818; box-shadow: 0 0 0 1px 
 .tig-curve .line { fill: none; stroke: var(--fg, #0f0f0f); stroke-width: 2; stroke-linecap: round; }
 .tig-curve .knob { fill: var(--panel-bg, #fff); stroke: var(--fg, #0f0f0f); stroke-width: 1.5; cursor: grab; outline: none; }
 .tig-curve .knob:focus-visible { stroke-width: 3; }
-.tig-curve-code { margin-top: 6px; color: var(--muted, #6c6c6c); font: 500 11px/16px "Roboto Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.tig-curve-code { margin-top: 6px; color: var(--muted, #6c6c6c); font: 500 10.5px/16px "Roboto Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -0.02em; }
 @media (max-width: 900px) { .tig-panel { position: static; width: auto; max-height: none; margin: 0 16px 24px; } }
 `;
 
