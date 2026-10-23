@@ -129,6 +129,15 @@ export function tracing(node, mode = "trace") { let run; document.fonts.ready.th
 // <section use:tracing={"trace-texts"}>…</section>
 ```
 
+## Timeline (video tools)
+
+`timeline(element, options)` builds the same drawing without running it: `seek(ms)` draws the build at that time, backwards too, so a video editor or a frame-by-frame renderer can scrub it. Before 0 the element is hidden; from `end` on it is as it was. Pass `parent` (a positioned element such as a scene) to put the overlay inside it so it shows and hides with it. `destroy()` restores everything.
+
+```js
+const tl = timeline(title, { duration: 3000, parent: scene });
+tl.seek(1200); // e.g. from the video's render loop
+```
+
 ## API
 
 `generate(element, options)` returns `{ finished, cancel, element }`. `finished` resolves when everything is in. `cancel()` stops at once and shows the element as it is. Calling `generate` again on the same element cancels the previous run.
@@ -199,3 +208,4 @@ In [`text-image-generation.css`](./text-image-generation.css). Dark values switc
 - [demo.html](./demo.html): an editorial page in both modes.
 - [demo-text.html](./demo-text.html): one title in Saans, in both modes.
 - [demo-panel.js](./demo-panel.js): the demos' settings panel.
+- `timeline()` is also on `window.TextImageGeneration` for classic scripts.

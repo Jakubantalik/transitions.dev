@@ -338,12 +338,14 @@ function build(el, M, opts) {
   const layer = document.createElement("div");
   layer.className = "t-tig" + (opts.mode === "trace-texts" ? " t-tig--texts" : "");
   layer.setAttribute("aria-hidden", "true");
-  Object.assign(layer.style, { left: f2(R.left + scrollX) + "px", top: f2(R.top + scrollY) + "px", width: f2(w) + "px", height: f2(h) + "px" });
+  // the overlay goes into the page, or into opts.parent (a positioned element it should show and hide with)
+  const P = opts.parent || document.body, PR = P === document.body ? { left: -scrollX, top: -scrollY } : P.getBoundingClientRect();
+  Object.assign(layer.style, { left: f2(R.left - PR.left + (P === document.body ? 0 : P.scrollLeft)) + "px", top: f2(R.top - PR.top + (P === document.body ? 0 : P.scrollTop)) + "px", width: f2(w) + "px", height: f2(h) + "px" });
   const dpr = Math.min(2, devicePixelRatio || 1), cv = document.createElement("canvas");
   cv.className = "t-tig-canvas"; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.width = f2(w) + "px"; cv.style.height = f2(h) + "px";
   layer.appendChild(cv);
   const root = svg("svg", { class: "t-tig-svg", width: f2(w), height: f2(h), viewBox: `0 0 ${f2(w)} ${f2(h)}` }, layer);
-  document.body.appendChild(layer); el.__tTigLayer = layer; // in the page first: SVG lengths only measure once rendered
+  P.appendChild(layer); el.__tTigLayer = layer; // in the page first: SVG lengths only measure once rendered
   const G = { el, layer, root, cv, ctx: cv.getContext("2d"), w, h, M, glyphs: [], lines: [], images: [], rows: [] };
   G.ctx.scale(dpr, dpr);
   G.ink = css(el, "--tig-ink", "rgba(13, 13, 13, 0.5)"); G.lit = css(el, "--tig-strong", "#6c6c6c");
@@ -428,9 +430,10 @@ function build(el, M, opts) {
   G.hosts = M.hosts.map((hel) => {
     const r = hel.getBoundingClientRect(), st = hel.style, W = r.width + 2 * MPAD, H = r.height + 2 * MPAD;
     const prev = {}; MASK_PROPS.forEach((k) => (prev[k] = st[k]));
-    Object.assign(st, { maskSize: `${f2(W)}px ${f2(H)}px`, webkitMaskSize: `${f2(W)}px ${f2(H)}px`, maskPosition: `${-MPAD}px ${-MPAD}px`, webkitMaskPosition: `${-MPAD}px ${-MPAD}px`,
-      maskRepeat: "no-repeat", webkitMaskRepeat: "no-repeat", maskClip: "no-clip", webkitMaskClip: "no-clip" });
-    return { el: hel, x: r.left - R.left, y: r.top - R.top, W, H, prev };
+    const setup = { maskSize: `${f2(W)}px ${f2(H)}px`, webkitMaskSize: `${f2(W)}px ${f2(H)}px`, maskPosition: `${-MPAD}px ${-MPAD}px`, webkitMaskPosition: `${-MPAD}px ${-MPAD}px`,
+      maskRepeat: "no-repeat", webkitMaskRepeat: "no-repeat", maskClip: "no-clip", webkitMaskClip: "no-clip" };
+    Object.assign(st, setup);
+    return { el: hel, x: r.left - R.left, y: r.top - R.top, W, H, prev, setup };
   });
   // each glyph fades in through its own box: its cell across (its ink box at the ends of a line), its ink box down
   for (const g of G.glyphs) {
@@ -599,7 +602,8 @@ function frame(G, p, t, D) {
     m.frame.forEach((s) => { drawStroke(s, fq, t); if (s.el.style.opacity === "1") s.el.style.opacity = f2(gone * clean); });
     m.handles.forEach((hd) => hd.el.setAttribute("transform", `translate(${f2(hd.x)} ${f2(hd.y)}) scale(${f2(OUT(clamp((p - m.t0 - 0.06) / 0.1)) * gone)})`));
     m.label.setAttribute("opacity", f2(smooth(m.t0, m.t0 + 0.06, p) * gone));
-    m.label.textContent = `IMAGE ${Math.round(im.w * fq)}×${Math.round(im.h * fq)}  ${im.fit === "fill" ? "" : im.fit.toUpperCase() + "  "}${m.cell}PX SCREEN`;
+    // a small image keeps only its size, so the label and the status beside it never meet
+    m.label.textContent = `IMAGE ${Math.round(im.w * fq)}×${Math.round(im.h * fq)}` + (im.w < 300 ? "" : `  ${im.fit === "fill" ? "" : im.fit.toUpperCase() + "  "}${m.cell}PX SCREEN`);
     m.status.setAttribute("opacity", f2(smooth(m.t0 + 0.04, m.t0 + 0.1, p) * gone));
     m.status.textContent = pq > 0 ? `RESOLVING ${Math.round(pq * 100)}%` : cq > 0 ? `COLOUR ${Math.round(cq * 100)}%` : hq > 0 ? `SCREEN ${String(Math.min(m.k, m.dots.length)).padStart(5, "0")} DOTS` : `SKETCH ${m.lines.filter((s) => p >= s.t0).length}/${m.lines.length}`;
     // the sketch: tone lines traced in flowing dots, quieter as the dots arrive
@@ -721,6 +725,41 @@ export function generate(el, options = {}) {
   return run;
 }
 
+// A scrubbable build for video tools and timelines: nothing runs on its own, seek(ms) draws the build at that time
+// (backwards too). Before 0 the element is hidden, from `end` on it is as it was. destroy() restores it.
+//   const tl = timeline(el, { duration: 3000, parent: sceneEl }); tl.seek(1200); ... tl.destroy();
+export function timeline(el, options = {}) {
+  const opts = Object.assign({}, DEFAULTS, options);
+  if (typeof el === "string") el = document.querySelector(el);
+  if (!el) throw new Error("TextImageGeneration: no element");
+  if (el.__tTig) el.__tTig.cancel();
+  const D = (opts.duration = Math.max(800, +opts.duration || DEFAULTS.duration));
+  const prev = { opacity: el.style.opacity };
+  const G = build(el, measure(el, opts), opts), end = Math.max(END, G.inkEnd + 0.01) * D;
+  let last = -Infinity, state = "";
+  const restore = () => { G.hosts.forEach((H) => Object.assign(H.el.style, H.prev)); G.images.forEach((m) => Object.assign(m.im.el.style, m.prev)); el.style.opacity = prev.opacity; };
+  // going back in time: the drawn-once parts (settled halftone dots, finished blocks) start again
+  const rewind = () => {
+    for (const m of G.images) { m.k = 0; m.done = false; m.sg.clearRect(0, 0, m.im.w, m.im.h); }
+    for (const H of G.hosts) { H.done = false; H.key = null; Object.assign(H.el.style, H.setup); }
+  };
+  const tl = {
+    element: el, duration: D, end,
+    seek(ms) {
+      if (ms < last) rewind();
+      last = ms;
+      if (ms < 0) { if (state !== "before") { state = "before"; rewind(); G.layer.style.display = "none"; } el.style.opacity = 0; return; }
+      if (ms >= end) { if (state !== "after") { state = "after"; G.layer.style.display = "none"; restore(); } return; }
+      if (state !== "during") { state = "during"; G.layer.style.display = ""; el.style.opacity = prev.opacity; }
+      frame(G, ms / D, ms, D);
+    },
+    destroy() { G.layer.remove(); restore(); el.__tTig = null; },
+  };
+  el.__tTig = { cancel: tl.destroy };
+  tl.seek(-1);
+  return tl;
+}
+
 // Plays every [data-t-trace] element once it scrolls into view.
 // data-t-trace="trace" | "trace-texts", optional data-t-trace-duration / -delay / -fade / -fade-delay / -fade-stagger (ms) and data-t-trace-fade-by.
 export function auto(root = document) {
@@ -734,4 +773,4 @@ export function auto(root = document) {
   els.forEach((e) => io.observe(e));
 }
 
-if (typeof window !== "undefined") window.TextImageGeneration = { generate, auto };
+if (typeof window !== "undefined") window.TextImageGeneration = { generate, auto, timeline };
