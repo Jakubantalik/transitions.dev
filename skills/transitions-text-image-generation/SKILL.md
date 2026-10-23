@@ -1,7 +1,7 @@
 ---
 name: transitions-text-image-generation
 license: Free for personal and commercial use; see LICENSE.txt (no redistribution of the library itself)
-description: Make large bold type and images appear as if an AI agent is generating them, in the dotted style of transitions-ui-generation. Every glyph of a headline is traced along its real outline in small flowing dots (drawn in the element's own font and traced, so the outline is the actual letter) over typographic guides (cap height, x-height, baseline, descender, font spec); smaller text gets a dotted line; every image is framed, sketched in tone lines and built up as a fine halftone of its own pixels that takes on the photo's colours. Then the real text fades in character by character (200ms each) and each photo resolves over its colour dots. Two modes, trace and trace + generation texts (an agent log of every glyph and image, and a step line). One dependency-free runtime for any framework (vanilla, React, Next.js, Vue, Svelte). Use when the user asks for a "headline generation animation", "text being generated", "letters drawn in dots", "type tracing", "glyph outline reveal", "image generation reveal", "halftone image reveal", "image sketch reveal", "hero generation", "editorial generation animation", "AI writing the headline", or for a landing page, article or launch moment where big type and photos should look generated. Also the commands transitions trace, transitions trace texts and transitions trace preview. For cards and UI components, use transitions-ui-generation.
+description: Make large bold type and images appear as if an AI agent is generating them, in the dotted style of transitions-ui-generation. Every glyph of a headline is traced along its real outline in small flowing dots (drawn in the element's own font and traced, so the outline is the actual letter) over typographic guides (cap height, x-height, baseline, descender, font spec); smaller text gets a dotted line; every image is framed, sketched in tone lines and built up as a fine halftone of its own pixels that takes on the photo's colours. Then the real text fades in character by character and each photo resolves over its colour dots. Four variants: text (the default: every glyph traced), small text (just a dotted line), image, and auto (all of it, text by size); two modes, trace and trace + generation texts (an agent log of every glyph and image, and a step line). One dependency-free runtime for any framework (vanilla, React, Next.js, Vue, Svelte). Use when the user asks for a "headline generation animation", "text being generated", "letters drawn in dots", "type tracing", "glyph outline reveal", "image generation reveal", "halftone image reveal", "image sketch reveal", "hero generation", "editorial generation animation", "AI writing the headline", or for a landing page, article or launch moment where big type and photos should look generated. Also the commands transitions trace, transitions trace texts and transitions trace preview. For cards and UI components, use transitions-ui-generation.
 ---
 
 # Transitions text and image generation
@@ -12,29 +12,28 @@ Nothing is faked. Each character of a headline is drawn alone in the element's o
 
 Works in every agent that reads skills (Claude Code, Cursor, Codex, and others): install with `npx skills add Jakubantalik/transitions.dev`, or copy this folder into the project.
 
-## What it draws
+## Variants
 
-Over one build (default `3000ms`, about `3.2s` in all):
+| Variant | What it generates | Use for | Reference |
+| --- | --- | --- | --- |
+| **`text`** (default) | Every glyph traced along its real outline in flowing dots, then fading in one by one: 140ms after its outline, 90ms each, 90ms apart on a gentle in-out curve, with dots flying in to each glyph. | Headlines, titles, pull quotes, slide titles. | [01-text.md](./01-text.md) |
+| **`small-text`** | A dotted line through each line of text; the characters fade in as it passes. | Eyebrows, subtitles, captions, labels. | [02-small-text.md](./02-small-text.md) |
+| **`image`** | A dotted frame, a sketch of the photo's tones, a fine halftone of its pixels, a dot matrix in its colours, then the photo. | Hero images, image cards, covers. | [03-image.md](./03-image.md) |
+| **`auto`** | All of the above in one block: text at `display` (32px) or larger as `text`, smaller as `small-text`, every image as `image`. | A hero or card mixing a headline, copy and a photo. | |
 
-1. **Type guides.** For every display line: dotted guides for cap height, x-height, baseline and descender, running past both ends, labelled on the first line of each block with the font spec (`INTER TIGHT 800  92/86`).
-2. **Glyphs.** Each letter is traced along its outline in small flowing dots, outer shape first and then its counters, left to right in overlapping waves. A dot flies in to where each letter starts, a reticle locks onto the current letter (`"g" 46×67`) and a readout follows the moving dot.
-3. **Text lines.** Text under the display size (`32px` by default) gets one dotted line per line, like the wireframe skill.
-4. **Images.** A dotted frame is drawn from the top centre in both directions with corner handles, a label (`IMAGE 464×580  COVER  3PX SCREEN`) and a live status (`SKETCH 42/108`, `SCREEN 24935 DOTS`, `COLOUR 64%`, `RESOLVING 80%`). Then, all from the photo's own pixels:
-   - **Sketch.** Lines of equal tone (six levels through the softened photo, like a topographic drawing) are traced in fine flowing dots, in many short strokes at once.
-   - **Screen.** A fine halftone (3 to 5px cells) sweeps in from the top left, every dot sized by the tone under it with the local contrast lifted, so texture survives.
-   - **Colour.** The grey dots turn into a dot matrix in the photo's own colours.
-5. **Ink.** The real text fades in character by character, `200ms` each: a display glyph `150ms` after it is traced (`fadeDelay`; its dots fade out with it), a smaller character that long after its line's dotted stroke passes it. Each photo fades in over its colour dots, sharpening from a soft blur.
+A variant generates only its own content; the rest of the element shows as it is.
 
 ## Options
 
 | Mode | What you get | Use for | Reference |
 | --- | --- | --- | --- |
-| **`trace`** | The drawing and the ink. | Hero sections, article headers, image cards, quotes, launch pages. | [01-trace.md](./01-trace.md) |
-| **`trace-texts`** | The same, plus an `AGENT.LOG` (one line per glyph and image with a progress bar) beside or under the element, and a step line ("Setting type" … "Ready"). | Showcase moments that tell the "agent at work" story. The texts are only placed where the page is empty. | [02-trace-texts.md](./02-trace-texts.md) |
+| **`trace`** | The variant's drawing and the ink. | Most places. | the variant's file |
+| **`trace-texts`** | The same, plus an `AGENT.LOG` (one line per glyph and image with a progress bar) beside or under the element, and a step line ("Setting type" … "Ready"). | Showcase moments that tell the "agent at work" story. The texts are only placed where the page is empty. | [04-generation-texts.md](./04-generation-texts.md) |
 
 ## Decision rules
 
 - **Big type or photos** (a hero, an article header, a quote, an image card) → this skill.
+- **A headline** → `text` (the default). **Its subtitle or eyebrow** → `small-text`. **A photo** → `image`. **A block with all of them** → `auto`, or each element with its own variant and a `delay`.
 - **A card, panel or component** (buttons, inputs, icons, small text) → `transitions-ui-generation`.
 - **The user wants pixels or a low-res build-up** → `transitions-ui-pixel-generation`.
 - **A launch page, demo or video** → `trace-texts` on the hero, `trace` on the sections under it, each when it scrolls into view.
@@ -48,7 +47,7 @@ Over one build (default `3000ms`, about `3.2s` in all):
 **Trigger phrases:** `transitions trace`, "make the headline look generated", "draw the type in dots", "generate the hero", "halftone the image in".
 
 1. Find the element: a headline, an image, or the block that holds both (a hero, a card). If it's ambiguous, ask.
-2. Pick the mode (default `trace`) and the trigger: on mount, on scroll into view (the attribute API), or on demand.
+2. Pick the variant (default `text`; `small-text`, `image`, `auto`), the mode (default `trace`) and the trigger: on mount, on scroll into view (the attribute API), or on demand.
 3. Propose it in one line, for example: "I'd play **trace** on the hero (`<HeroSection>`) when it scrolls into view. Confirm?"
 4. On confirmation, follow `## Install` and `## Wiring`.
 
@@ -144,26 +143,27 @@ tl.seek(1200); // e.g. from the video's render loop
 
 | Option | Default | Notes |
 | --- | --- | --- |
+| `variant` | `"text"` | `"text"`, `"small-text"`, `"image"` or `"auto"`. |
 | `mode` | `"trace"` | `"trace"` or `"trace-texts"`. |
 | `duration` | `3000` | ms of building. The whole run is about `duration × 1.06`. Keep it between `2000` and `4500`; give long headlines more. |
 | `delay` | `0` | ms before it starts. |
-| `display` | `32` | px. Text at this size or larger is traced glyph by glyph; smaller text gets a dotted line. |
+| `display` | `32` | px, `auto` variant: text at this size or larger is traced glyph by glyph; smaller text gets a dotted line. |
 | `maxGlyphs` | `140` | Most glyphs traced; the rest only ink in. |
-| `fade` | `200` | ms each character (or word) takes to fade in. |
-| `fadeDelay` | `150` | ms between a character's dotted drawing finishing and its fade starting. A long delay runs the build past `duration`. |
-| `fadeStagger` | `null` | ms between one character's fade and the next (one word's with `fadeBy: "word"`; with `"gradient"` it sets the sweep's pace). `null` follows the tracing. A character never fades in before its own drawing is done. |
-| `sequenceEase` | `"ease-in-out"` | How the starts of the glyphs, smaller lines and images (and so their fades) spread over the build: `"linear"`, `"ease-in"` (sparse first, then crowding in), `"ease-out"` (a burst first, then settling), `"ease-in-out"` or `"smooth-out"` (`--ease-smooth-out`: most of the text in early, the last characters settling slowly), or your own curve as `[x1, y1, x2, y2]` or `"cubic-bezier(x1, y1, x2, y2)"`. Also shapes `fadeStagger`, keeping its total. |
+| `fade` | `90` | ms each character (or word) takes to fade in. |
+| `fadeDelay` | `140` | ms between a character's dotted drawing finishing and its fade starting. A long delay runs the build past `duration`. |
+| `fadeStagger` | `90` | ms between one character's fade and the next (one word's with `fadeBy: "word"`; with `"gradient"` it sets the sweep's pace). `null` follows the tracing. A character never fades in before its own drawing is done. |
+| `sequenceEase` | `[0.15, -0.02, 0.71, 1.01]` | How the starts of the glyphs, smaller lines and images (and so their fades) spread over the build: `"linear"`, `"ease-in"` (sparse first, then crowding in), `"ease-out"` (a burst first, then settling), `"ease-in-out"` or `"smooth-out"` (`--ease-smooth-out`: most of the text in early, the last characters settling slowly), or your own curve as `[x1, y1, x2, y2]` or `"cubic-bezier(x1, y1, x2, y2)"`. Also shapes `fadeStagger`, keeping its total. |
 | `fadeBy` | `"character"` | `"character"`, `"word"` (a word fades in once its last character would; a word runs across inline elements and ends at whitespace or a new block) or `"gradient"` (a soft gradient mask sweeps left to right along each line, its edge reaching each character when that character would start to fade, as wide as the front travels in `fade`). |
 | `dotScale` | `1` | Scales the dots, their spacing and the moving heads, for type shown smaller or larger than it is set (a scaled scene in a video). |
-| `guides` | `true` | Type guides (cap height, x-height, baseline, descender, font spec). |
-| `focus` | `true` | The focus bracket on the glyph or image being drawn, with its label. |
-| `readout` | `true` | The coordinate readout on the moving dot. |
+| `guides` | `false` | Type guides (cap height, x-height, baseline, descender, font spec). |
+| `focus` | `false` | The focus bracket on the glyph or image being drawn, with its label. |
+| `readout` | `false` | The coordinate readout on the moving dot. |
 | `particles` | `true` | Dots flying in to where each glyph starts. |
 | `steps` | `["Setting type", "Tracing glyphs", "Sampling images", "Inking"]` | The step line (`trace-texts`). |
 | `done` | `"Ready"` | The last step. |
 | `onDone` | `null` | Called with the element when the run ends. |
 
-Mark any child with `data-t-trace-skip` to leave it out. Attributes: `data-t-trace="trace" | "trace-texts"`, `data-t-trace-duration`, `data-t-trace-delay`, `data-t-trace-fade`, `data-t-trace-fade-delay`, `data-t-trace-fade-stagger`, `data-t-trace-fade-by`.
+Mark any child with `data-t-trace-skip` to leave it out. Attributes: `data-t-trace="trace" | "trace-texts"`, `data-t-trace-variant`, `data-t-trace-duration`, `data-t-trace-delay`, `data-t-trace-fade`, `data-t-trace-fade-delay`, `data-t-trace-fade-stagger`, `data-t-trace-fade-by`.
 
 ## Tunable variables
 
@@ -202,8 +202,10 @@ In [`text-image-generation.css`](./text-image-generation.css). Dark values switc
 
 ## Reference files
 
-- [01-trace.md](./01-trace.md): the trace mode, phase by phase.
-- [02-trace-texts.md](./02-trace-texts.md): the agent log and the step line.
+- [01-text.md](./01-text.md): the text variant and its defaults.
+- [02-small-text.md](./02-small-text.md): the small text variant.
+- [03-image.md](./03-image.md): the image variant, phase by phase.
+- [04-generation-texts.md](./04-generation-texts.md): the agent log and the step line.
 - [text-image-generation.js](./text-image-generation.js): the runtime (ES module; also `window.TextImageGeneration`).
 - [text-image-generation.css](./text-image-generation.css): overlay styles and variables.
 - [demo.html](./demo.html): an editorial page in both modes.

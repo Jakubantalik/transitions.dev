@@ -1,8 +1,8 @@
-# Trace + generation texts
+# Generation texts (mode: "trace-texts")
 
 ## When to use
 
-Everything the trace mode draws, plus text that tells the story of an agent setting the type and sampling the images. Use it for one showcase element at a time: a landing page hero, a launch video, a demo.
+Any variant, plus text that tells the story of an agent setting the type and sampling the images. Use it for one showcase element at a time: a landing page hero, a launch video, a demo.
 
 ## Usage
 

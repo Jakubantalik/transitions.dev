@@ -25,21 +25,25 @@
 const NS = "http://www.w3.org/2000/svg";
 
 const DEFAULTS = {
+  // what is generated: "text" (every glyph traced along its outline, the default), "small-text" (a dotted line through
+  // each line of text), "image" (images: sketch, halftone, colour dots, photo), or "auto" (all of it, text by size)
+  variant: "text",
   mode: "trace",            // "trace" | "trace-texts"
   duration: 3000,           // ms for the build; the whole run is about duration × 1.06
   delay: 0,                 // ms before it starts
-  display: 32,              // px: text this size or larger is traced glyph by glyph, smaller text as lines
+  display: 32,              // px, variant "auto": text this size or larger is traced glyph by glyph, smaller as lines
   maxGlyphs: 140,           // most glyphs traced (the rest only ink in)
-  fade: 200,                // ms: how long each character (or word) takes to fade in
+  fade: 90,                 // ms: how long each character (or word) takes to fade in
   fadeBy: "character",      // "character" | "word" | "gradient": a word once its last character is in, or a soft
                             // gradient mask sweeping left to right along each line behind the tracing
-  fadeDelay: 150,           // ms between a character's dotted drawing finishing and its fade starting
-  fadeStagger: null,        // ms between one character's (or word's) fade and the next; null: follow the tracing
-  sequenceEase: "ease-in-out", // how the starts spread over the build: "linear" | "ease-in" | "ease-out" | "ease-in-out" |
+  fadeDelay: 140,           // ms between a character's dotted drawing finishing and its fade starting
+  fadeStagger: 90,          // ms between one character's (or word's) fade and the next; null: follow the tracing
+  sequenceEase: [0.15, -0.02, 0.71, 1.01], // how the starts spread over the build (a gentle in-out by default):
+                               // "linear" | "ease-in" | "ease-out" | "ease-in-out" |
                                // "smooth-out", or your own curve: [x1, y1, x2, y2] or "cubic-bezier(x1, y1, x2, y2)"
-  guides: true,             // type guides: cap height, x-height, baseline, descender, font spec
-  focus: true,              // the focus bracket on the glyph or image being drawn, with its label
-  readout: true,            // the coordinate readout on the moving dot
+  guides: false,            // type guides: cap height, x-height, baseline, descender, font spec
+  focus: false,             // the focus bracket on the glyph or image being drawn, with its label
+  readout: false,           // the coordinate readout on the moving dot
   particles: true,          // dots flying in to where each glyph starts
   dotScale: 1,              // scales the dots, their spacing and the moving heads (e.g. with the type in a scaled scene)
   steps: ["Setting type", "Tracing glyphs", "Sampling images", "Inking"],
@@ -182,7 +186,10 @@ function measure(el, opts) {
     metrics.set(font, v); return v;
   };
   // images
-  const imgs = el.matches("img, video, canvas") ? [el] : [...el.querySelectorAll("img, video, canvas")];
+  // the variant picks what is generated (the rest stays as it is) and how text is drawn
+  const V = opts.variant || "text", doImages = V === "image" || V === "auto", doText = V !== "image";
+  const display = V === "text" ? 0 : V === "small-text" ? Infinity : opts.display;
+  const imgs = !doImages ? [] : el.matches("img, video, canvas") ? [el] : [...el.querySelectorAll("img, video, canvas")];
   for (const im of imgs) {
     if (im.closest("[data-t-trace-skip]") || hidden(im)) continue;
     const r = im.getBoundingClientRect(); if (r.width < 40 || r.height < 40) continue;
@@ -190,7 +197,7 @@ function measure(el, opts) {
     images.push({ el: im, ...rel(r), r: Math.min(parseFloat(cs.borderTopLeftRadius) || 0, r.width / 2, r.height / 2), fit: cs.objectFit, pos: cs.objectPosition });
   }
   // text
-  if (!el.matches("img, video, canvas")) {
+  if (doText && !el.matches("img, video, canvas")) {
     const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (!n.nodeValue.trim() || n.parentElement.closest("script, style, noscript, template, svg, [data-t-trace-skip]") || hidden(n.parentElement) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
     const rg = document.createRange();
     // display text is measured glyph by glyph, smaller text character by character (their fades). Every character
@@ -200,7 +207,7 @@ function measure(el, opts) {
       const cs = getComputedStyle(n.parentElement), size = parseFloat(cs.fontSize), host = addHost(hostOf(n));
       if (host !== lastHost || /^\s/.test(n.nodeValue)) open = false;
       lastHost = host;
-      if (size >= opts.display) {
+      if (size >= display) {
         const font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`, m = metric(font), s = n.nodeValue, tt = cs.textTransform;
         for (let i = 0; i < s.length;) {
           const len = s.codePointAt(i) > 0xffff ? 2 : 1, ch = s.substr(i, len); i += len;
@@ -765,10 +772,10 @@ export function timeline(el, options = {}) {
 }
 
 // Plays every [data-t-trace] element once it scrolls into view.
-// data-t-trace="trace" | "trace-texts", optional data-t-trace-duration / -delay / -fade / -fade-delay / -fade-stagger (ms) and data-t-trace-fade-by.
+// data-t-trace="trace" | "trace-texts", optional data-t-trace-variant (text | small-text | image | auto), data-t-trace-duration / -delay / -fade / -fade-delay / -fade-stagger (ms) and data-t-trace-fade-by.
 export function auto(root = document) {
   const els = [...root.querySelectorAll("[data-t-trace]")].filter((e) => !e.__tTigAuto);
-  const play = (e) => generate(e, { mode: e.dataset.tTrace || "trace", duration: +e.dataset.tTraceDuration || undefined, delay: +e.dataset.tTraceDelay || 0,
+  const play = (e) => generate(e, { mode: e.dataset.tTrace || "trace", variant: e.dataset.tTraceVariant || "text", duration: +e.dataset.tTraceDuration || undefined, delay: +e.dataset.tTraceDelay || 0,
     fade: +e.dataset.tTraceFade || undefined, fadeBy: e.dataset.tTraceFadeBy || "character", fadeDelay: e.dataset.tTraceFadeDelay !== undefined ? +e.dataset.tTraceFadeDelay : undefined,
     fadeStagger: e.dataset.tTraceFadeStagger !== undefined ? +e.dataset.tTraceFadeStagger : null });
   els.forEach((e) => { e.__tTigAuto = true; e.__tTigOpacity = e.style.opacity; e.style.opacity = 0; });

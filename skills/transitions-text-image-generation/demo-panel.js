@@ -1,18 +1,19 @@
 // The demos' settings panel: the generate() options worth tweaking by eye. Each demo can pass its own defaults and
 // storage key; changes are remembered per browser (when storage is available) and handed to onChange, which replays.
 const FIELDS = [
+  { key: "variant", label: "Variant", type: "segment", options: [["auto", "Auto"], ["text", "Text"], ["small-text", "Small text"], ["image", "Image"]], value: "text" },
   { key: "duration", label: "Build duration", type: "range", min: 1500, max: 6000, step: 100, unit: "ms", value: 3000 },
-  { key: "fadeDelay", label: "Delay before fade", type: "range", min: 0, max: 1500, step: 10, unit: "ms", value: 150 },
-  { key: "fade", label: "Fade in", type: "range", min: 50, max: 1000, step: 10, unit: "ms", value: 200 },
+  { key: "fadeDelay", label: "Delay before fade", type: "range", min: 0, max: 1500, step: 10, unit: "ms", value: 140 },
+  { key: "fade", label: "Fade in", type: "range", min: 50, max: 1000, step: 10, unit: "ms", value: 90 },
   // its first stop means "follow the tracing" (sent to generate() as null)
-  { key: "fadeStagger", label: "Delay between characters", type: "range", min: -10, max: 300, step: 10, unit: "ms", value: -10, auto: "Follow trace" },
+  { key: "fadeStagger", label: "Delay between characters", type: "range", min: -10, max: 300, step: 10, unit: "ms", value: 90, auto: "Follow trace" },
   // a preset fills the curve below; dragging the curve's handles makes it custom. generate() gets the curve.
-  { key: "sequenceEase", label: "Sequence easing", type: "segment", options: [["linear", "Linear"], ["ease-in", "In"], ["ease-out", "Out"], ["ease-in-out", "In-out"], ["smooth-out", "Smooth out"]], value: "ease-in-out", curve: "sequenceCurve" },
-  { key: "sequenceCurve", type: "curve", value: [0.42, 0, 0.58, 1] },
+  { key: "sequenceEase", label: "Sequence easing", type: "segment", options: [["linear", "Linear"], ["ease-in", "In"], ["ease-out", "Out"], ["ease-in-out", "In-out"], ["smooth-out", "Smooth out"]], value: "custom", curve: "sequenceCurve" },
+  { key: "sequenceCurve", type: "curve", value: [0.15, -0.02, 0.71, 1.01] },
   { key: "fadeBy", label: "Fade by", type: "segment", options: [["character", "Character"], ["word", "Word"], ["gradient", "Gradient"]], value: "character" },
-  { key: "focus", label: "Focus bracket", type: "switch", value: true },
-  { key: "readout", label: "Coordinates", type: "switch", value: true },
-  { key: "guides", label: "Type guides", type: "switch", value: true },
+  { key: "focus", label: "Focus bracket", type: "switch", value: false },
+  { key: "readout", label: "Coordinates", type: "switch", value: false },
+  { key: "guides", label: "Type guides", type: "switch", value: false },
   { key: "particles", label: "Flying dots", type: "switch", value: true },
 ];
 
@@ -95,7 +96,8 @@ function curveEditor(row, start, onMove, onDone) {
   return () => { pts.splice(0, 4, ...row.__values()); draw(); };
 }
 
-export function settingsPanel(onChange, { defaults = {}, store = "tig-demo-settings" } = {}) {
+// only: { key: [values] } limits a segment to some of its options (the text demo has no images)
+export function settingsPanel(onChange, { defaults = {}, store = "tig-demo-settings", only = {} } = {}) {
   const base = (f) => (f.key in defaults ? defaults[f.key] : f.value), STORE = store;
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(STORE) || "{}") || {}; } catch (e) { saved = {}; }
@@ -108,6 +110,7 @@ export function settingsPanel(onChange, { defaults = {}, store = "tig-demo-setti
   const changed = () => { try { localStorage.setItem(STORE, JSON.stringify(values)); } catch (e) {} onChange(values); };
 
   const curves = {}; // curve key → redraw()
+  const opts = (f) => (only[f.key] ? f.options.filter(([v]) => only[f.key].includes(v)) : f.options);
   const render = () => {
     panel.innerHTML = `<div class="tig-panel-head"><b>Settings</b><button type="button" data-reset>Reset</button></div>`;
     for (const f of FIELDS) {
@@ -120,9 +123,9 @@ export function settingsPanel(onChange, { defaults = {}, store = "tig-demo-setti
         input.addEventListener("input", () => { values[f.key] = +input.value; out.textContent = show(input.value); });
         input.addEventListener("change", changed); // replay once the slider is let go
       } else if (f.type === "segment") {
-        row.innerHTML = `<div class="tig-row-top"><span>${f.label}</span></div><div class="tig-seg" role="group" aria-label="${f.label}" style="--cols: ${Math.min(3, f.options.length)}">${f.options.map(([v, l], i, all) => {
+        row.innerHTML = `<div class="tig-row-top"><span>${f.label}</span></div><div class="tig-seg" role="group" aria-label="${f.label}" style="--cols: ${opts(f).length === 4 ? 4 : Math.min(3, opts(f).length)}">${opts(f).map(([v, l], i, all) => {
           // up to three a row; the last one stretches across what its row has left
-          const span = all.length > 3 && i === all.length - 1 ? 3 - ((all.length - 1) % 3) : 1;
+          const span = all.length > 4 && i === all.length - 1 ? 3 - ((all.length - 1) % 3) : 1;
           return `<button type="button" data-v="${v}" aria-pressed="${values[f.key] === v}"${span > 1 ? ` style="grid-column: span ${span}"` : ""}>${l}</button>`;
         }).join("")}</div>`;
         row.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {

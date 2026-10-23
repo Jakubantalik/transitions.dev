@@ -99,7 +99,8 @@
   const ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode().catch(() => {}))]);
   els.forEach((e) => { e.__tTigOpacity = ""; e.style.opacity = 0; }); // hidden until each plays; restored to visible after
   const seen = new Set();
-  const settings = settingsPanel(() => replay());
+  // the page mixes headlines, paragraphs and photos: Auto generates each with its own variant
+  const settings = settingsPanel(() => replay(), { store: "tig-demo-page-settings", defaults: { variant: "auto", focus: true, guides: true } });
   const play = async (e, delay = 0) => { await ready; generate(e, { ...settings.options(), mode, delay }); };
   const io = new IntersectionObserver((entries) => entries.forEach((en) => {
     if (!en.isIntersecting || seen.has(en.target)) return;
