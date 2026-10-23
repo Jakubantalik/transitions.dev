@@ -39,7 +39,7 @@ const DEFAULTS = {
                             // gradient mask sweeping left to right along each line behind the tracing
   fadeDelay: 140,           // ms between a character's dotted drawing finishing and its fade starting
   fadeStagger: 90,          // ms between one character's (or word's) fade and the next; null: follow the tracing
-  sequenceEase: [0.15, -0.02, 0.71, 1.01], // how the starts spread over the build (a gentle in-out by default):
+  sequenceEase: [0.37, -0.02, 0.73, 0.88], // how the starts spread over the build (a gentle in-out by default):
                                // "linear" | "ease-in" | "ease-out" | "ease-in-out" |
                                // "smooth-out", or your own curve: [x1, y1, x2, y2] or "cubic-bezier(x1, y1, x2, y2)"
   guides: false,            // type guides: cap height, x-height, baseline, descender, font spec

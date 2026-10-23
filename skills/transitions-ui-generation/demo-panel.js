@@ -9,7 +9,7 @@ const FIELDS = [
   { key: "fadeStagger", label: "Delay between characters", type: "range", min: -10, max: 300, step: 10, unit: "ms", value: 90, auto: "Follow trace" },
   // a preset fills the curve below; dragging the curve's handles makes it custom. generate() gets the curve.
   { key: "sequenceEase", label: "Sequence easing", type: "segment", options: [["linear", "Linear"], ["ease-in", "In"], ["ease-out", "Out"], ["ease-in-out", "In-out"], ["smooth-out", "Smooth out"]], value: "custom", curve: "sequenceCurve" },
-  { key: "sequenceCurve", type: "curve", value: [0.15, -0.02, 0.71, 1.01] },
+  { key: "sequenceCurve", type: "curve", value: [0.37, -0.02, 0.73, 0.88] },
   { key: "fadeBy", label: "Fade by", type: "segment", options: [["character", "Character"], ["word", "Word"], ["gradient", "Gradient"]], value: "character" },
   { key: "focus", label: "Focus bracket", type: "switch", value: false },
   { key: "readout", label: "Coordinates", type: "switch", value: false },
