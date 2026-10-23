@@ -472,15 +472,20 @@ function build(el, M, opts) {
     return { rects: wd.rects, host: wd.host, word: wd.word, ln, wi: (ln ? ln.t0 + (ln.t1 - ln.t0) * inv(f) : PH.lines[0]) + wait };
   });
   // an even stagger instead of the tracing's rhythm: the first fade stays put, the rest follow every fadeStagger ms
-  // (per word with fadeBy: "word"), but no character fades in before it is drawn
+  // (per word with fadeBy: "word"), but no character fades in before it is drawn. Traced glyphs and the characters of
+  // smaller lines keep separate beats, so a subtitle never holds up its headline.
   if (opts.fadeStagger != null && +opts.fadeStagger >= 0) {
-    const units = [...G.glyphs.filter((g) => !g.settled).map((g) => ({ o: g, word: g.b.word, t: g.wi })), ...G.words.map((w) => ({ o: w, word: w.word, t: w.wi }))].sort((a, b) => a.t - b.t);
-    const base = units.length ? units[0].t : 0, step = +opts.fadeStagger / opts.duration, order = new Map();
-    units.forEach((u) => { if (!order.has(u.word)) order.set(u.word, order.size); });
-    // the same total as an even stagger, spread along the sequence easing
-    const N = opts.fadeBy === "word" ? order.size : units.length;
-    // never before the character's own drawing is done (plus fadeDelay): a short word traced slowly keeps its trace
-    units.forEach((u, k) => { const j = opts.fadeBy === "word" ? order.get(u.word) : k; u.o.wi = Math.max(u.t, base + (N > 1 ? (N - 1) * step * seq(j / (N - 1)) : 0)); });
+    const beat = (units) => {
+      units.sort((a, b) => a.t - b.t);
+      const base = units.length ? units[0].t : 0, step = +opts.fadeStagger / opts.duration, order = new Map();
+      units.forEach((u) => { if (!order.has(u.word)) order.set(u.word, order.size); });
+      // the same total as an even stagger, spread along the sequence easing
+      const N = opts.fadeBy === "word" ? order.size : units.length;
+      // never before the character's own drawing is done (plus fadeDelay): a short word traced slowly keeps its trace
+      units.forEach((u, k) => { const j = opts.fadeBy === "word" ? order.get(u.word) : k; u.o.wi = Math.max(u.t, base + (N > 1 ? (N - 1) * step * seq(j / (N - 1)) : 0)); });
+    };
+    beat(G.glyphs.filter((g) => !g.settled).map((g) => ({ o: g, word: g.b.word, t: g.wi })));
+    beat(G.words.map((w) => ({ o: w, word: w.word, t: w.wi })));
   }
   if (opts.fadeBy === "word") {
     const end = new Map();
