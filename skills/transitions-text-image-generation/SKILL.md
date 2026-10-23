@@ -58,7 +58,7 @@ Same, with `mode: "trace-texts"`. Mention that the log needs empty space beside 
 
 ### transitions trace preview
 
-Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark. Both demos have a settings panel on the right (build duration, delay before the fade, fade duration, fade by character, word or gradient, and switches for the focus bracket, coordinates, type guides and flying dots), remembered per browser.
+Open [`demo.html`](./demo.html) (serve the folder over http, for example `npx serve` here), or [`demo-text.html`](./demo-text.html) for a single title ("Generative skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) with room for the agent log. The editorial page: a hero with the title "Generative skill" (Saans Medium, falling back to Inter) and a tall photo, two image cards with bold titles, and a closing quote, each generated as it scrolls into view, with both modes and a replay button. Light and dark. Both demos have a settings panel on the right (build duration, delay before the fade, fade duration, delay between characters, fade by character, word or gradient, and switches for the focus bracket, coordinates, type guides and flying dots), remembered per browser.
 
 ## Install
 
@@ -142,6 +142,7 @@ export function tracing(node, mode = "trace") { let run; document.fonts.ready.th
 | `maxGlyphs` | `140` | Most glyphs traced; the rest only ink in. |
 | `fade` | `200` | ms each character (or word) takes to fade in. |
 | `fadeDelay` | `150` | ms between a character's dotted drawing finishing and its fade starting. A long delay runs the build past `duration`. |
+| `fadeStagger` | `null` | ms between one character's fade and the next (one word's with `fadeBy: "word"`; with `"gradient"` it sets the sweep's pace). `null` follows the tracing. |
 | `fadeBy` | `"character"` | `"character"`, `"word"` (a word fades in once its last character would; a word runs across inline elements and ends at whitespace or a new block) or `"gradient"` (a soft gradient mask sweeps left to right along each line, its edge reaching each character when that character would start to fade, as wide as the front travels in `fade`). |
 | `guides` | `true` | Type guides (cap height, x-height, baseline, descender, font spec). |
 | `focus` | `true` | The focus bracket on the glyph or image being drawn, with its label. |
@@ -151,7 +152,7 @@ export function tracing(node, mode = "trace") { let run; document.fonts.ready.th
 | `done` | `"Ready"` | The last step. |
 | `onDone` | `null` | Called with the element when the run ends. |
 
-Mark any child with `data-t-trace-skip` to leave it out. Attributes: `data-t-trace="trace" | "trace-texts"`, `data-t-trace-duration`, `data-t-trace-delay`, `data-t-trace-fade`, `data-t-trace-fade-delay`, `data-t-trace-fade-by`.
+Mark any child with `data-t-trace-skip` to leave it out. Attributes: `data-t-trace="trace" | "trace-texts"`, `data-t-trace-duration`, `data-t-trace-delay`, `data-t-trace-fade`, `data-t-trace-fade-delay`, `data-t-trace-fade-stagger`, `data-t-trace-fade-by`.
 
 ## Tunable variables
 

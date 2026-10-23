@@ -51,7 +51,7 @@
     store: "tig-demo-text-settings",
     defaults: { duration: 3000, fadeDelay: 0, fade: 110, fadeBy: "character", focus: false, readout: false, guides: false, particles: true },
   });
-  const play = async () => { await document.fonts.ready; generate(copy, { ...settings.values, mode, done: "Generative skill ready" }); };
+  const play = async () => { await document.fonts.ready; generate(copy, { ...settings.options(), mode, done: "Generative skill ready" }); };
   document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
     mode = b.dataset.mode;
     document.querySelectorAll("[data-mode]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));

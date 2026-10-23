@@ -100,7 +100,7 @@
   els.forEach((e) => { e.__tTigOpacity = ""; e.style.opacity = 0; }); // hidden until each plays; restored to visible after
   const seen = new Set();
   const settings = settingsPanel(() => replay());
-  const play = async (e, delay = 0) => { await ready; generate(e, { ...settings.values, mode, delay }); };
+  const play = async (e, delay = 0) => { await ready; generate(e, { ...settings.options(), mode, delay }); };
   const io = new IntersectionObserver((entries) => entries.forEach((en) => {
     if (!en.isIntersecting || seen.has(en.target)) return;
     seen.add(en.target);

@@ -4,6 +4,8 @@ const FIELDS = [
   { key: "duration", label: "Build duration", type: "range", min: 1500, max: 6000, step: 100, unit: "ms", value: 3000 },
   { key: "fadeDelay", label: "Delay before fade", type: "range", min: 0, max: 1500, step: 10, unit: "ms", value: 150 },
   { key: "fade", label: "Fade in", type: "range", min: 50, max: 1000, step: 10, unit: "ms", value: 200 },
+  // its first stop means "follow the tracing" (sent to generate() as null)
+  { key: "fadeStagger", label: "Delay between characters", type: "range", min: -10, max: 300, step: 10, unit: "ms", value: -10, auto: "Follow trace" },
   { key: "fadeBy", label: "Fade by", type: "segment", options: [["character", "Character"], ["word", "Word"], ["gradient", "Gradient"]], value: "character" },
   { key: "focus", label: "Focus bracket", type: "switch", value: true },
   { key: "readout", label: "Coordinates", type: "switch", value: true },
@@ -52,10 +54,11 @@ export function settingsPanel(onChange, { defaults = {}, store = "tig-demo-setti
     for (const f of FIELDS) {
       const row = document.createElement("div"); row.className = "tig-row";
       if (f.type === "range") {
-        row.innerHTML = `<label class="tig-row-top"><span>${f.label}</span><output>${values[f.key]}${f.unit}</output></label>
+        const show = (v) => (f.auto && +v === f.min ? f.auto : v + f.unit);
+        row.innerHTML = `<label class="tig-row-top"><span>${f.label}</span><output>${show(values[f.key])}</output></label>
           <input type="range" min="${f.min}" max="${f.max}" step="${f.step}" value="${values[f.key]}" aria-label="${f.label}" />`;
         const input = row.querySelector("input"), out = row.querySelector("output");
-        input.addEventListener("input", () => { values[f.key] = +input.value; out.textContent = input.value + f.unit; });
+        input.addEventListener("input", () => { values[f.key] = +input.value; out.textContent = show(input.value); });
         input.addEventListener("change", changed); // replay once the slider is let go
       } else if (f.type === "segment") {
         row.innerHTML = `<div class="tig-row-top"><span>${f.label}</span></div><div class="tig-seg" role="group" aria-label="${f.label}">${f.options.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${values[f.key] === v}">${l}</button>`).join("")}</div>`;
@@ -73,5 +76,7 @@ export function settingsPanel(onChange, { defaults = {}, store = "tig-demo-setti
   };
   render();
   document.body.appendChild(panel);
-  return { values };
+  // what generate() takes: an "auto" slider at its first stop sends null
+  const options = () => Object.fromEntries(FIELDS.map((f) => [f.key, f.auto && values[f.key] === f.min ? null : values[f.key]]));
+  return { values, options };
 }

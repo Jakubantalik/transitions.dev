@@ -34,6 +34,7 @@ const DEFAULTS = {
   fadeBy: "character",      // "character" | "word" | "gradient": a word once its last character is in, or a soft
                             // gradient mask sweeping left to right along each line behind the tracing
   fadeDelay: 150,           // ms between a character's dotted drawing finishing and its fade starting
+  fadeStagger: null,        // ms between one character's (or word's) fade and the next; null: follow the tracing
   guides: true,             // type guides: cap height, x-height, baseline, descender, font spec
   focus: true,              // the focus bracket on the glyph or image being drawn, with its label
   readout: true,            // the coordinate readout on the moving dot
@@ -442,6 +443,13 @@ function build(el, M, opts) {
     const f = ln ? clamp((last.x + last.w - ln.b.x) / Math.max(1, ln.b.x2 - ln.b.x)) : 1;
     return { rects: wd.rects, host: wd.host, word: wd.word, ln, wi: (ln ? ln.t0 + (ln.t1 - ln.t0) * inv(f) : PH.lines[0]) + wait };
   });
+  // an even stagger instead of the tracing's rhythm: the first fade stays put, the rest follow every fadeStagger ms
+  // (per word with fadeBy: "word")
+  if (opts.fadeStagger != null && +opts.fadeStagger >= 0) {
+    const units = [...G.glyphs.map((g) => ({ o: g, word: g.b.word, t: g.wi })), ...G.words.map((w) => ({ o: w, word: w.word, t: w.wi }))].sort((a, b) => a.t - b.t);
+    const base = units.length ? units[0].t : 0, step = +opts.fadeStagger / opts.duration, order = new Map();
+    units.forEach((u, k) => { if (!order.has(u.word)) order.set(u.word, order.size); u.o.wi = base + (opts.fadeBy === "word" ? order.get(u.word) : k) * step; });
+  }
   if (opts.fadeBy === "word") {
     const end = new Map();
     for (const o of [...G.glyphs.map((g) => ({ word: g.b.word, wi: g.wi })), ...G.words]) end.set(o.word, Math.max(end.get(o.word) || 0, o.wi));
@@ -700,11 +708,12 @@ export function generate(el, options = {}) {
 }
 
 // Plays every [data-t-trace] element once it scrolls into view.
-// data-t-trace="trace" | "trace-texts", optional data-t-trace-duration / -delay / -fade / -fade-delay (ms) and data-t-trace-fade-by.
+// data-t-trace="trace" | "trace-texts", optional data-t-trace-duration / -delay / -fade / -fade-delay / -fade-stagger (ms) and data-t-trace-fade-by.
 export function auto(root = document) {
   const els = [...root.querySelectorAll("[data-t-trace]")].filter((e) => !e.__tTigAuto);
   const play = (e) => generate(e, { mode: e.dataset.tTrace || "trace", duration: +e.dataset.tTraceDuration || undefined, delay: +e.dataset.tTraceDelay || 0,
-    fade: +e.dataset.tTraceFade || undefined, fadeBy: e.dataset.tTraceFadeBy || "character", fadeDelay: e.dataset.tTraceFadeDelay !== undefined ? +e.dataset.tTraceFadeDelay : undefined });
+    fade: +e.dataset.tTraceFade || undefined, fadeBy: e.dataset.tTraceFadeBy || "character", fadeDelay: e.dataset.tTraceFadeDelay !== undefined ? +e.dataset.tTraceFadeDelay : undefined,
+    fadeStagger: e.dataset.tTraceFadeStagger !== undefined ? +e.dataset.tTraceFadeStagger : null });
   els.forEach((e) => { e.__tTigAuto = true; e.__tTigOpacity = e.style.opacity; e.style.opacity = 0; });
   if (!("IntersectionObserver" in window)) { els.forEach(play); return; }
   const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) { io.unobserve(en.target); play(en.target); } }), { threshold: 0.3 });
