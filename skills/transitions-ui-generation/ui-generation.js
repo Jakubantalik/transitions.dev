@@ -12,6 +12,7 @@
  *   "small-text"      a dotted line through each line of text, the characters fading in      } text-image-generation.js,
  *   "image"           a frame, a tone sketch, a halftone of its pixels, colour dots, the photo } which ships alongside
  *   "auto"            text by size and images, in one block                                  }
+ *   "transform"       one version of a UI regenerating into the next: transform(oldEl, newEl) or { variant: "transform", to }
  *
  * Modes
  *   "skeleton"        the dotted drawing and the reveal
@@ -438,6 +439,7 @@ function texts(G, p, t, D) {
 // ─── 5. run ───
 export function generate(el, options = {}) {
   if (TEXT_IMAGE.includes(options.variant)) return TIG.generate(el, toTrace(options));
+  if (options.variant === "transform") return transform(el, options.to, options);
   const opts = Object.assign({}, DEFAULTS, options);
   if (typeof el === "string") el = document.querySelector(el);
   if (!el) throw new Error("UIGeneration: no element");
@@ -476,6 +478,170 @@ export function generate(el, options = {}) {
   return run;
 }
 
+// ─── transform: one version of a UI regenerating into the next ───
+// The old version dissolves into its dotted wireframe behind a scan line, every part of it flows to where it sits in
+// the new version (boxes move and resize, text lines grow or shrink, the card outline changes size), parts that are
+// gone break up, new parts are traced in, then the new version comes in behind a second scan line.
+//   transform(oldEl, newEl, { duration: 2800 })   or   generate(oldEl, { variant: "transform", to: newEl })
+// Both versions must be laid out where they will be seen (for example stacked in one grid cell); the new one is hidden
+// until its reveal, the old one is hidden at the end (hideFrom: false keeps it).
+const TPH = { down: [0, 0.3], morph: [0.24, 0.72], up: [0.68, 1] };
+const T_DEFAULTS = { duration: 2800, delay: 0, labels: true, versions: ["V1", "V2"], hideFrom: true, onDone: null };
+// a version as shapes: its card outline, one box per box or icon, one line per line of text
+function shapesOf(M, ox, oy) {
+  const out = [];
+  for (const P of M.parts) {
+    if (P.kind === "text") for (const ln of P.lines) out.push({ kind: "line", x: ox + ln.x, x2: ox + ln.x2, y: oy + ln.y + ln.h * 0.56, name: "text" });
+    else out.push({ kind: "box", x: ox + P.x, y: oy + P.y, w: P.w, h: P.h, r: P.kind === "icon" ? Math.min(P.w, P.h) / 2 : P.r, name: P.kind === "icon" ? "icon" : P.name });
+  }
+  return out;
+}
+// pairs each new shape with the old shape of the same kind (and role) that sat most nearly in the same place
+function matchShapes(A, B, W, H) {
+  const c = (s) => (s.kind === "line" ? [(s.x + s.x2) / 2, s.y, s.x2 - s.x, 0] : [s.x + s.w / 2, s.y + s.h / 2, s.w, s.h]);
+  const cand = [];
+  A.forEach((a, i) => B.forEach((b, j) => {
+    if (a.kind !== b.kind) return;
+    const [ax, ay, aw, ah] = c(a), [bx, by, bw, bh] = c(b);
+    // like with like: a button stays a button, an icon an icon (a frame can still become a frame elsewhere)
+    const cost = Math.hypot((ax - bx) / W, (ay - by) / H) + 0.35 * (Math.abs(aw - bw) / Math.max(aw, bw, 1) + Math.abs(ah - bh) / Math.max(ah, bh, 1)) + (a.name !== b.name ? 0.45 : 0);
+    if (cost < 0.5) cand.push({ i, j, cost });
+  }));
+  cand.sort((p, q) => p.cost - q.cost);
+  const ua = new Set(), ub = new Set(), pairs = [];
+  for (const p of cand) if (!ua.has(p.i) && !ub.has(p.j)) { ua.add(p.i); ub.add(p.j); pairs.push([A[p.i], B[p.j]]); }
+  return { pairs, gone: A.filter((_, i) => !ua.has(i)), added: B.filter((_, j) => !ub.has(j)) };
+}
+const shapeD = (s) => (s.kind === "line" ? `M${f2(s.x)} ${f2(s.y)}H${f2(Math.max(s.x, s.x2))}` : rrPath(s.x, s.y, Math.max(0.5, s.w), Math.max(0.5, s.h), s.r));
+const mixShape = (a, b, q) => (a.kind === "line" ? { kind: "line", x: lerp(a.x, b.x, q), x2: lerp(a.x2, b.x2, q), y: lerp(a.y, b.y, q) } : { kind: "box", x: lerp(a.x, b.x, q), y: lerp(a.y, b.y, q), w: lerp(a.w, b.w, q), h: lerp(a.h, b.h, q), r: lerp(a.r, b.r, q) });
+const shapeBox = (s) => (s.kind === "line" ? { x: s.x, y: s.y - 6, w: s.x2 - s.x, h: 12 } : s);
+
+export function transform(fromEl, toEl, options = {}) {
+  const opts = Object.assign({}, T_DEFAULTS, options);
+  if (typeof fromEl === "string") fromEl = document.querySelector(fromEl);
+  if (typeof toEl === "string") toEl = document.querySelector(toEl);
+  if (!fromEl || !toEl) throw new Error("UIGeneration.transform: needs the old and the new element");
+  for (const e of [fromEl, toEl]) if (e.__tGen) e.__tGen.cancel();
+  const keep = (e) => ({ opacity: e.style.opacity, clipPath: e.style.clipPath, filter: e.style.filter, visibility: e.style.visibility, transition: e.style.transition });
+  const prevA = keep(fromEl), prevB = keep(toEl);
+  let resolve, raf = 0, timer = 0, layer = null, stopped = false;
+  const finished = new Promise((r) => (resolve = r));
+  const finish = () => {
+    if (stopped) return; stopped = true; cancelAnimationFrame(raf); clearTimeout(timer); if (layer) layer.remove();
+    Object.assign(fromEl.style, prevA); Object.assign(toEl.style, prevB);
+    if (prevB.visibility === "hidden") toEl.style.visibility = ""; // the new version stays shown, however it waited
+    if (opts.hideFrom) fromEl.style.visibility = "hidden";
+    fromEl.__tGen = toEl.__tGen = null; if (opts.onDone) opts.onDone(toEl); resolve(toEl);
+  };
+  const run = { finished, cancel: finish, element: toEl };
+  fromEl.__tGen = toEl.__tGen = run;
+  toEl.style.visibility = "visible"; toEl.style.opacity = 0; // laid out, hidden until its reveal
+  if (reduced()) { // a crossfade
+    timer = setTimeout(() => {
+      fromEl.style.transition = toEl.style.transition = "opacity 200ms ease-out";
+      fromEl.style.opacity = 0; toEl.style.opacity = prevB.opacity || ""; timer = setTimeout(finish, 220);
+    }, opts.delay);
+    return run;
+  }
+  timer = setTimeout(() => requestAnimationFrame(() => {
+    if (stopped) return;
+    try { start(); } catch (e) { console.warn("UIGeneration.transform: could not build, swapping the versions", e); finish(); }
+  }), opts.delay);
+
+  function start() {
+    const RA = fromEl.getBoundingClientRect(), RB = toEl.getBoundingClientRect(), mo = { maxParts: 80, keys: 0 };
+    const A = measure(fromEl, mo), B = measure(toEl, mo), dx = RB.left - RA.left, dy = RB.top - RA.top;
+    const SA = shapesOf(A, 0, 0), SB = shapesOf(B, dx, dy), W = Math.max(A.w, B.w), H = Math.max(A.h, B.h);
+    const { pairs, gone, added } = matchShapes(SA, SB, W, H);
+    const D = Math.max(1200, +opts.duration || T_DEFAULTS.duration), PAD = 80, DOT = 4.8;
+    // overlay at the old version's place
+    layer = document.createElement("div"); layer.className = "t-gen t-gen--transform"; layer.setAttribute("aria-hidden", "true");
+    Object.assign(layer.style, { left: f2(RA.left + scrollX) + "px", top: f2(RA.top + scrollY) + "px", width: f2(A.w) + "px", height: f2(A.h) + "px" });
+    const root = svg("svg", { class: "t-gen-svg", width: f2(A.w), height: f2(A.h) }, layer);
+    document.body.appendChild(layer);
+    const n = Math.round(Math.random() * 1e6), defs = svg("defs", {}, root);
+    const clip = svg("clipPath", { id: "t-gen-tclip-" + n }, defs), clipRect = svg("rect", { x: -PAD - 40, y: -PAD, width: Math.max(A.w, dx + B.w) + 2 * PAD + 80, height: 0 }, clip);
+    const wire = svg("g", { class: "t-gen-wireframe", "clip-path": `url(#t-gen-tclip-${n})` }, root);
+    const dotted = (parent = wire) => { const e = svg("path", { class: "t-gen-wire", style: `stroke-dasharray:0 ${DOT}` }, parent); return e; };
+    // the shapes: morphing pairs, parts going, parts coming; each one's moment follows its place, top first
+    const span = TPH.morph[1] - TPH.morph[0], at = (y, wdt) => TPH.morph[0] + (span - wdt) * clamp(y / Math.max(1, Math.max(A.h, dy + B.h)));
+    const M = pairs.map(([a, b]) => ({ a, b, el: dotted(), t0: at((shapeBox(a).y + shapeBox(b).y) / 2, 0.24), changed: Math.abs(shapeBox(a).x - shapeBox(b).x) + Math.abs(shapeBox(a).y - shapeBox(b).y) + Math.abs(shapeBox(a).w - shapeBox(b).w) + Math.abs(shapeBox(a).h - shapeBox(b).h) > 3 }));
+    const G = gone.map((a) => ({ a, g: svg("g", {}, wire), t0: at(shapeBox(a).y, 0.16) })); G.forEach((o) => (o.el = dotted(o.g)));
+    const N = added.map((b) => ({ b, el: dotted(), head: svg("circle", { r: 2.3, class: "t-gen-head", opacity: 0 }, wire), t0: at(shapeBox(b).y, 0.22) + 0.04 }));
+    N.forEach((o) => { o.el.setAttribute("d", shapeD(o.b)); o.L = o.el.getTotalLength(); o.el.style.strokeDasharray = "none"; });
+    const outline = dotted();
+    const handles = [0, 1, 2, 3].map(() => svg("rect", { x: -2.5, y: -2.5, width: 5, height: 5, class: "t-gen-handle" }, root));
+    const ret = svg("path", { class: "t-gen-reticle", opacity: 0 }, root), tag = svg("text", { class: "t-gen-label t-gen-label--tag", opacity: 0 }, root);
+    const head = svg("text", { class: "t-gen-label", x: 0, y: -12, opacity: 0 }, root), count = svg("text", { class: "t-gen-label t-gen-label--small", x: f2(A.w), y: -12, "text-anchor": "end", opacity: 0 }, root);
+    const scans = [0, 1].map(() => { const g = svg("g", { opacity: 0 }, root); svg("path", { class: "t-gen-guide t-gen-guide--scan" }, g); svg("circle", { r: 2.3, class: "t-gen-head" }, g); svg("circle", { r: 2.3, class: "t-gen-head" }, g); return g; });
+    const scanAt = (g, x, w, y, op) => { g.setAttribute("opacity", f2(op)); g.setAttribute("transform", `translate(0 ${f2(y)})`); const [l, c1, c2] = g.children; l.setAttribute("d", `M${f2(x - 18)} 0H${f2(x + w + 18)}`); c1.setAttribute("cx", f2(x)); c2.setAttribute("cx", f2(x + w)); };
+    const t0 = performance.now(), A_ = fromEl.style, B_ = toEl.style;
+    const tick = (now) => {
+      if (stopped) return;
+      const t = now - t0, p = t / D;
+      // 1. the old version goes down into its wireframe behind a scan line
+      const qd = SMOOTH_OUT(win(TPH.down, p)), yd = qd * (A.h + 6) - 3;
+      A_.clipPath = qd >= 1 ? "inset(0 0 100% 0)" : `inset(${f2(Math.max(0, yd))}px -${PAD}px -${PAD}px -${PAD}px)`;
+      A_.filter = qd > 0 && qd < 1 ? `blur(${f2(1.5 * qd)}px)` : prevA.filter;
+      scanAt(scans[0], 0, A.w, yd, qd > 0 && qd < 1 ? smooth(0, 0.1, qd) * (1 - smooth(0.85, 1, qd)) : 0);
+      // 3. the new version comes in behind a second scan line, wiping the wireframe away
+      const qu = SMOOTH_OUT(win(TPH.up, p)), yu = qu * (B.h + 6) - 3, fq = SMOOTH_OUT(win([TPH.up[0], TPH.up[1] + 0.04], p));
+      B_.opacity = qu <= 0 ? 0 : f2(fq);
+      B_.clipPath = qu >= 1 ? prevB.clipPath : `inset(-${PAD}px -${PAD}px ${f2(Math.max(0, B.h - yu - 1 - smooth(0.6, 1, qu) * PAD))}px -${PAD}px)`;
+      B_.filter = fq > 0 && fq < 0.99 ? `blur(${f2(3 * (1 - fq))}px)` : prevB.filter;
+      scanAt(scans[1], dx, B.w, dy + yu, qu > 0 && qu < 1 ? smooth(0, 0.1, qu) * (1 - smooth(0.85, 1, qu)) : 0);
+      // the wireframe shows above the first line, below the second
+      const top = qu > 0 ? dy + yu : -PAD, bottom = qd >= 1 ? Math.max(A.h, dy + B.h) + PAD : yd;
+      clipRect.setAttribute("y", f2(top)); clipRect.setAttribute("height", f2(Math.max(0, bottom - top)));
+      wire.setAttribute("opacity", f2(1 - 0.5 * fq));
+      const flow = f2(-(t * FLOW) % DOT);
+      // 2. the card outline and every part flow to the new version
+      const qo = OUT(win([TPH.morph[0], TPH.morph[0] + span * 0.7], p)), card = mixShape({ kind: "box", x: 0, y: 0, w: A.w, h: A.h, r: A.r }, { kind: "box", x: dx, y: dy, w: B.w, h: B.h, r: B.r }, qo);
+      outline.setAttribute("d", shapeD(card)); outline.style.strokeDashoffset = flow;
+      const hOp = smooth(0.04, 0.14, p) * (1 - smooth(TPH.up[0], TPH.up[0] + 0.12, p));
+      [[card.x, card.y], [card.x + card.w, card.y], [card.x + card.w, card.y + card.h], [card.x, card.y + card.h]].forEach(([x, y], i) => { handles[i].setAttribute("transform", `translate(${f2(x)} ${f2(y)}) scale(${f2(hOp)})`); });
+      let cur = null;
+      for (const m of M) {
+        const q = OUT(clamp((p - m.t0) / 0.24)), s = mixShape(m.a, m.b, q);
+        m.el.setAttribute("d", shapeD(s)); m.el.style.strokeDashoffset = flow;
+        if (m.changed && q > 0 && q < 1) cur = { m, s, q };
+      }
+      for (const o of G) { // parts that are gone shrink to their centre and fade
+        const q = OUT(clamp((p - o.t0) / 0.16)), b = shapeBox(o.a), cx = b.x + b.w / 2, cy = b.y + b.h / 2, k = 1 - 0.7 * q;
+        o.el.setAttribute("d", shapeD(o.a)); o.g.setAttribute("transform", `translate(${f2(cx)} ${f2(cy)}) scale(${f2(k)}) translate(${f2(-cx)} ${f2(-cy)})`); o.g.setAttribute("opacity", f2(1 - q));
+        o.el.style.strokeDashoffset = flow;
+      }
+      for (const o of N) { // new parts traced in, dot by dot, with a moving head
+        const q = OUT(clamp((p - o.t0) / 0.22)), cnt = Math.floor((o.L * q) / DOT) + 1;
+        o.el.style.opacity = q > 0 ? 1 : 0;
+        if (q > 0 && cnt !== o.n) { o.n = cnt; o.el.style.strokeDasharray = `${`0 ${DOT} `.repeat(cnt - 1)}0 ${f2(o.L + 10)}`; }
+        const live = q > 0 && q < 1; o.head.setAttribute("opacity", live ? 1 : 0);
+        if (live) { const pt = o.el.getPointAtLength(Math.floor((o.L * q) / DOT) * DOT); o.head.setAttribute("cx", f2(pt.x)); o.head.setAttribute("cy", f2(pt.y)); }
+      }
+      // a reticle on the part changing now, with its size before and after
+      const rOp = cur && opts.labels ? 1 : 0; ret.setAttribute("opacity", rOp); tag.setAttribute("opacity", rOp);
+      if (cur) {
+        const b = shapeBox(cur.s), P = 4, x = b.x - P, y = b.y - P, w = b.w + 2 * P, h = b.h + 2 * P, l = Math.min(7, w / 3, h / 3);
+        ret.setAttribute("d", `M${f2(x)} ${f2(y + l)}V${f2(y)}H${f2(x + l)}M${f2(x + w - l)} ${f2(y)}H${f2(x + w)}V${f2(y + l)}M${f2(x + w)} ${f2(y + h - l)}V${f2(y + h)}H${f2(x + w - l)}M${f2(x + l)} ${f2(y + h)}H${f2(x)}V${f2(y + h - l)}`);
+        const sz = (s) => (s.kind === "line" ? `${Math.round(s.x2 - s.x)}` : `${Math.round(s.w)}×${Math.round(s.h)}`);
+        tag.setAttribute("x", f2(x)); tag.setAttribute("y", f2(y - 4)); tag.textContent = `${cur.m.a.name} ${sz(cur.m.a)} → ${sz(cur.m.b)}`;
+      }
+      // what is happening, above the card
+      const lOp = opts.labels ? smooth(0.02, 0.1, p) * (1 - smooth(0.9, 1, p)) : 0;
+      head.setAttribute("opacity", f2(lOp)); count.setAttribute("opacity", f2(lOp));
+      head.setAttribute("y", f2(Math.min(0, dy) - 12)); count.setAttribute("y", f2(Math.min(0, dy) - 12)); count.setAttribute("x", f2(Math.max(A.w, dx + B.w)));
+      const [va, vb] = (opts.versions || T_DEFAULTS.versions).map((v) => String(v).toUpperCase());
+      head.textContent = p < TPH.morph[0] ? `READING ${va}` : p < TPH.up[0] ? `REGENERATING ${va} → ${vb}` : `${vb} READY`;
+      const done = (list) => list.filter((o) => p >= o.t0).length;
+      count.textContent = `MOVED ${String(done(M)).padStart(2, "0")}  NEW ${String(done(N)).padStart(2, "0")}  OUT ${String(done(G)).padStart(2, "0")}  ${Math.round(card.w)}×${Math.round(card.h)}`;
+      if (p >= 1.06) return finish();
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  }
+  return run;
+}
+
 // Plays every [data-t-generate] element once it scrolls into view.
 // data-t-generate="skeleton" | "skeleton-texts", optional data-t-generate-variant (ui | text | small-text | image | auto)
 // and data-t-generate-duration / -delay (ms).
@@ -488,4 +654,4 @@ export function auto(root = document) {
   els.forEach((e) => io.observe(e));
 }
 
-if (typeof window !== "undefined") window.UIGeneration = { generate, auto, timeline };
+if (typeof window !== "undefined") window.UIGeneration = { generate, auto, timeline, transform };
