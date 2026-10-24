@@ -2,7 +2,7 @@
 
 ## When to use
 
-There is a version of a UI on screen and the agent has made a new version of it: "make it more premium", "add a yearly toggle", a redesign, a regenerated result. Instead of swapping one for the other, the old version regenerates into the new one: it dissolves into its dotted wireframe, every part flows to where it sits in the new version, parts that are gone break up, new parts are traced in, and the new version comes in.
+There is a version of a UI on screen and the agent has made a new version of it: "make it more premium", "add a yearly toggle", a redesign, a regenerated result. Nothing fades away: the real UI morphs into the new one. Every part matched in the new version (buttons, text, icons, the card itself) moves and resizes into its new place, its content changing over in place, while the generation effect works over it: dot field, probe, guides, corner handles, size label, a reticle reading each part, dotted outlines riding with the parts, new parts traced in dot by dot with dots flying in, gone parts dissolving.
 
 ## Usage
 
@@ -39,15 +39,15 @@ Phases as fractions of `duration` (default `2800ms`).
 
 | Phase | Window | What happens |
 | --- | --- | --- |
-| Read | 0 to 0.3 | A scan line sweeps down the old version; above it the UI becomes its dotted wireframe (outline, boxes, text lines, icons). |
-| Regenerate | 0.24 to 0.72 | The outline morphs to the new size and corner radius, corner handles riding along. Each part matched in the new version flows there (`--ease-out`), top first; a reticle on the part changing reads `button 256×40 → 166×40`. Parts that are gone shrink to their centre and fade; new parts are traced in dot by dot with a moving head. |
-| Reveal | 0.68 to 1 | A second scan line brings the new version in top to bottom, fading and sharpening (`--ease-smooth-out`), wiping the wireframe behind it. |
+| Read | 0 to 0.24 | The old version stays as it is. A dot field ripples out around it, a probe line sweeps across, guides draw out along the card's edges, corner handles and a size label appear, dotted outlines trace over its parts and the reticle hops from part to part with its size (`READING V1`). |
+| Morph | 0.24 to 0.84 | The real UI morphs (`cubic-bezier(.45, 0, .15, 1)`), top first: the card grows or shrinks to its new size, each matched part moves and resizes into its new place with its content changing over (text keeps its size, boxes stretch). The outline, guides, handles and size label follow the card; dotted outlines ride with each part; the reticle reads the part changing (`button 256×40 → 166×40`). Gone parts dissolve; new parts get dots flying in, are traced dot by dot (`+ frame 292×36`), and fade up inside their outline (`MORPHING V1 → V2`). |
+| Clean | 0.86 to 1 | The drawing fades out (`V2 READY`). |
 
-Above the card: `READING V1`, `REGENERATING V1 → V2`, `V2 READY`, and `MOVED 11  NEW 05  OUT 00  340×404`.
+The morph runs on the browser's view transitions (`document.startViewTransition`). Where they aren't available (or with `morph: false`) it falls back to a dotted regeneration: the old version goes into its wireframe behind a scan line, the wireframe morphs, and the new version comes in behind a second scan line.
 
 ## How parts are matched
 
-Each version is read like the `ui` variant reads a component (boxes, buttons, inputs, images, icons, one line per line of text). Every new part is paired with the old part of the same kind and role (a button with a button, a text line with a text line) that sat most nearly in the same place and size, relative to the card. Unpaired old parts leave; unpaired new parts are new.
+Each version is read like the `ui` variant reads a component (boxes, buttons, inputs, images, icons, text). Every new part is paired with the old part of the same kind and role (a button with a button, text with text) that sat most nearly in the same place and size, relative to the card; a button's own label moves with the button. Unpaired old parts leave; unpaired new parts are new.
 
 ## Options
 
@@ -58,6 +58,7 @@ Each version is read like the `ui` variant reads a component (boxes, buttons, in
 | `labels` | `true` | The status line, counts and the reticle's size change. |
 | `versions` | `["V1", "V2"]` | Names in the labels (pass `["v2", "v1"]` when going back). |
 | `hideFrom` | `true` | Hide the old version at the end. |
+| `morph` | `true` | The real-UI morph where view transitions exist; `false` always uses the dotted regeneration. |
 | `onDone` | `null` | Called with the new version when it is in. |
 
 ## Reduced motion
