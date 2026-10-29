@@ -4906,6 +4906,7 @@
               <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
               <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
               <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/mcp.html"><span class="nav-products-name">MCP</span><span class="nav-products-hint">The Builder&#39;s agent in your coding agent</span></a>
             </div>
           </div>
           <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
@@ -5042,9 +5043,10 @@
           <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html">Builder</a></li>
           <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Motion Agent</a></li>
           <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Motion Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction">Docs</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/mcp.html">MCP</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--8 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
       </nav>
     </header>
@@ -5245,11 +5247,12 @@
             </div>
             <p class="skill-section-note" id="acc-agent-plan"></p>
           </div>
-          <!-- Transitions UI MCP (Pro, Business): the Builder's agent in the
-               person's own Claude Code, Codex or Cursor. Commands carry their key. -->
+          <!-- Transitions MCP (Pro, Business): the Builder's agent in the
+               person's own Claude Code, Codex or Cursor. No key: the agent
+               opens the browser to sign in (OAuth) the first time. -->
           <div class="account-agent" id="acc-mcp-block" hidden>
-            <p class="account-agent-title">Transitions UI in Claude Code, Codex and Cursor</p>
-            <p class="account-agent-sub">Your AI builds components with the Transitions UI Agent's rules, recipes and motion check, on your own AI plan, and can save them to your Studio. Add it once:</p>
+            <p class="account-agent-title">Transitions MCP in Claude Code, Codex and Cursor</p>
+            <p class="account-agent-sub">Your agent builds components with the Builder's rules, recipes and motion check, on its own AI plan. Add it once, and it opens your browser to sign in:</p>
             <p class="acc-mcp-label">Claude Code</p>
             <div class="skill-code-row">
               <code id="acc-mcp-claude"></code>
@@ -5258,7 +5261,7 @@
                 <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
               </button>
             </div>
-            <p class="acc-mcp-label">Codex <span>~/.codex/config.toml</span></p>
+            <p class="acc-mcp-label">Codex</p>
             <div class="skill-code-row">
               <code id="acc-mcp-codex"></code>
               <button type="button" class="card-copy" aria-label="Copy Codex config" data-copy-target="#acc-mcp-codex">
@@ -5266,7 +5269,7 @@
                 <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
               </button>
             </div>
-            <p class="acc-mcp-label">Cursor <span>.cursor/mcp.json</span></p>
+            <p class="acc-mcp-label">Cursor <span>~/.cursor/mcp.json</span></p>
             <div class="skill-code-row">
               <code id="acc-mcp-cursor"></code>
               <button type="button" class="card-copy" aria-label="Copy Cursor config" data-copy-target="#acc-mcp-cursor">
@@ -5274,7 +5277,7 @@
                 <svg class="icon-check" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
               </button>
             </div>
-            <p class="skill-section-note">Then ask it to build or polish a component, for example: "Build a pricing toggle with Transitions UI and save it to my Studio." Keep the key private: it is tied to your account.</p>
+            <p class="skill-section-note">Then ask it to build or polish a component, for example: "Build a pricing toggle with Transitions UI." More agents and tips on the <a href="/mcp.html">MCP page</a>.</p>
           </div>
           <p class="account-note" id="acc-note-dl" role="status" hidden></p>
         </section>
@@ -5723,6 +5726,7 @@
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "MCP", hint: "Builder agent in your coding agent", href: "/mcp.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         return { group: "Transitions", label: n, hint: "Transition", href: "/#components", ic: "motion" };
@@ -6090,7 +6094,7 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=70" defer></script>
+  <script src="assets/pro-client.js?v=71" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;
@@ -6641,12 +6645,12 @@
               ? "Full Motion Agent: 200 hosted fixes a month, polish + revamp."
               : "Free Motion Agent: 10 hosted polish fixes a month" + (d.pro ? ", plus Pro recipe sources over MCP." : ".");
             el("acc-agent-key-block").hidden = false;
-            // Transitions UI MCP: shown only while the account has Pro (a
+            // Transitions MCP: shown only while the account has Pro (a
             // Business seat counts), read live from /me; the server checks too.
             var url = "https://api.transitions.dev/ui/mcp";
-            el("acc-mcp-claude").textContent = 'claude mcp add --transport http transitions-ui ' + url + ' --header "Authorization: Bearer ' + d.license + '"';
-            el("acc-mcp-codex").textContent = '[mcp_servers.transitions-ui]\ncommand = "npx"\nargs = ["-y", "mcp-remote", "' + url + '", "--header", "Authorization:${TRANSITIONS_AUTH}"]\nenv = { TRANSITIONS_AUTH = "Bearer ' + d.license + '" }';
-            el("acc-mcp-cursor").textContent = JSON.stringify({ mcpServers: { "transitions-ui": { url: url, headers: { Authorization: "Bearer " + d.license } } } }, null, 2);
+            el("acc-mcp-claude").textContent = "claude mcp add --transport http transitions-ui " + url;
+            el("acc-mcp-codex").textContent = "codex mcp add transitions-ui --url " + url + " && codex mcp login transitions-ui";
+            el("acc-mcp-cursor").textContent = JSON.stringify({ mcpServers: { "transitions-ui": { url: url } } });
             function paintMcp() { el("acc-mcp-block").hidden = !(TP.state && TP.state.resolved && TP.state.pro); }
             paintMcp();
             document.addEventListener("pro:me", paintMcp);

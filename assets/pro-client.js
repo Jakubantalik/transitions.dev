@@ -10,8 +10,13 @@
 (function () {
   "use strict";
 
-  var API_BASE = /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
-    ? "http://localhost:8787"
+  var LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  // Local dev only: localStorage "tdev:api" points the site at another local
+  // API (a second worktree's Worker on its own port).
+  var LOCAL_API = null;
+  if (LOCAL) { try { LOCAL_API = localStorage.getItem("tdev:api"); } catch (e) {} }
+  var API_BASE = LOCAL
+    ? (LOCAL_API && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(LOCAL_API) ? LOCAL_API : "http://localhost:8787")
     : "https://api.transitions.dev";
 
   function api(path, opts) {
@@ -1476,10 +1481,11 @@
   // style is minimal and low-specificity so page CSS added later overrides it easily.
   function mountProBadges() {
     injectBadgeStyle();
-    // "New" next to Community in the nav, Builder in the Products menu, and
-    // both in the mobile menu.
+    // "New" next to Community in the nav, Builder and MCP in the Products
+    // menu, and all three in the mobile menu.
     document.querySelectorAll('a[data-nav="community"], .mobile-menu-link[href="/community.html"], ' +
-      '.nav-products-item[href="/builder.html"] .nav-products-name, .mobile-menu-link[href="/builder.html"]').forEach(function (a) {
+      '.nav-products-item[href="/builder.html"] .nav-products-name, .mobile-menu-link[href="/builder.html"], ' +
+      '.nav-products-item[href="/mcp.html"] .nav-products-name, .mobile-menu-link[href="/mcp.html"]').forEach(function (a) {
       if (a.querySelector(".nav-new-badge")) return;
       var b = document.createElement("span");
       b.className = "nav-new-badge";

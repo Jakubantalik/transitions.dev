@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Connect · Transitions.dev</title>
+  <!--
+    MCP sign-in consent (OAuth). A coding agent (Claude Code, Codex, Cursor)
+    opens /oauth/authorize on the API, which sends the browser here with
+    ?request=<id>. The person signs in with the site's usual modal, then
+    clicks Allow; only Pro or a Business seat can approve. The API answers
+    with the agent's redirect URL, which this page follows.
+    Error entry: ?error=unknown_client | bad_redirect
+  -->
+  <link rel="preload" href="assets/fonts/Saans-Medium.woff2" as="font" type="font/woff2" crossorigin />
+  <style>
+
+    /* ── iOS double-tap zoom ─────────────────────────────────────────
+       iOS Safari ignores `user-scalable=no` / `maximum-scale=1` in the
+       viewport meta (since iOS 10), and disabling pinch zoom outright
+       would fail WCAG 1.4.4. `touch-action: manipulation` suppresses
+       only the double-tap-to-zoom gesture on the things people tap,
+       leaving pinch zoom fully intact. Declared first in the sheet so
+       prototypes needing a stricter value (`touch-action: none` on the
+       tilt / drag demos) still override it further down. */
+    button,
+    a,
+    label,
+    summary,
+    input,
+    select,
+    [role="button"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="tab"],
+    .card {
+      touch-action: manipulation;
+    }
+    @font-face {
+      font-family: "Saans";
+      src: url("assets/fonts/Saans-Medium.woff2") format("woff2"),
+           url("assets/fonts/Saans-Medium.woff") format("woff");
+      font-weight: 500;
+      font-style: normal;
+      font-display: optional;
+    }
+    :root {
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --muted: #8a8a8a;
+      --text-muted: #6c6c6c;
+      --text-faint: #8f8f8f;
+      --text-footer-name: #4a4a4a;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      /* transitions.dev motion tokens (subset used here). */
+      --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --duration-fast: 250ms;
+      /* error-state-shake tokens (12-error-state-shake) */
+      --shake-distance: 6px;
+      --shake-overshoot: 4px;
+      --shake-dur-a: 80ms;
+      --shake-dur-b: 60ms;
+      --shake-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    html[data-theme="dark"] {
+      --bg: #0f0f10;
+      --text: #f2f2f2;
+      --muted: #9a9a9a;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --text-faint: #8f8f8f;
+      --text-footer-name: #e9e9e9;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+    }
+
+    /* Back button — circular tertiary (top-left in the design). */
+    .back-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 50px;
+      background: rgba(0, 0, 0, 0.03);
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .back-btn:hover { background: rgba(0, 0, 0, 0.06); }
+    html[data-theme="dark"] .back-btn { background: rgba(255, 255, 255, 0.06); }
+    /* Scale on press (0.96) — tactile feedback. */
+    .back-btn { transition: background 120ms ease, scale 120ms var(--ease-smooth-out); }
+    .back-btn:active { scale: 0.96; }
+    /* Extend the 36px control to a 44px touch target without changing its look. */
+    .back-btn::after { content: ""; position: absolute; inset: -4px; border-radius: inherit; }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 64px 20px 96px;
+      min-height: 100vh;
+    }
+
+    /* Brand cube icon — identical to skill.html / pro.html hero (136×140,
+       assets/icon light 2x.png / icon-dark-2x.png, theme-swapped + hover). */
+    .header-icon-wrap {
+      position: relative;
+      width: 136px;
+      height: 140px;
+      margin-top: -43px;
+      margin-bottom: -27px;
+      overflow: visible;
+    }
+    .header-icon-img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 136px;
+      height: 140px;
+      display: block;
+      user-select: none;
+      transform-origin: center;
+      transition:
+        filter 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @media (hover: hover) {
+      .header-icon-wrap:hover .header-icon-img {
+        filter: hue-rotate(60deg) saturate(1.6);
+        transform: rotate(8deg) scale(1.06);
+      }
+    }
+    html[data-theme="dark"] .header-icon-img--light,
+    html:not([data-theme="dark"]) .header-icon-img--dark { display: none; }
+    html:not([data-theme="dark"]) .header-icon-img--light,
+    html[data-theme="dark"] .header-icon-img--dark { display: block; }
+
+    .page-title {
+      margin: 0 0 30px;
+      font-family: "Saans", var(--font-sans);
+      font-weight: 500;
+      font-size: 36px;
+      line-height: 42px;
+      letter-spacing: -0.18px;
+      color: var(--text);
+      text-align: center;
+      text-wrap: balance;
+    }
+
+    /* Sign-in card (Figma 2330:2574): 369px, r24, p20, ring shadows. */
+    .signin-card {
+      position: relative;
+      width: min(92vw, 369px);
+      background: #fff;
+      border-radius: 24px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(196, 196, 196, 0.1);
+    }
+    html[data-theme="dark"] .signin-card { background: #1b1b1d; }
+
+    .card-intro {
+      margin: 0;
+      font-size: 16px;
+      line-height: 24.2px;
+      color: var(--text);
+      text-wrap: pretty;
+    }
+    .card-intro .muted { color: var(--muted); }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 13px; line-height: 1.4; color: #4d4d4d; }
+    html[data-theme="dark"] .field-label { color: #b5b5b5; }
+
+    /* Input states (Figma 2330:2712): default #dcdcdc 1px, focus #585858 1.5px,
+       error #e23014 1.5px + #d62b11 message. */
+    .field-input {
+      width: 100%;
+      height: 40px;
+      padding: 4px 4px 4px 12px;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #0f0f0f;
+      background: #fff;
+      border: 1px solid #dcdcdc;
+      border-radius: 60px;
+      outline: none;
+      transition: border-color 120ms ease;
+    }
+    .field-input::placeholder { color: #828282; }
+    .field-input:focus { border: 1.5px solid #585858; padding-left: 11.5px; }
+    .field-input.is-error,
+    .field-input.is-error:focus { border: 1.5px solid #e23014; padding-left: 11.5px; }
+    html[data-theme="dark"] .field-input { background: #151517; color: #f2f2f2; border-color: #3a3a3d; }
+    html[data-theme="dark"] .field-input:focus { border-color: #a5a5a5; }
+    html[data-theme="dark"] .field-input.is-error { border-color: #e23014; }
+    .field-error { margin: -2px 0 0; font-size: 13px; line-height: 1.4; color: #d62b11; }
+    .device-code-block { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .device-code-block[hidden] { display: none; }
+    .device-code-caption { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; opacity: .55; }
+    .device-code-hint { font-size: 13px; opacity: .6; }
+
+    /* Error-state-shake (transitions-dev 12): the field shakes on invalid submit.
+       Per-segment easing; %-stops are cumulative (80,60,80,60 = 280ms). */
+    .field-input { will-change: transform; }
+    .field-input.is-shaking {
+      animation: t-input-shake calc(var(--shake-dur-a) * 2 + var(--shake-dur-b) * 2) linear;
+    }
+    @keyframes t-input-shake {
+      0%     { transform: translateX(0);                                 animation-timing-function: var(--shake-ease); }
+      28.57% { transform: translateX(var(--shake-distance));             animation-timing-function: var(--shake-ease); }
+      57.14% { transform: translateX(calc(var(--shake-distance) * -1));  animation-timing-function: var(--shake-ease); }
+      78.57% { transform: translateX(var(--shake-overshoot));            animation-timing-function: var(--shake-ease); }
+      100%   { transform: translateX(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .field-input { animation: none !important; transform: none !important; }
+    }
+
+    /* Primary pill button (Figma 2330:2584). */
+    .btn-primary {
+      width: 100%;
+      height: 40px;
+      border: 0;
+      border-radius: 26px;
+      background: #17181c;
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .btn-primary[disabled] { opacity: 0.6; cursor: default; }
+    html[data-theme="dark"] .btn-primary { background: #f2f2f2; color: #111; }
+    /* Scale on press (0.96). */
+    .btn-primary { transition: scale 120ms var(--ease-smooth-out), opacity 120ms ease; }
+    .btn-primary:not([disabled]):active { scale: 0.96; }
+
+    .card-foot {
+      margin: 0;
+      font-size: 13px;
+      line-height: 16px;
+      color: #17181c;
+    }
+    .card-foot a { color: inherit; font-weight: 500; text-decoration: none; }
+    .card-foot a:hover { text-decoration: underline; }
+    html[data-theme="dark"] .card-foot { color: #e5e5e5; }
+
+    .card-note { margin: 0; font-size: 13px; line-height: 1.4; }
+    .card-note[data-kind="ok"] { color: #16a34a; }
+    .card-note[data-kind="err"] { color: #d62b11; }
+
+    .device-code {
+      font: 500 20px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: 0.12em;
+      padding: 10px 14px;
+      border: 1px dashed #dcdcdc;
+      border-radius: 12px;
+      align-self: center;
+    }
+    html[data-theme="dark"] .device-code { border-color: #3a3a3d; }
+
+    /* Shared site footer (identical to pro.html / account.html). */
+    .brand-mark {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; color: currentColor;
+    }
+    .brand-mark svg { width: 18px; height: 20.295px; display: block; }
+    .brand-word { font-size: 15px; font-weight: 500; line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
+    .brand-word-dim { color: var(--text-muted); }
+
+    .footer {
+      width: 100%; max-width: 1008px; margin: auto auto 0; padding: 112px 20px 40px;
+      font-family: var(--font-sans); font-size: 13px; line-height: 18.2px; text-align: left;
+      display: flex; flex-direction: column; gap: 25px; box-sizing: border-box;
+    }
+    .footer-top { display: flex; justify-content: space-between; gap: 48px; flex-wrap: wrap; }
+    .footer-brand { display: flex; flex-direction: column; gap: 10px; max-width: 260px; }
+    .footer-brand-logo {
+      display: inline-flex; align-items: center; gap: 4px; opacity: 0.7;
+      text-decoration: none; color: var(--text);
+      transition: transform 400ms var(--ease-smooth-out), opacity 150ms ease; transform-origin: center;
+    }
+    .footer-brand-logo:hover { opacity: 1; }
+    .footer-tagline { margin: 0; color: var(--text-muted); }
+    .footer-cols { display: flex; gap: 56px; }
+    .footer-col { display: flex; flex-direction: column; gap: 8px; }
+    .footer-col-title { margin: 0 0 2px; font-weight: 500; color: var(--text-muted); }
+    .footer-col a { color: var(--text-muted); text-decoration: none; transition: color 150ms var(--ease-smooth-out); }
+    .footer-col a:hover { color: var(--text); }
+    .footer-credit { margin: 0; }
+    .footer-muted { color: var(--text-faint); }
+    .footer-name { color: var(--text-footer-name); text-decoration: none; margin-left: 4px; }
+    .footer-name:hover { color: #0d0d0d; }
+    html[data-theme="dark"] .footer-name:hover { color: #ffffff; }
+    @media (max-width: 720px) {
+      .footer-top { flex-direction: column; gap: 32px; }
+      .footer-cols { gap: 40px; flex-wrap: wrap; row-gap: 32px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .footer-brand-logo { transition: opacity 150ms ease; }
+      .footer-brand-logo:hover, .footer-brand-logo:hover .brand-mark { transform: none; }
+    }
+
+    /* Secondary pill (the sign-in modal's ghost button). */
+    .btn-ghost {
+      width: 100%;
+      height: 40px;
+      border: 0;
+      border-radius: 26px;
+      background: #e9e9e9;
+      color: #17181c;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: scale 120ms var(--ease-smooth-out), opacity 120ms ease, background 120ms ease;
+    }
+    .btn-ghost:hover { background: #e2e2e2; }
+    .btn-ghost[disabled] { opacity: 0.6; cursor: default; }
+    .btn-ghost:not([disabled]):active { scale: 0.96; }
+    html[data-theme="dark"] .btn-ghost { background: #2a2a2c; color: #f2f2f2; }
+    html[data-theme="dark"] .btn-ghost:hover { background: #323235; }
+    .card-intro { text-wrap: pretty; }
+    .card-actions { display: flex; flex-direction: column; gap: 8px; }
+    .card-actions[hidden] { display: none; }
+    .card-foot[hidden], .card-note[hidden] { display: none; }
+    .card-foot button {
+      padding: 0; border: 0; background: none; font: inherit; font-weight: 500;
+      color: inherit; cursor: pointer;
+    }
+    .card-foot button:hover { text-decoration: underline; }
+    .btn-primary:focus-visible, .btn-ghost:focus-visible, .card-foot button:focus-visible {
+      outline: 2px solid #2f6feb; outline-offset: 2px;
+    }
+
+    [hidden] { display: none !important; }
+  </style>
+  <script>
+    // Same theme bootstrap as the rest of the site (localStorage tdev:theme).
+    (function () {
+      try {
+        var pref = localStorage.getItem("tdev:theme");
+        var dark = pref === "dark" ||
+          (pref !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="back-btn" href="/" aria-label="Back to Transitions.dev">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 8H3.5M3.5 8L7.5 4M3.5 8L7.5 12"/></svg>
+  </a>
+
+  <main class="page">
+    <div class="header-icon-wrap" aria-hidden="true">
+      <img class="header-icon-img header-icon-img--light" src="assets/icon%20light%202x.png" alt="" width="136" height="140" decoding="async" />
+      <img class="header-icon-img header-icon-img--dark" src="assets/icon-dark-2x.png?v=2" alt="" width="136" height="140" decoding="async" />
+    </div>
+    <h1 class="page-title" id="c-title">Connect your coding agent</h1>
+
+    <div class="signin-card">
+      <p class="card-intro" id="c-intro">Checking the request…</p>
+
+      <div class="card-actions" id="c-signin" hidden>
+        <button class="btn-primary" type="button" id="c-signin-btn">Sign in</button>
+      </div>
+
+      <div class="card-actions" id="c-allow" hidden>
+        <button class="btn-primary" type="button" id="c-allow-btn">Allow</button>
+        <button class="btn-ghost" type="button" id="c-cancel-btn">Cancel</button>
+      </div>
+
+      <div class="card-actions" id="c-pro" hidden>
+        <a class="btn-primary" id="c-pro-btn" href="/pro.html" style="display:flex;align-items:center;justify-content:center;text-decoration:none">Get Pro</a>
+      </div>
+
+      <p class="card-note" id="c-note" role="status" hidden></p>
+      <p class="card-foot" id="c-switch" hidden>Not you? <button type="button" id="c-switch-btn">Use another account</button></p>
+      <p class="card-foot" id="c-help" hidden><a href="/mcp.html">How to set up the MCP</a></p>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a class="footer-brand-logo" href="/" aria-label="Transitions.dev home">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 18 20.2947" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M9 0L12.5409 1.99176L11.5604 3.73491L10 2.8572V5.14735H8V2.8572L6.43962 3.73491L5.45909 1.99176L9 0ZM14.3613 3.01571L18 5.0625V9.14735H16V7.3794L14.0359 8.51337L13.0359 6.78132L14.9804 5.65867L13.3807 4.75886L14.3613 3.01571ZM4.61925 4.75887L3.01961 5.65867L4.9641 6.78132L3.9641 8.51337L2 7.3794L2 9.14735H0L1.54972e-06 5.0625L3.63873 3.01572L4.61925 4.75887ZM2 11.1473V12.9153L3.9641 11.7813L4.9641 13.5134L3.01961 14.636L4.61925 15.5358L3.63873 17.279L3.57628e-07 15.2322V11.1473H2ZM18 11.1473V15.2322L14.3613 17.279L13.3807 15.5358L14.9804 14.636L13.0359 13.5134L14.0359 11.7813L16 12.9153V11.1473H18ZM10 15.1473V17.4375L11.5604 16.5598L12.5409 18.3029L9 20.2947L5.45908 18.3029L6.43961 16.5598L8 17.4375V15.1473H10Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12.0981 9.51337L10 10.7247V13.1474H8V10.7247L5.90192 9.51337L6.90192 7.78132L9 8.99265L11.0981 7.78132L12.0981 9.51337Z" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="brand-word"><span class="brand-word-strong">Transitions</span><span class="brand-word-dim">.dev</span></span>
+          </a>
+          <p class="footer-tagline">Better UI motion and craft start here.</p>
+        </div>
+        <nav class="footer-cols" aria-label="Footer">
+          <div class="footer-col">
+            <p class="footer-col-title">Site</p>
+            <a href="/">Home</a>
+            <a href="detail.html?t=card-resize">Transitions</a>
+            <a href="/skill.html">Skill</a>
+            <a href="/agent.html">Motion Agent</a>
+            <a href="/pro.html">Get Pro</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-title">Docs</p>
+            <a href="/skill.html">Introduction</a>
+            <a href="/skill.html#installation">Installation</a>
+            <a href="/skill.html">Accessibility</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-title">Legal &amp; Account</p>
+            <a href="/pro.html">Sign in</a>
+            <a href="/terms.html">Terms</a>
+            <a href="/privacy.html">Privacy</a>
+            <a href="/imprint.html">Legal notice</a>
+            <a href="mailto:jakubja@gmail.com">Contact</a>
+          </div>
+        </nav>
+      </div>
+      <p class="footer-credit"><span class="footer-muted">Created by</span><a class="footer-name" href="https://x.com/jakubantalik" target="_blank" rel="noopener noreferrer">Jakub Antalik</a></p>
+    </footer>
+  </main>
+
+  <script src="assets/pro-client.js?v=71" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var TP = window.TransitionsPro;
+      var q = new URLSearchParams(location.search);
+      var requestId = q.get("request") || "";
+      var el = function (id) { return document.getElementById(id); };
+      var title = el("c-title"), intro = el("c-intro"), note = el("c-note");
+      var app = "your coding agent";
+      var done = false;
+
+      function setIntro(main, muted) {
+        intro.textContent = main + (muted ? " " : "");
+        if (muted) {
+          var m = document.createElement("span");
+          m.className = "muted";
+          m.textContent = muted;
+          intro.appendChild(m);
+        }
+      }
+      function setNote(msg, kind) {
+        note.textContent = msg || "";
+        note.hidden = !msg;
+        note.setAttribute("data-kind", kind || "");
+      }
+      function only(id) {
+        ["c-signin", "c-allow", "c-pro", "c-switch", "c-help"].forEach(function (k) { el(k).hidden = true; });
+        (id || []).forEach(function (k) { el(k).hidden = false; });
+      }
+      function dead(heading, main, muted) {
+        title.textContent = heading;
+        setIntro(main, muted);
+        only(["c-help"]);
+      }
+
+      var ERRORS = {
+        unknown_client: ["Start again", "Your coding agent isn't registered with Transitions.dev any more.", "Remove the transitions-ui server and add it again."],
+        bad_redirect: ["Start again", "This sign-in link doesn't match your coding agent.", "Start the sign-in again from your agent."],
+        expired: ["Link expired", "This sign-in link has expired or was already used.", "Start the sign-in again from your coding agent."],
+      };
+      var err = q.get("error");
+      if (err || !requestId) {
+        var e = ERRORS[err] || ERRORS.expired;
+        dead(e[0], e[1], e[2]);
+        return;
+      }
+
+      function paint(state) {
+        if (done) return;
+        title.textContent = "Connect " + app;
+        if (!state.authenticated) {
+          setIntro("Sign in with your Transitions.dev account.", "Pro or Business is needed.");
+          only(["c-signin", "c-help"]);
+          return;
+        }
+        var who = state.email || "your account";
+        if (!state.pro) {
+          title.textContent = "Pro needed";
+          setIntro("Signed in as " + who + ". The MCP is part of Pro and Business.", "Upgrade, then start the sign-in again from " + app + ".");
+          only(["c-pro", "c-switch"]);
+          return;
+        }
+        setIntro("Signed in as " + who + ".", app + " gets the Builder's recipes, motion rules and your Studio.");
+        only(["c-allow", "c-switch"]);
+      }
+
+      // The sign-in modal refreshes /me when it succeeds; repaint from that.
+      var ready = false;
+      document.addEventListener("pro:me", function (e) {
+        if (ready && e.detail && e.detail.resolved) paint(e.detail);
+      });
+      function signIn() { TP.openSignIn(); }
+
+      function decide(allow) {
+        var a = el("c-allow-btn"), c = el("c-cancel-btn");
+        a.disabled = true; c.disabled = true;
+        setNote("", "");
+        fetch(TP.apiBase + "/oauth/approve", {
+          method: "POST", credentials: "include",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ request: requestId, allow: allow })
+        }).then(function (r) { return r.json().catch(function () { return {}; }); })
+          .then(function (r) {
+            if (r && r.redirect) {
+              done = true;
+              only([]);
+              if (allow) {
+                title.textContent = "Connected";
+                setIntro("You can close this tab and go back to " + app + ".", "");
+              } else {
+                title.textContent = "Cancelled";
+                setIntro(app + " was not connected.", "You can close this tab.");
+              }
+              location.href = r.redirect;
+              return;
+            }
+            if (r && r.error === "no_pro") return TP.refresh().then(paint);
+            if (r && r.error === "unauthenticated") return TP.refresh().then(paint);
+            if (r && (r.error === "expired" || r.error === "not_found")) {
+              var e = ERRORS.expired;
+              return dead(e[0], e[1], e[2]);
+            }
+            setNote("That didn't work. Try again.", "err");
+          })
+          .catch(function () { setNote("Couldn't reach Transitions.dev. Check your connection and try again.", "err"); })
+          .finally(function () { a.disabled = false; c.disabled = false; });
+      }
+
+      el("c-signin-btn").addEventListener("click", signIn);
+      el("c-allow-btn").addEventListener("click", function () { decide(true); });
+      el("c-cancel-btn").addEventListener("click", function () { decide(false); });
+      el("c-switch-btn").addEventListener("click", function () {
+        Promise.resolve(TP.logout()).then(function () { return TP.refresh(); }).then(function (s) { paint(s); signIn(); });
+      });
+
+      Promise.all([
+        fetch(TP.apiBase + "/oauth/request/" + encodeURIComponent(requestId), { credentials: "include" })
+          .then(function (r) { return r.ok ? r.json() : { error: "expired" }; })
+          .catch(function () { return { error: "offline" }; }),
+        TP.refresh()
+      ]).then(function (res) {
+        var info = res[0], state = res[1];
+        if (info.error === "offline") {
+          dead("Couldn't connect", "Couldn't reach Transitions.dev.", "Check your connection and reload this page.");
+          return;
+        }
+        if (info.error) {
+          var e = ERRORS.expired;
+          dead(e[0], e[1], e[2]);
+          return;
+        }
+        app = info.app || app;
+        ready = true;
+        paint(state);
+        if (!state.authenticated) signIn();
+      });
+    });
+  </script>
+  <script src="assets/brand-mark.js?v=4" defer></script>
+</body>
+</html>

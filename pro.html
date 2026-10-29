@@ -4674,6 +4674,8 @@
     /* Figma node 2361:84310 — hairline fades in from the left edge,
        peaks at center, fades out to the right (not a flat rule). */
     /* 36px below the plan pills: the card's 24px gap plus 12px. */
+    .pro-feature-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
+    .pro-feature-link:hover { text-decoration-color: currentColor; }
     .pro-feature-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
     /* Balanced wrapping: two-line features break at even widths instead of
        leaving a one-word orphan on the second line. */
@@ -5488,6 +5490,7 @@
               <a class="tl-menu-item nav-products-item" role="menuitem" href="/builder.html"><span class="nav-products-name">Builder</span><span class="nav-products-hint">Build components with the AI agent</span></a>
               <a class="tl-menu-item nav-products-item" role="menuitem" href="/agent.html"><span class="nav-products-name">Motion Agent</span><span class="nav-products-hint">Find and fix janky motion in your app</span></a>
               <a class="tl-menu-item nav-products-item" role="menuitem" href="/skill.html"><span class="nav-products-name">Motion Skill</span><span class="nav-products-hint">Teach your coding agent the transitions</span></a>
+              <a class="tl-menu-item nav-products-item" role="menuitem" href="/mcp.html"><span class="nav-products-name">MCP</span><span class="nav-products-hint">The Builder&#39;s agent in your coding agent</span></a>
             </div>
           </div>
           <a class="nav-pill" href="/community.html" data-nav="community">Community</a>
@@ -5620,9 +5623,10 @@
           <li><a class="mobile-menu-link mobile-menu-link--2" href="/builder.html">Builder</a></li>
           <li><a class="mobile-menu-link mobile-menu-link--3" href="/agent.html">Motion Agent</a></li>
           <li><a class="mobile-menu-link mobile-menu-link--4" href="/skill.html">Motion Skill</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--5" href="/community.html">Community</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--6" href="/detail.html?doc=introduction">Docs</a></li>
-          <li><a class="mobile-menu-link mobile-menu-link--7 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--5" href="/mcp.html">MCP</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--6" href="/community.html">Community</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--7" href="/detail.html?doc=introduction">Docs</a></li>
+          <li><a class="mobile-menu-link mobile-menu-link--8 mobile-menu-link--pro" href="/pro.html">Get Pro</a></li>
         </ul>
         <button type="button" class="mobile-menu-cta" id="mobile-signin">Sign in</button>
       </nav>
@@ -5729,12 +5733,12 @@
             </div>
           </div>
           <ul class="pro-feature-list">
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>License for solo builders and freelancers</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Solo and freelance license</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>43+ production-ready transitions ready for React, Next.js, Typescript</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Pro Transitions skill with React, Next.js, Typescript compatibility</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Free Motion Agent included<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the free Agent?" aria-describedby="tip-free-agent-2">i</button><span class="cmp-tip" id="tip-free-agent-2" role="tooltip">Unlimited scans, a score on every pull request, and 10 polish fixes a month.</span></span></span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Builder with <span data-credits-text>600</span> AI credits<span data-credits-per data-monthly="/mo" data-once=" once">/mo</span>, private drafts and publishing<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What are Builder credits?" aria-describedby="tip-builder-2">i</button><span class="cmp-tip" id="tip-builder-2" role="tooltip">About <span data-tip-sonnet>30</span> builds or edits with Sonnet (about 20 credits each), or <span data-tip-opus>6</span> with Opus (about 100).</span></span></span></li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Transitions UI in Claude Code, Codex and Cursor</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span>Builder <a class="pro-feature-link" href="/mcp.html">MCP</a> for Claude Code, Codex and Cursor</span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Every future transition, free</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Commercial license, unlimited projects</li>
           </ul>
@@ -5768,7 +5772,7 @@
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Full Motion Agent included: 200 hosted fixes/mo<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What is the full Agent?" aria-describedby="tip-full-agent">i</button><span class="cmp-tip" id="tip-full-agent" role="tooltip">200 fixes a month, polish and revamp modes, and fix pull requests from CI.</span></span></span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Polish + revamp modes, grounded in the Pro recipes</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span class="pro-feature-text">Builder with <span data-credits-text>900</span> AI credits/mo for every seat<span class="cmp-info"><button type="button" class="cmp-info-btn" aria-label="What are Builder credits?" aria-describedby="tip-builder-3">i</button><span class="cmp-tip" id="tip-builder-3" role="tooltip">Per seat: about <span data-tip-sonnet>45</span> builds or edits with Sonnet (about 20 credits each), or <span data-tip-opus>9</span> with Opus (about 100).</span></span></span></li>
-            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Transitions UI in Claude Code, Codex and Cursor</li>
+            <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span><span>Builder <a class="pro-feature-link" href="/mcp.html">MCP</a> for Claude Code, Codex and Cursor</span></li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>GitHub Action with pull-request motion gate</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Commercial license for the whole team</li>
             <li class="pro-feature"><span class="pro-feature-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5L4 7L8 3" /></svg></span>Priority support</li>
@@ -6534,6 +6538,7 @@ description: Production-ready CSS
         { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
         { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
         { group: "Pages", label: "Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
+        { group: "Pages", label: "MCP", hint: "Builder agent in your coding agent", href: "/mcp.html", ic: "spark" },
         { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
       ].concat(TRANSITION_NAMES.map(function (n) {
         var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -7097,7 +7102,7 @@ description: Production-ready CSS
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=70" defer></script>
+  <script src="assets/pro-client.js?v=71" defer></script>
 
   <!-- Plan comparison modal behavior (recipe: skill 06-modal state dance). -->
   <script>
