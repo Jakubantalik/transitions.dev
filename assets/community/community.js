@@ -388,6 +388,27 @@
 
   // Reports errors (and, in the studio, console output) to the page, and
   // follows the site's light/dark switch without a reload.
+  // Grid previews (feed, profiles, the homepage row) rest until someone
+  // reaches for them: the first second plays (so a card shows its real first
+  // state), then looping CSS and Web animations pause and timer and frame
+  // callbacks are held. Hovering, pressing, focusing or typing in the card
+  // brings it back to life; it rests again a little after the pointer leaves.
+  // Event handlers always run, so a card is interactive at once.
+  var FREEZE =
+    "(function(){var frozen=false,held=[],paused=[],ST=window.setTimeout,SI=window.setInterval,RAF=window.requestAnimationFrame,rest=0;" +
+    "window.setTimeout=function(fn,ms){var a=[].slice.call(arguments,2);if(typeof fn!=='function')return ST(fn,ms);return ST(function(){if(frozen){held.push(function(){fn.apply(null,a)});return}fn.apply(null,a)},ms)};" +
+    "window.setInterval=function(fn,ms){var a=[].slice.call(arguments,2);if(typeof fn!=='function')return SI(fn,ms);return SI(function(){if(!frozen)fn.apply(null,a)},ms)};" +
+    "window.requestAnimationFrame=function(fn){return RAF(function(t){if(frozen){held.push(function(){RAF(fn)});return}fn(t)})};" +
+    "var st=document.createElement('style');st.textContent='html.t-rest *,html.t-rest *::before,html.t-rest *::after{animation-play-state:paused!important}';document.head.appendChild(st);" +
+    "function freeze(){if(frozen)return;frozen=true;document.documentElement.classList.add('t-rest');" +
+    "try{paused=document.getAnimations().filter(function(x){return x.playState==='running'&&!(x instanceof CSSTransition)&&x.effect&&x.effect.getTiming().iterations===Infinity});paused.forEach(function(x){x.pause()})}catch(e){}}" +
+    "function thaw(){clearTimeout(rest);if(!frozen)return;frozen=false;document.documentElement.classList.remove('t-rest');" +
+    "paused.forEach(function(x){try{x.play()}catch(e){}});paused=[];var h=held;held=[];h.forEach(function(f){try{f()}catch(e){}})}" +
+    "function later(ms){clearTimeout(rest);rest=ST(freeze,ms)}" +
+    "['pointerover','pointerdown','focusin','keydown','wheel'].forEach(function(t){document.addEventListener(t,function(){thaw();later(4000)},{capture:true,passive:true})});" +
+    "document.addEventListener('pointerleave',function(){later(1200)},true);document.documentElement.addEventListener('pointerleave',function(){later(1200)});" +
+    "window.addEventListener('message',function(e){var d=e.data;if(d&&d.__tdev&&d.type==='rest'){if(d.on)later(0);else{thaw();later(4000)}}});" +
+    "later(1200)})();";
   var BRIDGE =
     "(function(){function s(m){try{m.__tdev=1;parent.postMessage(m,'*')}catch(e){}if(m.type==='ready'){setTimeout(size,60);setTimeout(size,700);setTimeout(function(){try{layout()}catch(e){}},900)}}" +
     // The content's height, for cards that size to their component; full:
@@ -479,14 +500,15 @@
 
   function scriptSafe(s) { return String(s).replace(/<\/script/gi, "<\\/script"); }
 
-  function srcdoc(c, compiled, theme) {
+  function srcdoc(c, compiled, theme, rest) {
     var head =
       '<!doctype html><html data-theme="' + (theme || "light") + '"><head><meta charset="utf-8">' +
       '<meta http-equiv="Content-Security-Policy" content="' + CSP + '">' +
       '<meta name="viewport" content="width=device-width,initial-scale=1">' +
       // The stage font, Inter, as on the site (self-hosted, see FONT_CSS).
       "<style>" + FONT_CSS + "</style>" +
-      "<style>" + STAGE_CSS + "</style><script>" + BRIDGE + "</script>";
+      "<style>" + STAGE_CSS + "</style><script>" + BRIDGE + "</script>" +
+      (rest ? "<script>" + FREEZE + "</script>" : "");
     if (c.mode === "react") {
       compiled = gateImports(compiled);
       return head +
@@ -576,7 +598,7 @@
         setTimeout(function () { if (opts.onMessage) opts.onMessage({ type: "error", message: msg }); }, 0);
         host.setAttribute("data-state", "error");
       } else {
-        f.srcdoc = srcdoc(c, res.code, siteTheme());
+        f.srcdoc = srcdoc(c, res.code, siteTheme(), !!opts.rest);
       }
       host.appendChild(f);
       if (old) {
@@ -617,7 +639,7 @@
       var c = lazy.get(en.target);
       if (!c) return;
       if (en.isIntersecting) {
-        if (!en.target.querySelector("iframe.cm-frame")) mountPreview(en.target, c, { onMessage: sizer(en.target, c) });
+        if (!en.target.querySelector("iframe.cm-frame")) mountPreview(en.target, c, { onMessage: sizer(en.target, c), rest: true });
       } else {
         unmountPreview(en.target);
       }
@@ -626,7 +648,7 @@
 
   function lazyPreview(host, c) {
     lazy.set(host, c);
-    if (io) io.observe(host); else mountPreview(host, c, { onMessage: sizer(host, c) });
+    if (io) io.observe(host); else mountPreview(host, c, { onMessage: sizer(host, c), rest: true });
   }
 
   // Adaptive cards: the library card's look, with a stage as tall as its
