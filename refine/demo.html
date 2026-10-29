@@ -3206,8 +3206,14 @@
       if(TX_MOCK) return { ok:true, auto:true, llmAvailable:true, cliInstalled:true, agentCmd:true, pollerActive:false, jobs:0 };
       const r = await fetch(RELAY_URL+"/health");
       if(!r.ok) throw new Error("relay /health failed ("+r.status+")");
-      return r.json(); // { ok, auto, llmAvailable, pollerActive, agentCmd, cliInstalled, jobs }
+      const health = await r.json(); // { ok, auto, llmAvailable, pollerActive, agentCmd, cliInstalled, jobs, agentTimeoutMs }
+      if(health.agentTimeoutMs>0) relayAgentTimeoutMs = health.agentTimeoutMs;
+      return health;
     }
+    // How long the panel waits on a job: its own budget, or longer when the
+    // relay gives its agent more time (REFINE_AGENT_TIMEOUT_MS).
+    let relayAgentTimeoutMs = 0;
+    const jobDeadline = (ms) => Date.now() + Math.max(ms, relayAgentTimeoutMs ? relayAgentTimeoutMs + 30000 : 0);
     // Ask the relay to stop the in-chat `/refine live` loop (the credit-burning
     // poller). No-op for a wired REFINE_AGENT_CMD (it never polls /jobs/next).
     async function relayStopLive(){
@@ -5496,7 +5502,7 @@
             group:active.groupLabel||null,phase:active.phase||null,component:active.component||null,
             changes});
           let settled=false;
-          for(let i=0;i<240&&!settled;i++){
+          for(const until=jobDeadline(120000);!settled&&Date.now()<until;){
             await new Promise(r=>setTimeout(r,500));
             const job=await relayGetJob(id);
             if(job.status==="done"){settled=true;
@@ -5585,7 +5591,7 @@
         let provisionalShown=false; // applied the relay's instant in-process grouping
         try{
           const{id}=await relayCreateJob({kind:"scan",url:location.href,raw});
-          for(let i=0;i<520;i++){
+          for(let i=0,until=jobDeadline(152000);Date.now()<until;i++){
             if(scanTokenRef.current!==token)return; // superseded / unmounted
             // Ramp: poll fast (120ms) for the first ~2.4s so a quick scan returns
             // almost immediately, then settle to 300ms to keep the request rate low.

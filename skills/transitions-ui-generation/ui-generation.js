@@ -264,6 +264,12 @@ function buildOverlay(el, M, opts) {
   G.scanLine = svg("path", { d: `M-18 0H${f2(w + 18)}`, class: "t-gen-guide t-gen-guide--scan" }, G.scan);
   svg("circle", { cx: 0, cy: 0, r: 2.3, class: "t-gen-head" }, G.scan); svg("circle", { cx: w, cy: 0, r: 2.3, class: "t-gen-head" }, G.scan);
 
+  // the points each stroke head visits, read once here so a frame only writes (no forced layout)
+  for (const s of [...G.outline, ...G.parts.flatMap((pt) => pt.strokes)]) {
+    const gap = s.gap / (s.k || 1); s.samples = [];
+    for (let i = 0; i * gap <= s.L; i++) s.samples.push(s.el.getPointAtLength(i * gap));
+  }
+
   // generation texts
   if (opts.mode === "skeleton-texts") buildTexts(G, el, M, opts);
   return G;
@@ -317,7 +323,7 @@ function drawStroke(s, q, t) {
   }
   if (s.head) {
     const live = (s.live = q > 0 && q < 1); s.head.setAttribute("opacity", live ? 1 : 0);
-    if (live) { const gap = s.gap / (s.k || 1); s.pt = s.el.getPointAtLength(Math.floor((s.L * q) / gap) * gap); s.head.setAttribute("cx", f2(s.pt.x)); s.head.setAttribute("cy", f2(s.pt.y)); }
+    if (live) { const gap = s.gap / (s.k || 1); s.pt = s.samples[Math.floor((s.L * q) / gap)]; s.head.setAttribute("cx", f2(s.pt.x)); s.head.setAttribute("cy", f2(s.pt.y)); }
   }
   if (s.caps) { s.caps[0].setAttribute("opacity", on ? 1 : 0); s.caps[1].setAttribute("opacity", q >= 1 ? 1 : 0); }
 }

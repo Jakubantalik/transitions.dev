@@ -143,3 +143,35 @@ test("a fix that would make a hover snap is put back, and the rest is kept", asy
   assert.deepEqual(report.reverted, ["btn.css"]);
   assert.deepEqual(report.applied, ["card.css"]);
 });
+
+import worker from "../worker/worker.mjs";
+
+test("an answer the model garbled is a failed run, not counted against the quota", async () => {
+  const ev = (o) => `event: ${o.type}\ndata: ${JSON.stringify(o)}\n\n`;
+  const model = http.createServer((req, res) => {
+    req.resume();
+    req.on("end", () => {
+      res.writeHead(200, { "content-type": "text/event-stream" });
+      res.end([
+        ev({ type: "message_start", message: {} }),
+        ev({ type: "content_block_delta", index: 0, delta: { type: "text_delta", text: '{"summary": "half an answer", "edits": [' } }),
+        ev({ type: "message_delta", delta: { stop_reason: "end_turn" } }),
+      ].join(""));
+    });
+  });
+  await new Promise((r) => model.listen(0, r));
+  const kv = (init = {}) => { const m = new Map(Object.entries(init)); return { m, get: async (k, o) => (m.has(k) ? (o?.type === "json" ? JSON.parse(m.get(k)) : m.get(k)) : null), put: async (k, v) => { m.set(k, v); } }; };
+  const env = { LICENSES: kv({ lic: JSON.stringify({ plan: "free", active: true }) }), USAGE: kv(), ANTHROPIC_BASE_URL: `http://127.0.0.1:${model.address().port}` };
+  const request = new Request("http://worker/v1/agent/fix", {
+    method: "POST",
+    headers: { authorization: "Bearer lic" },
+    body: JSON.stringify({ mode: "polish", files: [{ path: "a.css", content: ".a { transition: all 1s; }\n" }], findings: [{ path: "a.css", rule: "transition-all" }] }),
+  });
+  const error = console.error;
+  console.error = () => {};
+  let res;
+  try { res = await worker.fetch(request, env, {}); } finally { console.error = error; model.close(); }
+  assert.equal(res.status, 502);
+  assert.equal((await res.json()).error, "model_unreadable");
+  assert.equal(env.USAGE.m.size, 0, "nothing was counted");
+});
