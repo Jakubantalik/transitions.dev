@@ -4186,6 +4186,7 @@
     }
   </style>
   <link rel="stylesheet" href="assets/nav-products.css?v=15" />
+  <link rel="stylesheet" href="assets/cmdk-search.css?v=2" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -5152,105 +5153,12 @@
         "Input clear with dissolve", "Skeleton loader and reveal", "Texts reveal", "Tabs sliding",
         "Shimmer text", "Tooltip open/close", "3D tilt", "Dropdown menu morph", "Accordion"
       ];
-      var CMD_ITEMS = [
-        { group: "Pages", label: "Home", hint: "Transitions.dev", href: "/", ic: "grid" },
-        { group: "Pages", label: "Library", hint: "Every transition, filterable", href: "/library.html", ic: "grid" },
-        { group: "Pages", label: "Community", hint: "Components built by the community", href: "/community.html", ic: "grid" },
-        { group: "Pages", label: "Builder", hint: "Build a component with the AI agent", href: "/builder.html", ic: "wand" },
-        { group: "Pages", label: "Projects", hint: "Your saved and published components", href: "/projects.html", ic: "grid" },
-        { group: "Pages", label: "Studio", hint: "Build or remix a component", href: "/studio.html", ic: "wand" },
-        { group: "Pages", label: "Docs", hint: "Introduction, installation, accessibility", href: "/detail.html?doc=introduction", ic: "spark" },
-        { group: "Pages", label: "Motion Skill", hint: "Agent skill", href: "/skill.html", ic: "spark" },
-        { group: "Pages", label: "MCP", hint: "Builder agent in your coding agent", href: "/mcp.html", ic: "spark" },
-        { group: "Pages", label: "Transitions Pro", hint: "Pricing", href: "/pro.html", ic: "pro" }
-      ].concat(TRANSITION_NAMES.map(function (n) {
-        var slug = n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-        return { group: "Transitions", label: n, hint: "Transition", href: "detail.html?t=" + slug, ic: "motion" };
-      })).concat([
-        { group: "Actions", label: "Get Pro access", href: "mailto:jakubja@gmail.com?subject=Transitions%20Pro%20access", ic: "pro" },
-        { group: "Actions", label: "View on GitHub", href: "https://github.com/Jakubantalik/transitions.dev", ext: true, ic: "github" },
-        { group: "Actions", label: "Contact support", href: "mailto:jakubja@gmail.com", ic: "mail" },
-        { group: "Actions", label: "Toggle dark mode", action: "theme", ic: "moon" }
-      ]);
-      var CMD_IC = {
-        grid: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.33333 8L7.76149 11.2141C7.84894 11.2578 7.89267 11.2797 7.93853 11.2883C7.97916 11.2959 8.02084 11.2959 8.06147 11.2883C8.10733 11.2797 8.15106 11.2578 8.23851 11.2141L14.6667 8M1.33333 11.3333L7.76149 14.5474C7.84894 14.5911 7.89267 14.613 7.93853 14.6216C7.97916 14.6292 8.02084 14.6292 8.06147 14.6216C8.10733 14.613 8.15106 14.5911 8.23851 14.5474L14.6667 11.3333M7.76149 7.88074L2.76442 5.38221C2.30381 5.1519 2.07351 5.03675 1.9996 4.88093C1.93529 4.74533 1.93529 4.58801 1.9996 4.4524C2.07351 4.29658 2.30381 4.18143 2.76442 3.95112L7.76149 1.45259C7.84894 1.40886 7.89267 1.387 7.93853 1.37839C7.97916 1.37077 8.02084 1.37077 8.06147 1.37839C8.10733 1.387 8.15106 1.40886 8.23851 1.45259L13.2356 3.95112C13.6962 4.18143 13.9265 4.29658 14.0004 4.4524C14.0647 4.58801 14.0647 4.74533 14.0004 4.88093C13.9265 5.03675 13.6962 5.1519 13.2356 5.38221L8.23851 7.88074C8.15106 7.92447 8.10733 7.94633 8.06147 7.95494C8.02084 7.96256 7.97916 7.96256 7.93853 7.95494C7.89267 7.94633 7.84894 7.92447 7.76149 7.88074Z"/></svg>',
-        spark: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.196 8.86766L11.5622 8.77611C12.4742 8.54812 12.9302 8.43412 13.0364 8.25291C13.128 8.09674 13.128 7.90326 13.0364 7.74709C12.9302 7.56588 12.4742 7.45188 11.5622 7.22389L11.196 7.13233C10.5188 6.96302 10.1801 6.87837 9.90461 6.70206C9.66088 6.5461 9.4539 6.33912 9.29794 6.09539C9.12163 5.81985 9.03697 5.48123 8.86766 4.80399L8.77611 4.43779C8.54812 3.52581 8.43412 3.06982 8.25291 2.96357C8.09674 2.87199 7.90326 2.87199 7.74709 2.96357C7.56588 3.06982 7.45188 3.52581 7.22389 4.43779L7.13233 4.80399C6.96302 5.48123 6.87837 5.81985 6.70206 6.09539C6.5461 6.33912 6.33912 6.5461 6.09539 6.70206C5.81985 6.87837 5.48123 6.96303 4.80399 7.13233L4.43779 7.22389C3.52581 7.45188 3.06982 7.56588 2.96357 7.74709C2.87199 7.90326 2.87199 8.09674 2.96357 8.25291C3.06982 8.43412 3.52581 8.54812 4.43779 8.77611L4.80399 8.86766C5.48123 9.03697 5.81985 9.12163 6.09539 9.29794C6.33912 9.4539 6.5461 9.66088 6.70206 9.90461C6.87837 10.1801 6.96303 10.5188 7.13233 11.196L7.22389 11.5622C7.45188 12.4742 7.56588 12.9302 7.74709 13.0364C7.90326 13.128 8.09674 13.128 8.25291 13.0364C8.43412 12.9302 8.54812 12.4742 8.77611 11.5622L8.86766 11.196C9.03697 10.5188 9.12163 10.1801 9.29794 9.90461C9.4539 9.66088 9.66088 9.4539 9.90461 9.29794C10.1801 9.12163 10.5188 9.03697 11.196 8.86766Z"/></svg>',
-        wand: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.66667 9.33333L6.66667 7.33333M10.0069 2.33333V1.33333M12.6331 3.37377L13.3402 2.66667M12.6331 8.66667L13.3402 9.37377M7.34023 3.37377L6.63313 2.66667M13.6736 6H14.6736M4.08758 13.9124L10.2458 7.75425C10.5098 7.49024 10.6418 7.35823 10.6912 7.20601C10.7347 7.07212 10.7347 6.92788 10.6912 6.79399C10.6418 6.64177 10.5098 6.50976 10.2458 6.24575L9.75425 5.75425C9.49024 5.49024 9.35823 5.35823 9.20601 5.30877C9.07212 5.26527 8.92788 5.26527 8.79399 5.30877C8.64177 5.35823 8.50976 5.49024 8.24575 5.75425L2.08758 11.9124C1.82357 12.1764 1.69156 12.3084 1.6421 12.4607C1.5986 12.5946 1.5986 12.7388 1.6421 12.8727C1.69156 13.0249 1.82357 13.1569 2.08758 13.4209L2.57909 13.9124C2.8431 14.1764 2.9751 14.3084 3.12732 14.3579C3.26122 14.4014 3.40545 14.4014 3.53934 14.3579C3.69156 14.3084 3.82357 14.1764 4.08758 13.9124Z"/></svg>',
-        pro: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.52176 2.3022C7.67541 1.99091 7.75224 1.83526 7.85654 1.78553C7.94729 1.74227 8.05271 1.74227 8.14346 1.78553C8.24776 1.83526 8.32459 1.99091 8.47824 2.3022L9.93603 5.25551C9.98139 5.34742 10.0041 5.39337 10.0372 5.42904C10.0666 5.46063 10.1018 5.48623 10.1409 5.50441C10.185 5.52494 10.2357 5.53235 10.3371 5.54717L13.598 6.0238C13.9414 6.07399 14.1131 6.09908 14.1925 6.18295C14.2616 6.25592 14.2942 6.35619 14.281 6.45584C14.2659 6.57038 14.1416 6.69145 13.893 6.93358L11.5343 9.23094C11.4608 9.30255 11.424 9.33836 11.4003 9.38097C11.3793 9.41869 11.3658 9.46013 11.3606 9.503C11.3547 9.55141 11.3634 9.60199 11.3808 9.70315L11.9373 12.9481C11.996 13.2903 12.0253 13.4614 11.9702 13.563C11.9222 13.6513 11.8369 13.7133 11.738 13.7316C11.6244 13.7527 11.4707 13.6719 11.1634 13.5103L8.24824 11.9772C8.15741 11.9294 8.112 11.9056 8.06415 11.8962C8.02179 11.8879 7.97821 11.8879 7.93585 11.8962C7.888 11.9056 7.84259 11.9294 7.75176 11.9772L4.8366 13.5103C4.52927 13.6719 4.3756 13.7527 4.26197 13.7316C4.16311 13.7133 4.0778 13.6513 4.02981 13.563C3.97466 13.4614 4.00401 13.2903 4.06271 12.9481L4.61925 9.70315C4.6366 9.60199 4.64527 9.55141 4.6394 9.503C4.6342 9.46013 4.62073 9.41869 4.59973 9.38097C4.576 9.33836 4.53924 9.30255 4.46571 9.23094L2.10703 6.93358C1.85843 6.69145 1.73413 6.57038 1.71901 6.45584C1.70585 6.35619 1.73836 6.25592 1.80749 6.18295C1.88695 6.09908 2.05864 6.07399 2.40202 6.0238L5.66286 5.54717C5.76427 5.53235 5.81498 5.52494 5.85913 5.50441C5.89823 5.48623 5.93343 5.46063 5.96278 5.42904C5.99593 5.39337 6.01861 5.34742 6.06397 5.25551L7.52176 2.3022Z"/></svg>',
-        github: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>',
-        mail: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.33333 4.66667L6.77661 8.47696C7.21739 8.78551 7.43778 8.93978 7.67751 8.99954C7.88926 9.05232 8.11074 9.05232 8.32249 8.99954C8.56222 8.93978 8.78261 8.78551 9.22339 8.47696L14.6667 4.66667M4.53333 13.3333H11.4667C12.5868 13.3333 13.1468 13.3333 13.5746 13.1153C13.951 12.9236 14.2569 12.6176 14.4487 12.2413C14.6667 11.8135 14.6667 11.2534 14.6667 10.1333V5.86667C14.6667 4.74656 14.6667 4.18651 14.4487 3.75869C14.2569 3.38236 13.951 3.0764 13.5746 2.88465C13.1468 2.66667 12.5868 2.66667 11.4667 2.66667H4.53333C3.41323 2.66667 2.85318 2.66667 2.42535 2.88465C2.04903 3.0764 1.74307 3.38236 1.55132 3.75869C1.33333 4.18651 1.33333 4.74656 1.33333 5.86667V10.1333C1.33333 11.2534 1.33333 11.8135 1.55132 12.2413C1.74307 12.6176 2.04903 12.9236 2.42535 13.1153C2.85318 13.3333 3.41323 13.3333 4.53333 13.3333Z"/></svg>',
-        moon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13 9.5A5.5 5.5 0 016.5 3a5.5 5.5 0 106.5 6.5z"/></svg>',
-        motion: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.6666 4.85183L7.99998 7.99998M7.99998 7.99998L2.33331 4.85183M7.99998 7.99998L8 14.3333M14 10.7057V5.2943C14 5.06587 14 4.95165 13.9663 4.84979C13.9366 4.75967 13.8879 4.67695 13.8236 4.60716C13.7509 4.52827 13.651 4.4728 13.4514 4.36186L8.51802 1.62112C8.32895 1.51608 8.23442 1.46356 8.1343 1.44297C8.0457 1.42475 7.95431 1.42475 7.8657 1.44297C7.76559 1.46356 7.67105 1.51608 7.48198 1.62112L2.54865 4.36186C2.34896 4.4728 2.24912 4.52827 2.17642 4.60716C2.11211 4.67695 2.06343 4.75967 2.03366 4.84979C2 4.95166 2 5.06587 2 5.2943V10.7057C2 10.9341 2 11.0483 2.03366 11.1502C2.06343 11.2403 2.11211 11.3231 2.17642 11.3928C2.24912 11.4717 2.34897 11.5272 2.54865 11.6381L7.48198 14.3789C7.67105 14.4839 7.76559 14.5364 7.8657 14.557C7.95431 14.5752 8.0457 14.5752 8.1343 14.557C8.23442 14.5364 8.32895 14.4839 8.51802 14.3789L13.4514 11.6381C13.651 11.5272 13.7509 11.4717 13.8236 11.3928C13.8879 11.3231 13.9366 11.2403 13.9663 11.1502C14 11.0483 14 10.9341 14 10.7057Z"/></svg>'
-      };
-      var overlay = document.createElement("div");
-      overlay.className = "cmdk-overlay";
-      overlay.setAttribute("data-open", "false");
-      overlay.setAttribute("role", "dialog");
-      overlay.setAttribute("aria-modal", "true");
-      overlay.setAttribute("aria-label", "Search");
-      overlay.innerHTML =
-        '<div class="cmdk-panel">' +
-          '<div class="cmdk-search">' +
-            '<svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="M14 14l-3.5-3.5"/></svg>' +
-            '<input class="cmdk-input" type="text" placeholder="Search transitions, pages and actions…" aria-label="Search" autocomplete="off" spellcheck="false" />' +
-            '<span class="cmdk-esc">esc</span>' +
-          '</div>' +
-          '<div class="cmdk-list" role="listbox"></div>' +
-        '</div>';
-      document.body.appendChild(overlay);
-      var cmdInput = overlay.querySelector(".cmdk-input");
-      var cmdList = overlay.querySelector(".cmdk-list");
-      var cmdActive = 0, cmdFiltered = [];
-      function cmdRender() {
-        var q = (cmdInput.value || "").trim().toLowerCase();
-        cmdFiltered = window.tdevCmdk ? tdevCmdk.search(CMD_ITEMS, q) : CMD_ITEMS.filter(function (it) { return !q || (it.label + " " + (it.hint || "") + " " + it.group).toLowerCase().indexOf(q) >= 0; });
-        if (cmdActive >= cmdFiltered.length) cmdActive = 0;
-        if (!cmdFiltered.length) { cmdList.innerHTML = '<div class="cmdk-empty">No results</div>'; return; }
-        var s = "", lastGroup = null;
-        cmdFiltered.forEach(function (it, i) {
-          if (it.group !== lastGroup) { s += '<div class="cmdk-group-label">' + it.group + '</div>'; lastGroup = it.group; }
-          s += '<button type="button" class="cmdk-item" role="option" data-i="' + i + '" data-active="' + (i === cmdActive ? "true" : "false") + '">' +
-            '<span class="cmdk-item-ic">' + (CMD_IC[it.ic] || "") + '</span>' +
-            '<span class="cmdk-item-label">' + it.label + '</span>' +
-            (it.hint ? '<span class="cmdk-item-hint">' + it.hint + '</span>' : '') + '</button>';
-        });
-        cmdList.innerHTML = s;
-      }
-      function cmdSetActive(i) {
-        cmdActive = (i + cmdFiltered.length) % cmdFiltered.length;
-        cmdList.querySelectorAll(".cmdk-item").forEach(function (el) {
-          var on = parseInt(el.getAttribute("data-i"), 10) === cmdActive;
-          el.setAttribute("data-active", on ? "true" : "false");
-          if (on) el.scrollIntoView({ block: "nearest" });
-        });
-      }
-      function cmdRun(it) {
-        if (!it) return;
-        cmdClose();
-        if (it.action === "theme") { var cur = currentPref(); var isDark = cur === "dark" || (cur === "system" && systemDark()); setThemePref(isDark ? "light" : "dark"); return; }
-        if (it.ext) { window.open(it.href, "_blank", "noopener"); return; }
-        window.location.href = it.href;
-      }
-      function cmdOpen() { overlay.setAttribute("data-open", "true"); cmdInput.value = ""; cmdActive = 0; cmdRender(); setTimeout(function () { cmdInput.focus(); }, 20); }
-      function cmdClose() { overlay.setAttribute("data-open", "false"); if (searchBtn) searchBtn.blur(); }
-      if (searchBtn) searchBtn.addEventListener("click", cmdOpen);
-      overlay.addEventListener("click", function (e) { if (e.target === overlay) cmdClose(); });
-      cmdInput.addEventListener("input", function () { cmdActive = 0; cmdRender(); });
-      cmdInput.addEventListener("keydown", function (e) {
-        if (e.key === "ArrowDown") { e.preventDefault(); cmdSetActive(cmdActive + 1); }
-        else if (e.key === "ArrowUp") { e.preventDefault(); cmdSetActive(cmdActive - 1); }
-        else if (e.key === "Enter") { e.preventDefault(); cmdRun(cmdFiltered[cmdActive]); }
-        else if (e.key === "Escape") { e.preventDefault(); cmdClose(); }
-      });
-      cmdList.addEventListener("click", function (e) { var item = e.target.closest(".cmdk-item"); if (item) cmdRun(cmdFiltered[parseInt(item.getAttribute("data-i"), 10)]); });
-      cmdList.addEventListener("mousemove", function (e) { var item = e.target.closest(".cmdk-item"); if (item) cmdSetActive(parseInt(item.getAttribute("data-i"), 10)); });
-      document.addEventListener("keydown", function (e) {
-        if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) { e.preventDefault(); if (overlay.getAttribute("data-open") === "true") cmdClose(); else cmdOpen(); }
-      });
+      /* The palette itself: assets/cmdk-search.js. */
+      window.tdevToggleTheme = function () { var cur = currentPref(); var isDark = cur === "dark" || (cur === "system" && systemDark()); setThemePref(isDark ? "light" : "dark"); };
     })();
   </script>
   <script src="assets/pro-client.js?v=71" defer></script>
-  <script src="assets/cmdk-search.js?v=1" defer></script>
+  <script src="assets/cmdk-search.js?v=2" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
   <script src="assets/nav-products.js?v=17" defer></script>
 </body>

@@ -1,0 +1,108 @@
+/* The nav's Cmd+K search (assets/cmdk-search.js): the remix picker's look
+   (community.css .cm-lib) on every page. The panel, field and rows come from
+   each page's own .cmdk-* rules. */
+.cmdk-lib .cmdk-panel { max-width: 640px; }
+.cmdk-lib .cmdk-search { border-bottom-color: rgba(0, 0, 0, 0.08); }
+html[data-theme="dark"] .cmdk-lib .cmdk-search { border-bottom-color: rgba(255, 255, 255, 0.08); }
+.cmdk-lib-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  box-shadow: inset 0 -1px 0 transparent;
+  transition: box-shadow 150ms ease;
+}
+.cmdk-lib-chips::-webkit-scrollbar { display: none; }
+.cmdk-lib.is-scrolled .cmdk-lib-chips { box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08); }
+html[data-theme="dark"] .cmdk-lib.is-scrolled .cmdk-lib-chips { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08); }
+.cmdk-lib-chip {
+  appearance: none;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 48px;
+  background: #fff;
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.04),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.08),
+    inset 0 0 0 1px rgba(196, 196, 196, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(38, 38, 38, 0.8);
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cmdk-lib-chip[data-active="true"] { background: #f1f1f1; color: #080808; }
+html[data-theme="dark"] .cmdk-lib-chip {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(251, 251, 251, 0.8);
+  box-shadow:
+    0 1px 1px 0 rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+html[data-theme="dark"] .cmdk-lib-chip[data-active="true"] { background: rgba(255, 255, 255, 0.14); color: #fbfbfb; }
+@media (hover: hover) and (pointer: fine) {
+  .cmdk-lib-chip:hover { background: #f7f7f7; }
+  .cmdk-lib-chip[data-active="true"]:hover { background: #f1f1f1; }
+  html[data-theme="dark"] .cmdk-lib-chip:hover { background: rgba(255, 255, 255, 0.08); }
+  html[data-theme="dark"] .cmdk-lib-chip[data-active="true"]:hover { background: rgba(255, 255, 255, 0.14); }
+}
+.cmdk-lib-chip:focus-visible { outline: 2px solid var(--text-muted, #6c6c6c); outline-offset: 2px; }
+.cmdk-lib .cmdk-lib-list { max-height: min(60vh, 520px); padding: 0 8px 10px; }
+.cmdk-lib .cmdk-group-label { text-transform: none; letter-spacing: 0; font-size: 12px; }
+.cmdk-lib a.cmdk-item { color: var(--text); text-decoration: none; }
+.cmdk-lib-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.cmdk-lib .cmdk-lib-item {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-height: 0;
+  padding: 6px 6px 8px;
+}
+.cmdk-lib-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 296 / 260;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--stage-bg, #f9f9f9);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+html[data-theme="dark"] .cmdk-lib-thumb { background: var(--stage-bg, #161616); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.cmdk-lib-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cmdk-lib-thumb img.is-dark { display: none; }
+html[data-theme="dark"] .cmdk-lib-thumb img.is-light { display: none; }
+html[data-theme="dark"] .cmdk-lib-thumb img.is-dark { display: block; }
+.cmdk-lib-thumb .card-pro-badge { top: 8px; right: 8px; z-index: 2; }
+.cmdk-lib-thumb iframe.cm-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: 0 0;
+  transition: opacity 200ms ease;
+}
+.cmdk-lib-thumb iframe.cm-frame.is-loaded { opacity: 1; }
+.cmdk-lib-name { padding: 0 2px; font-size: 13px; line-height: 16px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmdk-lib .cmdk-lib-item:hover, .cmdk-lib .cmdk-lib-item[data-active="true"] { background: rgba(0, 0, 0, 0.01); }
+html[data-theme="dark"] .cmdk-lib .cmdk-lib-item:hover, html[data-theme="dark"] .cmdk-lib .cmdk-lib-item[data-active="true"] { background: rgba(255, 255, 255, 0.01); }
+@media (max-width: 639px) {
+  .cmdk-lib-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
