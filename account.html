@@ -5757,7 +5757,7 @@
         '<div class="cmdk-panel">' +
           '<div class="cmdk-search">' +
             '<svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="M14 14l-3.5-3.5"/></svg>' +
-            '<input class="cmdk-input" type="text" placeholder="Search pages and actions…" aria-label="Search" autocomplete="off" spellcheck="false" />' +
+            '<input class="cmdk-input" type="text" placeholder="Search transitions, pages and actions…" aria-label="Search" autocomplete="off" spellcheck="false" />' +
             '<span class="cmdk-esc">esc</span>' +
           '</div>' +
           '<div class="cmdk-list" role="listbox"></div>' +
@@ -5770,7 +5770,7 @@
 
       function cmdRender() {
         var q = (cmdInput.value || "").trim().toLowerCase();
-        cmdFiltered = CMD_ITEMS.filter(function (it) {
+        cmdFiltered = window.tdevCmdk ? tdevCmdk.search(CMD_ITEMS, q) : CMD_ITEMS.filter(function (it) {
           return !q || (it.label + " " + (it.hint || "") + " " + it.group).toLowerCase().indexOf(q) >= 0;
         });
         if (cmdActive >= cmdFiltered.length) cmdActive = 0;
@@ -6095,6 +6095,7 @@
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
   <script src="assets/pro-client.js?v=71" defer></script>
+  <script src="assets/cmdk-search.js?v=1" defer></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var TP = window.TransitionsPro;

@@ -358,14 +358,14 @@
       if (!text && !images.length) {
         if (!remix) return;
         // HTML/CSS: open the card as it is. React: the agent converts it.
-        if (buildMode() !== "react") { location.href = "studio.html?lib=" + encodeURIComponent(remix.slug); return; }
+        if (buildMode() !== "react") { location.href = "studio.html?lib=" + encodeURIComponent(remix.lib || remix.slug); return; }
       }
       send.setAttribute("aria-busy", "true");
       C.withAccount(function () {
         var m = buildMode();
         try {
           sessionStorage.setItem("tdev:studio:ai", JSON.stringify({
-            prompt: text, mode: m, images: images, lib: remix ? remix.slug : null, t: Date.now(),
+            prompt: text, mode: m, images: images, lib: remix ? remix.lib || remix.slug : null, t: Date.now(),
           }));
         } catch (err) {
           send.removeAttribute("aria-busy");

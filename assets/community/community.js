@@ -1034,8 +1034,9 @@
     if (!libP) libP = fetch("assets/community/library.json?v=5").then(function (r) { return r.json(); }).catch(function () { libP = null; return []; });
     return libP;
   }
-  // The Pro transitions, by name only: free accounts see them in the picker,
-  // locked ("Available with Pro & Business"); their code is paid content.
+  // The Pro transitions, by name only: their code is paid content, fetched
+  // for Pro members when picked (studio.js startFromPro). Free accounts see
+  // them in the picker, locked ("Available with Pro & Business").
   var proP = null;
   function proLibrary() {
     if (!proP) proP = fetch("assets/community/library-pro.json?v=2").then(function (r) { return r.json(); }).catch(function () { proP = null; return []; });
@@ -1047,9 +1048,10 @@
     return "assets/community/thumbs/" + encodeURIComponent(slug) + (dark ? "-dark" : "") + ".jpg?v=" + (pro ? 3 : 2);
   }
   var CLOSE_SVG = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
-  // The homepage's categories (Pro transitions are not remixable; free
-  // accounts see them locked).
-  var LIB_GROUPS = [["essential", "Essential"], ["ai", "AI Agents"], ["effects", "Effects"], ["texts", "Texts"]];
+  // The homepage's categories.
+  var LIB_GROUPS = [["essential", "Essential"], ["ai", "AI Agents"], ["effects", "Effects"], ["texts", "Texts"], ["images", "Images"]];
+  // Transitions built around an image, on top of their library category.
+  var LIB_IMAGES = { "image-open-tilt": 1, "image-gen-placeholder": 1, "smoky-dissolve": 1, "drag-drop-physics": 1 };
   var picker = null;
   function buildPicker() {
     var overlay = document.createElement("div");
@@ -1082,14 +1084,16 @@
     var shown = [], active = 0, done = null, last = null, cat = "all";
 
     function paint() {
-      Promise.all([library(), hasProPlan() ? [] : proLibrary()]).then(function (res) {
+      Promise.all([library(), proLibrary()]).then(function (res) {
+        var member = hasProPlan();
         // Pro items go where the library page shows them: right after the
         // card before them there ("after"), else at the end.
         var items = res[0].slice();
         res[1].forEach(function (t) {
           var at = -1;
           for (var k = 0; k < items.length; k++) if (items[k].slug === t.after) { at = k; break; }
-          var row = Object.assign({ locked: true }, t);
+          // Members pick it by its Pro id ("pro:<slug>", see startFromLibrary).
+          var row = Object.assign({ pro: true, locked: !member, lib: "pro:" + t.slug }, t);
           if (at < 0) items.push(row); else items.splice(at + 1, 0, row);
         });
         var q = input.value.trim().toLowerCase();
@@ -1102,7 +1106,7 @@
         LIB_GROUPS.forEach(function (g) { names[g[0]] = g[1]; });
         groups.forEach(function (g) {
           var rows = items.filter(function (t) {
-            var cats = String(t.cat || "essential").split(/\s+/);
+            var cats = String(t.cat || "essential").split(/\s+/).concat(LIB_IMAGES[t.slug] ? ["images"] : []);
             var inGroup = g[0] === "all" || cats.indexOf(g[0]) >= 0;
             var words = t.title + " " + (t.desc || "") + " " + cats.map(function (c) { return names[c] || ""; }).join(" ");
             return inGroup && (!q || words.toLowerCase().indexOf(q) >= 0);
@@ -1115,9 +1119,10 @@
             html += '<button type="button" class="cmdk-item cm-lib-item' + (t.locked ? " is-locked" : "") + '" role="option" data-i="' + i + '" data-active="' + (i === active) + '"' +
               (t.locked ? ' aria-disabled="true" aria-describedby="cm-lib-pro-note"' : "") + ">" +
               '<span class="cm-lib-thumb">' +
-                (t.locked ? '<span class="card-pro-badge" aria-hidden="true">Pro</span><span class="t-tt cm-lib-tip" aria-hidden="true">Available with Pro &amp; Business</span>' : "") +
-                '<img class="is-light" src="' + thumbUrl(t.slug, false, t.locked) + '" alt="" width="296" height="260" loading="lazy" decoding="async" />' +
-                '<img class="is-dark" src="' + thumbUrl(t.slug, true, t.locked) + '" alt="" width="296" height="260" loading="lazy" decoding="async" />' +
+                (t.pro ? '<span class="card-pro-badge" aria-hidden="true">Pro</span>' : "") +
+                (t.locked ? '<span class="t-tt cm-lib-tip" aria-hidden="true">Available with Pro &amp; Business</span>' : "") +
+                '<img class="is-light" src="' + thumbUrl(t.slug, false, t.pro) + '" alt="" width="296" height="260" loading="lazy" decoding="async" />' +
+                '<img class="is-dark" src="' + thumbUrl(t.slug, true, t.pro) + '" alt="" width="296" height="260" loading="lazy" decoding="async" />' +
               "</span>" +
               '<span class="cm-lib-name">' + esc(t.title) + "</span>" +
             "</button>";

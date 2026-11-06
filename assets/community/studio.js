@@ -901,12 +901,39 @@
     var title = (md.match(/^# (.+)$/m) || [])[1] || "Pro transition";
     return { title: title.replace(/\s*\(Pro\)\s*$/i, ""), html: html, css: css.join("\n\n"), js: code };
   }
+  // A recipe's HTML is a usage example: it leaves the photos (/your-image.jpg)
+  // and the host's button to your app. A remix is a finished card, like the
+  // one on the Library page, so those parts are filled in here.
+  var PRO_PHOTOS = ["photo-1618005182384-a83a8bd57fbe", "photo-1470229722913-7c0e2dbbafd3", "photo-1635776062127-d379bfcba9f8"].map(function (id) {
+    return "https://images.unsplash.com/" + id + "?auto=format&fit=crop&q=80&w=800";
+  });
+  var PRO_BUTTON = "height:36px;padding:0 14px;border:0;border-radius:40px;background:var(--stage-accent);color:var(--stage-on-accent);" +
+    "font:inherit;font-size:13px;line-height:20px;font-weight:500;box-shadow:0 1px 2px 0 rgba(0,0,0,.2);cursor:pointer;transition:transform 150ms cubic-bezier(.22,1,.36,1)";
+  var PRO_DRESS = {
+    "confetti-burst": ".t-confetti-stage{position:relative;width:320px;height:260px;display:grid;place-items:center}\n.your-button{" + PRO_BUTTON + "}\n.your-button:active{transform:scale(.97)}",
+    "card-stack-hover": PRO_PHOTOS.map(function (u, i) {
+      return ".t-stack-card:nth-child(" + (i + 1) + "){background:url(\"" + u + "\") center/cover}";
+    }).join("\n"),
+    // The driver places its canvas against the stage, and the stage clips it.
+    "smoky-dissolve": ".t-smoky-stage{position:relative;width:320px;height:260px;display:grid;place-items:center}",
+  };
+  function dressPro(id, t) {
+    // Tilt and Smoky read the photo's pixels from a canvas, which a
+    // cross-origin image only allows when it is loaded with CORS.
+    t.html = t.html.replace(/\bsrc="(?:\/your-image\.jpg|photo\.jpg|finished\.jpg)"/g, 'crossorigin="anonymous" src="' + PRO_PHOTOS[0] + '"');
+    // The stand-in for the app's generateImage() has to hand back a picture.
+    t.js = t.js.replace(/(function generateImage\(\) \{ return new Promise\(function \(done\) \{ setTimeout\()done(, 1500\))/,
+      '$1function () { done("' + PRO_PHOTOS[0] + '"); }$2');
+    if (PRO_DRESS[id]) t.css += "\n\n/* The card's demo content */\n" + PRO_DRESS[id];
+    return t;
+  }
   function startFromPro(id) {
     var TP = window.TransitionsPro;
     if (!TP || !TP.fetchContent) { C.toast("That transition is not available to remix.", "err"); return Promise.resolve(false); }
     return TP.fetchContent(id, "css").then(function (md) {
       var t = recipeComponent(md);
       if (!t.html) throw new Error("no html");
+      dressPro(id, t);
       apply({ mode: "html", title: t.title + " remix", html: t.html, css: t.css, js: t.js }, { asNew: true, remix: { kind: "library", id: id, title: t.title } });
       history.replaceState(null, "", "studio.html");
       markDirty();
@@ -951,7 +978,7 @@
       (S.dirty && !isStarter()
         ? C.confirm({ title: "Replace the current component?", body: "Unsaved changes to it will be lost.", ok: "Replace" })
         : Promise.resolve(true)
-      ).then(function (ok) { if (ok) startFromLibrary(t.slug); });
+      ).then(function (ok) { if (ok) startFromLibrary(t.lib || t.slug); });
     });
   }
 
