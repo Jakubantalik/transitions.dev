@@ -85,6 +85,10 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
 .t-tilt-glare {
   position: absolute;
   inset: 0;
+  /* Clip the glare to the card's rounded corners. Safari skips
+     the parent's overflow clip for composited children under
+     preserve-3d, painting square corners on hover otherwise. */
+  border-radius: inherit;
   pointer-events: none;
   opacity: 0;
   mix-blend-mode: screen;
