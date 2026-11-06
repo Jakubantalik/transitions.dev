@@ -34,6 +34,11 @@ import { resolveAgentCmd } from "./agent-resolve.mjs";
 import { groupDeterministic } from "./group-deterministic.mjs";
 
 const PORT = Number(process.env.REFINE_RELAY_PORT) || 7331;
+// Bind to loopback by default. The relay is a local dev daemon that spawns the
+// user's coding agent, so it should not be reachable from other machines on the
+// network. Set REFINE_RELAY_HOST to override (e.g. "0.0.0.0") if you knowingly
+// need to reach it from another device.
+const HOST = process.env.REFINE_RELAY_HOST || "127.0.0.1";
 const AUTO = process.env.REFINE_AUTO !== "0";
 // Own package version, surfaced on /health so you can verify which relay build is
 // actually running (npx caches — a stale relay is the usual "fix didn't work").
@@ -997,7 +1002,7 @@ const server = createServer(async (req, res) => {
   return send(res, 404, { error: "Not found" });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log(`refine relay listening on http://localhost:${PORT}`);
   console.log(`  timeline injectable at  http://localhost:${PORT}/inject.js`);
   const ai = agentInfo();
