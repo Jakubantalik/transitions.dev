@@ -153,6 +153,10 @@
       --p8-slide-ease: var(--ease-smooth-out);
       --p8-fade-ease: var(--ease-smooth-out);
 
+      /* Number transitions (P9, P26, P35): distances are in em and blurs
+         follow a curve on the font size, so they fit any number size.
+         max(0.067em, 0.171em - 2.1px) is 0.8px at 12px, 2px at 24px
+         and 10.2px at 72px. */
       /* P9 - Number pop-in. Changed digits swap on a 3D drum: the old one
          leaves upward, the new one rises just after it, pulls back, and
          springs into place past 100%. --p9-dur covers anticipation + spring. */
@@ -160,10 +164,10 @@
       --p9-exit-dur: 155ms;
       --p9-enter-delay: 50ms;
       --p9-stagger: 40ms;
-      --p9-distance: 12.5px;
-      --p9-exit-distance: 12.5px;
-      --p9-blur: 2px;
-      --p9-lift: 3px;
+      --p9-distance: 0.52em;
+      --p9-exit-distance: 0.52em;
+      --p9-blur: max(0.067em, 0.171em - 2.1px);
+      --p9-lift: 0.125em;
       --p9-start-scale: 0.7;
       --p9-peak: 1.03;
 
@@ -452,26 +456,26 @@
       --p26-from:            100;
       --p26-target:          178;
       --p26-spins:           0;
-      --p26-cell:            30px;
+      --p26-cell:            1.2em;
       --p26-stagger:         90ms;
       --p26-ease:            cubic-bezier(0.35, -0.02, 0.43, 1);
       --p26-side-scale:      0.7;
-      --p26-side-offset:     12px;
-      --p26-side-blur:       2px;
+      --p26-side-offset:     0.52em;
+      --p26-side-blur:       max(0.067em, 0.171em - 2.1px);
       --p26-side-opacity:    0.17;
       --p26-center-scale:    0.9;
-      --p26-center-blur:     1px;
+      --p26-center-blur:     0.042em;
       --p26-antic-dur:       100ms;
       --p26-antic-scale:     0.94;
-      --p26-antic-lift:      3px;
+      --p26-antic-lift:      0.125em;
       --p26-land-dur:        740ms;
       --p26-land-peak:       1.03;
 
       /* P35 - Number subtle change. Changed digits cross-fade in place,
          rising when the number goes up and falling when it goes down. */
       --p35-dur:             455ms;
-      --p35-distance:        3.4px;
-      --p35-blur:            1px;
+      --p35-distance:        0.14em;
+      --p35-blur:            0.042em;
       --p35-ease:            cubic-bezier(0.22, 1, 0.36, 1);
 
       /* P27 — Toggle on/off (Figma 2316:72706): 44×22 track,
@@ -1455,9 +1459,9 @@
        Keyframes are baked from a spring, so timing lives in --p9-dur. */
     .p9-number {
       font-family: var(--font-sans);
-      font-weight: 500;
-      font-size: 24px;
-      line-height: 24px;
+      font-weight: 600;
+      font-size: 35px;
+      line-height: 40px;
       color: var(--text);
       letter-spacing: 0;
       font-variant-numeric: tabular-nums;
@@ -3160,8 +3164,9 @@
       display: inline-flex;
       align-items: center;
       height: var(--p26-cell);
+      font-family: var(--font-sans);
       font-weight: 600;
-      font-size: 23px;
+      font-size: 35px;
       line-height: var(--p26-cell);
       color: var(--text);
       font-variant-numeric: tabular-nums;
@@ -3190,9 +3195,9 @@
        --p35-dir is 1 when the number went up and -1 when it went down. */
     .p35-number {
       font-family: var(--font-sans);
-      font-weight: 500;
-      font-size: 24px;
-      line-height: 24px;
+      font-weight: 600;
+      font-size: 35px;
+      line-height: 40px;
       color: var(--text);
       font-variant-numeric: tabular-nums;
       display: inline-flex;
@@ -4557,10 +4562,10 @@
         <div class="cp-row"><span class="cp-label">Exit time (ms)</span><input type="number" data-var="--p9-exit-dur" data-unit="ms" min="0" max="1000" step="5" value="155"></div>
         <div class="cp-row"><span class="cp-label">Enter delay (ms)</span><input type="number" data-var="--p9-enter-delay" data-unit="ms" min="0" max="500" step="5" value="50"></div>
         <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p9-stagger" data-unit="ms" min="0" max="300" step="5" value="40"></div>
-        <div class="cp-row"><span class="cp-label">Distance (px)</span><input type="number" data-var="--p9-distance" data-unit="px" min="0" max="60" step="0.1" value="12.5"></div>
-        <div class="cp-row"><span class="cp-label">Exit distance (px)</span><input type="number" data-var="--p9-exit-distance" data-unit="px" min="0" max="60" step="0.1" value="12.5"></div>
-        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p9-blur" data-unit="px" min="0" max="16" step="0.1" value="2"></div>
-        <div class="cp-row"><span class="cp-label">Pull back (px)</span><input type="number" data-var="--p9-lift" data-unit="px" min="0" max="20" step="0.1" value="3"></div>
+        <div class="cp-row"><span class="cp-label">Distance (em)</span><input type="number" data-var="--p9-distance" data-unit="em" min="0" max="2" step="0.01" value="0.52"></div>
+        <div class="cp-row"><span class="cp-label">Exit distance (em)</span><input type="number" data-var="--p9-exit-distance" data-unit="em" min="0" max="2" step="0.01" value="0.52"></div>
+        <div class="cp-row"><span class="cp-label">Blur (curve)</span><input type="text" data-var="--p9-blur" data-unit="" value="max(0.067em, 0.171em - 2.1px)"></div>
+        <div class="cp-row"><span class="cp-label">Pull back (em)</span><input type="number" data-var="--p9-lift" data-unit="em" min="0" max="1" step="0.005" value="0.125"></div>
         <div class="cp-row"><span class="cp-label">Start scale</span><input type="number" data-var="--p9-start-scale" data-unit="" min="0.3" max="1" step="0.01" value="0.7"></div>
         <div class="cp-row"><span class="cp-label">Bounce peak</span><input type="number" data-var="--p9-peak" data-unit="" min="1" max="1.3" step="0.005" value="1.03"></div>
       </section>
@@ -4960,19 +4965,19 @@
         <div class="cp-row"><span class="cp-label">From</span><input type="number" data-var="--p26-from" data-unit="" min="0" max="10000000" step="1" value="100"></div>
         <div class="cp-row"><span class="cp-label">Target</span><input type="number" data-var="--p26-target" data-unit="" min="0" max="10000000" step="1" value="178"></div>
         <div class="cp-row"><span class="cp-label">Extra turns</span><input type="number" data-var="--p26-spins" data-unit="" min="0" max="8" step="1" value="0"></div>
-        <div class="cp-row"><span class="cp-label">Cell (px)</span><input type="number" data-var="--p26-cell" data-unit="px" min="16" max="60" step="1" value="30"></div>
+        <div class="cp-row"><span class="cp-label">Cell (em)</span><input type="number" data-var="--p26-cell" data-unit="em" min="0.8" max="3" step="0.05" value="1.2"></div>
         <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p26-stagger" data-unit="ms" min="0" max="500" step="5" value="90"></div>
         <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p26-ease"></select></div>
         <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p26-ease" spellcheck="false" aria-label="Ease value"></div>
         <div class="cp-row"><span class="cp-label">Side scale</span><input type="number" data-var="--p26-side-scale" data-unit="" min="0.3" max="1" step="0.01" value="0.7"></div>
-        <div class="cp-row"><span class="cp-label">Side offset (px)</span><input type="number" data-var="--p26-side-offset" data-unit="px" min="0" max="40" step="0.5" value="12"></div>
-        <div class="cp-row"><span class="cp-label">Side blur (px)</span><input type="number" data-var="--p26-side-blur" data-unit="px" min="0" max="16" step="0.1" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Side offset (em)</span><input type="number" data-var="--p26-side-offset" data-unit="em" min="0" max="2" step="0.01" value="0.52"></div>
+        <div class="cp-row"><span class="cp-label">Side blur (curve)</span><input type="text" data-var="--p26-side-blur" data-unit="" value="max(0.067em, 0.171em - 2.1px)"></div>
         <div class="cp-row"><span class="cp-label">Side opacity</span><input type="number" data-var="--p26-side-opacity" data-unit="" min="0" max="1" step="0.01" value="0.17"></div>
         <div class="cp-row"><span class="cp-label">Middle scale</span><input type="number" data-var="--p26-center-scale" data-unit="" min="0.5" max="1.1" step="0.01" value="0.9"></div>
-        <div class="cp-row"><span class="cp-label">Middle blur (px)</span><input type="number" data-var="--p26-center-blur" data-unit="px" min="0" max="8" step="0.1" value="1"></div>
+        <div class="cp-row"><span class="cp-label">Middle blur (em)</span><input type="number" data-var="--p26-center-blur" data-unit="em" min="0" max="0.5" step="0.002" value="0.042"></div>
         <div class="cp-row"><span class="cp-label">Anticipation (ms)</span><input type="number" data-var="--p26-antic-dur" data-unit="ms" min="0" max="400" step="5" value="100"></div>
         <div class="cp-row"><span class="cp-label">Anticipation scale</span><input type="number" data-var="--p26-antic-scale" data-unit="" min="0.5" max="1" step="0.01" value="0.94"></div>
-        <div class="cp-row"><span class="cp-label">Pull back (px)</span><input type="number" data-var="--p26-antic-lift" data-unit="px" min="0" max="20" step="0.1" value="3"></div>
+        <div class="cp-row"><span class="cp-label">Pull back (em)</span><input type="number" data-var="--p26-antic-lift" data-unit="em" min="0" max="1" step="0.005" value="0.125"></div>
         <div class="cp-row"><span class="cp-label">Spring (ms)</span><input type="number" data-var="--p26-land-dur" data-unit="ms" min="100" max="1500" step="10" value="740"></div>
         <div class="cp-row"><span class="cp-label">Bounce peak</span><input type="number" data-var="--p26-land-peak" data-unit="" min="1" max="1.3" step="0.005" value="1.03"></div>
       </section>
@@ -4983,8 +4988,8 @@
           <button type="button" class="cp-export">Export</button>
         </header>
         <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p35-dur" data-unit="ms" min="50" max="1500" step="5" value="455"></div>
-        <div class="cp-row"><span class="cp-label">Distance (px)</span><input type="number" data-var="--p35-distance" data-unit="px" min="0" max="20" step="0.1" value="3.4"></div>
-        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p35-blur" data-unit="px" min="0" max="8" step="0.1" value="1"></div>
+        <div class="cp-row"><span class="cp-label">Distance (em)</span><input type="number" data-var="--p35-distance" data-unit="em" min="0" max="1" step="0.005" value="0.14"></div>
+        <div class="cp-row"><span class="cp-label">Blur (em)</span><input type="number" data-var="--p35-blur" data-unit="em" min="0" max="0.5" step="0.002" value="0.042"></div>
         <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p35-ease"></select></div>
         <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p35-ease" spellcheck="false" aria-label="Ease value"></div>
       </section>
@@ -5978,6 +5983,16 @@
           getComputedStyle(document.documentElement).getPropertyValue(name));
         return isNaN(v) ? fallback : v;
       }
+      // Length tokens are in em (and blur is a max() curve), so they are
+      // measured in px on the drum itself, at its own font size.
+      function p26ReadLen(el, name, fallbackEm) {
+        var probe = document.createElement("span");
+        probe.style.cssText = "position:absolute;visibility:hidden;width:var(" + name + ")";
+        el.appendChild(probe);
+        var px = probe.getBoundingClientRect().width;
+        probe.remove();
+        return px || fallbackEm * (parseFloat(getComputedStyle(el).fontSize) || 24);
+      }
       // cubic-bezier(...) string to a progress function. Falls back to linear.
       function p26Curve(name, fallback) {
         var raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
@@ -6116,16 +6131,16 @@
         var anticDur = readMs("--p26-antic-dur", 100);
         var landDur = readMs("--p26-land-dur", 740);
         var anticScale = p26ReadNum("--p26-antic-scale", 0.94);
-        var anticLift = p26ReadNum("--p26-antic-lift", 3);
+        var anticLift = p26ReadLen(el, "--p26-antic-lift", 0.125);
         var landPeak = p26ReadNum("--p26-land-peak", 1.03);
         var centerScale = p26ReadNum("--p26-center-scale", 0.9);
         var ease = p26Curve("--p26-ease", "cubic-bezier(0.35, -0.02, 0.43, 1)");
         var o = {
-          offset: p26ReadNum("--p26-side-offset", 12),
+          offset: p26ReadLen(el, "--p26-side-offset", 0.52),
           sideScale: p26ReadNum("--p26-side-scale", 0.7),
-          sideBlur: p26ReadNum("--p26-side-blur", 2),
+          sideBlur: p26ReadLen(el, "--p26-side-blur", 0.083),
           sideOpacity: p26ReadNum("--p26-side-opacity", 0.17),
-          centerBlur: p26ReadNum("--p26-center-blur", 1)
+          centerBlur: p26ReadLen(el, "--p26-center-blur", 0.042)
         };
         var reduce = window.matchMedia &&
           window.matchMedia("(prefers-reduced-motion: reduce)").matches;

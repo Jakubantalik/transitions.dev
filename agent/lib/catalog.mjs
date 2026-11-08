@@ -125,6 +125,14 @@ export const BACKDROP_WORDS = new Set(["backdrop", "overlay", "scrim", "dim", "s
 
 const MS_VAR = (v) => (v && /ms$/.test(v) ? parseFloat(v) : v && /s$/.test(v) ? parseFloat(v) * 1000 : null);
 const NUM = (v) => (v != null && !Number.isNaN(parseFloat(v)) ? parseFloat(v) : null);
+// Lengths in px; em/rem count as 16px, the same way css.mjs reads them in a
+// project, so an em recipe default compares like for like. A curve such as
+// max(...) has no single value and is skipped.
+const LEN = (v) => {
+  const m = v != null && String(v).trim().match(/^(-?\d*\.?\d+)(px|em|rem)?$/);
+  if (!m) return null;
+  return m[2] === "em" || m[2] === "rem" ? parseFloat(m[1]) * 16 : parseFloat(m[1]);
+};
 
 export const RECIPES = R.map((r) => {
   const data = DATA.recipes[r.slug];
@@ -137,8 +145,8 @@ export const RECIPES = R.map((r) => {
     closeEase: v("closeEase") || v("ease") || null,
     preScale: NUM(v("preScale")),
     closeScale: NUM(v("closeScale")) ?? NUM(v("preScale")),
-    distance: NUM(v("distance")),
-    blur: NUM(v("blur")),
+    distance: LEN(v("distance")),
+    blur: LEN(v("blur")),
     delay: MS_VAR(v("delay")),
     stagger: MS_VAR(v("stagger")),
   } : null;

@@ -34,8 +34,8 @@ Replay:
     data-same: they stay still and only the changed digits swap
     (1,299 to 1,305: "1," stays, "305" swaps).
 
-Sizes: the tokens are tuned for a 24px number. Scale --digit-distance,
---digit-exit-distance, --digit-blur and --digit-lift with your font size.
+Sizes: distances are in em and --digit-blur is a curve on the font
+size, so the motion fits any number size with no changes.
 
 ## Tunable variables
 
@@ -45,10 +45,10 @@ Sizes: the tokens are tuned for a 24px number. Scale --digit-distance,
 | `--digit-exit-dur` | `155ms` | sourced from `--p9-exit-dur` |
 | `--digit-enter-delay` | `50ms` | sourced from `--p9-enter-delay` |
 | `--digit-stagger` | `40ms` | sourced from `--p9-stagger` |
-| `--digit-distance` | `12.5px` | sourced from `--p9-distance` |
-| `--digit-exit-distance` | `12.5px` | sourced from `--p9-exit-distance` |
-| `--digit-blur` | `2px` | sourced from `--p9-blur` |
-| `--digit-lift` | `3px` | sourced from `--p9-lift` |
+| `--digit-distance` | `0.52em` | sourced from `--p9-distance` |
+| `--digit-exit-distance` | `0.52em` | sourced from `--p9-exit-distance` |
+| `--digit-blur` | `max(0.067em, 0.171em - 2.1px)` | sourced from `--p9-blur` |
+| `--digit-lift` | `0.125em` | sourced from `--p9-lift` |
 | `--digit-start-scale` | `0.7` | sourced from `--p9-start-scale` |
 | `--digit-peak` | `1.03` | sourced from `--p9-peak` |
 
@@ -60,10 +60,10 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
   --digit-exit-dur: 155ms;
   --digit-enter-delay: 50ms;
   --digit-stagger: 40ms;
-  --digit-distance: 12.5px;
-  --digit-exit-distance: 12.5px;
-  --digit-blur: 2px;
-  --digit-lift: 3px;
+  --digit-distance: 0.52em;
+  --digit-exit-distance: 0.52em;
+  --digit-blur: max(0.067em, 0.171em - 2.1px);
+  --digit-lift: 0.125em;
   --digit-start-scale: 0.7;
   --digit-peak: 1.03;
 }

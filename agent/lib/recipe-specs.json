@@ -147,10 +147,10 @@
         "--digit-exit-dur": "155ms",
         "--digit-enter-delay": "50ms",
         "--digit-stagger": "40ms",
-        "--digit-distance": "12.5px",
-        "--digit-exit-distance": "12.5px",
-        "--digit-blur": "2px",
-        "--digit-lift": "3px",
+        "--digit-distance": "0.52em",
+        "--digit-exit-distance": "0.52em",
+        "--digit-blur": "max(0.067em, 0.171em - 2.1px)",
+        "--digit-lift": "0.125em",
         "--digit-start-scale": "0.7",
         "--digit-peak": "1.03"
       }
@@ -508,16 +508,16 @@
         "--reel-step-dur": "130ms",
         "--reel-stagger": "90ms",
         "--reel-ease": "cubic-bezier(0.35, -0.02, 0.43, 1)",
-        "--reel-cell": "30px",
+        "--reel-cell": "1.2em",
         "--reel-side-scale": "0.7",
-        "--reel-side-offset": "12px",
-        "--reel-side-blur": "2px",
+        "--reel-side-offset": "0.52em",
+        "--reel-side-blur": "max(0.067em, 0.171em - 2.1px)",
         "--reel-side-opacity": "0.17",
         "--reel-center-scale": "0.9",
-        "--reel-center-blur": "1px",
+        "--reel-center-blur": "0.042em",
         "--reel-antic-dur": "100ms",
         "--reel-antic-scale": "0.94",
-        "--reel-antic-lift": "3px",
+        "--reel-antic-lift": "0.125em",
         "--reel-land-dur": "740ms",
         "--reel-land-peak": "1.03"
       }
@@ -654,8 +654,8 @@
       "vars": {
         "---": "---",
         "--subtle-dur": "455ms",
-        "--subtle-distance": "3.4px",
-        "--subtle-blur": "1px",
+        "--subtle-distance": "0.14em",
+        "--subtle-blur": "0.042em",
         "--subtle-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
       }
     }
