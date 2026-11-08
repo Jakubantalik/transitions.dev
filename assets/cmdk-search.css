@@ -102,6 +102,46 @@ html[data-theme="dark"] .cmdk-lib-thumb img.is-dark { display: block; }
   transition: opacity 200ms ease;
 }
 .cmdk-lib-thumb iframe.cm-frame.is-loaded { opacity: 1; }
+/* Community cards: Skeleton reveal. The placeholder pulses until the preview
+   is fitted, then both cross-fade with a 2px cross-blur (400ms, ease-in-out). */
+.cmdk-skel {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 400ms ease-in-out, filter 400ms ease-in-out;
+}
+.cmdk-skel-stage,
+.cmdk-skel-line {
+  display: block;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  animation: cmdk-skel-pulse 1000ms ease-in-out infinite;
+}
+.cmdk-skel-stage { width: 46%; height: 30%; }
+.cmdk-skel-line { width: 56%; height: 10px; margin: 3px 0; border-radius: 4px; }
+html[data-theme="dark"] .cmdk-skel-stage,
+html[data-theme="dark"] .cmdk-skel-line { background: rgba(255, 255, 255, 0.06); }
+@keyframes cmdk-skel-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.cmdk-lib-live iframe.cm-frame,
+.cmdk-lib-live iframe.cm-frame.is-loaded {
+  opacity: 0;
+  filter: blur(2px);
+  transition: opacity 400ms ease-in-out, filter 400ms ease-in-out;
+}
+.cmdk-lib-live.is-revealed .cmdk-skel { opacity: 0; filter: blur(2px); }
+.cmdk-lib-live.is-revealed .cmdk-skel-stage { animation: none; }
+.cmdk-lib-live.is-revealed iframe.cm-frame.is-loaded { opacity: 1; filter: blur(0); }
+.cmdk-lib-skel { display: flex; width: 100%; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .cmdk-skel, .cmdk-lib-live iframe.cm-frame { transition: none !important; }
+  .cmdk-skel-stage, .cmdk-skel-line { animation: none !important; }
+}
 .cmdk-lib-name { padding: 0 2px; font-size: 13px; line-height: 16px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cmdk-lib .cmdk-lib-item:hover, .cmdk-lib .cmdk-lib-item[data-active="true"] { background: rgba(0, 0, 0, 0.01); }
 html[data-theme="dark"] .cmdk-lib .cmdk-lib-item:hover, html[data-theme="dark"] .cmdk-lib .cmdk-lib-item[data-active="true"] { background: rgba(255, 255, 255, 0.01); }
