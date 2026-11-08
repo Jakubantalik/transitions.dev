@@ -261,7 +261,12 @@
     if (best >= 0) setActive(best, true);
   }
 
+  // Community previews mount only near the visible part of the list and
+  // unmount far from it, so the tab never runs every component at once.
+  var liveIO = null, moreIO = null;
   function unmountHosts() {
+    if (liveIO) { liveIO.disconnect(); liveIO = null; }
+    if (moreIO) { moreIO.disconnect(); moreIO = null; }
     if (window.Community) hosts.forEach(function (h) { Community.unmountPreview(h); });
     hosts = [];
   }
@@ -312,12 +317,99 @@
     if (wantsCommunity) {
       // One request per pause in typing; the first view of the category at once.
       timer = setTimeout(function () { paintCommunity(id, q); }, q ? 220 : 0);
-      if (cat === "community") list.querySelector(".cmdk-lib-community").innerHTML = '<div class="cmdk-empty">Loading…</div>';
+      if (cat === "community") list.querySelector(".cmdk-lib-community").innerHTML = '<div class="cmdk-lib-grid">' + skeletonCards(12) + "</div>";
     }
   }
 
+  // Skeleton loader (the library's Skeleton reveal): a card keeps its final
+  // size from the start, its placeholder pulses, and the preview cross-fades
+  // in with a soft blur once it is laid out and fitted, so nothing jumps.
+  var SKEL = '<span class="cmdk-skel" aria-hidden="true"><span class="cmdk-skel-stage"></span></span>';
+  function skeletonCards(n) {
+    var out = "";
+    for (var i = 0; i < n; i++) {
+      out += '<div class="cmdk-lib-item cmdk-lib-skel" aria-hidden="true"><span class="cmdk-lib-thumb">' + SKEL +
+        '</span><span class="cmdk-lib-name"><span class="cmdk-skel-line"></span></span></div>';
+    }
+    return out;
+  }
+
+  function communityCard(c) {
+    var href = "/studio.html?id=" + encodeURIComponent(c.id);
+    return '<a class="cmdk-item cmdk-lib-item" role="option" href="' + esc(href) + '" data-i="' + register({ href: href }) + '">' +
+      '<span class="cmdk-lib-thumb cmdk-lib-live">' + SKEL + '</span><span class="cmdk-lib-name">' + esc(c.title) + "</span></a>";
+  }
+
+  // Previews are sandboxed frames that rest until opened: no pointer events
+  // here, so a click goes to the link. Revealed after the first fit.
+  function mountLive(C, host) {
+    var revealed = false;
+    var reveal = function () {
+      if (revealed) return;
+      revealed = true;
+      requestAnimationFrame(function () { host.classList.add("is-revealed"); });
+    };
+    C.mountPreview(host, host.__cmdkItem, { rest: true, onMessage: function (m) {
+      if (m.type === "size") { fit(host, m.w, m.h, m.full); reveal(); }
+      else if (m.type === "ready" || m.type === "error") setTimeout(reveal, 400);
+    } });
+  }
+
+  function addCards(C, grid, items) {
+    var tmp = document.createElement("div");
+    tmp.innerHTML = items.map(communityCard).join("");
+    var cards = Array.prototype.slice.call(tmp.children);
+    if (!liveIO && "IntersectionObserver" in window) {
+      liveIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          var h = en.target;
+          if (en.isIntersecting) {
+            if (!h.querySelector("iframe.cm-frame")) mountLive(C, h);
+          } else if (h.querySelector("iframe.cm-frame")) {
+            // Out of view: back to the placeholder, without animating.
+            C.unmountPreview(h);
+            h.classList.remove("is-revealed");
+          }
+        });
+      }, { root: list, rootMargin: "300px 0px" });
+    }
+    cards.forEach(function (card, i) {
+      grid.appendChild(card);
+      var host = card.querySelector(".cmdk-lib-live");
+      host.__cmdkItem = items[i];
+      hosts.push(host);
+      if (liveIO) liveIO.observe(host); else mountLive(C, host);
+    });
+  }
+
+  // The Community tab loads a page at a time: a row of skeleton cards closes
+  // the grid while more remain, and loads the next page as it nears the view.
+  function loadMore(C, id, q, grid, next) {
+    if (next == null) return;
+    grid.insertAdjacentHTML("beforeend", skeletonCards(3));
+    var skels = Array.prototype.slice.call(grid.querySelectorAll(".cmdk-lib-skel"));
+    var busy = false;
+    if (moreIO) moreIO.disconnect();
+    moreIO = new IntersectionObserver(function (entries) {
+      if (busy || !entries.some(function (en) { return en.isIntersecting; })) return;
+      busy = true;
+      C.api.feed("popular", next, q ? { q: q } : {}).then(function (r) {
+        if (id !== paintId) return;
+        skels.forEach(function (k) { k.remove(); });
+        var items = r && r.items || [];
+        addCards(C, grid, items);
+        setActive(active, false);
+        loadMore(C, id, q, grid, items.length ? r.next_offset : null);
+      }).catch(function () {
+        if (id !== paintId) return;
+        skels.forEach(function (k) { k.remove(); });
+      });
+    }, { root: list, rootMargin: "400px 0px" });
+    moreIO.observe(skels[0]);
+  }
+
   function paintCommunity(id, q) {
-    var isCat = cat === "community", limit = isCat ? 12 : 6;
+    var isCat = cat === "community";
     var nothingElse = function () { return !list.querySelector(".cmdk-item"); };
     community().then(function (C) {
       return C.api.feed("popular", 0, q ? { q: q } : {}).then(function (r) { return { C: C, r: r }; });
@@ -325,21 +417,16 @@
       if (id !== paintId) return;
       var box = list.querySelector(".cmdk-lib-community");
       if (!box) return;
-      var items = (res.r && res.r.items || []).slice(0, limit);
+      var items = res.r && res.r.items || [];
+      if (!isCat) items = items.slice(0, 6);
       if (!items.length) {
         box.innerHTML = nothingElse() ? '<div class="cmdk-empty">No results</div>' : "";
         return;
       }
-      box.innerHTML = (isCat ? "" : '<div class="cmdk-group-label">Community</div>') + '<div class="cmdk-lib-grid">' + items.map(function (c) {
-        return '<a class="cmdk-item cmdk-lib-item" role="option" href="' + esc("/studio.html?id=" + encodeURIComponent(c.id)) + '" data-i="' + register({ href: "/studio.html?id=" + encodeURIComponent(c.id) }) + '">' +
-          '<span class="cmdk-lib-thumb cmdk-lib-live"></span><span class="cmdk-lib-name">' + esc(c.title) + "</span></a>";
-      }).join("") + "</div>";
-      // Previews are sandboxed frames that rest until opened: no pointer events
-      // here, so a click goes to the link.
-      box.querySelectorAll(".cmdk-lib-live").forEach(function (host, i) {
-        hosts.push(host);
-        res.C.mountPreview(host, items[i], { rest: true, onMessage: function (m) { if (m.type === "size") fit(host, m.w, m.h, m.full); } });
-      });
+      box.innerHTML = (isCat ? "" : '<div class="cmdk-group-label">Community</div>') + '<div class="cmdk-lib-grid"></div>';
+      var grid = box.querySelector(".cmdk-lib-grid");
+      addCards(res.C, grid, items);
+      if (isCat && "IntersectionObserver" in window) loadMore(res.C, id, q, grid, res.r.next_offset);
       setActive(active, false);
     }).catch(function () {
       if (id !== paintId) return;
