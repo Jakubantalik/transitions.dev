@@ -151,14 +151,14 @@
 
   Replay: remove `.is-animating`, re-render, force a reflow, re-add it.
 
-  Sizes: the tokens are tuned for a 24px number. Scale --subtle-distance
-  and --subtle-blur with your font size.
+  Sizes: --subtle-distance and --subtle-blur are in em, so they follow
+  the font size of the number.
 */
 
 :root {
   --subtle-dur: 455ms;
-  --subtle-distance: 3.4px;
-  --subtle-blur: 1px;
+  --subtle-distance: 0.14em;
+  --subtle-blur: 0.042em;
   --subtle-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -208,8 +208,8 @@ import { useEffect, useRef, useState } from &quot;react&quot;;
 const __TRANSITION_STYLES = `
 :root {
   --subtle-dur: 455ms;
-  --subtle-distance: 3.4px;
-  --subtle-blur: 1px;
+  --subtle-distance: 0.14em;
+  --subtle-blur: 0.042em;
   --subtle-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 

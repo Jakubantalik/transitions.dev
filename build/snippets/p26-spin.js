@@ -9,22 +9,32 @@ function token(name, fallback) {
   const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
   return Number.isNaN(v) ? fallback : v;
 }
-function readTokens() {
+// Lengths are in em (blur is a max() curve on the font size), so they are
+// measured in px on the drum itself and follow whatever size the number uses.
+function length(el, name, fallbackEm) {
+  const probe = document.createElement("span");
+  probe.style.cssText = `position:absolute;visibility:hidden;width:var(${name})`;
+  el.appendChild(probe);
+  const px = probe.getBoundingClientRect().width;
+  probe.remove();
+  return px || fallbackEm * (parseFloat(getComputedStyle(el).fontSize) || 24);
+}
+function readTokens(el) {
   const css = getComputedStyle(document.documentElement);
   const m = css.getPropertyValue("--reel-ease").match(/cubic-bezier\(([^)]+)\)/);
   return {
     stepDur: token("--reel-step-dur", 130),
     stagger: token("--reel-stagger", 90),
     ease: bezier(m ? m[1].split(",").map(parseFloat) : [0.35, -0.02, 0.43, 1]),
-    offset: token("--reel-side-offset", 12),
+    offset: length(el, "--reel-side-offset", 0.52),
     sideScale: token("--reel-side-scale", 0.7),
-    sideBlur: token("--reel-side-blur", 2),
+    sideBlur: length(el, "--reel-side-blur", 0.083),
     sideOpacity: token("--reel-side-opacity", 0.17),
     centerScale: token("--reel-center-scale", 0.9),
-    centerBlur: token("--reel-center-blur", 1),
+    centerBlur: length(el, "--reel-center-blur", 0.042),
     anticDur: token("--reel-antic-dur", 100),
     anticScale: token("--reel-antic-scale", 0.94),
-    anticLift: token("--reel-antic-lift", 3),
+    anticLift: length(el, "--reel-antic-lift", 0.125),
     landDur: token("--reel-land-dur", 740),
     landPeak: token("--reel-land-peak", 1.03),
   };
@@ -140,7 +150,7 @@ function roll(el, from, to) {
     cols.forEach((c) => rest(c, c.digit));
     return () => {};
   }
-  const o = readTokens();
+  const o = readTokens(el);
   // Each column starts on its digit of the old number, aligned from the right.
   const fromDigits = String(from).padStart(cols.length, "0").slice(-cols.length);
   cols.forEach((c, i) => {

@@ -19,8 +19,8 @@ numbers on the way to their target; a digit that does not change
 stays still. The target lands while still travelling in, with a
 spring past 100%.
 
-Sizes: the tokens are tuned for a 24px number. Scale --reel-cell,
---reel-side-offset, the blurs and --reel-antic-lift with your font size.
+Sizes: lengths are in em and --reel-side-blur is a curve on the font
+size; the script measures them on the drum, so any size works.
 
 The script that drives the drums is in the React tab and the skill recipe.
 
@@ -31,16 +31,16 @@ The script that drives the drums is in the React tab and the skill recipe.
 | `--reel-step-dur` | `130ms` | sourced from `--p26-step-dur` |
 | `--reel-stagger` | `90ms` | sourced from `--p26-stagger` |
 | `--reel-ease` | `cubic-bezier(0.35, -0.02, 0.43, 1)` | sourced from `--p26-ease` |
-| `--reel-cell` | `30px` | sourced from `--p26-cell` |
+| `--reel-cell` | `1.2em` | sourced from `--p26-cell` |
 | `--reel-side-scale` | `0.7` | sourced from `--p26-side-scale` |
-| `--reel-side-offset` | `12px` | sourced from `--p26-side-offset` |
-| `--reel-side-blur` | `2px` | sourced from `--p26-side-blur` |
+| `--reel-side-offset` | `0.52em` | sourced from `--p26-side-offset` |
+| `--reel-side-blur` | `max(0.067em, 0.171em - 2.1px)` | sourced from `--p26-side-blur` |
 | `--reel-side-opacity` | `0.17` | sourced from `--p26-side-opacity` |
 | `--reel-center-scale` | `0.9` | sourced from `--p26-center-scale` |
-| `--reel-center-blur` | `1px` | sourced from `--p26-center-blur` |
+| `--reel-center-blur` | `0.042em` | sourced from `--p26-center-blur` |
 | `--reel-antic-dur` | `100ms` | sourced from `--p26-antic-dur` |
 | `--reel-antic-scale` | `0.94` | sourced from `--p26-antic-scale` |
-| `--reel-antic-lift` | `3px` | sourced from `--p26-antic-lift` |
+| `--reel-antic-lift` | `0.125em` | sourced from `--p26-antic-lift` |
 | `--reel-land-dur` | `740ms` | sourced from `--p26-land-dur` |
 | `--reel-land-peak` | `1.03` | sourced from `--p26-land-peak` |
 
@@ -51,16 +51,16 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
   --reel-step-dur: 130ms;
   --reel-stagger: 90ms;
   --reel-ease: cubic-bezier(0.35, -0.02, 0.43, 1);
-  --reel-cell: 30px;
+  --reel-cell: 1.2em;
   --reel-side-scale: 0.7;
-  --reel-side-offset: 12px;
-  --reel-side-blur: 2px;
+  --reel-side-offset: 0.52em;
+  --reel-side-blur: max(0.067em, 0.171em - 2.1px);
   --reel-side-opacity: 0.17;
   --reel-center-scale: 0.9;
-  --reel-center-blur: 1px;
+  --reel-center-blur: 0.042em;
   --reel-antic-dur: 100ms;
   --reel-antic-scale: 0.94;
-  --reel-antic-lift: 3px;
+  --reel-antic-lift: 0.125em;
   --reel-land-dur: 740ms;
   --reel-land-peak: 1.03;
 }
@@ -118,22 +118,32 @@ function token(name, fallback) {
   const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
   return Number.isNaN(v) ? fallback : v;
 }
-function readTokens() {
+// Lengths are in em (blur is a max() curve on the font size), so they are
+// measured in px on the drum itself and follow whatever size the number uses.
+function length(el, name, fallbackEm) {
+  const probe = document.createElement("span");
+  probe.style.cssText = `position:absolute;visibility:hidden;width:var(${name})`;
+  el.appendChild(probe);
+  const px = probe.getBoundingClientRect().width;
+  probe.remove();
+  return px || fallbackEm * (parseFloat(getComputedStyle(el).fontSize) || 24);
+}
+function readTokens(el) {
   const css = getComputedStyle(document.documentElement);
   const m = css.getPropertyValue("--reel-ease").match(/cubic-bezier\(([^)]+)\)/);
   return {
     stepDur: token("--reel-step-dur", 130),
     stagger: token("--reel-stagger", 90),
     ease: bezier(m ? m[1].split(",").map(parseFloat) : [0.35, -0.02, 0.43, 1]),
-    offset: token("--reel-side-offset", 12),
+    offset: length(el, "--reel-side-offset", 0.52),
     sideScale: token("--reel-side-scale", 0.7),
-    sideBlur: token("--reel-side-blur", 2),
+    sideBlur: length(el, "--reel-side-blur", 0.083),
     sideOpacity: token("--reel-side-opacity", 0.17),
     centerScale: token("--reel-center-scale", 0.9),
-    centerBlur: token("--reel-center-blur", 1),
+    centerBlur: length(el, "--reel-center-blur", 0.042),
     anticDur: token("--reel-antic-dur", 100),
     anticScale: token("--reel-antic-scale", 0.94),
-    anticLift: token("--reel-antic-lift", 3),
+    anticLift: length(el, "--reel-antic-lift", 0.125),
     landDur: token("--reel-land-dur", 740),
     landPeak: token("--reel-land-peak", 1.03),
   };
@@ -249,7 +259,7 @@ function roll(el, from, to) {
     cols.forEach((c) => rest(c, c.digit));
     return () => {};
   }
-  const o = readTokens();
+  const o = readTokens(el);
   // Each column starts on its digit of the old number, aligned from the right.
   const fromDigits = String(from).padStart(cols.length, "0").slice(-cols.length);
   cols.forEach((c, i) => {

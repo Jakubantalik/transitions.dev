@@ -44,7 +44,11 @@ test("the event stream is collected, split anywhere", async () => {
     ev({ type: "message_delta", delta: { stop_reason: "end_turn" } }),
   ].join("");
   const parts = [raw.slice(0, 7), raw.slice(7, 101), raw.slice(101, 333), raw.slice(333)];
-  assert.deepEqual(await readMessageStream(sse(parts)), { text: '{"summary": "ok", "edits": []}', stop: "end_turn" });
+  assert.deepEqual(await readMessageStream(sse(parts)), {
+    text: '{"summary": "ok", "edits": []}',
+    stop: "end_turn",
+    usage: { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
+  });
 });
 
 test("an overloaded event in the stream throws a 529", async () => {

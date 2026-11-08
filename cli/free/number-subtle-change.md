@@ -25,16 +25,16 @@ to 1 when the number went up and -1 when it went down.
 
 Replay: remove `.is-animating`, re-render, force a reflow, re-add it.
 
-Sizes: the tokens are tuned for a 24px number. Scale --subtle-distance
-and --subtle-blur with your font size.
+Sizes: --subtle-distance and --subtle-blur are in em, so they follow
+the font size of the number.
 
 ## Tunable variables
 
 | Variable | Default | Notes |
 | --- | --- | --- |
 | `--subtle-dur` | `455ms` | sourced from `--p35-dur` |
-| `--subtle-distance` | `3.4px` | sourced from `--p35-distance` |
-| `--subtle-blur` | `1px` | sourced from `--p35-blur` |
+| `--subtle-distance` | `0.14em` | sourced from `--p35-distance` |
+| `--subtle-blur` | `0.042em` | sourced from `--p35-blur` |
 | `--subtle-ease` | `cubic-bezier(0.22, 1, 0.36, 1)` | sourced from `--p35-ease` |
 
 The `:root` defaults below match the live tuning on [transitions.dev](https://transitions.dev). Drop them into your global stylesheet once — every transition in this skill reads from semantic names like these, so multiple transitions can share a single `:root` block.
@@ -42,8 +42,8 @@ The `:root` defaults below match the live tuning on [transitions.dev](https://tr
 ```css
 :root {
   --subtle-dur: 455ms;
-  --subtle-distance: 3.4px;
-  --subtle-blur: 1px;
+  --subtle-distance: 0.14em;
+  --subtle-blur: 0.042em;
   --subtle-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 ```

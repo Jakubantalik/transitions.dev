@@ -333,6 +333,10 @@
       --p8-slide-ease: var(--ease-smooth-out);
       --p8-fade-ease: var(--ease-smooth-out);
 
+      /* Number transitions (P9, P26, P35): distances are in em and blurs
+         follow a curve on the font size, so they fit any number size.
+         max(0.067em, 0.171em - 2.1px) is 0.8px at 12px, 2px at 24px
+         and 10.2px at 72px. */
       /* P9 - Number pop-in. Changed digits swap on a 3D drum: the old one
          leaves upward, the new one rises just after it, pulls back, and
          springs into place past 100%. --p9-dur covers anticipation + spring. */
@@ -340,10 +344,10 @@
       --p9-exit-dur: 155ms;
       --p9-enter-delay: 50ms;
       --p9-stagger: 40ms;
-      --p9-distance: 12.5px;
-      --p9-exit-distance: 12.5px;
-      --p9-blur: 2px;
-      --p9-lift: 3px;
+      --p9-distance: 0.52em;
+      --p9-exit-distance: 0.52em;
+      --p9-blur: max(0.067em, 0.171em - 2.1px);
+      --p9-lift: 0.125em;
       --p9-start-scale: 0.7;
       --p9-peak: 1.03;
 
@@ -582,26 +586,26 @@
       --p26-from:            100;
       --p26-target:          178;
       --p26-spins:           0;
-      --p26-cell:            30px;
+      --p26-cell:            1.2em;
       --p26-stagger:         90ms;
       --p26-ease:            cubic-bezier(0.35, -0.02, 0.43, 1);
       --p26-side-scale:      0.7;
-      --p26-side-offset:     12px;
-      --p26-side-blur:       2px;
+      --p26-side-offset:     0.52em;
+      --p26-side-blur:       max(0.067em, 0.171em - 2.1px);
       --p26-side-opacity:    0.17;
       --p26-center-scale:    0.9;
-      --p26-center-blur:     1px;
+      --p26-center-blur:     0.042em;
       --p26-antic-dur:       100ms;
       --p26-antic-scale:     0.94;
-      --p26-antic-lift:      3px;
+      --p26-antic-lift:      0.125em;
       --p26-land-dur:        740ms;
       --p26-land-peak:       1.03;
 
       /* P35 - Number subtle change. Changed digits cross-fade in place,
          rising when the number goes up and falling when it goes down. */
       --p35-dur:             455ms;
-      --p35-distance:        3.4px;
-      --p35-blur:            1px;
+      --p35-distance:        0.14em;
+      --p35-blur:            0.042em;
       --p35-ease:            cubic-bezier(0.22, 1, 0.36, 1);
 
       /* P27 — Toggle on/off. The thumb travels with a double bounce:
@@ -3260,9 +3264,9 @@
        Keyframes are baked from a spring, so timing lives in --p9-dur. */
     .p9-number {
       font-family: var(--font-sans);
-      font-weight: 500;
-      font-size: 24px;
-      line-height: 24px;
+      font-weight: 600;
+      font-size: 35px;
+      line-height: 40px;
       color: var(--text);
       letter-spacing: 0;
       font-variant-numeric: tabular-nums;
@@ -4928,8 +4932,9 @@
       display: inline-flex;
       align-items: center;
       height: var(--p26-cell);
+      font-family: var(--font-sans);
       font-weight: 600;
-      font-size: 23px;
+      font-size: 35px;
       line-height: var(--p26-cell);
       color: var(--text);
       font-variant-numeric: tabular-nums;
@@ -4958,9 +4963,9 @@
        --p35-dir is 1 when the number went up and -1 when it went down. */
     .p35-number {
       font-family: var(--font-sans);
-      font-weight: 500;
-      font-size: 24px;
-      line-height: 24px;
+      font-weight: 600;
+      font-size: 35px;
+      line-height: 40px;
       color: var(--text);
       font-variant-numeric: tabular-nums;
       display: inline-flex;
@@ -5516,7 +5521,6 @@
         --p3-blur: 4px;
         --p5-blur: 4px;
         --p6-blur: 4px;
-        --p9-blur: 3.5px;
         --p13-blur: 3.5px;
         --p14-reveal-blur: 3.5px;
         --p18-blur: 5px;
@@ -9304,22 +9308,32 @@ function token(name, fallback) {
   const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
   return Number.isNaN(v) ? fallback : v;
 }
-function readTokens() {
+// Lengths are in em (blur is a max() curve on the font size), so they are
+// measured in px on the drum itself and follow whatever size the number uses.
+function length(el, name, fallbackEm) {
+  const probe = document.createElement("span");
+  probe.style.cssText = `position:absolute;visibility:hidden;width:var(${name})`;
+  el.appendChild(probe);
+  const px = probe.getBoundingClientRect().width;
+  probe.remove();
+  return px || fallbackEm * (parseFloat(getComputedStyle(el).fontSize) || 24);
+}
+function readTokens(el) {
   const css = getComputedStyle(document.documentElement);
   const m = css.getPropertyValue("--reel-ease").match(/cubic-bezier\(([^)]+)\)/);
   return {
     stepDur: token("--reel-step-dur", 130),
     stagger: token("--reel-stagger", 90),
     ease: bezier(m ? m[1].split(",").map(parseFloat) : [0.35, -0.02, 0.43, 1]),
-    offset: token("--reel-side-offset", 12),
+    offset: length(el, "--reel-side-offset", 0.52),
     sideScale: token("--reel-side-scale", 0.7),
-    sideBlur: token("--reel-side-blur", 2),
+    sideBlur: length(el, "--reel-side-blur", 0.083),
     sideOpacity: token("--reel-side-opacity", 0.17),
     centerScale: token("--reel-center-scale", 0.9),
-    centerBlur: token("--reel-center-blur", 1),
+    centerBlur: length(el, "--reel-center-blur", 0.042),
     anticDur: token("--reel-antic-dur", 100),
     anticScale: token("--reel-antic-scale", 0.94),
-    anticLift: token("--reel-antic-lift", 3),
+    anticLift: length(el, "--reel-antic-lift", 0.125),
     landDur: token("--reel-land-dur", 740),
     landPeak: token("--reel-land-peak", 1.03),
   };
@@ -9435,7 +9449,7 @@ function roll(el, from, to) {
     cols.forEach((c) => rest(c, c.digit));
     return () => {};
   }
-  const o = readTokens();
+  const o = readTokens(el);
   // Each column starts on its digit of the old number, aligned from the right.
   const fromDigits = String(from).padStart(cols.length, "0").slice(-cols.length);
   cols.forEach((c, i) => {
@@ -10254,6 +10268,16 @@ export function Surface({ open, children }) {
           getComputedStyle(document.documentElement).getPropertyValue(name));
         return isNaN(v) ? fallback : v;
       }
+      // Length tokens are in em (and blur is a max() curve), so they are
+      // measured in px on the drum itself, at its own font size.
+      function p26ReadLen(el, name, fallbackEm) {
+        var probe = document.createElement("span");
+        probe.style.cssText = "position:absolute;visibility:hidden;width:var(" + name + ")";
+        el.appendChild(probe);
+        var px = probe.getBoundingClientRect().width;
+        probe.remove();
+        return px || fallbackEm * (parseFloat(getComputedStyle(el).fontSize) || 24);
+      }
       // cubic-bezier(...) string to a progress function. Falls back to linear.
       function p26Curve(name, fallback) {
         var raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
@@ -10392,16 +10416,16 @@ export function Surface({ open, children }) {
         var anticDur = readMs("--p26-antic-dur", 100);
         var landDur = readMs("--p26-land-dur", 740);
         var anticScale = p26ReadNum("--p26-antic-scale", 0.94);
-        var anticLift = p26ReadNum("--p26-antic-lift", 3);
+        var anticLift = p26ReadLen(el, "--p26-antic-lift", 0.125);
         var landPeak = p26ReadNum("--p26-land-peak", 1.03);
         var centerScale = p26ReadNum("--p26-center-scale", 0.9);
         var ease = p26Curve("--p26-ease", "cubic-bezier(0.35, -0.02, 0.43, 1)");
         var o = {
-          offset: p26ReadNum("--p26-side-offset", 12),
+          offset: p26ReadLen(el, "--p26-side-offset", 0.52),
           sideScale: p26ReadNum("--p26-side-scale", 0.7),
-          sideBlur: p26ReadNum("--p26-side-blur", 2),
+          sideBlur: p26ReadLen(el, "--p26-side-blur", 0.083),
           sideOpacity: p26ReadNum("--p26-side-opacity", 0.17),
-          centerBlur: p26ReadNum("--p26-center-blur", 1)
+          centerBlur: p26ReadLen(el, "--p26-center-blur", 0.042)
         };
         var reduce = window.matchMedia &&
           window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -11228,8 +11252,8 @@ export function Surface({ open, children }) {
             "      data-same: they stay still and only the changed digits swap\n" +
             "      (1,299 to 1,305: \"1,\" stays, \"305\" swaps).\n" +
             "\n" +
-            "  Sizes: the tokens are tuned for a 24px number. Scale --digit-distance,\n" +
-            "  --digit-exit-distance, --digit-blur and --digit-lift with your font size.",
+            "  Sizes: distances are in em and --digit-blur is a curve on the font\n" +
+            "  size, so the motion fits any number size with no changes.",
           vars: [
             ["--digit-dur", "--p9-dur"],
             ["--digit-exit-dur", "--p9-exit-dur"],
@@ -12471,8 +12495,8 @@ export function Surface({ open, children }) {
             "  stays still. The target lands while still travelling in, with a\n" +
             "  spring past 100%.\n" +
             "\n" +
-            "  Sizes: the tokens are tuned for a 24px number. Scale --reel-cell,\n" +
-            "  --reel-side-offset, the blurs and --reel-antic-lift with your font size.\n" +
+            "  Sizes: lengths are in em and --reel-side-blur is a curve on the font\n" +
+            "  size; the script measures them on the drum, so any size works.\n" +
             "\n" +
             "  The script that drives the drums is in the React tab and the skill recipe.",
           vars: [
@@ -12544,8 +12568,8 @@ export function Surface({ open, children }) {
             "\n" +
             "  Replay: remove `.is-animating`, re-render, force a reflow, re-add it.\n" +
             "\n" +
-            "  Sizes: the tokens are tuned for a 24px number. Scale --subtle-distance\n" +
-            "  and --subtle-blur with your font size.",
+            "  Sizes: --subtle-distance and --subtle-blur are in em, so they follow\n" +
+            "  the font size of the number.",
           vars: [
             ["--subtle-dur", "--p35-dur"],
             ["--subtle-distance", "--p35-distance"],
