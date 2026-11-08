@@ -342,16 +342,31 @@
 
   // Previews are sandboxed frames that rest until opened: no pointer events
   // here, so a click goes to the link. Revealed after the first fit.
+  // A preview measures itself twice: 60ms after it is ready, while fonts and
+  // images may still be settling, and again at 700ms with its final size.
+  // The card stays on its skeleton until that second size, so it never shows
+  // at one scale and then refits. A size seen before (scrolling back to a
+  // card) reveals on the first measure when it matches.
+  var settled = {};
   function mountLive(C, host) {
-    var revealed = false;
+    var c = host.__cmdkItem, known = settled[c.id], seen = 0, done = false, fallback = null;
     var reveal = function () {
-      if (revealed) return;
-      revealed = true;
+      if (done) return;
+      done = true;
+      clearTimeout(fallback);
       requestAnimationFrame(function () { host.classList.add("is-revealed"); });
     };
-    C.mountPreview(host, host.__cmdkItem, { rest: true, onMessage: function (m) {
-      if (m.type === "size") { fit(host, m.w, m.h, m.full); reveal(); }
-      else if (m.type === "ready" || m.type === "error") setTimeout(reveal, 400);
+    C.mountPreview(host, c, { rest: true, onMessage: function (m) {
+      if (m.type === "size") {
+        seen++;
+        fit(host, m.w, m.h, m.full);
+        if (seen >= 2) { settled[c.id] = { w: m.w, h: m.h }; reveal(); }
+        else if (known && Math.abs(known.w - m.w) < 1 && Math.abs(known.h - m.h) < 1) reveal();
+      } else if (m.type === "ready") {
+        fallback = setTimeout(reveal, 1200);
+      } else if (m.type === "error") {
+        reveal();
+      }
     } });
   }
 
