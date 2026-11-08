@@ -12,6 +12,7 @@
  *   "small-text"      a dotted line through each line of text, the characters fading in      } text-image-generation.js,
  *   "image"           a frame, a tone sketch, a halftone of its pixels, colour dots, the photo } which ships alongside
  *   "auto"            text by size and images, in one block                                  }
+ *   "transform"       one version of a UI regenerating into the next: transform(oldEl, newEl) or { variant: "transform", to }
  *
  * Modes
  *   "skeleton"        the dotted drawing and the reveal
@@ -438,6 +439,7 @@ function texts(G, p, t, D) {
 // ─── 5. run ───
 export function generate(el, options = {}) {
   if (TEXT_IMAGE.includes(options.variant)) return TIG.generate(el, toTrace(options));
+  if (options.variant === "transform") return transform(el, options.to, options);
   const opts = Object.assign({}, DEFAULTS, options);
   if (typeof el === "string") el = document.querySelector(el);
   if (!el) throw new Error("UIGeneration: no element");
@@ -476,6 +478,312 @@ export function generate(el, options = {}) {
   return run;
 }
 
+// ─── transform: one version of a UI regenerating into the next ───
+// The old version dissolves into its dotted wireframe behind a scan line, every part of it flows to where it sits in
+// the new version (boxes move and resize, text lines grow or shrink, the card outline changes size), parts that are
+// gone break up, new parts are traced in, then the new version comes in behind a second scan line.
+//   transform(oldEl, newEl, { duration: 2800 })   or   generate(oldEl, { variant: "transform", to: newEl })
+// Both versions must be laid out where they will be seen (for example stacked in one grid cell); the new one is hidden
+// until its reveal, the old one is hidden at the end (hideFrom: false keeps it).
+const TPH = { down: [0, 0.3], morph: [0.24, 0.72], up: [0.68, 1] };
+const T_DEFAULTS = { duration: 2800, delay: 0, labels: true, versions: ["V1", "V2"], hideFrom: true, morph: true, onDone: null };
+// the real morph: read the old version (dot field, probe, guides, reticle), morph, clean up
+const TPH_M = { morph: [0.24, 0.84], clean: [0.86, 1] };
+const MORPH_CURVE = [0.45, 0, 0.15, 1], MORPH_EASE = bezier(...MORPH_CURVE); // an in-out with a long, soft landing
+let MORPH_N = 0;
+// a version as shapes: its card outline, one box per box or icon, one line per line of text
+function shapesOf(M, ox, oy) {
+  const out = [];
+  for (const P of M.parts) {
+    if (P.kind === "text") for (const ln of P.lines) out.push({ kind: "line", x: ox + ln.x, x2: ox + ln.x2, y: oy + ln.y + ln.h * 0.56, name: "text" });
+    else out.push({ kind: "box", x: ox + P.x, y: oy + P.y, w: P.w, h: P.h, r: P.kind === "icon" ? Math.min(P.w, P.h) / 2 : P.r, name: P.kind === "icon" ? "icon" : P.name });
+  }
+  return out;
+}
+// pairs each new shape with the old shape of the same kind (and role) that sat most nearly in the same place
+function matchShapes(A, B, W, H) {
+  const c = (s) => (s.kind === "line" ? [(s.x + s.x2) / 2, s.y, s.x2 - s.x, 0] : [s.x + s.w / 2, s.y + s.h / 2, s.w, s.h]);
+  const cand = [];
+  A.forEach((a, i) => B.forEach((b, j) => {
+    if (a.kind !== b.kind) return;
+    const [ax, ay, aw, ah] = c(a), [bx, by, bw, bh] = c(b);
+    // like with like: a button stays a button, an icon an icon (a frame can still become a frame elsewhere)
+    const cost = Math.hypot((ax - bx) / W, (ay - by) / H) + 0.35 * (Math.abs(aw - bw) / Math.max(aw, bw, 1) + Math.abs(ah - bh) / Math.max(ah, bh, 1)) + (a.name !== b.name ? 0.45 : 0);
+    if (cost < 0.5) cand.push({ i, j, cost });
+  }));
+  cand.sort((p, q) => p.cost - q.cost);
+  const ua = new Set(), ub = new Set(), pairs = [];
+  for (const p of cand) if (!ua.has(p.i) && !ub.has(p.j)) { ua.add(p.i); ub.add(p.j); pairs.push([A[p.i], B[p.j]]); }
+  return { pairs, gone: A.filter((_, i) => !ua.has(i)), added: B.filter((_, j) => !ub.has(j)) };
+}
+const shapeD = (s) => (s.kind === "line" ? `M${f2(s.x)} ${f2(s.y)}H${f2(Math.max(s.x, s.x2))}` : rrPath(s.x, s.y, Math.max(0.5, s.w), Math.max(0.5, s.h), s.r));
+const mixShape = (a, b, q) => (a.kind === "line" ? { kind: "line", x: lerp(a.x, b.x, q), x2: lerp(a.x2, b.x2, q), y: lerp(a.y, b.y, q) } : { kind: "box", x: lerp(a.x, b.x, q), y: lerp(a.y, b.y, q), w: lerp(a.w, b.w, q), h: lerp(a.h, b.h, q), r: lerp(a.r, b.r, q) });
+const shapeBox = (s) => (s.kind === "line" ? { x: s.x, y: s.y - 6, w: s.x2 - s.x, h: 12 } : s);
+
+export function transform(fromEl, toEl, options = {}) {
+  const opts = Object.assign({}, T_DEFAULTS, options);
+  if (typeof fromEl === "string") fromEl = document.querySelector(fromEl);
+  if (typeof toEl === "string") toEl = document.querySelector(toEl);
+  if (!fromEl || !toEl) throw new Error("UIGeneration.transform: needs the old and the new element");
+  for (const e of [fromEl, toEl]) if (e.__tGen) e.__tGen.cancel();
+  const keep = (e) => ({ opacity: e.style.opacity, clipPath: e.style.clipPath, filter: e.style.filter, visibility: e.style.visibility, transition: e.style.transition });
+  const prevA = keep(fromEl), prevB = keep(toEl);
+  let resolve, raf = 0, timer = 0, layer = null, stopped = false;
+  const finished = new Promise((r) => (resolve = r)), cleanups = [];
+  const finish = () => {
+    if (stopped) return; stopped = true; cancelAnimationFrame(raf); clearTimeout(timer); if (layer) layer.remove(); cleanups.forEach((f) => f());
+    Object.assign(fromEl.style, prevA); Object.assign(toEl.style, prevB);
+    if (prevB.visibility === "hidden") toEl.style.visibility = ""; // the new version stays shown, however it waited
+    if (opts.hideFrom) fromEl.style.visibility = "hidden";
+    fromEl.__tGen = toEl.__tGen = null; if (opts.onDone) opts.onDone(toEl); resolve(toEl);
+  };
+  const run = { finished, cancel: finish, element: toEl };
+  fromEl.__tGen = toEl.__tGen = run;
+  toEl.style.visibility = "visible"; toEl.style.opacity = 0; // laid out, hidden until its reveal
+  if (reduced()) { // a crossfade
+    timer = setTimeout(() => {
+      fromEl.style.transition = toEl.style.transition = "opacity 200ms ease-out";
+      fromEl.style.opacity = 0; toEl.style.opacity = prevB.opacity || ""; timer = setTimeout(finish, 220);
+    }, opts.delay);
+    return run;
+  }
+  timer = setTimeout(() => requestAnimationFrame(() => {
+    if (stopped) return;
+    // a real morph where the browser has view transitions (morph: false keeps the dotted regeneration everywhere)
+    const morph = opts.morph !== false && typeof document.startViewTransition === "function";
+    try { (morph ? startMorph : start)(); } catch (e) { console.warn("UIGeneration.transform: could not build, swapping the versions", e); finish(); }
+  }), opts.delay);
+
+  function start() {
+    const RA = fromEl.getBoundingClientRect(), RB = toEl.getBoundingClientRect(), mo = { maxParts: 80, keys: 0 };
+    const A = measure(fromEl, mo), B = measure(toEl, mo), dx = RB.left - RA.left, dy = RB.top - RA.top;
+    const SA = shapesOf(A, 0, 0), SB = shapesOf(B, dx, dy), W = Math.max(A.w, B.w), H = Math.max(A.h, B.h);
+    const { pairs, gone, added } = matchShapes(SA, SB, W, H);
+    const D = Math.max(1200, +opts.duration || T_DEFAULTS.duration), PAD = 80, DOT = 4.8;
+    // overlay at the old version's place
+    layer = document.createElement("div"); layer.className = "t-gen t-gen--transform"; layer.setAttribute("aria-hidden", "true");
+    Object.assign(layer.style, { left: f2(RA.left + scrollX) + "px", top: f2(RA.top + scrollY) + "px", width: f2(A.w) + "px", height: f2(A.h) + "px" });
+    const root = svg("svg", { class: "t-gen-svg", width: f2(A.w), height: f2(A.h) }, layer);
+    document.body.appendChild(layer);
+    const n = Math.round(Math.random() * 1e6), defs = svg("defs", {}, root);
+    const clip = svg("clipPath", { id: "t-gen-tclip-" + n }, defs), clipRect = svg("rect", { x: -PAD - 40, y: -PAD, width: Math.max(A.w, dx + B.w) + 2 * PAD + 80, height: 0 }, clip);
+    const wire = svg("g", { class: "t-gen-wireframe", "clip-path": `url(#t-gen-tclip-${n})` }, root);
+    const dotted = (parent = wire) => { const e = svg("path", { class: "t-gen-wire", style: `stroke-dasharray:0 ${DOT}` }, parent); return e; };
+    // the shapes: morphing pairs, parts going, parts coming; each one's moment follows its place, top first
+    const span = TPH.morph[1] - TPH.morph[0], at = (y, wdt) => TPH.morph[0] + (span - wdt) * clamp(y / Math.max(1, Math.max(A.h, dy + B.h)));
+    const M = pairs.map(([a, b]) => ({ a, b, el: dotted(), t0: at((shapeBox(a).y + shapeBox(b).y) / 2, 0.24), changed: Math.abs(shapeBox(a).x - shapeBox(b).x) + Math.abs(shapeBox(a).y - shapeBox(b).y) + Math.abs(shapeBox(a).w - shapeBox(b).w) + Math.abs(shapeBox(a).h - shapeBox(b).h) > 3 }));
+    const G = gone.map((a) => ({ a, g: svg("g", {}, wire), t0: at(shapeBox(a).y, 0.16) })); G.forEach((o) => (o.el = dotted(o.g)));
+    const N = added.map((b) => ({ b, el: dotted(), head: svg("circle", { r: 2.3, class: "t-gen-head", opacity: 0 }, wire), t0: at(shapeBox(b).y, 0.22) + 0.04 }));
+    N.forEach((o) => { o.el.setAttribute("d", shapeD(o.b)); o.L = o.el.getTotalLength(); o.el.style.strokeDasharray = "none"; });
+    const outline = dotted();
+    const handles = [0, 1, 2, 3].map(() => svg("rect", { x: -2.5, y: -2.5, width: 5, height: 5, class: "t-gen-handle" }, root));
+    const ret = svg("path", { class: "t-gen-reticle", opacity: 0 }, root), tag = svg("text", { class: "t-gen-label t-gen-label--tag", opacity: 0 }, root);
+    const head = svg("text", { class: "t-gen-label", x: 0, y: -12, opacity: 0 }, root), count = svg("text", { class: "t-gen-label t-gen-label--small", x: f2(A.w), y: -12, "text-anchor": "end", opacity: 0 }, root);
+    const scans = [0, 1].map(() => { const g = svg("g", { opacity: 0 }, root); svg("path", { class: "t-gen-guide t-gen-guide--scan" }, g); svg("circle", { r: 2.3, class: "t-gen-head" }, g); svg("circle", { r: 2.3, class: "t-gen-head" }, g); return g; });
+    const scanAt = (g, x, w, y, op) => { g.setAttribute("opacity", f2(op)); g.setAttribute("transform", `translate(0 ${f2(y)})`); const [l, c1, c2] = g.children; l.setAttribute("d", `M${f2(x - 18)} 0H${f2(x + w + 18)}`); c1.setAttribute("cx", f2(x)); c2.setAttribute("cx", f2(x + w)); };
+    const t0 = performance.now(), A_ = fromEl.style, B_ = toEl.style;
+    const tick = (now) => {
+      if (stopped) return;
+      const t = now - t0, p = t / D;
+      // 1. the old version goes down into its wireframe behind a scan line
+      const qd = SMOOTH_OUT(win(TPH.down, p)), yd = qd * (A.h + 6) - 3;
+      A_.clipPath = qd >= 1 ? "inset(0 0 100% 0)" : `inset(${f2(Math.max(0, yd))}px -${PAD}px -${PAD}px -${PAD}px)`;
+      A_.filter = qd > 0 && qd < 1 ? `blur(${f2(1.5 * qd)}px)` : prevA.filter;
+      scanAt(scans[0], 0, A.w, yd, qd > 0 && qd < 1 ? smooth(0, 0.1, qd) * (1 - smooth(0.85, 1, qd)) : 0);
+      // 3. the new version comes in behind a second scan line, wiping the wireframe away
+      const qu = SMOOTH_OUT(win(TPH.up, p)), yu = qu * (B.h + 6) - 3, fq = SMOOTH_OUT(win([TPH.up[0], TPH.up[1] + 0.04], p));
+      B_.opacity = qu <= 0 ? 0 : f2(fq);
+      B_.clipPath = qu >= 1 ? prevB.clipPath : `inset(-${PAD}px -${PAD}px ${f2(Math.max(0, B.h - yu - 1 - smooth(0.6, 1, qu) * PAD))}px -${PAD}px)`;
+      B_.filter = fq > 0 && fq < 0.99 ? `blur(${f2(3 * (1 - fq))}px)` : prevB.filter;
+      scanAt(scans[1], dx, B.w, dy + yu, qu > 0 && qu < 1 ? smooth(0, 0.1, qu) * (1 - smooth(0.85, 1, qu)) : 0);
+      // the wireframe shows above the first line, below the second
+      const top = qu > 0 ? dy + yu : -PAD, bottom = qd >= 1 ? Math.max(A.h, dy + B.h) + PAD : yd;
+      clipRect.setAttribute("y", f2(top)); clipRect.setAttribute("height", f2(Math.max(0, bottom - top)));
+      wire.setAttribute("opacity", f2(1 - 0.5 * fq));
+      const flow = f2(-(t * FLOW) % DOT);
+      // 2. the card outline and every part flow to the new version
+      const qo = OUT(win([TPH.morph[0], TPH.morph[0] + span * 0.7], p)), card = mixShape({ kind: "box", x: 0, y: 0, w: A.w, h: A.h, r: A.r }, { kind: "box", x: dx, y: dy, w: B.w, h: B.h, r: B.r }, qo);
+      outline.setAttribute("d", shapeD(card)); outline.style.strokeDashoffset = flow;
+      const hOp = smooth(0.04, 0.14, p) * (1 - smooth(TPH.up[0], TPH.up[0] + 0.12, p));
+      [[card.x, card.y], [card.x + card.w, card.y], [card.x + card.w, card.y + card.h], [card.x, card.y + card.h]].forEach(([x, y], i) => { handles[i].setAttribute("transform", `translate(${f2(x)} ${f2(y)}) scale(${f2(hOp)})`); });
+      let cur = null;
+      for (const m of M) {
+        const q = OUT(clamp((p - m.t0) / 0.24)), s = mixShape(m.a, m.b, q);
+        m.el.setAttribute("d", shapeD(s)); m.el.style.strokeDashoffset = flow;
+        if (m.changed && q > 0 && q < 1) cur = { m, s, q };
+      }
+      for (const o of G) { // parts that are gone shrink to their centre and fade
+        const q = OUT(clamp((p - o.t0) / 0.16)), b = shapeBox(o.a), cx = b.x + b.w / 2, cy = b.y + b.h / 2, k = 1 - 0.7 * q;
+        o.el.setAttribute("d", shapeD(o.a)); o.g.setAttribute("transform", `translate(${f2(cx)} ${f2(cy)}) scale(${f2(k)}) translate(${f2(-cx)} ${f2(-cy)})`); o.g.setAttribute("opacity", f2(1 - q));
+        o.el.style.strokeDashoffset = flow;
+      }
+      for (const o of N) { // new parts traced in, dot by dot, with a moving head
+        const q = OUT(clamp((p - o.t0) / 0.22)), cnt = Math.floor((o.L * q) / DOT) + 1;
+        o.el.style.opacity = q > 0 ? 1 : 0;
+        if (q > 0 && cnt !== o.n) { o.n = cnt; o.el.style.strokeDasharray = `${`0 ${DOT} `.repeat(cnt - 1)}0 ${f2(o.L + 10)}`; }
+        const live = q > 0 && q < 1; o.head.setAttribute("opacity", live ? 1 : 0);
+        if (live) { const pt = o.el.getPointAtLength(Math.floor((o.L * q) / DOT) * DOT); o.head.setAttribute("cx", f2(pt.x)); o.head.setAttribute("cy", f2(pt.y)); }
+      }
+      // a reticle on the part changing now, with its size before and after
+      const rOp = cur && opts.labels ? 1 : 0; ret.setAttribute("opacity", rOp); tag.setAttribute("opacity", rOp);
+      if (cur) {
+        const b = shapeBox(cur.s), P = 4, x = b.x - P, y = b.y - P, w = b.w + 2 * P, h = b.h + 2 * P, l = Math.min(7, w / 3, h / 3);
+        ret.setAttribute("d", `M${f2(x)} ${f2(y + l)}V${f2(y)}H${f2(x + l)}M${f2(x + w - l)} ${f2(y)}H${f2(x + w)}V${f2(y + l)}M${f2(x + w)} ${f2(y + h - l)}V${f2(y + h)}H${f2(x + w - l)}M${f2(x + l)} ${f2(y + h)}H${f2(x)}V${f2(y + h - l)}`);
+        const sz = (s) => (s.kind === "line" ? `${Math.round(s.x2 - s.x)}` : `${Math.round(s.w)}×${Math.round(s.h)}`);
+        tag.setAttribute("x", f2(x)); tag.setAttribute("y", f2(y - 4)); tag.textContent = `${cur.m.a.name} ${sz(cur.m.a)} → ${sz(cur.m.b)}`;
+      }
+      // what is happening, above the card
+      const lOp = opts.labels ? smooth(0.02, 0.1, p) * (1 - smooth(0.9, 1, p)) : 0;
+      head.setAttribute("opacity", f2(lOp)); count.setAttribute("opacity", f2(lOp));
+      head.setAttribute("y", f2(Math.min(0, dy) - 12)); count.setAttribute("y", f2(Math.min(0, dy) - 12)); count.setAttribute("x", f2(Math.max(A.w, dx + B.w)));
+      const [va, vb] = (opts.versions || T_DEFAULTS.versions).map((v) => String(v).toUpperCase());
+      head.textContent = p < TPH.morph[0] ? `READING ${va}` : p < TPH.up[0] ? `REGENERATING ${va} → ${vb}` : `${vb} READY`;
+      const done = (list) => list.filter((o) => p >= o.t0).length;
+      count.textContent = `MOVED ${String(done(M)).padStart(2, "0")}  NEW ${String(done(N)).padStart(2, "0")}  OUT ${String(done(G)).padStart(2, "0")}  ${Math.round(card.w)}×${Math.round(card.h)}`;
+      if (p >= 1.06) return finish();
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  }
+  // the real UI morphs: every matched part (and the card) moves and resizes into its place in the new version
+  // through a view transition, its content changing over in place, under the generation effect's overlay
+  function startMorph() {
+    const RA = fromEl.getBoundingClientRect(), RB = toEl.getBoundingClientRect(), mo = { maxParts: 60, keys: 0 };
+    const A = measure(fromEl, mo), B = measure(toEl, mo), dx = RB.left - RA.left, dy = RB.top - RA.top;
+    const D = Math.max(1600, +opts.duration || T_DEFAULTS.duration), W = Math.max(A.w, B.w), H = Math.max(A.h, B.h);
+    // a button's own label moves with the button: text whose element is also a box is not matched on its own
+    const own = (M) => { const boxes = new Set(M.parts.filter((p) => p.kind === "box").map((p) => p.el)); return M.parts.filter((p) => !(p.kind === "text" && boxes.has(p.el))); };
+    const PA = own(A).map((p) => Object.assign({}, p)), PB = own(B).map((p) => Object.assign({}, p, { x: p.x + dx, y: p.y + dy, lines: p.lines && p.lines.map((l) => ({ x: l.x + dx, x2: l.x2 + dx, y: l.y + dy, h: l.h })) }));
+    const { pairs, gone, added } = matchShapes(PA, PB, W, H);
+    const N = ++MORPH_N, MP = TPH_M.morph, ML = (MP[1] - MP[0]) * D; // the morph window, in ms
+    // overlay over both versions
+    const UX = Math.min(0, dx), UY = Math.min(0, dy), UW = Math.max(A.w, dx + B.w) - UX, UH = Math.max(A.h, dy + B.h) - UY, M = 44, SP = 15;
+    layer = document.createElement("div"); layer.className = "t-gen t-gen--morph"; layer.setAttribute("aria-hidden", "true");
+    Object.assign(layer.style, { left: f2(RA.left + scrollX) + "px", top: f2(RA.top + scrollY) + "px", width: f2(A.w) + "px", height: f2(A.h) + "px" });
+    const root = svg("svg", { class: "t-gen-svg", width: f2(A.w), height: f2(A.h) }, layer);
+    document.body.appendChild(layer);
+    // dot field around both versions: a ripple from the centre, lit where the probe passes
+    const field = svg("g", {}, root), dots = [], cx0 = UX + UW / 2, cy0 = UY + UH / 2; let maxD = 0;
+    for (let x = UX - Math.floor(M / SP) * SP; x <= UX + UW + M; x += SP) for (let y = UY - Math.floor(M / SP) * SP; y <= UY + UH + M; y += SP) {
+      const d = Math.hypot(x - cx0, y - cy0), out = Math.max(0, UX - x, x - UX - UW, UY - y, y - UY - UH);
+      dots.push({ el: svg("circle", { cx: x, cy: y, r: 1.1, class: "t-gen-dot" }, field), x, y, d, edge: 1 - clamp(out / M) }); maxD = Math.max(maxD, d);
+    }
+    const probe = svg("path", { d: `M0 ${UY - M}V${f2(UY + UH + M)}`, class: "t-gen-guide t-gen-guide--dashed", opacity: 0 }, root);
+    const wire = svg("g", { class: "t-gen-wireframe" }, root), DOT = 4.8;
+    const dotted = (parent = wire) => svg("path", { class: "t-gen-wire", style: `stroke-dasharray:0 ${DOT}` }, parent);
+    const guides = [0, 1, 2, 3].map(() => svg("path", { class: "t-gen-guide t-gen-guide--dashed" }, root));
+    const outline = dotted(), handles = [0, 1, 2, 3].map(() => svg("rect", { x: -2.5, y: -2.5, width: 5, height: 5, class: "t-gen-handle" }, root));
+    const dim = svg("text", { class: "t-gen-label", opacity: 0 }, root);
+    const box = (p) => ({ kind: "box", x: p.x, y: p.y, w: p.w, h: p.h, r: p.kind === "icon" ? Math.min(p.w, p.h) / 2 : p.kind === "text" ? 3 : p.r || 0 });
+    // each pair's morph starts a little later the lower it sits, so the card regenerates top first
+    const delayOf = (y) => 0.28 * ML * clamp(y / Math.max(1, UY + UH));
+    const MPR = pairs.map(([a, b]) => ({ a, b, el: dotted(), delay: delayOf(Math.min(a.y, b.y)) }));
+    const GN = gone.map((a) => { const g = svg("g", {}, wire); return { a, g, el: dotted(g), at: MP[0] + delayOf(a.y) / D }; });
+    const AD = added.map((b) => { const el = dotted(), s = box(b); el.setAttribute("d", rrPath(s.x, s.y, s.w, s.h, s.r)); const L = el.getTotalLength(); el.style.strokeDasharray = "none"; el.style.opacity = 0;
+      return { b, el, L, head: svg("circle", { r: 2.3, class: "t-gen-head", opacity: 0 }, wire), at: MP[0] + 0.05 + 0.5 * (MP[1] - MP[0]) * clamp(b.y / Math.max(1, UY + UH)) }; });
+    const fly = AD.map((o, i) => { const ang = hashN(i * 9.1 + N) * Math.PI * 2, dist = 40 + 50 * hashN(i * 4.7 + N), sx = o.b.x, sy = o.b.y;
+      return { el: svg("circle", { r: 1.6, class: "t-gen-flyer", opacity: 0 }, root), x0: sx + Math.cos(ang) * dist, y0: sy + Math.sin(ang) * dist, x1: sx, y1: sy, arr: o.at, s0: o.at - 0.1 }; });
+    const ret = svg("path", { class: "t-gen-reticle", opacity: 0 }, root), tag = svg("text", { class: "t-gen-label t-gen-label--tag", opacity: 0 }, root);
+    const read = svg("text", { class: "t-gen-label t-gen-label--small", opacity: 0 }, root);
+    const head = svg("text", { class: "t-gen-label", opacity: 0 }, root), count = svg("text", { class: "t-gen-label t-gen-label--small", "text-anchor": "end", opacity: 0 }, root);
+    const qOf = (delay, p) => MORPH_EASE(clamp(((p - MP[0]) * D - delay) / Math.max(1, ML - delay)));
+    let vt = null, style = null, started = false;
+    const names = [];
+    cleanups.push(() => { names.forEach((e) => (e.style.viewTransitionName = "")); if (style) style.remove(); if (vt && vt.skipTransition) try { vt.skipTransition(); } catch (e) {} });
+    const begin = () => {
+      started = true;
+      // names: the card, each matched pair (an element once, whole elements only), the overlay (kept live on top)
+      const used = new Set(), named = [];
+      const whole = (e) => e && e.getClientRects().length === 1;
+      MPR.forEach((m, i) => { const ea = m.a.el, eb = m.b.el; if (!ea || !eb || used.has(ea) || used.has(eb) || ea === fromEl || eb === toEl || !whole(ea) || !whole(eb)) return; used.add(ea); used.add(eb); m.name = `t-gen-${N}-${i}`; named.push(m); });
+      const set = (e, n) => { e.style.viewTransitionName = n; if (n) names.push(e); };
+      set(fromEl, `t-gen-${N}-card`); set(layer, `t-gen-${N}-ov`); named.forEach((m) => set(m.a.el, m.name));
+      const ease = `cubic-bezier(${MORPH_CURVE.join(",")})`, dur = (ms, delay = 0) => `animation-duration:${Math.round(ms)}ms;animation-delay:${Math.round(delay)}ms;animation-timing-function:${ease};animation-fill-mode:both;`;
+      style = document.createElement("style");
+      style.textContent = [
+        `::view-transition-group(t-gen-${N}-card),::view-transition-old(t-gen-${N}-card),::view-transition-new(t-gen-${N}-card){${dur(ML)}}`,
+        ...named.map((m) => `::view-transition-group(${m.name}),::view-transition-old(${m.name}),::view-transition-new(${m.name}){${dur(ML - m.delay, m.delay)}}`),
+        // text keeps its own size while it moves and changes over (stretched type looks broken); boxes, icons and the
+        // card stretch with their group, which is what reads as a morph
+        ...named.filter((m) => m.a.kind === "text").map((m) => `::view-transition-old(${m.name}),::view-transition-new(${m.name}){inline-size:auto;block-size:auto;object-fit:none}`),
+        ...named.filter((m) => m.a.kind !== "text").map((m) => `::view-transition-old(${m.name}),::view-transition-new(${m.name}){inline-size:100%;block-size:100%;object-fit:fill}`),
+        `::view-transition-old(t-gen-${N}-card),::view-transition-new(t-gen-${N}-card){inline-size:100%;block-size:100%;object-fit:fill}`,
+        `::view-transition-old(t-gen-${N}-ov){display:none}::view-transition-group(t-gen-${N}-ov),::view-transition-new(t-gen-${N}-ov){animation:none}`,
+        `::view-transition-old(root),::view-transition-new(root){animation-duration:${Math.round(ML)}ms}`,
+      ].join("\n");
+      document.head.appendChild(style);
+      vt = document.startViewTransition(() => {
+        named.forEach((m) => { m.a.el.style.viewTransitionName = ""; }); fromEl.style.viewTransitionName = "";
+        fromEl.style.visibility = "hidden"; toEl.style.visibility = "visible"; toEl.style.opacity = prevB.opacity;
+        set(toEl, `t-gen-${N}-card`); named.forEach((m) => set(m.b.el, m.name));
+      });
+      vt.finished.catch(() => {}).then(() => { names.forEach((e) => (e.style.viewTransitionName = "")); names.length = 0; if (style) { style.remove(); style = null; } });
+    };
+    const t0 = performance.now();
+    const tick = (now) => {
+      if (stopped) return;
+      const t = now - t0, p = t / D, flow = f2(-(t * FLOW) % DOT), clean = 1 - smooth(TPH_M.clean[0], TPH_M.clean[1], p);
+      if (!started && p >= MP[0]) begin();
+      // dot field: ripple out, matrix-like shimmer while it works, lit under the probe
+      const R = OUT(win([0, 0.3], p)) * (maxD + 60), pw = win([0.03, 0.26], p), probeX = lerp(UX - M, UX + UW + M, OUT(pw)), probeOp = pw > 0 && pw < 1 ? smooth(0, 0.1, pw) * (1 - smooth(0.85, 1, pw)) : 0;
+      probe.setAttribute("transform", `translate(${f2(probeX)} 0)`); probe.setAttribute("opacity", f2(probeOp * 0.8));
+      for (const d of dots) {
+        const env = clamp((R - d.d) / 50), front = p < 0.35 ? Math.exp(-(((R - d.d - 6) / 14) ** 2)) : 0, lit = Math.max(front, probeOp > 0 ? Math.exp(-(((d.x - probeX) / 9) ** 2)) * probeOp : 0);
+        d.el.setAttribute("opacity", f2(Math.max(env * 0.5, lit) * d.edge * clean)); d.el.setAttribute("r", f2(1.05 + lit * 0.85)); d.el.classList.toggle("is-lit", lit > 0.35);
+      }
+      // the card: outline, guides past its edges, corner handles and its size, all following the morph
+      const qc = qOf(0, p), card = mixShape({ kind: "box", x: 0, y: 0, w: A.w, h: A.h, r: A.r }, { kind: "box", x: dx, y: dy, w: B.w, h: B.h, r: B.r }, qc), gIn = OUT(win([0.04, 0.24], p));
+      outline.setAttribute("d", shapeD(card)); outline.style.strokeDashoffset = flow; outline.style.opacity = f2(gIn * clean);
+      const E = 22, gl = [[card.x - E, card.y, card.x + card.w + E, card.y], [card.x + card.w, card.y - E, card.x + card.w, card.y + card.h + E], [card.x + card.w + E, card.y + card.h, card.x - E, card.y + card.h], [card.x, card.y + card.h + E, card.x, card.y - E]];
+      guides.forEach((g, i) => { const [x1, y1, x2, y2] = gl[i]; g.setAttribute("d", `M${f2(x1)} ${f2(y1)}L${f2(lerp(x1, x2, gIn))} ${f2(lerp(y1, y2, gIn))}`); g.style.opacity = f2(0.5 * clean); g.style.strokeDashoffset = flow; });
+      [[card.x, card.y], [card.x + card.w, card.y], [card.x + card.w, card.y + card.h], [card.x, card.y + card.h]].forEach(([x, y], i) => handles[i].setAttribute("transform", `translate(${f2(x)} ${f2(y)}) scale(${f2(OUT(win([0.1 + i * 0.02, 0.2 + i * 0.02], p)) * clean)})`));
+      dim.setAttribute("x", f2(card.x)); dim.setAttribute("y", f2(card.y - 10)); dim.setAttribute("opacity", f2(gIn * clean * 0.9));
+      dim.textContent = `${Math.round(card.w)} × ${Math.round(card.h)}   t+${(Math.min(p, 1) * D / 1000).toFixed(2)}s`;
+      // every matched part: a dotted outline riding along with the real part as it morphs
+      let cur = null;
+      for (const m of MPR) {
+        const q = qOf(m.delay, p), s = mixShape(box(m.a), box(m.b), q), traced = OUT(win([0.08, 0.26], p));
+        m.el.setAttribute("d", shapeD(s)); m.el.style.strokeDashoffset = flow; m.el.style.opacity = f2(traced * 0.7 * (1 - smooth(0.85, 1, q)) * clean);
+        if (q > 0 && q < 1) cur = { s, m };
+      }
+      // parts that are gone dissolve: their outline shrinks to dots and fades
+      for (const o of GN) { const q = OUT(clamp((p - o.at) / 0.16)), s = box(o.a), cx = s.x + s.w / 2, cy = s.y + s.h / 2, k = 1 - 0.7 * q;
+        o.el.setAttribute("d", shapeD(s)); o.g.setAttribute("transform", `translate(${f2(cx)} ${f2(cy)}) scale(${f2(k)}) translate(${f2(-cx)} ${f2(-cy)})`); o.g.setAttribute("opacity", f2(OUT(win([0.08, 0.2], p)) * (1 - q))); o.el.style.strokeDashoffset = flow; }
+      // new parts: dots fly in, their outline is traced dot by dot, then the real part fades up inside it
+      for (const o of AD) { const q = OUT(clamp((p - o.at) / 0.2)), cnt = Math.floor((o.L * q) / DOT) + 1;
+        o.el.style.opacity = q > 0 ? f2(1 - 0.7 * smooth(0.85, 1, p)) : 0; if (q > 0 && cnt !== o.n) { o.n = cnt; o.el.style.strokeDasharray = `${`0 ${DOT} `.repeat(cnt - 1)}0 ${f2(o.L + 10)}`; }
+        o.el.style.strokeDashoffset = flow; const live = q > 0 && q < 1; o.head.setAttribute("opacity", live ? 1 : 0);
+        if (live) { const pt = o.el.getPointAtLength(Math.floor((o.L * q) / DOT) * DOT); o.head.setAttribute("cx", f2(pt.x)); o.head.setAttribute("cy", f2(pt.y)); if (!cur) cur = { s: box(o.b), m: { a: null, b: o.b }, pt }; } }
+      for (const q of fly) { const k = clamp((p - q.s0) / (q.arr - q.s0)), on = p >= q.s0 && p < q.arr + 0.01; q.el.setAttribute("opacity", on ? f2(smooth(0, 0.25, k)) : 0);
+        if (on) { const e = OUT(k); q.el.setAttribute("cx", f2(lerp(q.x0, q.x1, e))); q.el.setAttribute("cy", f2(lerp(q.y0, q.y1, e))); } }
+      // the reticle: hopping over the old version's parts while it reads them, then on whatever is changing
+      if (!cur && p < MP[0] && p > 0.06 && PA.length) { const k = Math.floor(t / 110) % PA.length; cur = { s: box(PA[k]), m: { a: PA[k], b: null } }; }
+      const rOp = cur && opts.labels ? clean : 0; ret.setAttribute("opacity", f2(rOp)); tag.setAttribute("opacity", f2(rOp)); read.setAttribute("opacity", f2(rOp));
+      if (cur) {
+        const b = cur.s, P = 4, x = b.x - P, y = b.y - P, w = b.w + 2 * P, h = b.h + 2 * P, l = Math.min(7, w / 3, h / 3);
+        ret.setAttribute("d", `M${f2(x)} ${f2(y + l)}V${f2(y)}H${f2(x + l)}M${f2(x + w - l)} ${f2(y)}H${f2(x + w)}V${f2(y + l)}M${f2(x + w)} ${f2(y + h - l)}V${f2(y + h)}H${f2(x + w - l)}M${f2(x + l)} ${f2(y + h)}H${f2(x)}V${f2(y + h - l)}`);
+        const sz = (s) => `${Math.round(s.w)}×${Math.round(s.h)}`, nm = (cur.m.a || cur.m.b).name;
+        tag.setAttribute("x", f2(x)); tag.setAttribute("y", f2(y - 4));
+        tag.textContent = cur.m.a && cur.m.b ? `${nm} ${sz(cur.m.a)} → ${sz(cur.m.b)}` : cur.m.b ? `+ ${nm} ${sz(cur.m.b)}` : `${nm} ${sz(cur.m.a)}`;
+        const pt = cur.pt || { x: b.x + b.w, y: b.y + b.h };
+        read.setAttribute("x", f2(pt.x + 6)); read.setAttribute("y", f2(pt.y + 9)); read.textContent = `${String(Math.round(pt.x)).padStart(3, "0")}·${String(Math.round(pt.y)).padStart(3, "0")}`;
+      }
+      // what is happening, above the card
+      const [va, vb] = (opts.versions || T_DEFAULTS.versions).map((v) => String(v).toUpperCase()), lOp = opts.labels ? smooth(0.02, 0.1, p) * clean : 0;
+      head.setAttribute("opacity", f2(lOp)); count.setAttribute("opacity", f2(lOp));
+      head.setAttribute("x", f2(UX)); head.setAttribute("y", f2(UY - 30)); count.setAttribute("x", f2(UX + UW)); count.setAttribute("y", f2(UY - 30));
+      head.textContent = p < MP[0] ? `READING ${va}` : p < MP[1] ? `MORPHING ${va} → ${vb}` : `${vb} READY`;
+      const n = (list, key = "at") => list.filter((o) => p >= (o[key] !== undefined ? o[key] : MP[0] + o.delay / D)).length;
+      count.textContent = `MORPH ${String(n(MPR, "x")).padStart(2, "0")}  NEW ${String(n(AD)).padStart(2, "0")}  OUT ${String(n(GN)).padStart(2, "0")}`;
+      if (p >= 1) return finish();
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  }
+
+  return run;
+}
+
 // Plays every [data-t-generate] element once it scrolls into view.
 // data-t-generate="skeleton" | "skeleton-texts", optional data-t-generate-variant (ui | text | small-text | image | auto)
 // and data-t-generate-duration / -delay (ms).
@@ -488,4 +796,4 @@ export function auto(root = document) {
   els.forEach((e) => io.observe(e));
 }
 
-if (typeof window !== "undefined") window.UIGeneration = { generate, auto, timeline };
+if (typeof window !== "undefined") window.UIGeneration = { generate, auto, timeline, transform };
