@@ -201,6 +201,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://transitions.dev/transitions/number-subtle-change/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://transitions.dev/transitions/toggle/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

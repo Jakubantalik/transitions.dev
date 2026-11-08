@@ -139,17 +139,20 @@
     },
     "number-pop-in": {
       "name": "Number pop-in",
-      "when": "Counters, prices, balances, or any number that updates and should re-enter from a direction with blur.",
+      "when": "Counters, prices, balances, or any number that updates and the change should be noticed.",
       "hook": "t-digit-group",
       "vars": {
         "---": "---",
-        "--digit-dur": "500ms",
-        "--digit-distance": "8px",
-        "--digit-stagger": "70ms",
+        "--digit-dur": "600ms",
+        "--digit-exit-dur": "155ms",
+        "--digit-enter-delay": "50ms",
+        "--digit-stagger": "40ms",
+        "--digit-distance": "12.5px",
+        "--digit-exit-distance": "12.5px",
         "--digit-blur": "2px",
-        "--digit-ease": "cubic-bezier(0.34, 1.45, 0.64, 1)",
-        "--digit-dir-x": "0",
-        "--digit-dir-y": "1"
+        "--digit-lift": "3px",
+        "--digit-start-scale": "0.7",
+        "--digit-peak": "1.03"
       }
     },
     "notification-badge": {
@@ -498,15 +501,25 @@
     },
     "spinning-counter": {
       "name": "Spinning counter",
-      "when": "Numbers that change with fanfare: points, prices, follower counts, dashboards KPIs.",
+      "when": "Numbers that change with fanfare: points, rewards, milestones, dashboard KPIs.",
       "hook": "t-reel",
       "vars": {
         "---": "---",
-        "--reel-dur": "1400ms",
-        "--reel-cell": "30px",
-        "--reel-spin-blur": "3px",
+        "--reel-step-dur": "130ms",
         "--reel-stagger": "90ms",
-        "--reel-ease": "cubic-bezier(0.16, 1, 0.3, 1)"
+        "--reel-ease": "cubic-bezier(0.35, -0.02, 0.43, 1)",
+        "--reel-cell": "30px",
+        "--reel-side-scale": "0.7",
+        "--reel-side-offset": "12px",
+        "--reel-side-blur": "2px",
+        "--reel-side-opacity": "0.17",
+        "--reel-center-scale": "0.9",
+        "--reel-center-blur": "1px",
+        "--reel-antic-dur": "100ms",
+        "--reel-antic-scale": "0.94",
+        "--reel-antic-lift": "3px",
+        "--reel-land-dur": "740ms",
+        "--reel-land-peak": "1.03"
       }
     },
     "toggle": {
@@ -595,6 +608,55 @@
         "--stack-depth1-blur": "1px",
         "--stack-depth2-blur": "2px",
         "--stack-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "text-morph": {
+      "name": "Text morph",
+      "when": "Changing a short label in place when the old and new text share letters at the start or the end: \"Copy code\" to \"Copied\", \"Follow\" to \"Following\", \"Check in\" to \"Checked in\", \"Save\" to \"Saved\".",
+      "hook": "t-morph",
+      "vars": {
+        "---": "---",
+        "--text-morph-dur": "180ms",
+        "--text-morph-resize-dur": "240ms",
+        "--text-morph-blur": "2px",
+        "--text-morph-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "text-swap-soft": {
+      "name": "Text swap soft",
+      "when": "Updating a value or label in place without any movement: the amounts, totals and legend values of a chart when its period changes (Week, Month, Year), a price when the currency changes, a reading when the unit changes.",
+      "hook": "t-text-soft",
+      "vars": {
+        "---": "---",
+        "--text-soft-dur": "200ms",
+        "--text-soft-blur": "2px",
+        "--text-soft-ease": "ease-in-out",
+        "--text-soft-resize-dur": "240ms",
+        "--text-soft-resize-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    },
+    "donut-chart": {
+      "name": "Donut chart",
+      "when": "A donut or ring chart whose segments have even gaps and softly rounded corners, and that morphs to new values when its data changes (a Week / Month / Year switch, a filter): every segment eases from its old share to its new one in the same chart, nothing is re-rendered or slid.",
+      "hook": "t-donut",
+      "vars": {
+        "---": "---",
+        "--chart-morph-dur": "400ms",
+        "--chart-morph-ease": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "--chart-gap": "3px",
+        "--chart-corner": "2px"
+      }
+    },
+    "number-subtle-change": {
+      "name": "Number subtle change",
+      "when": "Numbers that update often and should not draw attention: live stats, dashboards, tickers.",
+      "hook": "t-subtle-number",
+      "vars": {
+        "---": "---",
+        "--subtle-dur": "455ms",
+        "--subtle-distance": "3.4px",
+        "--subtle-blur": "1px",
+        "--subtle-ease": "cubic-bezier(0.22, 1, 0.36, 1)"
       }
     }
   }

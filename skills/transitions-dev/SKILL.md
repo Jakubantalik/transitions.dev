@@ -1,19 +1,19 @@
 ---
 name: transitions-dev
 license: Free for personal and commercial use; see LICENSE.txt (no redistribution of the library itself)
-description: Production-ready CSS transitions for web apps. Use when implementing notification badges, dropdowns, modals, panel reveals, page transitions, card resizes, number pop-ins, text swaps, icon swaps, success checks, avatar group hovers, error state shakes, search/input clear, skeleton loaders, shimmer text, sliding tabs, tooltips, staggered text reveals, card hover tilt, plus-to-menu morph, accordions, toasts, like buttons, learn-more hovers, checkbox checks, spinning counters, toggles, AI thinking states, reasoning streams, streaming text, matrix dot loaders, or banner stacking. Triggers on "add a transition", "animate the dropdown", "make the modal open smoothly", "swap icon", "page slide", "stagger animation", "open / close transition", "make it animate", "fade between", "success animation", "form error", "shake on invalid", "hover lift", "avatar stack hover", "clear the search", "skeleton loader", "loading shimmer", "shimmer text", "sliding tabs", "segmented control", "tooltip", "reveal text", "tilt card", "3D hover tilt", "cursor glare", "plus to menu", "FAB morph", "accordion", "collapsible", "expand / collapse", "disclosure", "toast", "snackbar", "like button", "heart animation", "learn more arrow", "checkbox", "check animation", "spinning counter", "odometer", "slot machine digits", "toggle", "switch", "thinking states", "AI status line", "agent reasoning", "reasoning stream", "streaming text", "stream words in", "matrix loader", "dot loader", "banner stack", "stacked toasts". Also "motion tokens", "scan for ad-hoc transitions", "replace hardcoded durations with motion tokens", "tokenize my animations", and the commands transitions reveal, transitions review, transitions apply, transitions refine.
+description: Production-ready CSS transitions for web apps. Use when implementing notification badges, dropdowns, modals, panel reveals, page transitions, card resizes, number pop-ins, subtle number changes, text swaps, icon swaps, success checks, avatar group hovers, error state shakes, search/input clear, skeleton loaders, shimmer text, sliding tabs, tooltips, staggered text reveals, card hover tilt, plus-to-menu morph, accordions, toasts, like buttons, learn-more hovers, checkbox checks, spinning counters, toggles, AI thinking states, reasoning streams, streaming text, matrix dot loaders, or banner stacking. Triggers on "add a transition", "animate the dropdown", "make the modal open smoothly", "swap icon", "page slide", "stagger animation", "open / close transition", "make it animate", "fade between", "success animation", "form error", "shake on invalid", "hover lift", "avatar stack hover", "clear the search", "skeleton loader", "loading shimmer", "shimmer text", "sliding tabs", "segmented control", "tooltip", "reveal text", "tilt card", "3D hover tilt", "cursor glare", "plus to menu", "FAB morph", "accordion", "collapsible", "expand / collapse", "disclosure", "toast", "snackbar", "like button", "heart animation", "learn more arrow", "checkbox", "check animation", "spinning counter", "subtle number change", "live stat update", "odometer", "slot machine digits", "toggle", "switch", "thinking states", "AI status line", "agent reasoning", "reasoning stream", "streaming text", "stream words in", "matrix loader", "dot loader", "banner stack", "stacked toasts". Also "motion tokens", "scan for ad-hoc transitions", "replace hardcoded durations with motion tokens", "tokenize my animations", and the commands transitions reveal, transitions review, transitions apply, transitions refine.
 ---
 
 # Transitions.dev
 
-Thirty-two portable CSS transitions, each namespaced under `t-*` selectors with semantic CSS custom properties. Drop-in: paste the snippet, wire the documented HTML hooks, done. No framework dependencies, no demo-specific markup, and every snippet ships a `prefers-reduced-motion` guard.
+Thirty-six portable CSS transitions, each namespaced under `t-*` selectors with semantic CSS custom properties. Drop-in: paste the snippet, wire the documented HTML hooks, done. No framework dependencies, no demo-specific markup, and every snippet ships a `prefers-reduced-motion` guard.
 
 ## Quick reference
 
 | Transition | When to use | Reference |
 | --- | --- | --- |
 | **Card resize** | Tween a container's width or height when its layout state changes. | [01-card-resize.md](./01-card-resize.md) |
-| **Number pop-in** | Re-enter each digit with a blurred slide when a number updates. | [02-number-pop-in.md](./02-number-pop-in.md) |
+| **Number pop-in** | Swap changed digits on a 3D drum with a bounce when a number updates. | [02-number-pop-in.md](./02-number-pop-in.md) |
 | **Notification badge** | Slide a small badge onto a trigger and pop the dot. | [03-notification-badge.md](./03-notification-badge.md) |
 | **Text states swap** | Swap text in place with a blurred up-and-down transition. | [04-text-states-swap.md](./04-text-states-swap.md) |
 | **Menu dropdown** | Open an origin-aware dropdown that grows from its trigger. | [05-menu-dropdown.md](./05-menu-dropdown.md) |
@@ -37,7 +37,7 @@ Thirty-two portable CSS transitions, each namespaced under `t-*` selectors with 
 | **Like button** | Fill a heart with a pop + particle burst on like. | [23-like-button.md](./23-like-button.md) |
 | **Learn more hover** | Slide the chevron and spread its arms into an arrow on hover. | [24-learn-more-hover.md](./24-learn-more-hover.md) |
 | **Checkbox check** | Fill the box, then stroke-draw the checkmark. | [25-checkbox-check.md](./25-checkbox-check.md) |
-| **Spinning counter** | Spin slot-machine digit reels with vertical motion blur. | [26-spinning-counter.md](./26-spinning-counter.md) |
+| **Spinning counter** | Roll digits through the numbers on a 3D drum, landing with a bounce. | [26-spinning-counter.md](./26-spinning-counter.md) |
 | **Toggle** | Travel the switch thumb with a double-bounce overshoot. | [27-toggle.md](./27-toggle.md) |
 | **Thinking states** | Shimmer a status line while it holds, then swap it to the next state. | [28-thinking-states.md](./28-thinking-states.md) |
 | **Reasoning stream** | Step an agent-reasoning transcript up two lines at a time on a loop. | [29-reasoning-stream.md](./29-reasoning-stream.md) |
@@ -47,6 +47,7 @@ Thirty-two portable CSS transitions, each namespaced under `t-*` selectors with 
 | **Text morph** | Keep the letters two labels share and cross-blur only the part that changes, easing its width. | [33-text-morph.md](./33-text-morph.md) |
 | **Text swap soft** | Cross-blur a value into the new one in place, both at once, with no movement. | [34-text-swap-soft.md](./34-text-swap-soft.md) |
 | **Donut chart** | Ring segments with even gaps and rounded corners that morph to new values. | [35-donut-chart.md](./35-donut-chart.md) |
+| **Number subtle change** | Cross-fade changed digits in place, rising or falling with the value. | [36-number-subtle-change.md](./36-number-subtle-change.md) |
 
 ## Decision rules
 
@@ -62,7 +63,9 @@ When the user asks for a transition, match against the visible UI element first,
 - **Values update in place because the data behind a view changed** (a chart's period, a currency, a unit) → text swap soft for every value that changed.
 - **A donut or ring chart** → donut chart (even gaps, the smallest corner radius, morphs when its data changes).
 - **Two icons in the same slot** → icon swap.
-- **A number updates** → number pop-in.
+- **A number updates and the change should be noticed** → number pop-in.
+- **A number updates often and should stay quiet** (live stats, dashboards, tickers) → number subtle change.
+- **A number change is an event** (points, rewards, milestones) → spinning counter.
 - **Confirmation / success / "done" moment** (checkmark, payment processed, file uploaded) → success check.
 - **Hovering an item in a horizontal stack** (avatars, chips, segmented buttons, tag pills) → avatar group hover.
 - **Form validation error / "this is wrong" feedback** (invalid field, wrong PIN, duplicate name) → error state shake.
@@ -87,7 +90,7 @@ The skill exposes four namespaced verbs the agent should recognise in addition t
 
 **Trigger phrases:** `transitions reveal`, "reveal the transitions", "list all transitions", "what transitions are in this skill", "show the transitions catalog".
 
-**Behaviour:** print the thirty-two transitions as a numbered plain-text list — name, one-line summary, and the matching reference filename. Reuse the rows in `## Quick reference` above; do not invent new copy. No project access.
+**Behaviour:** print the thirty-six transitions as a numbered plain-text list — name, one-line summary, and the matching reference filename. Reuse the rows in `## Quick reference` above; do not invent new copy. No project access.
 
 ### transitions review — audit the project for fit
 
@@ -128,7 +131,7 @@ The skill exposes four namespaced verbs the agent should recognise in addition t
 
 ## Motion tokens
 
-The shared motion scale behind the thirty-two transitions — the same tokens the [transitions.dev](https://transitions.dev) Motion tokens tab exposes. They ship at the top of [`_root.css`](./_root.css), so once it's imported you can reference any of them as `var(--…)` (e.g. `transition: transform var(--duration-fast) var(--ease-smooth-out)`).
+The shared motion scale behind the thirty-six transitions — the same tokens the [transitions.dev](https://transitions.dev) Motion tokens tab exposes. They ship at the top of [`_root.css`](./_root.css), so once it's imported you can reference any of them as `var(--…)` (e.g. `transition: transform var(--duration-fast) var(--ease-smooth-out)`).
 
 `transitions refine` maps each existing value to a usage below, then suggests the token to reference. Match on **usage**, not on the raw number — a 300ms modal close still maps to `--duration-quick` (150ms).
 
@@ -184,7 +187,7 @@ The shared motion scale behind the thirty-two transitions — the same tokens th
 
 ## Universal install
 
-Copy [`_root.css`](./_root.css) into your project **once** and import it (or paste its `:root` block into your global stylesheet). It leads with the shared **motion-token scale** (`--duration-*`, `--ease-*`, `--distance-*`, `--scale-*`, `--blur-*` — see `## Motion tokens`), followed by the semantic tunable variables for **all thirty-two** transitions. Every snippet reads from these names — `--resize-*`, `--badge-*`, `--dropdown-*`, `--clear-*`, `--shimmer-*`, `--tabs-*`, `--tt-*`, `--stagger-*`, `--tilt-*`, `--morph-*`, `--acc-*`, and the rest.
+Copy [`_root.css`](./_root.css) into your project **once** and import it (or paste its `:root` block into your global stylesheet). It leads with the shared **motion-token scale** (`--duration-*`, `--ease-*`, `--distance-*`, `--scale-*`, `--blur-*` — see `## Motion tokens`), followed by the semantic tunable variables for **all thirty-six** transitions. Every snippet reads from these names — `--resize-*`, `--badge-*`, `--dropdown-*`, `--clear-*`, `--shimmer-*`, `--tabs-*`, `--tt-*`, `--stagger-*`, `--tilt-*`, `--morph-*`, `--acc-*`, and the rest.
 
 Each reference file also restates just the variables that snippet needs, so you can install a single transition without pulling the whole block. Don't duplicate the block — if `_root.css` is already imported, skip re-pasting any per-snippet `:root`.
 
@@ -198,7 +201,7 @@ When inserting a transition into the user's project:
 2. **Paste the chosen transition's CSS verbatim** from the relevant reference file. Do not rewrite selectors, do not collapse the transition into shorthand, do not strip `will-change`. The snippets are tuned and tested.
 3. **Wire the documented HTML hooks** — class names (`.t-dropdown`, `.t-modal`, `.t-success-check`, `.t-avatar`, `.t-clear`, `.t-skel`, `.t-shimmer`, `.t-tabs`, `.t-tt`, `.t-stagger`, `.t-tilt`, `.t-morph`, `.t-acc`, …) and state attributes (`data-open`, `data-state`, `data-page`, `data-origin`, `aria-selected`, `aria-expanded`, `.is-open`, `.is-closing`, `.is-error`, `.is-shaking`, `.has-value`, `.is-clearing`, `.is-pulsing`, `.is-revealed`, `.is-shown`, `.is-hiding`, `.is-hover`, `.is-tilting`).
 4. **Preserve the `@media (prefers-reduced-motion: reduce)` block.** Every snippet ships one. Removing it makes the component fail accessibility audits.
-5. **For transitions that need JS** (dropdown, modal, text swap, number pop-in, page slide, success check, avatar group hover, error state shake, input clear, skeleton reveal, tabs sliding, tooltip, texts reveal, card hover tilt, plus → menu morph, accordion expand), copy the small orchestration snippet from the reference file and adapt the selectors to the user's DOM. Keep the timing reads (`getComputedStyle(...)getPropertyValue("--…")`) so durations stay in sync with the `:root` values. Shimmer text is **pure CSS** — no JS needed.
+5. **For transitions that need JS** (dropdown, modal, text swap, number pop-in, number subtle change, spinning counter, page slide, success check, avatar group hover, error state shake, input clear, skeleton reveal, tabs sliding, tooltip, texts reveal, card hover tilt, plus → menu morph, accordion expand), copy the small orchestration snippet from the reference file and adapt the selectors to the user's DOM. Keep the timing reads (`getComputedStyle(...)getPropertyValue("--…")`) so durations stay in sync with the `:root` values. Shimmer text is **pure CSS** — no JS needed.
 
 Keep the diff small: only edit the files needed to introduce the transition. Don't rename the user's existing variables, don't reformat unrelated CSS, don't pull in a motion library.
 
@@ -254,4 +257,5 @@ Keep the diff small: only edit the files needed to introduce the transition. Don
 - [33-text-morph.md](./33-text-morph.md): Text morph
 - [34-text-swap-soft.md](./34-text-swap-soft.md): Text swap soft
 - [35-donut-chart.md](./35-donut-chart.md): Donut chart
+- [36-number-subtle-change.md](./36-number-subtle-change.md): Number subtle change
 - [_root.css](./_root.css) — the universal install block on its own, ready to import directly.

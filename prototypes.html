@@ -153,19 +153,19 @@
       --p8-slide-ease: var(--ease-smooth-out);
       --p8-fade-ease: var(--ease-smooth-out);
 
-      /* P9 — Number pop-in */
-      --p9-dur: var(--duration-very-slow);
-      --p9-distance: var(--distance-base);
-      --p9-stagger: 70ms;
-      --p9-blur: var(--blur-small);
-      --p9-bounce: 1.45;
-      --p9-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
-      /* Direction multipliers: where each digit starts relative to its
-         final resting position. (0, 1) = rises from below (default).
-         The keyframe multiplies --p9-distance by these, so flipping a
-         sign changes the starting corner instantly. */
-      --p9-dir-x: 0;
-      --p9-dir-y: 1;
+      /* P9 - Number pop-in. Changed digits swap on a 3D drum: the old one
+         leaves upward, the new one rises just after it, pulls back, and
+         springs into place past 100%. --p9-dur covers anticipation + spring. */
+      --p9-dur: 600ms;
+      --p9-exit-dur: 155ms;
+      --p9-enter-delay: 50ms;
+      --p9-stagger: 40ms;
+      --p9-distance: 12.5px;
+      --p9-exit-distance: 12.5px;
+      --p9-blur: 2px;
+      --p9-lift: 3px;
+      --p9-start-scale: 0.7;
+      --p9-peak: 1.03;
 
       /* P10 — Success check (appear/disappear) */
       --p10-opacity-dur: var(--duration-very-slow);
@@ -443,22 +443,36 @@
       --p25-uncheck-dur:     150ms;
       --p25-ease:            cubic-bezier(0.22, 1, 0.36, 1);
 
-      /* P26 — Spinning reel counter (slot-machine / odometer). Each
-         digit is a vertical strip of 0-9 that spins --p26-spins full
-         revolutions and decelerates onto the target digit; a motion
-         blur fades out as each reel settles, and columns land in a
-         left-to-right cascade (--p26-stagger). Pure CSS transitions
-         on each strip; JS only builds the strips + kicks the tween. */
-      --p26-dur:             1400ms;
-      --p26-target:          100;
-      --p26-spins:           3;      /* full 0-9 loops before landing */
-      --p26-cell:            30px;   /* height of one digit row */
-      --p26-rows:            1;      /* visible rows (odd; target centred).
-                                        1 = only the target shows at rest;
-                                        raise to reveal faded neighbours. */
-      --p26-spin-blur:       3px;    /* motion blur at full speed */
-      --p26-stagger:         90ms;   /* per-column landing offset */
-      --p26-ease:            cubic-bezier(0.16, 1, 0.3, 1);
+      /* P26 - Spinning counter. Each digit is a drum of 0-9 rolling through
+         the numbers up to its target, --p26-step-dur per number. Nothing is
+         cropped: the numbers above and below sit behind the middle one,
+         smaller and blurrier, so the drum reads as 3D. The target lands while
+         still travelling in, with a spring past 100%. */
+      --p26-step-dur:        130ms;
+      --p26-from:            100;
+      --p26-target:          178;
+      --p26-spins:           0;
+      --p26-cell:            30px;
+      --p26-stagger:         90ms;
+      --p26-ease:            cubic-bezier(0.35, -0.02, 0.43, 1);
+      --p26-side-scale:      0.7;
+      --p26-side-offset:     12px;
+      --p26-side-blur:       2px;
+      --p26-side-opacity:    0.17;
+      --p26-center-scale:    0.9;
+      --p26-center-blur:     1px;
+      --p26-antic-dur:       100ms;
+      --p26-antic-scale:     0.94;
+      --p26-antic-lift:      3px;
+      --p26-land-dur:        740ms;
+      --p26-land-peak:       1.03;
+
+      /* P35 - Number subtle change. Changed digits cross-fade in place,
+         rising when the number goes up and falling when it goes down. */
+      --p35-dur:             455ms;
+      --p35-distance:        3.4px;
+      --p35-blur:            1px;
+      --p35-ease:            cubic-bezier(0.22, 1, 0.36, 1);
 
       /* P27 — Toggle on/off (Figma 2316:72706): 44×22 track,
          22×14.67 pill thumb inset 3.67px, travel 14.66px. The thumb
@@ -1434,13 +1448,16 @@
     }
 
     /* ============================================================ */
-    /* Prototype 9 — Random number digit pop-in                      */
+    /* Prototype 9: Number pop-in                                     */
     /* ============================================================ */
+    /* Changed digits swap on a 3D drum: the old one leaves upward, the new
+       one rises just after it, pulls back and springs into place past 100%.
+       Keyframes are baked from a spring, so timing lives in --p9-dur. */
     .p9-number {
       font-family: var(--font-sans);
       font-weight: 500;
-      font-size: 18px;
-      line-height: 18px;
+      font-size: 24px;
+      line-height: 24px;
       color: var(--text);
       letter-spacing: 0;
       font-variant-numeric: tabular-nums;
@@ -1449,84 +1466,63 @@
       user-select: none;
       position: relative;
     }
-
-    .p9-char {
-      display: inline-block;
-      transform: translateY(0);
-      opacity: 1;
-      will-change: transform, opacity;
-    }
-
-    /* When animating (class added by JS on every Animate click), each
-       .p9-char runs the pop-in keyframes. The last two characters get a
-       staggered delay driven by --p9-stagger. */
+    .p9-slot { position: relative; display: inline-block; }
+    .p9-old { position: absolute; inset: 0; text-align: center; pointer-events: none; }
+    .p9-char { display: inline-block; will-change: transform, opacity, filter; }
     .p9-number.is-animating .p9-char {
-      animation: p9-pop-in var(--p9-dur) var(--p9-ease) both;
+      animation: p9-pop-in var(--p9-dur) linear both;
+      animation-delay: calc(var(--p9-stagger) * var(--digit-i, 0) + var(--p9-enter-delay));
     }
-    .p9-number.is-animating .p9-char[data-stagger="1"] {
-      animation-delay: var(--p9-stagger);
+    .p9-number.is-animating .p9-old {
+      animation: p9-pop-out var(--p9-exit-dur) linear both;
+      animation-delay: calc(var(--p9-stagger) * var(--digit-i, 0));
     }
-    .p9-number.is-animating .p9-char[data-stagger="2"] {
-      animation-delay: calc(var(--p9-stagger) * 2);
-    }
-
-    /* Exit ghost: an absolutely-positioned copy of the previous number
-       that plays the reverse direction of the pop-in. Travels away in
-       the opposite direction of where the new number arrives from.
-       Selectors are scoped under `.p9-number` on purpose so they
-       out-specify the pop-in rule (`.p9-number.is-animating .p9-char`)
-       and guarantee the ghost's chars get pop-out, not pop-in. */
-    .p9-number .p9-ghost {
-      position: absolute;
-      inset: 0;
-      display: inline-flex;
-      align-items: baseline;
-      pointer-events: none;
-    }
-    .p9-number .p9-ghost .p9-char {
-      animation: p9-pop-out var(--p9-dur) var(--p9-ease) both;
-    }
-    .p9-number .p9-ghost .p9-char[data-stagger="1"] {
-      animation-delay: var(--p9-stagger);
-    }
-    .p9-number .p9-ghost .p9-char[data-stagger="2"] {
-      animation-delay: calc(var(--p9-stagger) * 2);
-    }
+    .p9-number.is-animating [data-stagger="1"] { --digit-i: 1; }
+    .p9-number.is-animating [data-stagger="2"] { --digit-i: 2; }
+    /* Digits that did not change (the leading ones the old and new number
+       share) stay still; only the digits that changed swap. */
+    .p9-number.is-animating .p9-char[data-same] { animation: none; }
 
     @keyframes p9-pop-in {
-      0%   {
-        transform: translate(
-          calc(var(--p9-distance) * var(--p9-dir-x)),
-          calc(var(--p9-distance) * var(--p9-dir-y))
-        );
-        opacity: 0;
-        filter: blur(var(--p9-blur));
-      }
-      100% {
-        transform: translate(0, 0);
-        opacity: 1;
-        filter: blur(0);
-      }
+      0% { transform: translateY(calc(var(--p9-distance) * 1 + var(--p9-lift) * 0)) scale(var(--p9-start-scale)); opacity: 0; filter: blur(calc(var(--p9-blur) * 1)); }
+      5% { transform: translateY(calc(var(--p9-distance) * 0.941 + var(--p9-lift) * 0.216)) scale(var(--p9-start-scale)); opacity: 0.059; filter: blur(calc(var(--p9-blur) * 1)); }
+      10% { transform: translateY(calc(var(--p9-distance) * 0.755 + var(--p9-lift) * 0.648)) scale(var(--p9-start-scale)); opacity: 0.245; filter: blur(calc(var(--p9-blur) * 1)); }
+      15% { transform: translateY(calc(var(--p9-distance) * 0.475 + var(--p9-lift) * 0.972)) scale(var(--p9-start-scale)); opacity: 0.525; filter: blur(calc(var(--p9-blur) * 1)); }
+      20% { transform: translateY(calc(var(--p9-distance) * 0.206 + var(--p9-lift) * 0.792)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.792)); opacity: 0.794; filter: blur(calc(var(--p9-blur) * 0.9)); }
+      25% { transform: translateY(calc(var(--p9-distance) * 0.041 + var(--p9-lift) * 0.392)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.392)); opacity: 0.959; filter: blur(calc(var(--p9-blur) * 0.75)); }
+      30% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.033)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.033)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.6)); }
+      35% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.194)) scale(calc(1 + (var(--p9-peak) - 1) * 0.711)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.45)); }
+      40% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.272)) scale(calc(1 + (var(--p9-peak) - 1) * 0.997)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.3)); }
+      45% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.238)) scale(calc(1 + (var(--p9-peak) - 1) * 0.87)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.15)); }
+      50% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.146)) scale(calc(1 + (var(--p9-peak) - 1) * 0.535)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      55% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.05)) scale(calc(1 + (var(--p9-peak) - 1) * 0.183)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      60% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.019)) scale(calc(1 + (var(--p9-peak) - 1) * -0.069)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      65% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.05)) scale(calc(1 + (var(--p9-peak) - 1) * -0.185)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      70% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.051)) scale(calc(1 + (var(--p9-peak) - 1) * -0.187)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      75% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.035)) scale(calc(1 + (var(--p9-peak) - 1) * -0.128)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      80% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.016)) scale(calc(1 + (var(--p9-peak) - 1) * -0.057)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      85% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.002)) scale(calc(1 + (var(--p9-peak) - 1) * -0.007)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      90% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.004)) scale(calc(1 + (var(--p9-peak) - 1) * 0.013)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      95% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.003)) scale(calc(1 + (var(--p9-peak) - 1) * 0.011)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      100% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0)) scale(1); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+    }
+    @keyframes p9-pop-out {
+      0% { transform: translateY(calc(var(--p9-exit-distance) * 0)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      10% { transform: translateY(calc(var(--p9-exit-distance) * -0.009)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.009)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.009)); }
+      20% { transform: translateY(calc(var(--p9-exit-distance) * -0.042)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.042)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.042)); }
+      30% { transform: translateY(calc(var(--p9-exit-distance) * -0.112)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.112)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.112)); }
+      40% { transform: translateY(calc(var(--p9-exit-distance) * -0.252)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.252)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.252)); }
+      50% { transform: translateY(calc(var(--p9-exit-distance) * -0.5)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.5)); opacity: 0.833; filter: blur(calc(var(--p9-blur) * 0.5)); }
+      60% { transform: translateY(calc(var(--p9-exit-distance) * -0.748)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.748)); opacity: 0.42; filter: blur(calc(var(--p9-blur) * 0.748)); }
+      70% { transform: translateY(calc(var(--p9-exit-distance) * -0.888)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.888)); opacity: 0.187; filter: blur(calc(var(--p9-blur) * 0.888)); }
+      80% { transform: translateY(calc(var(--p9-exit-distance) * -0.958)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.958)); opacity: 0.069; filter: blur(calc(var(--p9-blur) * 0.958)); }
+      90% { transform: translateY(calc(var(--p9-exit-distance) * -0.991)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.991)); opacity: 0.015; filter: blur(calc(var(--p9-blur) * 0.991)); }
+      100% { transform: translateY(calc(var(--p9-exit-distance) * -1)) scale(calc(1 + (var(--p9-start-scale) - 1) * 1)); opacity: 0; filter: blur(calc(var(--p9-blur) * 1)); }
     }
 
-    /* Exit travels in the opposite direction of entry: the outgoing
-       digits head the same way the incoming ones were moving, so if
-       new digits "rise from below" the old ones continue rising and
-       fade out above. */
-    @keyframes p9-pop-out {
-      0%   {
-        transform: translate(0, 0);
-        opacity: 1;
-        filter: blur(0);
-      }
-      100% {
-        transform: translate(
-          calc(var(--p9-distance) * var(--p9-dir-x) * -1),
-          calc(var(--p9-distance) * var(--p9-dir-y) * -1)
-        );
-        opacity: 0;
-        filter: blur(var(--p9-blur));
-      }
+    @media (prefers-reduced-motion: reduce) {
+      .p9-number .p9-char { animation: none !important; }
+      .p9-number .p9-old { display: none; }
     }
 
     /* ============================================================ */
@@ -3153,65 +3149,78 @@
     }
 
     /* ============================================================ */
-    /* Prototype 26 — Spinning reel counter                          */
+    /* Prototype 26: Spinning counter                                 */
     /* ============================================================ */
-    /* .p26-value is a flex row of per-digit reels (.p26-col) built by
-       JS. Each reel clips a tall vertical strip (.p26-col-strip) of
-       0-9 cells; JS translates the strip up by
-       (spins*10 + targetDigit) cells so it visibly spins several full
-       turns and lands on the final digit. Each strip carries a
-       directional (motion) blur — an SVG <feGaussianBlur
-       stdDeviation="0 Y"> that blurs ONLY along the vertical travel
-       axis, unlike CSS filter:blur() which is isotropic and would
-       also smear the digits sideways. JS decays the blur to 0 as each
-       reel settles (SVG attributes aren't CSS-transitionable, so a
-       rAF loop drives it — see p26Spin). Columns land left-to-right
-       via a per-strip transition-delay. Type: Figma 2316:72692 —
-       Inter semibold 23px, #0f0f0f. */
+    /* .p26-value is a flex row of per-digit drums (.p26-col) built by
+       JS. A hidden sizer holds the column's width; the ten digits are
+       stacked on top of it and JS places each one on the drum per frame
+       (position, scale, blur, opacity, stacking). There is no clipping:
+       digits leave by fading at the back of the drum. */
     .p26-value {
       display: inline-flex;
       align-items: center;
-      height: calc(var(--p26-cell) * var(--p26-rows));
+      height: var(--p26-cell);
       font-weight: 600;
       font-size: 23px;
       line-height: var(--p26-cell);
-      color: #0f0f0f;
+      color: var(--text);
       font-variant-numeric: tabular-nums;
     }
-    /* Reel window. With --p26-rows: 1 only the target digit is inside the
-       window at rest (neighbours sit outside it, unseen). The vertical
-       mask gradient fades the window's top/bottom edges so digits
-       entering/leaving during the spin dissolve instead of hard-cropping;
-       the opaque band (22%–78%) still covers the settled digit so it
-       stays crisp. Raising --p26-rows reveals faded neighbour digits. */
     .p26-col {
       position: relative;
-      height: calc(var(--p26-cell) * var(--p26-rows));
-      overflow: hidden;
-      -webkit-mask-image: linear-gradient(
-        to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
-      mask-image: linear-gradient(
-        to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
-    }
-    .p26-col-strip {
-      display: flex;
-      flex-direction: column;
-      will-change: transform, filter;
-    }
-    .p26-digit {
+      display: inline-block;
       height: var(--p26-cell);
+    }
+    .p26-sizer { visibility: hidden; }
+    .p26-digit {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-variant-numeric: tabular-nums;
+      will-change: transform, filter, opacity;
     }
-    /* Group separators (comma / decimal point) sit outside the reels
-       as static glyphs so only the digits spin. Centred in the middle
-       row of the reel window. */
     .p26-sep {
       display: flex;
       align-items: center;
-      height: calc(var(--p26-cell) * var(--p26-rows));
+      height: var(--p26-cell);
+    }
+
+    /* Prototype 35: Number subtle change. Changed digits cross-fade in place;
+       --p35-dir is 1 when the number went up and -1 when it went down. */
+    .p35-number {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 24px;
+      line-height: 24px;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: baseline;
+      user-select: none;
+    }
+    .p35-slot { position: relative; display: inline-block; }
+    .p35-new { display: inline-block; }
+    .p35-old { position: absolute; inset: 0; text-align: center; pointer-events: none; }
+    .p35-number.is-animating .p35-new { animation: p35-in var(--p35-dur) var(--p35-ease) both; }
+    .p35-number.is-animating .p35-old { animation: p35-out var(--p35-dur) var(--p35-ease) both; }
+    @keyframes p35-in {
+      from {
+        transform: translateY(calc(var(--p35-distance) * var(--p35-dir, 1)));
+        opacity: 0;
+        filter: blur(var(--p35-blur));
+      }
+    }
+    @keyframes p35-out {
+      to {
+        transform: translateY(calc(var(--p35-distance) * var(--p35-dir, 1) * -1));
+        opacity: 0;
+        filter: blur(var(--p35-blur));
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .p35-number .p35-new { animation: none !important; }
+      .p35-number .p35-old { display: none; }
     }
 
     /* ============================================================ */
@@ -3796,8 +3805,7 @@
       .p20-morph .p20-menu,
       .p24-chevron,
       .p24-arm,
-      .p26-value,
-      .p26-col-strip {
+      .p35-old {
         transform: none !important;
         filter: none !important;
       }
@@ -4396,8 +4404,16 @@
     <section class="proto-card">
       <p class="proto-label">26.pototype</p>
       <div class="stage">
-        <div class="p26-value" id="p26-value" aria-label="Count"></div>
+        <div class="p26-value" id="p26-value" data-proto-reel aria-label="Count"></div>
         <button class="btn" data-proto="26">Animate</button>
+      </div>
+    </section>
+
+    <section class="proto-card">
+      <p class="proto-label">35.pototype</p>
+      <div class="stage">
+        <div class="p35-number" id="p35-number" data-proto-subtle data-value="1284" aria-label="1,284">1,284</div>
+        <button class="btn" data-proto="35">Animate</button>
       </div>
     </section>
 
@@ -4537,25 +4553,16 @@
           <span class="cp-section-title">2. Number pop-in</span>
           <button type="button" class="cp-export">Export</button>
         </header>
-        <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p9-dur" data-unit="ms" min="0" max="2000" step="10" value="500"></div>
-        <div class="cp-row"><span class="cp-label">Distance (px)</span><input type="number" data-var="--p9-distance" data-unit="px" min="0" max="40" step="1" value="8"></div>
-        <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p9-stagger" data-unit="ms" min="0" max="500" step="5" value="70"></div>
-        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p9-blur" data-unit="px" min="0" max="20" step="0.5" value="2"></div>
-        <div class="cp-row"><span class="cp-label">Bounce</span><input type="number" data-var="--p9-bounce" data-unit="" data-ease-template="--p9-ease:cubic-bezier(0.34, {v}, 0.64, 1)" min="0" max="2.5" step="0.02" value="1.45"></div>
-        <div class="cp-row">
-          <span class="cp-label">Direction</span>
-          <select class="cp-dir" data-dir-vars="--p9-dir-x,--p9-dir-y">
-            <option value="0,1" selected>from below</option>
-            <option value="0,-1">from above</option>
-            <option value="-1,0">from left</option>
-            <option value="1,0">from right</option>
-            <option value="-0.7071,0.7071">from bottom-left</option>
-            <option value="0.7071,0.7071">from bottom-right</option>
-            <option value="-0.7071,-0.7071">from top-left</option>
-            <option value="0.7071,-0.7071">from top-right</option>
-            <option value="0,0">none (fade only)</option>
-          </select>
-        </div>
+        <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p9-dur" data-unit="ms" min="100" max="2000" step="10" value="600"></div>
+        <div class="cp-row"><span class="cp-label">Exit time (ms)</span><input type="number" data-var="--p9-exit-dur" data-unit="ms" min="0" max="1000" step="5" value="155"></div>
+        <div class="cp-row"><span class="cp-label">Enter delay (ms)</span><input type="number" data-var="--p9-enter-delay" data-unit="ms" min="0" max="500" step="5" value="50"></div>
+        <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p9-stagger" data-unit="ms" min="0" max="300" step="5" value="40"></div>
+        <div class="cp-row"><span class="cp-label">Distance (px)</span><input type="number" data-var="--p9-distance" data-unit="px" min="0" max="60" step="0.1" value="12.5"></div>
+        <div class="cp-row"><span class="cp-label">Exit distance (px)</span><input type="number" data-var="--p9-exit-distance" data-unit="px" min="0" max="60" step="0.1" value="12.5"></div>
+        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p9-blur" data-unit="px" min="0" max="16" step="0.1" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Pull back (px)</span><input type="number" data-var="--p9-lift" data-unit="px" min="0" max="20" step="0.1" value="3"></div>
+        <div class="cp-row"><span class="cp-label">Start scale</span><input type="number" data-var="--p9-start-scale" data-unit="" min="0.3" max="1" step="0.01" value="0.7"></div>
+        <div class="cp-row"><span class="cp-label">Bounce peak</span><input type="number" data-var="--p9-peak" data-unit="" min="1" max="1.3" step="0.005" value="1.03"></div>
       </section>
 
       <section class="cp-section">
@@ -4949,15 +4956,37 @@
           <span class="cp-section-title">26. Spinning reel</span>
           <button type="button" class="cp-export">Export</button>
         </header>
-        <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p26-dur" data-unit="ms" min="0" max="5000" step="50" value="1400"></div>
-        <div class="cp-row"><span class="cp-label">Target</span><input type="number" data-var="--p26-target" data-unit="" min="0" max="10000000" step="1" value="100"></div>
-        <div class="cp-row"><span class="cp-label">Spins (loops)</span><input type="number" data-var="--p26-spins" data-unit="" min="1" max="12" step="1" value="3"></div>
+        <div class="cp-row"><span class="cp-label">Time per number (ms)</span><input type="number" data-var="--p26-step-dur" data-unit="ms" min="30" max="500" step="5" value="130"></div>
+        <div class="cp-row"><span class="cp-label">From</span><input type="number" data-var="--p26-from" data-unit="" min="0" max="10000000" step="1" value="100"></div>
+        <div class="cp-row"><span class="cp-label">Target</span><input type="number" data-var="--p26-target" data-unit="" min="0" max="10000000" step="1" value="178"></div>
+        <div class="cp-row"><span class="cp-label">Extra turns</span><input type="number" data-var="--p26-spins" data-unit="" min="0" max="8" step="1" value="0"></div>
         <div class="cp-row"><span class="cp-label">Cell (px)</span><input type="number" data-var="--p26-cell" data-unit="px" min="16" max="60" step="1" value="30"></div>
-        <div class="cp-row"><span class="cp-label">Rows (fade)</span><input type="number" data-var="--p26-rows" data-unit="" min="1" max="7" step="2" value="1"></div>
-        <div class="cp-row"><span class="cp-label">Motion blur (px)</span><input type="number" data-var="--p26-spin-blur" data-unit="px" min="0" max="20" step="0.5" value="3"></div>
-        <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p26-stagger" data-unit="ms" min="0" max="500" step="10" value="90"></div>
+        <div class="cp-row"><span class="cp-label">Stagger (ms)</span><input type="number" data-var="--p26-stagger" data-unit="ms" min="0" max="500" step="5" value="90"></div>
         <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p26-ease"></select></div>
         <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p26-ease" spellcheck="false" aria-label="Ease value"></div>
+        <div class="cp-row"><span class="cp-label">Side scale</span><input type="number" data-var="--p26-side-scale" data-unit="" min="0.3" max="1" step="0.01" value="0.7"></div>
+        <div class="cp-row"><span class="cp-label">Side offset (px)</span><input type="number" data-var="--p26-side-offset" data-unit="px" min="0" max="40" step="0.5" value="12"></div>
+        <div class="cp-row"><span class="cp-label">Side blur (px)</span><input type="number" data-var="--p26-side-blur" data-unit="px" min="0" max="16" step="0.1" value="2"></div>
+        <div class="cp-row"><span class="cp-label">Side opacity</span><input type="number" data-var="--p26-side-opacity" data-unit="" min="0" max="1" step="0.01" value="0.17"></div>
+        <div class="cp-row"><span class="cp-label">Middle scale</span><input type="number" data-var="--p26-center-scale" data-unit="" min="0.5" max="1.1" step="0.01" value="0.9"></div>
+        <div class="cp-row"><span class="cp-label">Middle blur (px)</span><input type="number" data-var="--p26-center-blur" data-unit="px" min="0" max="8" step="0.1" value="1"></div>
+        <div class="cp-row"><span class="cp-label">Anticipation (ms)</span><input type="number" data-var="--p26-antic-dur" data-unit="ms" min="0" max="400" step="5" value="100"></div>
+        <div class="cp-row"><span class="cp-label">Anticipation scale</span><input type="number" data-var="--p26-antic-scale" data-unit="" min="0.5" max="1" step="0.01" value="0.94"></div>
+        <div class="cp-row"><span class="cp-label">Pull back (px)</span><input type="number" data-var="--p26-antic-lift" data-unit="px" min="0" max="20" step="0.1" value="3"></div>
+        <div class="cp-row"><span class="cp-label">Spring (ms)</span><input type="number" data-var="--p26-land-dur" data-unit="ms" min="100" max="1500" step="10" value="740"></div>
+        <div class="cp-row"><span class="cp-label">Bounce peak</span><input type="number" data-var="--p26-land-peak" data-unit="" min="1" max="1.3" step="0.005" value="1.03"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">35. Number subtle change</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Duration (ms)</span><input type="number" data-var="--p35-dur" data-unit="ms" min="50" max="1500" step="5" value="455"></div>
+        <div class="cp-row"><span class="cp-label">Distance (px)</span><input type="number" data-var="--p35-distance" data-unit="px" min="0" max="20" step="0.1" value="3.4"></div>
+        <div class="cp-row"><span class="cp-label">Blur (px)</span><input type="number" data-var="--p35-blur" data-unit="px" min="0" max="8" step="0.1" value="1"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p35-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p35-ease" spellcheck="false" aria-label="Ease value"></div>
       </section>
 
       <section class="cp-section">
@@ -5841,85 +5870,169 @@
         if (label) label.addEventListener("click", toggle);
       })();
 
-      // --- Prototype 26: Spinning reel counter ------------------
-      // Builds one clipped reel (.p26-col) per digit of the target,
-      // each holding a strip of (spins+1)·10 cells (0-9 repeated).
-      // p26Spin() resets every strip to the top with full DIRECTIONAL
-      // blur (vertical-only, via SVG feGaussianBlur — see p26EnsureDefs),
-      // then transitions each up by (spins·10 + digit) cells so it
-      // spins several turns and lands on its digit; the blur decays to
-      // 0 as it settles, and a per-column transition-delay makes the
-      // reels land left-to-right. Non-digit chars (comma) render as
-      // static separators so only digits spin. Resting state always
-      // shows 0 — Animate spins up to --p26-target.
-      const P26_BLUR_MAX = 10; // enough reels for any target up to 10,000,000
+      /* ── Prototype 9: Number pop-in ────────────────────────────
+         Changed digits get a slot holding the old digit (leaves upward)
+         and the new one (rises just after it, springs into place). The
+         leading characters both numbers share stay still; the last two
+         characters ride --p9-stagger behind. */
+      function p9Set(el, str) {
+        var prev = el.getAttribute("data-value");
+        if (prev === null) {
+          prev = Array.prototype.map.call(el.children, function (c) { return c.textContent; }).join("");
+        }
+        var same = 0;
+        while (same < prev.length && same < str.length && prev[same] === str[same]) same++;
+        el.setAttribute("data-value", str);
+        el.classList.remove("is-animating");
+        el.textContent = "";
+        str.split("").forEach(function (ch, i) {
+          var fresh = document.createElement("span");
+          fresh.className = "p9-char";
+          fresh.textContent = ch;
+          var fromEnd = str.length - 1 - i;
+          var stagger = fromEnd === 1 ? "1" : fromEnd === 0 ? "2" : null;
+          if (i < same || ch < "0" || ch > "9") {
+            fresh.setAttribute("data-same", "");
+            el.appendChild(fresh);
+            return;
+          }
+          var slot = document.createElement("span");
+          slot.className = "p9-slot";
+          if (stagger) slot.setAttribute("data-stagger", stagger);
+          var oldCh = prev[prev.length - (str.length - i)];
+          if (oldCh !== undefined && oldCh >= "0" && oldCh <= "9") {
+            var old = document.createElement("span");
+            old.className = "p9-old";
+            old.setAttribute("aria-hidden", "true");
+            old.textContent = oldCh;
+            slot.appendChild(old);
+          }
+          slot.appendChild(fresh);
+          el.appendChild(slot);
+        });
+        // Force reflow so re-adding the class replays.
+        // eslint-disable-next-line no-unused-expressions
+        el.offsetHeight;
+        el.classList.add("is-animating");
+      }
+
+      /* ── Prototype 35: Number subtle change ───────────────────
+         Changed digits cross-fade in place, rising when the number goes up
+         and falling when it goes down. */
+      function p35Set(el, value) {
+        var prevValue = Number(el.getAttribute("data-value"));
+        var prev = prevValue.toLocaleString("en-US");
+        var str = value.toLocaleString("en-US");
+        var sameLength = prev.length === str.length;
+        el.setAttribute("data-value", String(value));
+        el.setAttribute("aria-label", str);
+        el.style.setProperty("--p35-dir", value >= prevValue ? "1" : "-1");
+        el.classList.remove("is-animating");
+        el.textContent = "";
+        str.split("").forEach(function (ch, i) {
+          if (sameLength && prev[i] === ch) {
+            el.appendChild(document.createTextNode(ch));
+            return;
+          }
+          var slot = document.createElement("span");
+          slot.className = "p35-slot";
+          if (sameLength) {
+            var old = document.createElement("span");
+            old.className = "p35-old";
+            old.setAttribute("aria-hidden", "true");
+            old.textContent = prev[i];
+            slot.appendChild(old);
+          }
+          var fresh = document.createElement("span");
+          fresh.className = "p35-new";
+          fresh.textContent = ch;
+          slot.appendChild(fresh);
+          el.appendChild(slot);
+        });
+        // eslint-disable-next-line no-unused-expressions
+        el.offsetHeight;
+        el.classList.add("is-animating");
+      }
+
+      /* ── Prototype 26: Spinning counter ────────────────────────
+         Each digit is a drum of 0-9. A rAF loop rolls it through the
+         numbers up to its target (plus --p26-spins extra full turns, 0 by
+         default), --p26-step-dur per number with --p26-ease across the
+         whole roll, and places every digit from its distance to the
+         middle: the middle one is on top at --p26-center-scale /
+         --p26-center-blur, the ones above and below sit behind it at
+         --p26-side-scale / --p26-side-blur / --p26-side-opacity. The target
+         lands while still travelling in: it eases to --p26-antic-scale and
+         pulls back against the roll, then a spring snaps it into the middle,
+         blur clears, the neighbours fade, and it bounces past 100%. */
+      var P26_STEP = 50 * Math.PI / 180; // drum angle between two digits
+      var P26_ENTER_MS = 120;            // rest to rolling
+      var P26_FADE_END = 1.8;            // steps from the middle where a digit is gone
+      var P26_LAND_AT = 0.6;             // steps from the middle where the target starts landing
+      var P26_ARRIVE_AT = 0.29;          // share of the spring where it reaches the middle
+      var P26_CLEAR_MS = 200;            // blur + neighbours clearing at the start of the spring
+      var P26_SPRING_DAMP = 3;
+      var P26_SPRING_FREQ = 3;
       function p26ReadNum(name, fallback) {
-        const v = parseFloat(
-          getComputedStyle(document.documentElement).getPropertyValue(name)
-        );
+        var v = parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue(name));
         return isNaN(v) ? fallback : v;
       }
-      // One-time hidden <svg><defs> holding P26_BLUR_MAX independent
-      // <feGaussianBlur> filters — one per reel column, so each column's
-      // blur can decay on its own staggered timeline. stdDeviation="0 Y"
-      // blurs only the Y axis (the direction the strip actually moves),
-      // which reads as a real motion streak instead of a uniform frosted
-      // blur that would also smear the glyph sideways.
-      function p26EnsureDefs() {
-        if (document.getElementById("p26-blur-defs")) return;
-        const svgNS = "http://www.w3.org/2000/svg";
-        const svg = document.createElementNS(svgNS, "svg");
-        svg.setAttribute("id", "p26-blur-defs");
-        svg.setAttribute("aria-hidden", "true");
-        svg.style.position = "absolute";
-        svg.style.width = "0";
-        svg.style.height = "0";
-        svg.style.overflow = "hidden";
-        const defs = document.createElementNS(svgNS, "defs");
-        for (let i = 0; i < P26_BLUR_MAX; i++) {
-          const filter = document.createElementNS(svgNS, "filter");
-          filter.setAttribute("id", "p26-blur-" + i);
-          // Generous vertical filter region so a large stdDeviation
-          // isn't clipped; tight horizontally since there's no X blur.
-          filter.setAttribute("x", "-20%");
-          filter.setAttribute("y", "-150%");
-          filter.setAttribute("width", "140%");
-          filter.setAttribute("height", "400%");
-          const fe = document.createElementNS(svgNS, "feGaussianBlur");
-          fe.setAttribute("id", "p26-blur-fe-" + i);
-          fe.setAttribute("stdDeviation", "0 0");
-          filter.appendChild(fe);
-          defs.appendChild(filter);
+      // cubic-bezier(...) string to a progress function. Falls back to linear.
+      function p26Curve(name, fallback) {
+        var raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+        var m = raw.match(/cubic-bezier\(([^)]+)\)/);
+        var n = m ? m[1].split(",").map(parseFloat) : [0, 0, 1, 1];
+        function at(a, b, t) {
+          return 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t;
         }
-        svg.appendChild(defs);
-        document.body.appendChild(svg);
+        return function (x) {
+          if (x <= 0) return 0;
+          if (x >= 1) return 1;
+          var lo = 0, hi = 1, t = x;
+          for (var i = 0; i < 20; i++) {
+            if (at(n[0], n[2], t) < x) lo = t; else hi = t;
+            t = (lo + hi) / 2;
+          }
+          return at(n[1], n[3], t);
+        };
       }
-      function p26Build(el, str, spins, rows) {
+      // Damped wave over s = 0-1: starts at 1, crosses 0, swings negative
+      // (the bounce), rebounds once, ends at 0.
+      function p26Wave(s) {
+        if (s >= 1) return 0;
+        return Math.exp(-P26_SPRING_DAMP * s) * Math.cos(P26_SPRING_FREQ * Math.PI * s) * (1 - s);
+      }
+      // Deepest negative swing, so --p26-land-peak can set the bounce exactly.
+      var P26_WAVE_TROUGH = (function () {
+        var low = 0;
+        for (var i = 1; i < 400; i++) low = Math.min(low, p26Wave(i / 400));
+        return -low;
+      })();
+      function p26Build(el, str) {
         el.innerHTML = "";
-        const cols = [];
-        // Extra trailing cells (= rows) so the rows BELOW the landing
-        // digit always have real content to show inside the window.
-        const total = (spins + 1) * 10 + rows;
-        for (let c = 0; c < str.length; c++) {
-          const ch = str[c];
+        var cols = [];
+        for (var c = 0; c < str.length; c++) {
+          var ch = str[c];
           if (ch >= "0" && ch <= "9") {
-            const col = document.createElement("span");
+            var col = document.createElement("span");
             col.className = "p26-col";
-            const strip = document.createElement("span");
-            strip.className = "p26-col-strip";
-            for (let k = 0; k < total; k++) {
-              const cell = document.createElement("span");
+            var sizer = document.createElement("span");
+            sizer.className = "p26-sizer";
+            sizer.textContent = "0";
+            col.appendChild(sizer);
+            var cells = [];
+            for (var k = 0; k < 10; k++) {
+              var cell = document.createElement("span");
               cell.className = "p26-digit";
-              cell.textContent = String(k % 10);
-              strip.appendChild(cell);
+              cell.textContent = String(k);
+              col.appendChild(cell);
+              cells.push(cell);
             }
-            col.appendChild(strip);
             el.appendChild(col);
-            const idx = cols.length % P26_BLUR_MAX;
-            strip.style.filter = "url(#p26-blur-" + idx + ")";
-            cols.push({ strip: strip, digit: +ch, blurIndex: idx });
+            cols.push({ cells: cells, digit: +ch });
           } else {
-            const sep = document.createElement("span");
+            var sep = document.createElement("span");
             sep.className = "p26-sep";
             sep.textContent = ch;
             el.appendChild(sep);
@@ -5927,88 +6040,173 @@
         }
         return cols;
       }
-      // translateY that centres cell `index` in a `rows`-tall window.
-      function p26CenterY(index, cell, rows) {
-        return -((index - Math.floor(rows / 2)) * cell);
+      // Shows one digit at rest: no blur, no neighbours, 100%.
+      function p26Rest(col, digit) {
+        col.cells.forEach(function (cell, d) {
+          cell.style.transform = "none";
+          cell.style.filter = "none";
+          cell.style.zIndex = "";
+          cell.style.opacity = d === digit ? "1" : "0";
+        });
       }
-      function p26SetBlur(blurIndex, y) {
-        const fe = document.getElementById("p26-blur-fe-" + blurIndex);
-        if (fe) fe.setAttribute("stdDeviation", "0 " + y);
+      function p26Smooth(x) {
+        x = Math.max(0, Math.min(1, x));
+        return x * x * (3 - 2 * x);
+      }
+      // How a digit looks purely from its distance to the middle of the drum.
+      function p26Look(dist, middle, o) {
+        var angle = Math.min(dist * P26_STEP, Math.PI / 2);
+        // 1 in the middle, 0 at one step away, below 0 further back.
+        var face = (Math.cos(angle) - Math.cos(P26_STEP)) / (1 - Math.cos(P26_STEP));
+        return {
+          angle: angle,
+          scale: o.sideScale + (middle - o.sideScale) * face,
+          back: dist <= 1
+            ? 1 + (o.sideOpacity - 1) * dist
+            : o.sideOpacity * (1 - (dist - 1) / (P26_FADE_END - 1))
+        };
+      }
+      // Places the ten digits for drum position `pos`. `spread` 0-1 is how
+      // spun-up the drum is (neighbours + blur); `middle` is the middle
+      // digit's scale. `land` overrides the target digit while it lands.
+      function p26Place(col, pos, spread, middle, o, land) {
+        var radius = o.offset / Math.sin(P26_STEP);
+        col.cells.forEach(function (cell, d) {
+          var p = ((d - pos) % 10 + 10) % 10;
+          if (p > 5) p -= 10;
+          var dist = Math.abs(p);
+          if (dist >= P26_FADE_END) { cell.style.opacity = "0"; return; }
+          var look = p26Look(dist, middle, o);
+          // Upcoming digits sit above the middle, so the drum turns downward.
+          var y = (p < 0 ? 1 : -1) * radius * Math.sin(look.angle);
+          var blur = (o.centerBlur + (o.sideBlur - o.centerBlur) * Math.min(dist, 1)) * spread;
+          // Only digits away from the middle follow `spread`.
+          var away = Math.max(0, Math.min(1, (dist - 0.3) / 0.5));
+          var opacity = look.back * (1 - (1 - spread) * away);
+          var scale = look.scale;
+          var z = 100 - Math.round(dist * 10);
+          if (land && d === col.digit) {
+            y = y * land.arrive + land.lift;
+            scale = land.scale;
+            opacity = land.opacity;
+            z = 200;
+          }
+          cell.style.transform = "translateY(" + y.toFixed(2) + "px) scale(" + scale.toFixed(4) + ")";
+          cell.style.filter = blur > 0.01 ? "blur(" + blur.toFixed(2) + "px)" : "none";
+          cell.style.opacity = opacity.toFixed(3);
+          cell.style.zIndex = String(z);
+        });
       }
       function p26Spin(el) {
-        p26EnsureDefs();
-        const target = Math.round(p26ReadNum("--p26-target", 100));
-        const str = target.toLocaleString("en-US");
-        const spins = Math.max(1, Math.round(p26ReadNum("--p26-spins", 3)));
-        const cell = p26ReadNum("--p26-cell", 30);
-        const rows = Math.max(1, Math.round(p26ReadNum("--p26-rows", 3)));
-        const blurAmt = p26ReadNum("--p26-spin-blur", 3);
-        const dur = readMs("--p26-dur", 1400);
-        const stagger = readMs("--p26-stagger", 90);
-        const ease = getComputedStyle(document.documentElement)
-          .getPropertyValue("--p26-ease").trim() || "cubic-bezier(0.16, 1, 0.3, 1)";
-        const reduceMotion = window.matchMedia(
-          "(prefers-reduced-motion: reduce)"
-        ).matches;
+        // First run: --p26-from to --p26-target. After that it carries on from
+        // the number on screen to a random three-digit one.
+        var from = el._p26Value;
+        var target;
+        if (from === undefined) {
+          from = Math.round(p26ReadNum("--p26-from", 100));
+          target = Math.round(p26ReadNum("--p26-target", 178));
+        } else {
+          do { target = 100 + Math.floor(Math.random() * 900); } while (target === from);
+        }
+        el._p26Value = target;
+        var str = target.toLocaleString("en-US");
+        var spins = Math.max(0, Math.round(p26ReadNum("--p26-spins", 0)));
+        var stepDur = readMs("--p26-step-dur", 130);
+        var stagger = readMs("--p26-stagger", 90);
+        var anticDur = readMs("--p26-antic-dur", 100);
+        var landDur = readMs("--p26-land-dur", 740);
+        var anticScale = p26ReadNum("--p26-antic-scale", 0.94);
+        var anticLift = p26ReadNum("--p26-antic-lift", 3);
+        var landPeak = p26ReadNum("--p26-land-peak", 1.03);
+        var centerScale = p26ReadNum("--p26-center-scale", 0.9);
+        var ease = p26Curve("--p26-ease", "cubic-bezier(0.35, -0.02, 0.43, 1)");
+        var o = {
+          offset: p26ReadNum("--p26-side-offset", 12),
+          sideScale: p26ReadNum("--p26-side-scale", 0.7),
+          sideBlur: p26ReadNum("--p26-side-blur", 2),
+          sideOpacity: p26ReadNum("--p26-side-opacity", 0.17),
+          centerBlur: p26ReadNum("--p26-center-blur", 1)
+        };
+        var reduce = window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         el.setAttribute("aria-label", str);
-        const cols = p26Build(el, str, spins, rows);
-        // Prime: start centred near the top of the strip, full blur set
-        // directly on each column's <feGaussianBlur> (SVG attributes
-        // aren't CSS-transitionable, so the decay runs via rAF below).
-        const startY = p26CenterY(Math.floor(rows / 2), cell, rows); // = 0
-        cols.forEach(function (c) {
-          c.strip.style.transition = "none";
-          c.strip.style.transform = "translateY(" + startY + "px)";
-          p26SetBlur(c.blurIndex, reduceMotion ? 0 : blurAmt);
-        });
-        // eslint-disable-next-line no-unused-expressions
-        el.offsetWidth; // commit the primed state
-        // Spin: land each reel with its digit centred, cascading L→R
-        // via transition-delay (the transform tween is plain CSS).
-        cols.forEach(function (c, i) {
-          const landIndex = spins * 10 + c.digit;
-          const delay = i * stagger;
-          c.strip.style.transition = "transform " + dur + "ms " + ease + " " + delay + "ms";
-          c.strip.style.transform = "translateY(" + p26CenterY(landIndex, cell, rows) + "px)";
-        });
         if (el._p26RafId) window.cancelAnimationFrame(el._p26RafId);
-        if (reduceMotion) return; // transform is ~instant under the
-                                    // global reduced-motion rule; blur
-                                    // is already 0 from the prime step.
-        // Directional-blur decay: linear fade blurAmt → 0 across each
-        // column's own [delay, delay+dur] window, matching the
-        // transform's per-column cascade so the streak clears exactly
-        // as that digit lands.
-        const t0 = performance.now();
-        const maxEnd = (cols.length - 1) * stagger + dur;
+        var cols = p26Build(el, str);
+        if (reduce) {
+          cols.forEach(function (c) { p26Rest(c, c.digit); });
+          return;
+        }
+        // Each column starts on its digit of the old number, aligned from the right.
+        var fromDigits = String(from).padStart(cols.length, "0").slice(-cols.length);
+        cols.forEach(function (c, i) {
+          c.from = +fromDigits[i];
+          p26Rest(c, c.from);
+          // A digit that doesn't change has nothing to do.
+          if (spins === 0 && c.from === c.digit) c.done = true;
+        });
+        var t0 = performance.now();
         (function tick() {
-          const t = performance.now() - t0;
+          var t = performance.now() - t0;
+          var running = false;
           cols.forEach(function (c, i) {
-            const delay = i * stagger;
-            const local = Math.min(1, Math.max(0, (t - delay) / dur));
-            p26SetBlur(c.blurIndex, (blurAmt * (1 - local)).toFixed(2));
+            if (c.done) return;
+            var local = t - i * stagger;
+            if (local <= 0) { running = true; return; }
+            var total = spins * 10 + ((c.digit - c.from + 10) % 10);
+            // Time per number is fixed, so a longer roll takes longer.
+            var pos = c.from + total * ease(local / (total * stepDur));
+            var enter = Math.min(1, local / P26_ENTER_MS);
+            if (c.landAt === undefined && c.from + total - pos < P26_LAND_AT) c.landAt = t;
+            var since = c.landAt === undefined ? -1 : t - c.landAt;
+            if (since >= anticDur + landDur) {
+              p26Rest(c, c.digit);
+              c.done = true;
+              return;
+            }
+            running = true;
+            var middle = 1 + (centerScale - 1) * enter;
+            var spread = enter;
+            var land = null;
+            if (since >= 0) {
+              // Start from how the target looks right now, so nothing jumps.
+              if (!c.landFrom) c.landFrom = p26Look(c.from + total - pos, middle, o);
+              var arrive = 1 - p26Smooth(since / (anticDur + landDur * P26_ARRIVE_AT));
+              if (since < anticDur) {
+                var a = p26Smooth(since / anticDur);
+                land = {
+                  scale: c.landFrom.scale + (anticScale - c.landFrom.scale) * a,
+                  lift: -anticLift * a,
+                  opacity: c.landFrom.back + (1 - c.landFrom.back) * a,
+                  arrive: arrive
+                };
+              } else {
+                var sp = since - anticDur;
+                var sn = sp / landDur;
+                var wave = p26Wave(sn);
+                // Before the first crossing it rises out of the dip; after that
+                // the wave swings around 100%, peaking at --p26-land-peak.
+                land = {
+                  scale: sn < 1 / (2 * P26_SPRING_FREQ)
+                    ? 1 + (anticScale - 1) * wave
+                    : 1 - (landPeak - 1) * wave / P26_WAVE_TROUGH,
+                  lift: -anticLift * wave,
+                  opacity: 1,
+                  arrive: arrive
+                };
+                spread = 1 - Math.min(1, sp / P26_CLEAR_MS);
+              }
+            }
+            p26Place(c, pos, spread, middle, o, land);
           });
-          if (t < maxEnd + 40) {
-            el._p26RafId = window.requestAnimationFrame(tick);
-          } else {
-            cols.forEach(function (c) { p26SetBlur(c.blurIndex, 0); });
-            el._p26RafId = null;
-          }
+          el._p26RafId = running ? window.requestAnimationFrame(tick) : null;
         })();
       }
-      (function initP26() {
-        const el = document.getElementById("p26-value");
-        if (!el) return;
-        p26EnsureDefs();
-        // Resting state always shows 0 — Animate spins up to
-        // --p26-target. Single static digit, no blur, no spin.
-        const rows = Math.max(1, Math.round(p26ReadNum("--p26-rows", 1)));
-        const cell = p26ReadNum("--p26-cell", 30);
-        el.setAttribute("aria-label", "0");
-        const cols = p26Build(el, "0", 1, rows);
-        cols.forEach(function (c) {
-          c.strip.style.transform = "translateY(" + p26CenterY(c.digit, cell, rows) + "px)";
-          p26SetBlur(c.blurIndex, 0);
+      // Resting state: render --p26-from in every reel on load.
+      (function initP26Reels() {
+        var from = Math.round(p26ReadNum("--p26-from", 100)).toLocaleString("en-US");
+        document.querySelectorAll("[data-proto-reel]").forEach(function (el) {
+          el.setAttribute("aria-label", from);
+          p26Build(el, from).forEach(function (c) { p26Rest(c, c.digit); });
         });
       })();
 
@@ -6470,64 +6668,10 @@
           }
           case "9": {
             if (!p9Number) break;
-            // Generate a new random number with the same digit pattern
-            // as the Figma spec: two integer digits + "." + two decimal digits.
-            const intPart = Math.floor(Math.random() * 90) + 10; // 10–99
-            const decPart = Math.floor(Math.random() * 100);     // 0–99
-            const str = String(intPart) + "." + String(decPart).padStart(2, "0");
-            const chars = str.split("");
-            const len = chars.length;
-
-            // Snapshot the currently-rendered digits into an absolutely-
-            // positioned ghost overlay, then play the exit animation on
-            // them. The ghost is removed once the animation completes.
-            // This runs in parallel with the entry animation below so
-            // old + new digits animate simultaneously in the same
-            // direction (old going out, new coming in).
-            const oldGhost = p9Number.querySelector(".p9-ghost");
-            if (oldGhost) oldGhost.remove();
-
-            const liveChars = p9Number.querySelectorAll(":scope > .p9-char");
-            if (liveChars.length) {
-              const ghost = document.createElement("span");
-              ghost.className = "p9-ghost";
-              liveChars.forEach(function (ch) {
-                ghost.appendChild(ch.cloneNode(true));
-              });
-              p9Number.appendChild(ghost);
-              const dur = readMs("--p9-dur", 500);
-              const stagger = readMs("--p9-stagger", 70);
-              window.setTimeout(function () {
-                if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
-              }, dur + stagger * 2 + 50);
-            }
-
-            // Remove the animating class first so the next assignment
-            // restarts the CSS animation cleanly for each click.
-            p9Number.classList.remove("is-animating");
-            // Remove only the live (non-ghost) character spans so the
-            // in-flight ghost keeps playing its exit animation.
-            p9Number.querySelectorAll(":scope > .p9-char").forEach(function (el) {
-              el.remove();
-            });
-            chars.forEach(function (ch, i) {
-              const span = document.createElement("span");
-              span.className = "p9-char";
-              span.textContent = ch;
-              // Last two characters get staggered animation-delay via CSS.
-              if (i === len - 2) span.setAttribute("data-stagger", "1");
-              else if (i === len - 1) span.setAttribute("data-stagger", "2");
-              // Insert before the ghost so new digits occupy the flow
-              // and the ghost stays on top as the absolute overlay.
-              const ghostEl = p9Number.querySelector(".p9-ghost");
-              if (ghostEl) p9Number.insertBefore(span, ghostEl);
-              else p9Number.appendChild(span);
-            });
-            // Force reflow so the removed class is committed before we
-            // re-add it, guaranteeing the animation replays.
-            // eslint-disable-next-line no-unused-expressions
-            p9Number.offsetHeight;
-            p9Number.classList.add("is-animating");
+            // A new two-integer-digit + "." + two-decimal number.
+            const intPart = Math.floor(Math.random() * 90) + 10;
+            const decPart = Math.floor(Math.random() * 100);
+            p9Set(p9Number, String(intPart) + "." + String(decPart).padStart(2, "0"));
             break;
           }
           case "6": {
@@ -6657,6 +6801,14 @@
             if (!toast) break;
             const open = toast.classList.toggle("is-open");
             toast.setAttribute("aria-hidden", open ? "false" : "true");
+            break;
+          }
+          case "35": {
+            const subtleEl = document.getElementById("p35-number");
+            if (!subtleEl) break;
+            let subtleDelta = 0;
+            while (subtleDelta === 0) subtleDelta = Math.floor(Math.random() * 81) - 40;
+            p35Set(subtleEl, Number(subtleEl.getAttribute("data-value")) + subtleDelta);
             break;
           }
           case "26": {

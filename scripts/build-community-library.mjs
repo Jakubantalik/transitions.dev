@@ -73,7 +73,7 @@ const cards = [];
 for (const m of page.matchAll(/<article class="card" data-proto-card[^>]*>/g)) {
   const art = element(page, m.index, "article");
   if (!art) continue; // a card template inside a script
-  const key = (art.match(/data-copy-key="(p\d+)"/) || [])[1];
+  const key = (art.match(/data-(?:copy|remix)-key="(p\d+)"/) || [])[1];
   if (!key) continue; // Pro cards copy through the API (data-pro-copy)
   const stageAt = art.indexOf('<div class="card-stage"');
   cards.push({

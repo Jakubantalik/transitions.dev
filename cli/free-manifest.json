@@ -130,6 +130,11 @@
     "tier": "free"
   },
   {
+    "slug": "number-subtle-change",
+    "name": "Number subtle change",
+    "tier": "free"
+  },
+  {
     "slug": "toggle",
     "name": "Toggle",
     "tier": "free"

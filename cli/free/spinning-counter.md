@@ -2,64 +2,103 @@
 
 ## When to use
 
-Numbers that change with fanfare — points, prices, follower counts, dashboards KPIs. Each digit is a clipped vertical reel of 0-9 cells; the strip translates up through several full spins before landing on the target digit, with a per-column stagger and a vertical-only SVG blur while moving.
+Numbers that change with fanfare: points, rewards, milestones, dashboard KPIs. Each digit is a drum of 0-9 that rolls through the numbers up to its target. Nothing is cropped: the numbers above and below sit behind the middle one, smaller, fainter and blurrier, so it reads as 3D. Digits that do not change stay still, and each target lands with an anticipation and a spring past 100%.
 
-Reach for this over **number pop-in** when the change should feel like an event (a jackpot roll) rather than a quiet update. The reels are built in JS — one `.t-reel-col` per digit — so bring the small builder snippet from the recipe.
+Reach for this over **number pop-in** when the change should feel like an event rather than an update. The drums are built and driven in JS, so bring the whole script from the recipe. For numbers that update often, use **number subtle change** instead.
 
 ## HTML usage
 
 ```html
-<div class="t-reel"></div>  <!-- reels built in JS -->
+<div class="t-reel"></div>  <!-- drums built in JS -->
 ```
 
-Build one .t-reel-col per digit, each clipping a strip
-(.t-reel-strip) of 0-9 cells; translate the strip up by
-(spins*10 + digit) cells to spin then land. A directional
-(vertical-only) SVG feGaussianBlur stdDeviation="0 Y" gives
-the motion streak (CSS blur() would smear sideways); decay it
-to 0 per column as each reel settles.
+One .t-reel-col per digit: a hidden sizer for the width, plus ten
+stacked .t-reel-digit cells. JS places each cell per frame from its
+distance to the middle of the drum. Digits only roll through the
+numbers on the way to their target; a digit that does not change
+stays still. The target lands while still travelling in, with a
+spring past 100%.
+
+Sizes: the tokens are tuned for a 24px number. Scale --reel-cell,
+--reel-side-offset, the blurs and --reel-antic-lift with your font size.
+
+The script that drives the drums is in the React tab and the skill recipe.
 
 ## Tunable variables
 
 | Variable | Default | Notes |
 | --- | --- | --- |
-| `--reel-dur` | `1400ms` | sourced from `--p26-dur` |
-| `--reel-cell` | `30px` | sourced from `--p26-cell` |
-| `--reel-spin-blur` | `3px` | sourced from `--p26-spin-blur` |
+| `--reel-step-dur` | `130ms` | sourced from `--p26-step-dur` |
 | `--reel-stagger` | `90ms` | sourced from `--p26-stagger` |
-| `--reel-ease` | `cubic-bezier(0.16, 1, 0.3, 1)` | sourced from `--p26-ease` |
+| `--reel-ease` | `cubic-bezier(0.35, -0.02, 0.43, 1)` | sourced from `--p26-ease` |
+| `--reel-cell` | `30px` | sourced from `--p26-cell` |
+| `--reel-side-scale` | `0.7` | sourced from `--p26-side-scale` |
+| `--reel-side-offset` | `12px` | sourced from `--p26-side-offset` |
+| `--reel-side-blur` | `2px` | sourced from `--p26-side-blur` |
+| `--reel-side-opacity` | `0.17` | sourced from `--p26-side-opacity` |
+| `--reel-center-scale` | `0.9` | sourced from `--p26-center-scale` |
+| `--reel-center-blur` | `1px` | sourced from `--p26-center-blur` |
+| `--reel-antic-dur` | `100ms` | sourced from `--p26-antic-dur` |
+| `--reel-antic-scale` | `0.94` | sourced from `--p26-antic-scale` |
+| `--reel-antic-lift` | `3px` | sourced from `--p26-antic-lift` |
+| `--reel-land-dur` | `740ms` | sourced from `--p26-land-dur` |
+| `--reel-land-peak` | `1.03` | sourced from `--p26-land-peak` |
 
 The `:root` defaults below match the live tuning on [transitions.dev](https://transitions.dev). Drop them into your global stylesheet once — every transition in this skill reads from semantic names like these, so multiple transitions can share a single `:root` block.
 
 ```css
 :root {
-  --reel-dur: 1400ms;
-  --reel-cell: 30px;
-  --reel-spin-blur: 3px;
+  --reel-step-dur: 130ms;
   --reel-stagger: 90ms;
-  --reel-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --reel-ease: cubic-bezier(0.35, -0.02, 0.43, 1);
+  --reel-cell: 30px;
+  --reel-side-scale: 0.7;
+  --reel-side-offset: 12px;
+  --reel-side-blur: 2px;
+  --reel-side-opacity: 0.17;
+  --reel-center-scale: 0.9;
+  --reel-center-blur: 1px;
+  --reel-antic-dur: 100ms;
+  --reel-antic-scale: 0.94;
+  --reel-antic-lift: 3px;
+  --reel-land-dur: 740ms;
+  --reel-land-peak: 1.03;
 }
 ```
 
 ## CSS
 
 ```css
-.t-reel { display: inline-flex; align-items: center; height: var(--reel-cell); font-variant-numeric: tabular-nums; }
-.t-reel-col {
-  position: relative; height: var(--reel-cell); overflow: hidden;
-  /* Soft-fade the window edges instead of hard-cropping. */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+.t-reel {
+  display: inline-flex;
+  align-items: center;
+  height: var(--reel-cell);
+  font-variant-numeric: tabular-nums;
 }
-.t-reel-strip { display: flex; flex-direction: column; will-change: transform, filter; }
-.t-reel-digit { height: var(--reel-cell); display: flex; align-items: center; justify-content: center; }
-/* JS drives the tween: strip.style.transition =
-     'transform var(--reel-dur) var(--reel-ease) ' + (col*var(--reel-stagger)) + 'ms';
-   and decays each column's feGaussianBlur stdDeviation from
-   var(--reel-spin-blur) to 0 over its own window. */
+.t-reel-col {
+  position: relative;
+  display: inline-block;
+  height: var(--reel-cell);
+  line-height: var(--reel-cell);
+}
+.t-reel-sizer { visibility: hidden; }
+.t-reel-digit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, filter, opacity;
+}
+.t-reel-sep {
+  display: inline-block;
+  height: var(--reel-cell);
+  line-height: var(--reel-cell);
+}
+/* JS drives every digit per frame from the tokens above. */
 
 @media (prefers-reduced-motion: reduce) {
-  .t-reel-strip { transition: none !important; filter: none !important; }
+  .t-reel-digit { filter: none !important; }
 }
 ```
 
@@ -67,5 +106,224 @@ The `@media (prefers-reduced-motion: reduce)` guard at the bottom of the snippet
 
 ## JavaScript orchestration
 
-None — pure CSS. Toggle the documented HTML attributes or class names from whatever already drives state in your app.
+```js
+const STEP = (50 * Math.PI) / 180; // drum angle between two digits
+const ENTER_MS = 120;              // rest to rolling
+const FADE_END = 1.8;              // steps from the middle where a digit is gone
+const LAND_AT = 0.6;               // steps from the middle where the target starts landing
+const ARRIVE_AT = 0.29;            // share of the spring where it reaches the middle
+const CLEAR_MS = 200;              // blur + neighbours clearing at the start of the spring
+
+function token(name, fallback) {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+  return Number.isNaN(v) ? fallback : v;
+}
+function readTokens() {
+  const css = getComputedStyle(document.documentElement);
+  const m = css.getPropertyValue("--reel-ease").match(/cubic-bezier\(([^)]+)\)/);
+  return {
+    stepDur: token("--reel-step-dur", 130),
+    stagger: token("--reel-stagger", 90),
+    ease: bezier(m ? m[1].split(",").map(parseFloat) : [0.35, -0.02, 0.43, 1]),
+    offset: token("--reel-side-offset", 12),
+    sideScale: token("--reel-side-scale", 0.7),
+    sideBlur: token("--reel-side-blur", 2),
+    sideOpacity: token("--reel-side-opacity", 0.17),
+    centerScale: token("--reel-center-scale", 0.9),
+    centerBlur: token("--reel-center-blur", 1),
+    anticDur: token("--reel-antic-dur", 100),
+    anticScale: token("--reel-antic-scale", 0.94),
+    anticLift: token("--reel-antic-lift", 3),
+    landDur: token("--reel-land-dur", 740),
+    landPeak: token("--reel-land-peak", 1.03),
+  };
+}
+function bezier([x1, y1, x2, y2]) {
+  const at = (a, b, t) => 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t;
+  return (x) => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let lo = 0, hi = 1, t = x;
+    for (let i = 0; i < 20; i++) {
+      if (at(x1, x2, t) < x) lo = t; else hi = t;
+      t = (lo + hi) / 2;
+    }
+    return at(y1, y2, t);
+  };
+}
+function smooth(x) {
+  x = Math.max(0, Math.min(1, x));
+  return x * x * (3 - 2 * x);
+}
+// Damped wave: starts at 1, crosses 0, swings negative (the bounce), ends at 0.
+function wave(s) {
+  return s >= 1 ? 0 : Math.exp(-3 * s) * Math.cos(3 * Math.PI * s) * (1 - s);
+}
+const WAVE_TROUGH = (() => {
+  let low = 0;
+  for (let i = 1; i < 400; i++) low = Math.min(low, wave(i / 400));
+  return -low;
+})();
+
+function buildColumns(el, str) {
+  el.replaceChildren();
+  const cols = [];
+  for (const ch of str) {
+    if (ch < "0" || ch > "9") {
+      const sep = document.createElement("span");
+      sep.className = "t-reel-sep";
+      sep.textContent = ch;
+      el.appendChild(sep);
+      continue;
+    }
+    const col = document.createElement("span");
+    col.className = "t-reel-col";
+    const sizer = document.createElement("span");
+    sizer.className = "t-reel-sizer";
+    sizer.textContent = "0";
+    col.appendChild(sizer);
+    const cells = [];
+    for (let d = 0; d < 10; d++) {
+      const cell = document.createElement("span");
+      cell.className = "t-reel-digit";
+      cell.textContent = String(d);
+      col.appendChild(cell);
+      cells.push(cell);
+    }
+    el.appendChild(col);
+    cols.push({ cells, digit: +ch });
+  }
+  return cols;
+}
+function rest(col, digit) {
+  col.cells.forEach((cell, d) => {
+    cell.style.transform = "none";
+    cell.style.filter = "none";
+    cell.style.zIndex = "";
+    cell.style.opacity = d === digit ? "1" : "0";
+  });
+}
+function look(dist, middle, o) {
+  const angle = Math.min(dist * STEP, Math.PI / 2);
+  // 1 in the middle, 0 at one step away, below 0 further back.
+  const face = (Math.cos(angle) - Math.cos(STEP)) / (1 - Math.cos(STEP));
+  return {
+    angle,
+    scale: o.sideScale + (middle - o.sideScale) * face,
+    back: dist <= 1 ? 1 + (o.sideOpacity - 1) * dist : o.sideOpacity * (1 - (dist - 1) / (FADE_END - 1)),
+  };
+}
+function place(col, pos, spread, middle, o, land) {
+  const radius = o.offset / Math.sin(STEP);
+  col.cells.forEach((cell, d) => {
+    let p = (((d - pos) % 10) + 10) % 10;
+    if (p > 5) p -= 10;
+    const dist = Math.abs(p);
+    if (dist >= FADE_END) { cell.style.opacity = "0"; return; }
+    const l = look(dist, middle, o);
+    // Upcoming digits sit above the middle, so the drum turns downward.
+    let y = (p < 0 ? 1 : -1) * radius * Math.sin(l.angle);
+    const blur = (o.centerBlur + (o.sideBlur - o.centerBlur) * Math.min(dist, 1)) * spread;
+    const away = Math.max(0, Math.min(1, (dist - 0.3) / 0.5));
+    let opacity = l.back * (1 - (1 - spread) * away);
+    let scale = l.scale;
+    let z = 100 - Math.round(dist * 10);
+    if (land && d === col.digit) {
+      y = y * land.arrive + land.lift;
+      scale = land.scale;
+      opacity = land.opacity;
+      z = 200;
+    }
+    cell.style.transform = `translateY(${y.toFixed(2)}px) scale(${scale.toFixed(4)})`;
+    cell.style.filter = blur > 0.01 ? `blur(${blur.toFixed(2)}px)` : "none";
+    cell.style.opacity = opacity.toFixed(3);
+    cell.style.zIndex = String(z);
+  });
+}
+// Rolls `el` from one number to another. Returns a function that cancels it.
+function roll(el, from, to) {
+  const str = to.toLocaleString("en-US");
+  el.setAttribute("aria-label", str);
+  const cols = buildColumns(el, str);
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    cols.forEach((c) => rest(c, c.digit));
+    return () => {};
+  }
+  const o = readTokens();
+  // Each column starts on its digit of the old number, aligned from the right.
+  const fromDigits = String(from).padStart(cols.length, "0").slice(-cols.length);
+  cols.forEach((c, i) => {
+    c.from = +fromDigits[i];
+    rest(c, c.from);
+    if (c.from === c.digit) c.done = true; // nothing to do
+  });
+  const t0 = performance.now();
+  let raf = 0;
+  const tick = () => {
+    const t = performance.now() - t0;
+    let running = false;
+    cols.forEach((c, i) => {
+      if (c.done) return;
+      const local = t - i * o.stagger;
+      if (local <= 0) { running = true; return; }
+      const total = (c.digit - c.from + 10) % 10;
+      // Time per number is fixed, so a longer roll takes longer.
+      const pos = c.from + total * o.ease(local / (total * o.stepDur));
+      const enter = Math.min(1, local / ENTER_MS);
+      if (c.landAt === undefined && c.from + total - pos < LAND_AT) c.landAt = t;
+      const since = c.landAt === undefined ? -1 : t - c.landAt;
+      if (since >= o.anticDur + o.landDur) {
+        rest(c, c.digit);
+        c.done = true;
+        return;
+      }
+      running = true;
+      const middle = 1 + (o.centerScale - 1) * enter;
+      let spread = enter;
+      let land = null;
+      if (since >= 0) {
+        // Start from how the target looks right now, so nothing jumps.
+        if (!c.landFrom) c.landFrom = look(c.from + total - pos, middle, o);
+        const arrive = 1 - smooth(since / (o.anticDur + o.landDur * ARRIVE_AT));
+        if (since < o.anticDur) {
+          // Anticipation: eases to --reel-antic-scale, pulling back against the roll.
+          const a = smooth(since / o.anticDur);
+          land = {
+            scale: c.landFrom.scale + (o.anticScale - c.landFrom.scale) * a,
+            lift: -o.anticLift * a,
+            opacity: c.landFrom.back + (1 - c.landFrom.back) * a,
+            arrive,
+          };
+        } else {
+          // Spring: snaps into the middle, past 100%, then settles.
+          const sp = since - o.anticDur;
+          const sn = sp / o.landDur;
+          const w = wave(sn);
+          land = {
+            scale: sn < 1 / 6 ? 1 + (o.anticScale - 1) * w : 1 - ((o.landPeak - 1) * w) / WAVE_TROUGH,
+            lift: -o.anticLift * w,
+            opacity: 1,
+            arrive,
+          };
+          spread = 1 - Math.min(1, sp / CLEAR_MS);
+        }
+      }
+      place(c, pos, spread, middle, o, land);
+    });
+    if (running) raf = requestAnimationFrame(tick);
+  };
+  tick();
+  return () => cancelAnimationFrame(raf);
+}
+
+// Usage:
+const el = document.querySelector(".t-reel");
+let value = 100;
+buildColumns(el, value.toLocaleString("en-US")).forEach((c) => rest(c, c.digit));
+
+function setValue(next) {
+  roll(el, value, next);
+  value = next;
+}
+```
 
