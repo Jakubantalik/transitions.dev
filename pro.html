@@ -359,14 +359,18 @@
       --p8-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
       /* P9 — Number pop-in */
-      --p9-dur: 500ms;
-      --p9-distance: 8px;
-      --p9-stagger: 70ms;
-      --p9-blur: 2px;
-      --p9-bounce: 1.45;
-      --p9-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
-      --p9-dir-x: 0;
-      --p9-dir-y: 1;
+      /* Number pop-in (the library's Pop): distances in em, blur on a curve
+         of the font size, so the 36px prices and small credit counts match. */
+      --p9-dur: 600ms;
+      --p9-exit-dur: 155ms;
+      --p9-enter-delay: 50ms;
+      --p9-stagger: 40ms;
+      --p9-distance: 0.52em;
+      --p9-exit-distance: 0.52em;
+      --p9-blur: max(0.067em, 0.171em - 2.1px);
+      --p9-lift: 0.125em;
+      --p9-start-scale: 0.7;
+      --p9-peak: 1.03;
 
       /* P10 — Success check (appear / disappear).
          Entry composes 5 sub-transitions in parallel (fade, rotate,
@@ -2377,53 +2381,69 @@
       user-select: none;
       position: relative;
     }
-    .p9-char {
-      display: inline-block;
-      transform: translateY(0);
-      opacity: 1;
-      will-change: transform, opacity;
-    }
+    .p9-slot { position: relative; display: inline-block; }
+    .p9-old { position: absolute; inset: 0; text-align: center; pointer-events: none; }
+    .p9-char { display: inline-block; will-change: transform, opacity, filter; }
     .p9-number.is-animating .p9-char {
-      animation: p9-pop-in var(--p9-dur) var(--p9-ease) both;
+      animation: p9-pop-in var(--p9-dur) linear both;
+      animation-delay: calc(var(--p9-stagger) * var(--digit-i, 0) + var(--p9-enter-delay));
     }
-    .p9-number.is-animating .p9-char[data-stagger="1"] { animation-delay: var(--p9-stagger); }
-    .p9-number.is-animating .p9-char[data-stagger="2"] { animation-delay: calc(var(--p9-stagger) * 2); }
-
-    .p9-number .p9-ghost {
-      position: absolute;
-      inset: 0;
-      display: inline-flex;
-      align-items: baseline;
-      pointer-events: none;
+    .p9-number.is-animating .p9-old {
+      animation: p9-pop-out var(--p9-exit-dur) linear both;
+      animation-delay: calc(var(--p9-stagger) * var(--digit-i, 0));
     }
-    .p9-number .p9-ghost .p9-char {
-      animation: p9-pop-out var(--p9-dur) var(--p9-ease) both;
-    }
-    .p9-number .p9-ghost .p9-char[data-stagger="1"] { animation-delay: var(--p9-stagger); }
-    .p9-number .p9-ghost .p9-char[data-stagger="2"] { animation-delay: calc(var(--p9-stagger) * 2); }
+    .p9-number.is-animating [data-stagger="1"] { --digit-i: 1; }
+    .p9-number.is-animating [data-stagger="2"] { --digit-i: 2; }
+    /* Digits that did not change (the leading ones the old and new number
+       share) stay still; only the digits that changed swap. */
+    .p9-number.is-animating .p9-char[data-same] { animation: none; }
 
     @keyframes p9-pop-in {
-      0%   {
-        transform: translate(
-          calc(var(--p9-distance) * var(--p9-dir-x)),
-          calc(var(--p9-distance) * var(--p9-dir-y))
-        );
-        opacity: 0;
-        filter: blur(var(--p9-blur));
-      }
-      100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+      0% { transform: translateY(calc(var(--p9-distance) * 1 + var(--p9-lift) * 0)) scale(var(--p9-start-scale)); opacity: 0; filter: blur(calc(var(--p9-blur) * 1)); }
+      5% { transform: translateY(calc(var(--p9-distance) * 0.941 + var(--p9-lift) * 0.216)) scale(var(--p9-start-scale)); opacity: 0.059; filter: blur(calc(var(--p9-blur) * 1)); }
+      10% { transform: translateY(calc(var(--p9-distance) * 0.755 + var(--p9-lift) * 0.648)) scale(var(--p9-start-scale)); opacity: 0.245; filter: blur(calc(var(--p9-blur) * 1)); }
+      15% { transform: translateY(calc(var(--p9-distance) * 0.475 + var(--p9-lift) * 0.972)) scale(var(--p9-start-scale)); opacity: 0.525; filter: blur(calc(var(--p9-blur) * 1)); }
+      20% { transform: translateY(calc(var(--p9-distance) * 0.206 + var(--p9-lift) * 0.792)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.792)); opacity: 0.794; filter: blur(calc(var(--p9-blur) * 0.9)); }
+      25% { transform: translateY(calc(var(--p9-distance) * 0.041 + var(--p9-lift) * 0.392)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.392)); opacity: 0.959; filter: blur(calc(var(--p9-blur) * 0.75)); }
+      30% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.033)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.033)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.6)); }
+      35% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.194)) scale(calc(1 + (var(--p9-peak) - 1) * 0.711)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.45)); }
+      40% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.272)) scale(calc(1 + (var(--p9-peak) - 1) * 0.997)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.3)); }
+      45% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.238)) scale(calc(1 + (var(--p9-peak) - 1) * 0.87)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.15)); }
+      50% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.146)) scale(calc(1 + (var(--p9-peak) - 1) * 0.535)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      55% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.05)) scale(calc(1 + (var(--p9-peak) - 1) * 0.183)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      60% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.019)) scale(calc(1 + (var(--p9-peak) - 1) * -0.069)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      65% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.05)) scale(calc(1 + (var(--p9-peak) - 1) * -0.185)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      70% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.051)) scale(calc(1 + (var(--p9-peak) - 1) * -0.187)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      75% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.035)) scale(calc(1 + (var(--p9-peak) - 1) * -0.128)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      80% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.016)) scale(calc(1 + (var(--p9-peak) - 1) * -0.057)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      85% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.002)) scale(calc(1 + (var(--p9-peak) - 1) * -0.007)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      90% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.004)) scale(calc(1 + (var(--p9-peak) - 1) * 0.013)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      95% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.003)) scale(calc(1 + (var(--p9-peak) - 1) * 0.011)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      100% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0)) scale(1); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
     }
     @keyframes p9-pop-out {
-      0%   { transform: translate(0, 0); opacity: 1; filter: blur(0); }
-      100% {
-        transform: translate(
-          calc(var(--p9-distance) * var(--p9-dir-x) * -1),
-          calc(var(--p9-distance) * var(--p9-dir-y) * -1)
-        );
-        opacity: 0;
-        filter: blur(var(--p9-blur));
-      }
+      0% { transform: translateY(calc(var(--p9-exit-distance) * 0)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      10% { transform: translateY(calc(var(--p9-exit-distance) * -0.009)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.009)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.009)); }
+      20% { transform: translateY(calc(var(--p9-exit-distance) * -0.042)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.042)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.042)); }
+      30% { transform: translateY(calc(var(--p9-exit-distance) * -0.112)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.112)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.112)); }
+      40% { transform: translateY(calc(var(--p9-exit-distance) * -0.252)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.252)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.252)); }
+      50% { transform: translateY(calc(var(--p9-exit-distance) * -0.5)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.5)); opacity: 0.833; filter: blur(calc(var(--p9-blur) * 0.5)); }
+      60% { transform: translateY(calc(var(--p9-exit-distance) * -0.748)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.748)); opacity: 0.42; filter: blur(calc(var(--p9-blur) * 0.748)); }
+      70% { transform: translateY(calc(var(--p9-exit-distance) * -0.888)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.888)); opacity: 0.187; filter: blur(calc(var(--p9-blur) * 0.888)); }
+      80% { transform: translateY(calc(var(--p9-exit-distance) * -0.958)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.958)); opacity: 0.069; filter: blur(calc(var(--p9-blur) * 0.958)); }
+      90% { transform: translateY(calc(var(--p9-exit-distance) * -0.991)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.991)); opacity: 0.015; filter: blur(calc(var(--p9-blur) * 0.991)); }
+      100% { transform: translateY(calc(var(--p9-exit-distance) * -1)) scale(calc(1 + (var(--p9-start-scale) - 1) * 1)); opacity: 0; filter: blur(calc(var(--p9-blur) * 1)); }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .p9-number .p9-char { animation: none !important; }
+      .p9-number .p9-old { display: none; }
+    }
+    /* A digit that is gone (the number got shorter) leaves from where it
+       was: its slot takes no width and the old digit, still on the text
+       baseline, hangs off its left edge. */
+    .p9-slot.is-gone { width: 0; white-space: nowrap; }
+    .p9-slot.is-gone .p9-old { position: static; display: inline-block; }
 
     /* ─── Prototype 10 — Success check appear / disappear ────── */
     /* Geometry mirrors Figma node 358:786: 48×48 disc made by the
@@ -4426,8 +4446,7 @@
     .plan-credits svg { width: 16px; height: 16px; flex: none; }
     .plan-credits-label { display: inline-flex; align-items: baseline; white-space: pre; }
     .plan-credits .p9-number { font: inherit; color: inherit; }
-    .plan-credits .p9-digits { position: relative; display: inline-flex; align-items: baseline; clip-path: inset(-8px 0 -8px 0); }
-    .plan-credits .p9-digits .p9-ghost { inset: auto; left: 0; top: 0; }
+    .plan-credits .p9-digits { position: relative; display: inline-flex; align-items: baseline; }
     /* The credit menus are the 3-dot menu (tl-menu + t-dropdown), opening
        down from the pill's left edge. */
     .plan-credits-menu.tl-menu { left: 0; right: auto; width: auto; min-width: 220px; transform-origin: top left; z-index: 40; }
@@ -4661,14 +4680,6 @@
       position: relative;
       display: inline-flex;
       align-items: baseline;
-    }
-    /* Natural-width ghost pinned to the start, so old digits pop out
-       from their real positions instead of being stretched to fill the
-       new (wider/narrower) wrapper box. */
-    .pro-price-value .p9-digits .p9-ghost {
-      inset: auto;
-      left: 0;
-      top: 0;
     }
     .pro-price-seat { font-size: 13px; line-height: 18px; color: var(--text-muted); }
     /* Figma node 2361:84310 — hairline fades in from the left edge,
@@ -6574,13 +6585,13 @@ description: Production-ready CSS
       var curBilling = "monthly";
       var priceReady = false;
 
-      // Number pop-in (skills/transitions-dev/02-number-pop-in.md): old
-      // chars snapshot into a .p9-ghost that pops out while fresh .p9-char
-      // spans pop in, so the price re-enters instead of flashing.
+      // Number pop-in (skills/transitions-dev/02-number-pop-in.md): only the
+      // digits that change swap. Each gets a slot with the old digit (leaves
+      // upward) and the new one (rises 50ms later, pulls back, springs past
+      // 100%); digits that stay the same do not move. Old and new line up
+      // from the left ($12 to $120: "12" stays, "0" rises in).
       function setPriceNumber(el, str, animate) {
-        // The leading "$" never changes value, so it shouldn't re-enter
-        // with the digits — split it into a static prefix and only
-        // animate the numeric part.
+        // The leading "$" never changes, so it is a static prefix.
         var m = str.match(/^(\D*)(.*)$/);
         var prefix = m[1], digits = m[2];
         var staticEl = el.querySelector(".p9-static");
@@ -6590,83 +6601,73 @@ description: Production-ready CSS
           el.insertBefore(staticEl, el.firstChild);
         }
         staticEl.textContent = prefix;
-
-        // Digits live in their own positioned wrapper so the ghost's
-        // inset:0 overlay only covers the digits, not the static "$"
-        // (it used to overlay the whole value, making "$" look like it
-        // was fading with the animation even though it never changes).
+        // Digits live in their own wrapper so its width can glide ($59 to
+        // $590 carries "/mo" along instead of jumping it).
         var digitsEl = el.querySelector(".p9-digits");
         if (!digitsEl) {
           digitsEl = document.createElement("span");
           digitsEl.className = "p9-digits";
           el.appendChild(digitsEl);
         }
-        // Same number: nothing to pop.
-        var liveNow = Array.prototype.map.call(digitsEl.querySelectorAll(":scope > .p9-char"), function (n) { return n.textContent; }).join("");
-        if (liveNow === digits) return false;
+        var prev = digitsEl.getAttribute("data-value");
+        if (prev === null) {
+          prev = Array.prototype.map.call(digitsEl.querySelectorAll(".p9-char"), function (n) { return n.textContent; }).join("");
+        }
+        if (prev === digits) return false;
+        digitsEl.setAttribute("data-value", digits);
 
-        var cs = getComputedStyle(el);
-        var dur = parseFloat(cs.getPropertyValue("--p9-dur")) || 500;
-        var stag = parseFloat(cs.getPropertyValue("--p9-stagger")) || 70;
-        var life = dur + stag * 2 + 50;
-
-        var chars = digits.split("");
-        var len = chars.length;
-
-        // Width of the digits before the swap — we tween the wrapper from
-        // this to the new width so "/mo" glides across instead of hard-
-        // jumping when the digit count changes ($9 → $90).
         var oldW = digitsEl.offsetWidth;
-
-        if (animate) {
-          var oldGhost = digitsEl.querySelector(".p9-ghost");
-          if (oldGhost) oldGhost.remove();
-          var liveChars = digitsEl.querySelectorAll(":scope > .p9-char");
-          if (liveChars.length) {
-            var ghost = document.createElement("span");
-            ghost.className = "p9-ghost";
-            liveChars.forEach(function (ch) { ghost.appendChild(ch.cloneNode(true)); });
-            digitsEl.appendChild(ghost);
-            window.setTimeout(function () {
-              if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
-            }, life);
-          }
-        }
         el.classList.remove("is-animating");
-        digitsEl.querySelectorAll(":scope > .p9-char").forEach(function (n) { n.remove(); });
-        chars.forEach(function (ch, i) {
-          var span = document.createElement("span");
-          span.className = "p9-char";
-          span.textContent = ch;
-          if (len > 1) {
-            if (i === len - 2) span.setAttribute("data-stagger", "1");
-            else if (i === len - 1) span.setAttribute("data-stagger", "2");
+        digitsEl.textContent = "";
+        var k = 0;
+        var addSlot = function (oldCh, newCh) {
+          var slot = document.createElement("span");
+          slot.className = "p9-slot";
+          slot.style.setProperty("--digit-i", String(k++));
+          if (oldCh) {
+            var old = document.createElement("span");
+            old.className = "p9-old";
+            old.setAttribute("aria-hidden", "true");
+            old.textContent = oldCh;
+            slot.appendChild(old);
           }
-          var ghostEl = digitsEl.querySelector(".p9-ghost");
-          if (ghostEl) digitsEl.insertBefore(span, ghostEl);
-          else digitsEl.appendChild(span);
-        });
-        if (animate) {
-          // Restart the digit pop-in on the fresh chars.
-          void el.offsetHeight;
-          el.classList.add("is-animating");
-          // Glide the wrapper from the old digit width to the new one so
-          // "/mo" follows smoothly instead of hard-jumping when the digit
-          // count changes ($9 → $90). Web Animations API is used because a
-          // plain CSS width transition doesn't interpolate reliably on this
-          // content-sized inline-flex box. Settles back to natural width.
-          // Uses --ease-smooth-out (not the bouncy --p9-ease the digits
-          // pop with) — "/mo" is just following along, it shouldn't spring.
-          var newW = digitsEl.offsetWidth;
-          if (digitsEl.animate && Math.abs(newW - oldW) > 0.5) {
-            digitsEl.animate(
-              [{ width: oldW + "px" }, { width: newW + "px" }],
-              { duration: dur, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
-            );
+          if (newCh) {
+            var fresh = document.createElement("span");
+            fresh.className = "p9-char";
+            fresh.textContent = newCh;
+            slot.appendChild(fresh);
+          } else {
+            slot.classList.add("is-gone");
           }
-          return newW < oldW;
+          digitsEl.appendChild(slot);
+        };
+        for (var i = 0; i < Math.max(digits.length, prev.length); i++) {
+          var ch = digits[i], was = prev[i];
+          if (ch !== undefined && (ch === was || !animate)) {
+            var still = document.createElement("span");
+            still.className = "p9-char";
+            still.setAttribute("data-same", "");
+            still.textContent = ch;
+            digitsEl.appendChild(still);
+          } else if (animate) {
+            addSlot(was, ch);
+          }
         }
-        return false;
+        if (!animate) return false;
+        void el.offsetHeight;
+        el.classList.add("is-animating");
+        // Glide the wrapper from the old width to the new one (Web
+        // Animations: a CSS width transition does not interpolate on this
+        // content-sized box), on a smooth curve so "/mo" follows, not springs.
+        var newW = digitsEl.offsetWidth;
+        if (digitsEl.animate && Math.abs(newW - oldW) > 0.5) {
+          var dur = parseFloat(getComputedStyle(el).getPropertyValue("--p9-dur")) || 600;
+          digitsEl.animate(
+            [{ width: oldW + "px" }, { width: newW + "px" }],
+            { duration: dur * 0.6, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+          );
+        }
+        return newW < oldW;
       }
 
       // Text states swap (skills/transitions-dev/04-text-states-swap.md):
