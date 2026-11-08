@@ -4,23 +4,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Number pop-in — CSS transition | Transitions.dev</title>
-  <meta name="description" content="Number pop-in: Digit flip with blur and stagger. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="description" content="Number pop-in: Digits swap on a 3D drum with a bounce. Copy-paste CSS and React, with reduced-motion support built in." />
   <link rel="canonical" href="https://transitions.dev/transitions/number-pop-in/" />
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="Transitions.dev" />
   <meta property="og:title" content="Number pop-in — Transitions.dev" />
-  <meta property="og:description" content="Number pop-in: Digit flip with blur and stagger. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta property="og:description" content="Number pop-in: Digits swap on a 3D drum with a bounce. Copy-paste CSS and React, with reduced-motion support built in." />
   <meta property="og:url" content="https://transitions.dev/transitions/number-pop-in/" />
   <meta property="og:image" content="https://transitions.dev/assets/og-main.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Number pop-in — Transitions.dev" />
-  <meta name="twitter:description" content="Number pop-in: Digit flip with blur and stagger. Copy-paste CSS and React, with reduced-motion support built in." />
+  <meta name="twitter:description" content="Number pop-in: Digits swap on a 3D drum with a bounce. Copy-paste CSS and React, with reduced-motion support built in." />
   <meta name="twitter:image" content="https://transitions.dev/assets/og-main.jpg" />
 
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Number pop-in \u2014 CSS transition", "description": "Number pop-in: Digit flip with blur and stagger. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/number-pop-in/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Number pop-in CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Number pop-in \u2014 CSS transition", "description": "Number pop-in: Digits swap on a 3D drum with a bounce. Copy-paste CSS and React, with reduced-motion support built in.", "url": "https://transitions.dev/transitions/number-pop-in/", "isPartOf": {"@type": "WebSite", "name": "Transitions.dev", "url": "https://transitions.dev/"}, "author": {"@type": "Person", "name": "Jakub Antalik"}, "hasPart": {"@type": "SoftwareSourceCode", "name": "Number pop-in CSS", "programmingLanguage": "CSS", "codeSampleType": "full solution"}}</script>
 
   <!-- Theme boot: same key the rest of the site uses, applied before
        paint so the page never flashes the wrong theme. -->
@@ -125,7 +125,7 @@
     </header>
     <p class="crumb"><a href="/">Home</a> / <a href="/transitions/">Transitions</a></p>
     <h1>Number pop-in</h1>
-    <p class="lede">Digit flip with blur and stagger</p>
+    <p class="lede">Digits swap on a 3D drum with a bounce</p>
     <div class="cta-row">
       <a class="btn btn--primary" href="/detail.html?t=number-pop-in">Open the live demo</a>
       <a class="btn btn--secondary" href="/skill.html">Install with the Skill</a>
@@ -137,119 +137,189 @@
 /*
   Usage:
     &lt;span class=&quot;t-digit-group is-animating&quot;&gt;
-      &lt;span class=&quot;t-digit&quot;&gt;1&lt;/span&gt;
-      &lt;span class=&quot;t-digit&quot;&gt;2&lt;/span&gt;
-      &lt;span class=&quot;t-digit&quot; data-stagger=&quot;1&quot;&gt;.&lt;/span&gt;
-      &lt;span class=&quot;t-digit&quot; data-stagger=&quot;2&quot;&gt;3&lt;/span&gt;
+      &lt;span class=&quot;t-digit&quot; data-same&gt;1&lt;/span&gt;
+      &lt;span class=&quot;t-digit-slot&quot;&gt;
+        &lt;span class=&quot;t-digit-old&quot; aria-hidden=&quot;true&quot;&gt;2&lt;/span&gt;
+        &lt;span class=&quot;t-digit&quot;&gt;3&lt;/span&gt;
+      &lt;/span&gt;
+      &lt;span class=&quot;t-digit-slot&quot; data-stagger=&quot;1&quot;&gt;
+        &lt;span class=&quot;t-digit-old&quot; aria-hidden=&quot;true&quot;&gt;4&lt;/span&gt;
+        &lt;span class=&quot;t-digit&quot;&gt;5&lt;/span&gt;
+      &lt;/span&gt;
     &lt;/span&gt;
 
-  Replay:
-    - Remove `.is-animating`, re-render digits (or swap text),
-      force a reflow, then re-add `.is-animating`.
-    - Use data-stagger=&quot;1&quot;, &quot;2&quot;, … to delay individual
-      digits by `n * var(--digit-stagger)`.
+  Each changed digit gets a .t-digit-slot holding the old digit
+  (leaves upward) and the new one (rises just after it, pulls back,
+  springs into place past 100%). --digit-dur covers anticipation and
+  spring.
 
-  Direction:
-    --digit-dir-x / --digit-dir-y are unit-less multipliers
-    (e.g. 1, -1, 0) applied to --digit-distance.
+  Replay:
+    - Remove `.is-animating`, re-render the digits, force a reflow,
+      then re-add `.is-animating`.
+    - Use data-stagger=&quot;1&quot;, &quot;2&quot; on a slot to delay it by
+      `n * var(--digit-stagger)`.
+    - Mark the leading digits the old and new number share with
+      data-same: they stay still and only the changed digits swap
+      (1,299 to 1,305: &quot;1,&quot; stays, &quot;305&quot; swaps).
+
+  Sizes: the tokens are tuned for a 24px number. Scale --digit-distance,
+  --digit-exit-distance, --digit-blur and --digit-lift with your font size.
 */
 
 :root {
-  --digit-dur: 500ms;
-  --digit-distance: 8px;
-  --digit-stagger: 70ms;
+  --digit-dur: 600ms;
+  --digit-exit-dur: 155ms;
+  --digit-enter-delay: 50ms;
+  --digit-stagger: 40ms;
+  --digit-distance: 12.5px;
+  --digit-exit-distance: 12.5px;
   --digit-blur: 2px;
-  --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
-  --digit-dir-x: 0;
-  --digit-dir-y: 1;
+  --digit-lift: 3px;
+  --digit-start-scale: 0.7;
+  --digit-peak: 1.03;
 }
 
-@keyframes t-digit-pop-in {
-  0%   {
-    transform: translate(
-      calc(var(--digit-distance) * var(--digit-dir-x)),
-      calc(var(--digit-distance) * var(--digit-dir-y))
-    );
-    opacity: 0;
-    filter: blur(var(--digit-blur));
-  }
-  100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
-}
-
-.t-digit-group {
-  display: inline-flex;
-  align-items: baseline;
-}
-.t-digit {
-  display: inline-block;
-  will-change: transform, opacity, filter;
-}
+.t-digit-group { display: inline-flex; align-items: baseline; }
+.t-digit-slot { position: relative; display: inline-block; }
+.t-digit-old { position: absolute; inset: 0; text-align: center; pointer-events: none; }
+.t-digit { display: inline-block; will-change: transform, opacity, filter; }
 .t-digit-group.is-animating .t-digit {
-  animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;
+  animation: t-digit-in var(--digit-dur) linear both;
+  animation-delay: calc(var(--digit-stagger) * var(--digit-i, 0) + var(--digit-enter-delay));
 }
-.t-digit-group.is-animating .t-digit[data-stagger=&quot;1&quot;] {
-  animation-delay: var(--digit-stagger);
+.t-digit-group.is-animating .t-digit-old {
+  animation: t-digit-out var(--digit-exit-dur) linear both;
+  animation-delay: calc(var(--digit-stagger) * var(--digit-i, 0));
 }
-.t-digit-group.is-animating .t-digit[data-stagger=&quot;2&quot;] {
-  animation-delay: calc(var(--digit-stagger) * 2);
+.t-digit-group.is-animating [data-stagger=&quot;1&quot;] { --digit-i: 1; }
+.t-digit-group.is-animating [data-stagger=&quot;2&quot;] { --digit-i: 2; }
+/* Digits that did not change (the leading ones the old and new number
+   share) stay still; only the digits that changed swap. */
+.t-digit-group.is-animating .t-digit[data-same] { animation: none; }
+
+@keyframes t-digit-in {
+  0% { transform: translateY(calc(var(--digit-distance) * 1 + var(--digit-lift) * 0)) scale(var(--digit-start-scale)); opacity: 0; filter: blur(calc(var(--digit-blur) * 1)); }
+  5% { transform: translateY(calc(var(--digit-distance) * 0.941 + var(--digit-lift) * 0.216)) scale(var(--digit-start-scale)); opacity: 0.059; filter: blur(calc(var(--digit-blur) * 1)); }
+  10% { transform: translateY(calc(var(--digit-distance) * 0.755 + var(--digit-lift) * 0.648)) scale(var(--digit-start-scale)); opacity: 0.245; filter: blur(calc(var(--digit-blur) * 1)); }
+  15% { transform: translateY(calc(var(--digit-distance) * 0.475 + var(--digit-lift) * 0.972)) scale(var(--digit-start-scale)); opacity: 0.525; filter: blur(calc(var(--digit-blur) * 1)); }
+  20% { transform: translateY(calc(var(--digit-distance) * 0.206 + var(--digit-lift) * 0.792)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.792)); opacity: 0.794; filter: blur(calc(var(--digit-blur) * 0.9)); }
+  25% { transform: translateY(calc(var(--digit-distance) * 0.041 + var(--digit-lift) * 0.392)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.392)); opacity: 0.959; filter: blur(calc(var(--digit-blur) * 0.75)); }
+  30% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.033)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.033)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.6)); }
+  35% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.194)) scale(calc(1 + (var(--digit-peak) - 1) * 0.711)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.45)); }
+  40% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.272)) scale(calc(1 + (var(--digit-peak) - 1) * 0.997)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.3)); }
+  45% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.238)) scale(calc(1 + (var(--digit-peak) - 1) * 0.87)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.15)); }
+  50% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.146)) scale(calc(1 + (var(--digit-peak) - 1) * 0.535)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  55% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.05)) scale(calc(1 + (var(--digit-peak) - 1) * 0.183)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  60% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.019)) scale(calc(1 + (var(--digit-peak) - 1) * -0.069)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  65% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.05)) scale(calc(1 + (var(--digit-peak) - 1) * -0.185)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  70% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.051)) scale(calc(1 + (var(--digit-peak) - 1) * -0.187)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  75% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.035)) scale(calc(1 + (var(--digit-peak) - 1) * -0.128)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  80% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.016)) scale(calc(1 + (var(--digit-peak) - 1) * -0.057)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  85% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.002)) scale(calc(1 + (var(--digit-peak) - 1) * -0.007)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  90% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.004)) scale(calc(1 + (var(--digit-peak) - 1) * 0.013)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  95% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.003)) scale(calc(1 + (var(--digit-peak) - 1) * 0.011)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  100% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0)) scale(1); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+}
+@keyframes t-digit-out {
+  0% { transform: translateY(calc(var(--digit-exit-distance) * 0)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  10% { transform: translateY(calc(var(--digit-exit-distance) * -0.009)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.009)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.009)); }
+  20% { transform: translateY(calc(var(--digit-exit-distance) * -0.042)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.042)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.042)); }
+  30% { transform: translateY(calc(var(--digit-exit-distance) * -0.112)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.112)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.112)); }
+  40% { transform: translateY(calc(var(--digit-exit-distance) * -0.252)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.252)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.252)); }
+  50% { transform: translateY(calc(var(--digit-exit-distance) * -0.5)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.5)); opacity: 0.833; filter: blur(calc(var(--digit-blur) * 0.5)); }
+  60% { transform: translateY(calc(var(--digit-exit-distance) * -0.748)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.748)); opacity: 0.42; filter: blur(calc(var(--digit-blur) * 0.748)); }
+  70% { transform: translateY(calc(var(--digit-exit-distance) * -0.888)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.888)); opacity: 0.187; filter: blur(calc(var(--digit-blur) * 0.888)); }
+  80% { transform: translateY(calc(var(--digit-exit-distance) * -0.958)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.958)); opacity: 0.069; filter: blur(calc(var(--digit-blur) * 0.958)); }
+  90% { transform: translateY(calc(var(--digit-exit-distance) * -0.991)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.991)); opacity: 0.015; filter: blur(calc(var(--digit-blur) * 0.991)); }
+  100% { transform: translateY(calc(var(--digit-exit-distance) * -1)) scale(calc(1 + (var(--digit-start-scale) - 1) * 1)); opacity: 0; filter: blur(calc(var(--digit-blur) * 1)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .t-digit-group .t-digit { animation: none !important; }
+  .t-digit-group .t-digit-old { display: none; }
 }</code></pre>
     <h2>React</h2>
     <p>Self-contained component; the styles inject themselves on first import.</p>
     <pre><code>// Transitions.dev — Number pop-in (React, self-contained)
 // Drop into any React project — no extra CSS file needed.
 
-import { useState } from &quot;react&quot;;
+import { useEffect, useRef, useState } from &quot;react&quot;;
 
 // ── Styles ──────────────────────────────────────────────
 // Auto-injected on first import. Idempotent (guarded by
 // the element id) and SSR-safe (no-ops without document).
 const __TRANSITION_STYLES = `
 :root {
-  --digit-dur: 500ms;
-  --digit-distance: 8px;
-  --digit-stagger: 70ms;
+  --digit-dur: 600ms;
+  --digit-exit-dur: 155ms;
+  --digit-enter-delay: 50ms;
+  --digit-stagger: 40ms;
+  --digit-distance: 12.5px;
+  --digit-exit-distance: 12.5px;
   --digit-blur: 2px;
-  --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
-  --digit-dir-x: 0;
-  --digit-dir-y: 1;
+  --digit-lift: 3px;
+  --digit-start-scale: 0.7;
+  --digit-peak: 1.03;
 }
 
-@keyframes t-digit-pop-in {
-  0%   {
-    transform: translate(
-      calc(var(--digit-distance) * var(--digit-dir-x)),
-      calc(var(--digit-distance) * var(--digit-dir-y))
-    );
-    opacity: 0;
-    filter: blur(var(--digit-blur));
-  }
-  100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
-}
-
-.t-digit-group {
-  display: inline-flex;
-  align-items: baseline;
-}
-.t-digit {
-  display: inline-block;
-  will-change: transform, opacity, filter;
-}
+.t-digit-group { display: inline-flex; align-items: baseline; }
+.t-digit-slot { position: relative; display: inline-block; }
+.t-digit-old { position: absolute; inset: 0; text-align: center; pointer-events: none; }
+.t-digit { display: inline-block; will-change: transform, opacity, filter; }
 .t-digit-group.is-animating .t-digit {
-  animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;
+  animation: t-digit-in var(--digit-dur) linear both;
+  animation-delay: calc(var(--digit-stagger) * var(--digit-i, 0) + var(--digit-enter-delay));
 }
-.t-digit-group.is-animating .t-digit[data-stagger=&quot;1&quot;] {
-  animation-delay: var(--digit-stagger);
+.t-digit-group.is-animating .t-digit-old {
+  animation: t-digit-out var(--digit-exit-dur) linear both;
+  animation-delay: calc(var(--digit-stagger) * var(--digit-i, 0));
 }
-.t-digit-group.is-animating .t-digit[data-stagger=&quot;2&quot;] {
-  animation-delay: calc(var(--digit-stagger) * 2);
+.t-digit-group.is-animating [data-stagger=&quot;1&quot;] { --digit-i: 1; }
+.t-digit-group.is-animating [data-stagger=&quot;2&quot;] { --digit-i: 2; }
+/* Digits that did not change (the leading ones the old and new number
+   share) stay still; only the digits that changed swap. */
+.t-digit-group.is-animating .t-digit[data-same] { animation: none; }
+
+@keyframes t-digit-in {
+  0% { transform: translateY(calc(var(--digit-distance) * 1 + var(--digit-lift) * 0)) scale(var(--digit-start-scale)); opacity: 0; filter: blur(calc(var(--digit-blur) * 1)); }
+  5% { transform: translateY(calc(var(--digit-distance) * 0.941 + var(--digit-lift) * 0.216)) scale(var(--digit-start-scale)); opacity: 0.059; filter: blur(calc(var(--digit-blur) * 1)); }
+  10% { transform: translateY(calc(var(--digit-distance) * 0.755 + var(--digit-lift) * 0.648)) scale(var(--digit-start-scale)); opacity: 0.245; filter: blur(calc(var(--digit-blur) * 1)); }
+  15% { transform: translateY(calc(var(--digit-distance) * 0.475 + var(--digit-lift) * 0.972)) scale(var(--digit-start-scale)); opacity: 0.525; filter: blur(calc(var(--digit-blur) * 1)); }
+  20% { transform: translateY(calc(var(--digit-distance) * 0.206 + var(--digit-lift) * 0.792)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.792)); opacity: 0.794; filter: blur(calc(var(--digit-blur) * 0.9)); }
+  25% { transform: translateY(calc(var(--digit-distance) * 0.041 + var(--digit-lift) * 0.392)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.392)); opacity: 0.959; filter: blur(calc(var(--digit-blur) * 0.75)); }
+  30% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.033)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.033)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.6)); }
+  35% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.194)) scale(calc(1 + (var(--digit-peak) - 1) * 0.711)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.45)); }
+  40% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.272)) scale(calc(1 + (var(--digit-peak) - 1) * 0.997)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.3)); }
+  45% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.238)) scale(calc(1 + (var(--digit-peak) - 1) * 0.87)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.15)); }
+  50% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.146)) scale(calc(1 + (var(--digit-peak) - 1) * 0.535)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  55% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.05)) scale(calc(1 + (var(--digit-peak) - 1) * 0.183)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  60% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.019)) scale(calc(1 + (var(--digit-peak) - 1) * -0.069)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  65% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.05)) scale(calc(1 + (var(--digit-peak) - 1) * -0.185)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  70% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.051)) scale(calc(1 + (var(--digit-peak) - 1) * -0.187)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  75% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.035)) scale(calc(1 + (var(--digit-peak) - 1) * -0.128)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  80% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.016)) scale(calc(1 + (var(--digit-peak) - 1) * -0.057)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  85% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.002)) scale(calc(1 + (var(--digit-peak) - 1) * -0.007)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  90% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.004)) scale(calc(1 + (var(--digit-peak) - 1) * 0.013)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  95% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.003)) scale(calc(1 + (var(--digit-peak) - 1) * 0.011)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  100% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0)) scale(1); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+}
+@keyframes t-digit-out {
+  0% { transform: translateY(calc(var(--digit-exit-distance) * 0)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }
+  10% { transform: translateY(calc(var(--digit-exit-distance) * -0.009)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.009)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.009)); }
+  20% { transform: translateY(calc(var(--digit-exit-distance) * -0.042)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.042)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.042)); }
+  30% { transform: translateY(calc(var(--digit-exit-distance) * -0.112)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.112)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.112)); }
+  40% { transform: translateY(calc(var(--digit-exit-distance) * -0.252)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.252)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.252)); }
+  50% { transform: translateY(calc(var(--digit-exit-distance) * -0.5)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.5)); opacity: 0.833; filter: blur(calc(var(--digit-blur) * 0.5)); }
+  60% { transform: translateY(calc(var(--digit-exit-distance) * -0.748)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.748)); opacity: 0.42; filter: blur(calc(var(--digit-blur) * 0.748)); }
+  70% { transform: translateY(calc(var(--digit-exit-distance) * -0.888)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.888)); opacity: 0.187; filter: blur(calc(var(--digit-blur) * 0.888)); }
+  80% { transform: translateY(calc(var(--digit-exit-distance) * -0.958)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.958)); opacity: 0.069; filter: blur(calc(var(--digit-blur) * 0.958)); }
+  90% { transform: translateY(calc(var(--digit-exit-distance) * -0.991)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.991)); opacity: 0.015; filter: blur(calc(var(--digit-blur) * 0.991)); }
+  100% { transform: translateY(calc(var(--digit-exit-distance) * -1)) scale(calc(1 + (var(--digit-start-scale) - 1) * 1)); opacity: 0; filter: blur(calc(var(--digit-blur) * 1)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .t-digit-group .t-digit { animation: none !important; }
+  .t-digit-group .t-digit-old { display: none; }
 }
 `;
 if (typeof document !== &quot;undefined&quot; &amp;&amp; !document.getElementById(&quot;transitions-p9&quot;)) {
@@ -259,32 +329,48 @@ if (typeof document !== &quot;undefined&quot; &amp;&amp; !document.getElementByI
   document.head.appendChild(__style);
 }
 
-// Pair with the CSS from the CSS tab.
-// Toggle `.is-animating` to replay the pop-in sequence.
-export function NumberPopIn({ value = &quot;123&quot; }) {
-  const [playing, setPlaying] = useState(true);
+// Pair with the CSS from the CSS tab. Changed digits get a slot with the old
+// digit (leaves upward) and the new one (rises just after it, springs into
+// place). The leading characters both numbers share stay still.
+export function NumberPopIn({ initial = &quot;65.78&quot; }) {
+  const [value, setValue] = useState(initial);
+  const prev = useRef(value);
+  const from = prev.current;
+  useEffect(() =&gt; { prev.current = value; }, [value]);
 
-  // Replay: strip the class, force a reflow via rAF, then re-add.
-  const replay = () =&gt; {
-    setPlaying(false);
-    requestAnimationFrame(() =&gt;
-      requestAnimationFrame(() =&gt; setPlaying(true))
-    );
+  let same = 0;
+  while (same &lt; from.length &amp;&amp; same &lt; value.length &amp;&amp; from[same] === value[same]) same++;
+
+  const next = () =&gt; {
+    const whole = Math.floor(Math.random() * 90) + 10;
+    const part = String(Math.floor(Math.random() * 100)).padStart(2, &quot;0&quot;);
+    setValue(whole + &quot;.&quot; + part);
   };
 
   return (
     &lt;&gt;
-      &lt;button type=&quot;button&quot; onClick={replay}&gt;Animate&lt;/button&gt;
-      &lt;span className={&quot;t-digit-group&quot; + (playing ? &quot; is-animating&quot; : &quot;&quot;)}&gt;
-        {value.split(&quot;&quot;).map((ch, i) =&gt; (
-          &lt;span
-            key={i}
-            className=&quot;t-digit&quot;
-            data-stagger={i &gt; 0 ? i : undefined}
-          &gt;
-            {ch}
-          &lt;/span&gt;
-        ))}
+      &lt;button type=&quot;button&quot; onClick={next}&gt;Animate&lt;/button&gt;
+      {/* The key restarts the animation on every change. */}
+      &lt;span key={value} className={&quot;t-digit-group&quot; + (from !== value ? &quot; is-animating&quot; : &quot;&quot;)}&gt;
+        {value.split(&quot;&quot;).map((ch, i) =&gt; {
+          if (i &lt; same || !/\d/.test(ch)) {
+            return &lt;span key={i} className=&quot;t-digit&quot; data-same=&quot;&quot;&gt;{ch}&lt;/span&gt;;
+          }
+          const fromEnd = value.length - 1 - i;
+          const old = from[from.length - (value.length - i)];
+          return (
+            &lt;span
+              key={i}
+              className=&quot;t-digit-slot&quot;
+              data-stagger={fromEnd === 1 ? &quot;1&quot; : fromEnd === 0 ? &quot;2&quot; : undefined}
+            &gt;
+              {old &amp;&amp; /\d/.test(old) &amp;&amp; (
+                &lt;span className=&quot;t-digit-old&quot; aria-hidden=&quot;true&quot;&gt;{old}&lt;/span&gt;
+              )}
+              &lt;span className=&quot;t-digit&quot;&gt;{ch}&lt;/span&gt;
+            &lt;/span&gt;
+          );
+        })}
       &lt;/span&gt;
     &lt;/&gt;
   );

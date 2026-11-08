@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Number - Transitions.dev</title>
+  <meta name="description" content="Number: three ways to change a number. Spin, pop and subtle." />
+  <!-- Demo of an unreleased library: stays out of search until it ships. -->
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="assets/favicon-light-mode.png?v=4" media="(prefers-color-scheme: light)" type="image/png" />
+  <link rel="icon" href="assets/favicon-darkmode.png?v=4" media="(prefers-color-scheme: dark)" type="image/png" />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/inter-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("tdev:theme");
+        var dark = stored
+          ? stored === "dark"
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    @font-face {
+      font-family: "Saans";
+      src: url("assets/fonts/Saans-Medium.woff2") format("woff2"),
+           url("assets/fonts/Saans-Medium.woff") format("woff");
+      font-weight: 500;
+      font-style: normal;
+      font-display: optional;
+    }
+    :root {
+      color-scheme: light;
+      --bg: #fdfdfd;
+      --text: #0d0d0d;
+      --text-muted: #6c6c6c;
+      --text-faint: #767676;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.06);
+      --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+      --stage-bg: #f9f9f9;
+      --stage-border: rgba(0, 0, 0, 0.04);
+      --chip-bg: #f4f4f4;
+      --chip-bg-hover: #eeeeee;
+      --chip-bg-pressed: #e6e6e6;
+      --primary-bg: #17181c;
+      --primary-bg-hover: #2a2a2a;
+      --primary-text: #ffffff;
+      --code-bg: #f7f7f7;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-display: "Saans", var(--font-sans);
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #121212;
+      --text: #ffffff;
+      --text-muted: rgba(202, 202, 202, 0.7);
+      --text-faint: #8f8f8f;
+      --card-bg: #181818;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --card-shadow: none;
+      --stage-bg: #131313;
+      --stage-border: rgba(255, 255, 255, 0.02);
+      --chip-bg: rgba(255, 255, 255, 0.06);
+      --chip-bg-hover: rgba(255, 255, 255, 0.1);
+      --chip-bg-pressed: rgba(255, 255, 255, 0.14);
+      --primary-bg: #ffffff;
+      --primary-bg-hover: #e9e9e9;
+      --primary-text: #0d0d0d;
+      --code-bg: #181818;
+    }
+    * { box-sizing: border-box; }
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 22px;
+    }
+    button { touch-action: manipulation; font: inherit; }
+
+    .wrap { width: 100%; max-width: 1376px; margin: 0 auto; padding: 0 24px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 296px; gap: 32px; align-items: start; }
+
+    .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
+    .brand { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; color: var(--text); text-decoration: none; }
+    .brand span { color: var(--text-muted); }
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%;
+      background: var(--chip-bg); cursor: pointer;
+      transition: background-color 150ms ease;
+    }
+    .icon-btn:hover { background: var(--chip-bg-hover); }
+    .icon-btn img { display: block; width: 16px; height: 16px; opacity: 0.7; }
+    html[data-theme="dark"] .icon-btn img { filter: brightness(0) invert(1); }
+    :is(.icon-btn, .btn):focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+    .hero { padding: 64px 0 40px; }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-family: var(--font-display);
+      font-size: 40px; line-height: 1.15; font-weight: 500; letter-spacing: -0.02em;
+    }
+    .hero p { margin: 0 0 24px; max-width: 46ch; font-size: 16px; line-height: 24px; color: var(--text-muted); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 40px; padding: 0 16px; border: 0; border-radius: 26px;
+      font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer;
+      background: var(--chip-bg); color: var(--text);
+      transition: background-color 150ms ease, scale 150ms var(--ease-smooth-out);
+    }
+    .btn:hover { background: var(--chip-bg-hover); }
+    .btn:active { background: var(--chip-bg-pressed); scale: 0.97; }
+    .btn--primary { background: var(--primary-bg); color: var(--primary-text); }
+    .btn--primary:hover { background: var(--primary-bg-hover); }
+    .btn--primary:active { background: var(--primary-bg-hover); }
+
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .card {
+      display: flex; flex-direction: column; min-width: 0;
+      border-radius: 20px; background: var(--card-bg);
+      box-shadow: 0 0 0 1px var(--card-border), var(--card-shadow);
+    }
+    .stage {
+      position: relative; display: flex; align-items: center; justify-content: center;
+      height: 260px; margin: 6px 6px 0; border-radius: 15px;
+      background: var(--stage-bg); box-shadow: inset 0 0 0 1px var(--stage-border);
+    }
+    .value { font-size: 44px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
+    .stage .btn { position: absolute; bottom: 14px; left: 50%; translate: -50% 0; height: 32px; padding: 0 13px; font-size: 12px; }
+    .stage .btn:active { scale: 0.97; }
+    .meta { padding: 16px 20px 20px; }
+    .meta h2 { margin: 0 0 4px; font-size: 15px; line-height: 20px; font-weight: 500; }
+    .meta p { margin: 0; color: var(--text-muted); text-wrap: pretty; }
+    .meta .use { margin-top: 10px; font-size: 13px; line-height: 20px; color: var(--text-faint); }
+
+    .usage { padding: 56px 0 96px; }
+    .usage h2 { margin: 0 0 12px; font-size: 15px; font-weight: 500; }
+    pre {
+      margin: 0; padding: 20px; overflow-x: auto; border-radius: 16px;
+      background: var(--code-bg); box-shadow: inset 0 0 0 1px var(--card-border);
+    }
+    code { font-family: var(--font-mono); font-size: 13px; line-height: 1.7; }
+
+    /* Tuning panel */
+    .tune {
+      position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto;
+      margin-top: 16px; padding: 14px; border-radius: 20px; background: var(--card-bg);
+      box-shadow: 0 0 0 1px var(--card-border), var(--card-shadow);
+      font-size: 12px; line-height: 16px; font-variant-numeric: tabular-nums;
+    }
+    .tune h3 { margin: 16px 0 8px; font-size: 11px; line-height: 16px; font-weight: 500; color: var(--text-muted); }
+    .tune label { display: block; margin: 0 0 10px; }
+    .tune .row { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 4px; }
+    .tune output { color: var(--text-muted); }
+    .tune input[type=range] { display: block; width: 100%; margin: 0; accent-color: var(--text); }
+    .tune select, .tune input[type=text] {
+      width: 100%; height: 28px; padding: 0 8px; margin: 0 0 8px; border: 0; border-radius: 8px;
+      background: var(--chip-bg); color: var(--text); font: inherit;
+    }
+    .tune svg { display: block; width: 100%; height: auto; margin: 0 0 8px; border-radius: 8px; background: var(--chip-bg); touch-action: none; }
+    .tune .curve { fill: none; stroke: var(--text); stroke-width: 2; }
+    .tune .arm { stroke: var(--text-muted); stroke-width: 1; }
+    .tune .box { fill: none; stroke: var(--card-border); stroke-width: 1; }
+    .tune .handle { fill: var(--text); cursor: grab; }
+    .tune .handle:active { cursor: grabbing; }
+    .tabs { display: flex; gap: 2px; padding: 2px; margin: 0 0 14px; border-radius: 12px; background: var(--chip-bg); }
+    .tabs button {
+      flex: 1; height: 28px; padding: 0; border: 0; border-radius: 10px; background: transparent;
+      color: var(--text-muted); font-size: 12px; font-weight: 500; cursor: pointer;
+      transition: background-color 150ms ease, color 150ms ease;
+    }
+    .tabs button:hover { color: var(--text); }
+    .tabs button[aria-selected="true"] { background: var(--card-bg); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+    .tabs button:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+    .tune .actions { display: flex; gap: 6px; margin-top: 14px; }
+    .tune .actions .btn { flex: 1; height: 30px; padding: 0 6px; font-size: 12px; }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+      .tune { position: static; max-height: none; margin: 0 0 64px; }
+      .usage { padding-bottom: 40px; }
+    }
+    @media (max-width: 860px) {
+      .wrap { padding: 0 16px; }
+      .hero { padding: 32px 0 28px; }
+      .hero h1 { font-size: 32px; }
+      .grid { grid-template-columns: minmax(0, 1fr); }
+      .stage { height: 220px; }
+      .usage { padding: 40px 0 64px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn { transition: background-color 150ms ease; }
+      .btn:active, .stage .btn:active { scale: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="/">Transitions<span>.dev</span></a>
+      <button type="button" class="icon-btn" id="theme" aria-label="Toggle dark mode">
+        <img id="theme-icon" src="assets/theme-moon-01.svg" alt="" aria-hidden="true" />
+      </button>
+    </header>
+
+    <div class="layout">
+    <main>
+      <section class="hero">
+        <h1>Number</h1>
+        <p>Three ways to change a number, depending on how much the change should matter.</p>
+        <button type="button" class="btn btn--primary" id="change-all">Change all three</button>
+      </section>
+
+      <section class="grid" aria-label="Number animations">
+        <article class="card">
+          <div class="stage">
+            <div class="value" data-number="spin"></div>
+            <button type="button" class="btn" data-animate="spin">Animate</button>
+          </div>
+          <div class="meta">
+            <h2>Spin</h2>
+            <p>Digits roll through the numbers on a 3D drum, then land with a bounce.</p>
+            <p class="use">For moments worth celebrating: points, rewards, milestones.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="stage">
+            <div class="value" data-number="pop"></div>
+            <button type="button" class="btn" data-animate="pop">Animate</button>
+          </div>
+          <div class="meta">
+            <h2>Pop</h2>
+            <p>Changed digits leave upward as the new ones rise in and land with a bounce.</p>
+            <p class="use">For updates people should notice: prices, totals, counters.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="stage">
+            <div class="value" data-number="subtle"></div>
+            <button type="button" class="btn" data-animate="subtle">Animate</button>
+          </div>
+          <div class="meta">
+            <h2>Subtle</h2>
+            <p>Changed digits cross-fade in place, rising when up and falling when down.</p>
+            <p class="use">For numbers that update often: live stats, dashboards, tickers.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="usage">
+        <h2>Usage</h2>
+        <pre><code>import { createNumber } from "./number.js";
+
+const count = createNumber(element, { type: "spin", value: 100 });
+
+count.set(178);</code></pre>
+      </section>
+    </main>
+
+    <aside class="tune" id="tune" aria-label="Tune the animations"></aside>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createNumber, settings } from "./assets/number.js";
+
+    var START = 100;
+    var FIRST = 178;
+    var numbers = {};
+    document.querySelectorAll("[data-number]").forEach(function (el) {
+      var type = el.getAttribute("data-number");
+      numbers[type] = createNumber(el, { type: type, value: START });
+    });
+
+    // A random three-digit number other than the current one.
+    function randomFrom(current) {
+      var next;
+      do { next = 100 + Math.floor(Math.random() * 900); } while (next === current);
+      return next;
+    }
+    // First change goes to 178, every one after that is random.
+    function nextFor(number) {
+      return number.value === START ? FIRST : randomFrom(number.value);
+    }
+
+    document.querySelectorAll("[data-animate]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var number = numbers[button.getAttribute("data-animate")];
+        number.set(nextFor(number));
+      });
+    });
+
+    // All three go to the same number, so they compare side by side.
+    document.getElementById("change-all").addEventListener("click", function () {
+      var next = nextFor(numbers.spin);
+      Object.keys(numbers).forEach(function (type) {
+        numbers[type].set(next);
+      });
+    });
+
+    /* ── Tuning panel ──────────────────────────────────────────────
+       Edits the library's live settings. Letting go of a control replays
+       the same change, 100 to 178, so tweaks compare like for like. */
+    var DEFAULTS = JSON.parse(JSON.stringify(settings));
+    var CONTROLS = {
+      spin: [
+        ["Timing", [
+          ["stepDur", "Time per number", 30, 500, 5, "ms"],
+          ["stagger", "Column delay", 0, 300, 5, "ms"]
+        ]],
+        ["EASE", "Roll easing"],
+        ["Scale", [
+          ["sideScale", "Top and bottom", 0.3, 1, 0.01, ""],
+          ["centerScale", "Middle, rolling", 0.5, 1.1, 0.01, ""],
+          ["anticScale", "Anticipation", 0.5, 1, 0.01, ""],
+          ["landPeak", "Bounce peak", 1, 1.3, 0.005, ""]
+        ]],
+        ["Top and bottom", [
+          ["sideOffset", "Distance", 0.2, 1.2, 0.01, "em"],
+          ["sideOpacity", "Opacity", 0, 1, 0.01, ""],
+          ["sideBlur", "Blur", 0, 16, 0.1, "px", true]
+        ]],
+        ["Middle", [
+          ["centerBlur", "Blur", 0, 8, 0.1, "px", true]
+        ]],
+        ["Landing", [
+          ["anticDur", "Anticipation time", 0, 400, 5, "ms"],
+          ["anticLift", "Pull back", 0, 20, 0.1, "px", true],
+          ["landDur", "Spring time", 100, 1500, 10, "ms"]
+        ]]
+      ],
+      pop: [
+        ["Old digit", [
+          ["exitDur", "Exit time", 0, 500, 5, "ms"],
+          ["exitDistance", "Exit distance", 0, 60, 0.1, "px", true],
+          ["exitHold", "Solid before fading", 0, 0.9, 0.01, ""]
+        ]],
+        ["EASE", "Exit easing", "exitEase"],
+        ["New digit", [
+          ["enterDelay", "Delay after exit starts", 0, 300, 5, "ms"],
+          ["moveDur", "Movement time", 50, 1000, 5, "ms"]
+        ]],
+        ["EASE", "Movement easing", "moveEase"],
+        ["Landing", [
+          ["anticDur", "Anticipation time", 0, 400, 5, "ms"],
+          ["dur", "Spring time", 100, 1500, 10, "ms"],
+          ["anticLift", "Pull back", 0, 20, 0.1, "px", true]
+        ]],
+        ["Scale", [
+          ["startScale", "Start", 0.3, 1, 0.01, ""],
+          ["landPeak", "Bounce peak", 1, 1.3, 0.005, ""]
+        ]],
+        ["Look", [
+          ["distance", "Entrance distance", 0, 60, 0.1, "px", true],
+          ["startOpacity", "Start opacity", 0, 1, 0.01, ""],
+          ["blur", "Blur", 0, 16, 0.1, "px", true]
+        ]],
+        ["Stagger", [
+          ["stagger", "Last two digits", 0, 300, 5, "ms"]
+        ]]
+      ],
+      subtle: [
+        ["Timing", [
+          ["dur", "Duration", 50, 800, 5, "ms"]
+        ]],
+        ["EASE", "Easing"],
+        ["Movement", [
+          ["distance", "Distance", 0, 20, 0.1, "px", true],
+          ["blur", "Blur", 0, 8, 0.1, "px", true]
+        ]]
+      ]
+    };
+    var EASE_PRESETS = [
+      ["Smooth out", [0.22, 1, 0.36, 1]],
+      ["Fast start", [0.16, 1, 0.3, 1]],
+      ["Ease out", [0, 0, 0.58, 1]],
+      ["Ease in", [0.42, 0, 1, 1]],
+      ["In and out", [0.65, 0, 0.35, 1]],
+      ["Bounce", [0.34, 1.45, 0.64, 1]],
+      ["Linear", [0, 0, 1, 1]]
+    ];
+    var tune = document.getElementById("tune");
+    var active = "spin";
+    var SIZE_STOPS = Object.keys(settings.spin.sizes).map(Number);
+    var activeSize = 44;
+    var sizeEl = document.createElement("div");
+    var body = document.createElement("div");
+    body.style.marginTop = "-2px";
+
+    function numberSize() {
+      return parseFloat(getComputedStyle(document.querySelector(".value")).fontSize);
+    }
+    function replay(type) {
+      numbers[type].jump(START);
+      void document.body.offsetWidth;
+      numbers[type].set(FIRST);
+    }
+    function slider(parent, label, min, max, step, value, show, onInput, onDone) {
+      var wrap = document.createElement("label");
+      var row = document.createElement("span");
+      row.className = "row";
+      var name = document.createElement("span");
+      name.textContent = label;
+      var out = document.createElement("output");
+      var input = document.createElement("input");
+      input.type = "range";
+      input.min = min; input.max = max; input.step = step; input.value = value;
+      out.textContent = show(+input.value);
+      input.addEventListener("input", function () {
+        onInput(+input.value);
+        out.textContent = show(+input.value);
+      });
+      input.addEventListener("change", onDone);
+      row.appendChild(name); row.appendChild(out);
+      wrap.appendChild(row); wrap.appendChild(input);
+      parent.appendChild(wrap);
+    }
+    function showValue(unit, step) {
+      return function (v) {
+        // em values read in real pixels at the current number size.
+        if (unit === "em") return (v * numberSize()).toFixed(1) + "px";
+        if (unit === "px") return v.toFixed(1) + "px";
+        if (unit === "ms") return v + "ms";
+        return v.toFixed(step < 0.01 ? 3 : 2);
+      };
+    }
+    function easeEditor(parent, type, key) {
+      var conf = settings[type];
+      var select = document.createElement("select");
+      select.setAttribute("aria-label", "Easing preset");
+      [["Default", DEFAULTS[type][key]]].concat(EASE_PRESETS).forEach(function (p) {
+        var o = document.createElement("option");
+        o.value = p[1].join(","); o.textContent = p[0];
+        select.appendChild(o);
+      });
+      parent.appendChild(select);
+
+      var W = 244, H = 170, PAD = 10, TOP = 2, BOTTOM = -0.5;
+      var NS = "http://www.w3.org/2000/svg";
+      var svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+      function make(tag, cls) {
+        var n = document.createElementNS(NS, tag);
+        n.setAttribute("class", cls);
+        svg.appendChild(n);
+        return n;
+      }
+      function px(x) { return PAD + x * (W - 2 * PAD); }
+      function py(y) { return PAD + (TOP - y) / (TOP - BOTTOM) * (H - 2 * PAD); }
+      var box = make("rect", "box");
+      box.setAttribute("x", px(0)); box.setAttribute("y", py(1));
+      box.setAttribute("width", px(1) - px(0)); box.setAttribute("height", py(0) - py(1));
+      var arm1 = make("line", "arm"), arm2 = make("line", "arm");
+      var curve = make("path", "curve");
+      var h1 = make("circle", "handle"), h2 = make("circle", "handle");
+      h1.setAttribute("r", 6); h2.setAttribute("r", 6);
+      parent.appendChild(svg);
+
+      var text = document.createElement("input");
+      text.type = "text";
+      text.setAttribute("aria-label", "Cubic bezier values");
+      parent.appendChild(text);
+
+      function draw() {
+        var b = conf[key];
+        text.value = "cubic-bezier(" + b.join(", ") + ")";
+        curve.setAttribute("d", "M" + px(0) + "," + py(0) + " C" + px(b[0]) + "," + py(b[1]) +
+          " " + px(b[2]) + "," + py(b[3]) + " " + px(1) + "," + py(1));
+        arm1.setAttribute("x1", px(0)); arm1.setAttribute("y1", py(0));
+        arm1.setAttribute("x2", px(b[0])); arm1.setAttribute("y2", py(b[1]));
+        arm2.setAttribute("x1", px(1)); arm2.setAttribute("y1", py(1));
+        arm2.setAttribute("x2", px(b[2])); arm2.setAttribute("y2", py(b[3]));
+        h1.setAttribute("cx", px(b[0])); h1.setAttribute("cy", py(b[1]));
+        h2.setAttribute("cx", px(b[2])); h2.setAttribute("cy", py(b[3]));
+      }
+      function apply(values) {
+        if (values.length !== 4 || values.some(isNaN)) return false;
+        values[0] = Math.max(0, Math.min(1, values[0]));
+        values[2] = Math.max(0, Math.min(1, values[2]));
+        conf[key] = values;
+        draw();
+        return true;
+      }
+      function drag(handle, xi) {
+        handle.addEventListener("pointerdown", function (e) {
+          handle.setPointerCapture(e.pointerId);
+          e.preventDefault();
+        });
+        handle.addEventListener("pointermove", function (e) {
+          if (!handle.hasPointerCapture(e.pointerId)) return;
+          var r = svg.getBoundingClientRect();
+          var x = ((e.clientX - r.left) / r.width * W - PAD) / (W - 2 * PAD);
+          var y = TOP - ((e.clientY - r.top) / r.height * H - PAD) / (H - 2 * PAD) * (TOP - BOTTOM);
+          conf[key][xi] = Math.round(Math.max(0, Math.min(1, x)) * 100) / 100;
+          conf[key][xi + 1] = Math.round(Math.max(BOTTOM, Math.min(TOP, y)) * 100) / 100;
+          draw();
+        });
+        handle.addEventListener("pointerup", function () { replay(type); });
+      }
+      drag(h1, 0); drag(h2, 2);
+      select.addEventListener("change", function () {
+        apply(select.value.split(",").map(parseFloat));
+        replay(type);
+      });
+      text.addEventListener("change", function () {
+        var ok = apply(text.value.replace(/cubic-bezier|[()]/g, "").split(",").map(parseFloat));
+        if (ok) replay(type); else draw();
+      });
+      draw();
+    }
+    function renderBody() {
+      body.replaceChildren();
+      tabs.querySelectorAll("button").forEach(function (b) {
+        b.setAttribute("aria-selected", b.dataset.type === active ? "true" : "false");
+      });
+      var conf = settings[active];
+      CONTROLS[active].forEach(function (group) {
+        var title = document.createElement("h3");
+        if (group[0] === "EASE") {
+          title.textContent = group[1];
+          body.appendChild(title);
+          easeEditor(body, active, group[2] || "ease");
+          return;
+        }
+        title.textContent = group[0];
+        body.appendChild(title);
+        group[1].forEach(function (c) {
+          var type = active, key = c[0];
+          // Locked values edit the entry for the size on screen.
+          var target = c[6] ? conf.sizes[activeSize] : conf;
+          slider(body, c[1], c[2], c[3], c[4], target[key], showValue(c[5], c[4]),
+            function (v) { target[key] = v; },
+            function () { replay(type); });
+        });
+      });
+    }
+
+    var tabs = document.createElement("div");
+    tabs.className = "tabs";
+    tabs.setAttribute("role", "group");
+    tabs.setAttribute("aria-label", "Animation type");
+    [["spin", "Spin"], ["pop", "Pop"], ["subtle", "Subtle"]].forEach(function (t) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.dataset.type = t[0];
+      b.textContent = t[1];
+      b.addEventListener("click", function () {
+        active = t[0];
+        renderBody();
+      });
+      tabs.appendChild(b);
+    });
+    tune.appendChild(tabs);
+
+    // Sizes with locked values. Blur, distance and pull back below edit the
+    // selected size; other font sizes interpolate between these.
+    var sizeTitle = document.createElement("h3");
+    sizeTitle.textContent = "Number size";
+    sizeTitle.style.marginTop = "0";
+    sizeEl.appendChild(sizeTitle);
+    var sizeTabs = document.createElement("div");
+    sizeTabs.className = "tabs";
+    sizeTabs.setAttribute("role", "group");
+    sizeTabs.setAttribute("aria-label", "Number size");
+    SIZE_STOPS.forEach(function (size) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = size;
+      b.setAttribute("aria-label", size + " pixels");
+      b.setAttribute("aria-selected", size === activeSize ? "true" : "false");
+      b.addEventListener("click", function () {
+        activeSize = size;
+        sizeTabs.querySelectorAll("button").forEach(function (other) {
+          other.setAttribute("aria-selected", other === b ? "true" : "false");
+        });
+        document.querySelectorAll(".value").forEach(function (el) { el.style.fontSize = size + "px"; });
+        renderBody();
+        replay(active);
+      });
+      sizeTabs.appendChild(b);
+    });
+    sizeEl.appendChild(sizeTabs);
+    tune.appendChild(sizeEl);
+    tune.appendChild(body);
+
+    var actions = document.createElement("div");
+    actions.className = "actions";
+    function action(label, cls, fn) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn" + cls;
+      b.textContent = label;
+      b.addEventListener("click", function () { fn(b); });
+      actions.appendChild(b);
+    }
+    action("Play", " btn--primary", function () { replay(active); });
+    action("Copy values", "", function (b) {
+      var done = function (ok) {
+        b.textContent = ok ? "Copied" : "Copy failed";
+        setTimeout(function () { b.textContent = "Copy values"; }, 1400);
+      };
+      if (!navigator.clipboard) return done(false);
+      navigator.clipboard.writeText(JSON.stringify(settings, null, 2)).then(
+        function () { done(true); }, function () { done(false); });
+    });
+    action("Reset", "", function () {
+      Object.assign(settings[active], JSON.parse(JSON.stringify(DEFAULTS[active])));
+      renderBody();
+      replay(active);
+    });
+    tune.appendChild(actions);
+    renderBody();
+
+    var html = document.documentElement;
+    var icon = document.getElementById("theme-icon");
+    function paintIcon() {
+      icon.src = html.getAttribute("data-theme") === "dark"
+        ? "assets/theme-sun.svg" : "assets/theme-moon-01.svg";
+    }
+    paintIcon();
+    document.getElementById("theme").addEventListener("click", function () {
+      var next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      if (next === "dark") html.setAttribute("data-theme", "dark");
+      else html.removeAttribute("data-theme");
+      try { localStorage.setItem("tdev:theme", next); } catch (e) {}
+      paintIcon();
+    });
+  </script>
+</body>
+</html>

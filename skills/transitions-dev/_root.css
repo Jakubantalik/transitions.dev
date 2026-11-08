@@ -41,13 +41,16 @@
   --resize-dur: 300ms;
   --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* Number pop-in */
-  --digit-dur: 500ms;
-  --digit-distance: 8px;
-  --digit-stagger: 70ms;
+  --digit-dur: 600ms;
+  --digit-exit-dur: 155ms;
+  --digit-enter-delay: 50ms;
+  --digit-stagger: 40ms;
+  --digit-distance: 12.5px;
+  --digit-exit-distance: 12.5px;
   --digit-blur: 2px;
-  --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
-  --digit-dir-x: 0;
-  --digit-dir-y: 1;
+  --digit-lift: 3px;
+  --digit-start-scale: 0.7;
+  --digit-peak: 1.03;
   /* Notification badge */
   --badge-slide-dur: 260ms;
   --badge-pop-dur: 500ms;
@@ -232,11 +235,26 @@
   --check-uncheck: 150ms;
   --check-ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* Spinning counter */
-  --reel-dur: 1400ms;
-  --reel-cell: 30px;
-  --reel-spin-blur: 3px;
+  --reel-step-dur: 130ms;
   --reel-stagger: 90ms;
-  --reel-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --reel-ease: cubic-bezier(0.35, -0.02, 0.43, 1);
+  --reel-cell: 30px;
+  --reel-side-scale: 0.7;
+  --reel-side-offset: 12px;
+  --reel-side-blur: 2px;
+  --reel-side-opacity: 0.17;
+  --reel-center-scale: 0.9;
+  --reel-center-blur: 1px;
+  --reel-antic-dur: 100ms;
+  --reel-antic-scale: 0.94;
+  --reel-antic-lift: 3px;
+  --reel-land-dur: 740ms;
+  --reel-land-peak: 1.03;
+  /* Number subtle change */
+  --subtle-dur: 455ms;
+  --subtle-distance: 3.4px;
+  --subtle-blur: 1px;
+  --subtle-ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* Toggle */
   --toggle-dur: 350ms;
   --toggle-travel: 14.66px;

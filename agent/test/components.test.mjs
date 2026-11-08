@@ -12,7 +12,7 @@ const comp = (result, recipe) => result.components.find((c) => c.recipe === reci
 const has = (result, rule, re) => result.findings.some((f) => f.rule === rule && re.test(f.message));
 
 test("every library recipe is in the catalog", () => {
-  assert.equal(RECIPES.filter((r) => r.tier === "free").length, 32);
+  assert.equal(RECIPES.filter((r) => r.tier === "free").length, 33);
   assert.equal(RECIPES.filter((r) => r.tier === "pro").length, 11);
 });
 

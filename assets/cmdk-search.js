@@ -11,7 +11,7 @@
   // [title, detail.html slug, thumbnail slug, pro, categories, search terms]
   var TRANSITIONS = [
     ["Card resize","card-resize","card-resize",0,["essential"],"essential expand grow height smooth card resize transition"],
-    ["Number pop-in","number-pop-in","number-pop-in",0,["texts"],"text count digits digit flip with blur and stagger"],
+    ["Number pop-in","number-pop-in","number-pop-in",0,["texts"],"text count digits digit swap drum bounce blur stagger"],
     ["Notification badge","notification-badge","notification-badge",0,["essential"],"essential bell unread alert diagonal slide with spring pop-in"],
     ["Text states swap","text-states-swap","text-states-swap",0,["essential"],"essential label change text swap transition with blur"],
     ["Menu dropdown","menu-dropdown","menu-dropdown",0,["essential"],"essential select popover origin-aware open / close transition"],
@@ -42,7 +42,8 @@
     ["Learn more hover","learn-more-hover","learn-more-hover",0,["essential"],"essential arrow link cta chevron shifts and opens on hover"],
     ["Checkbox check","checkbox-check","checkbox-check",0,["essential"],"essential tick form check draws on with a stroke path"],
     ["Spinner to check morph","spinner-to-check-morph","spinner-check-morph",1,["ai"],"ai agents loading done success task spinner pops into a drawn check"],
-    ["Spinning counter","spinning-counter","spinning-counter",0,["texts"],"text odometer slot digits number digits spin like a reel to the value"],
+    ["Spinning counter","spinning-counter","spinning-counter",0,["texts"],"text odometer slot digits number digits roll on a 3d drum to the value"],
+    ["Number subtle change","number-subtle-change","number-subtle-change",0,["texts"],"text count digits number stat metric dashboard ticker live quiet cross-fade in place"],
     ["Toggle","toggle","toggle",0,["essential"],"essential switch thumb slides with a double bounce"],
     ["Pro gradient text","pro-gradient-text","pro-gradient-text",1,["texts","ai"],"text ai agents shine badge colour washes orbit the letters"],
     ["Delete with smoky dissolve","delete-with-smoky-dissolve","smoky-dissolve",1,["effects","images"],"effects image photo remove delete disintegrate image shreds and falls into smoke"],

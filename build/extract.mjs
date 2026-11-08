@@ -164,8 +164,8 @@ const motionTokensDoc = motionFamilies
 const ORDER = [
   { key: "p4", file: "01-card-resize",         summary: "Tween a container's width or height when its layout state changes",
     when: "Tweening a container's width or height when its layout state changes (compact ↔ expanded card, collapsing panel, list row toggling extra detail). Pure CSS — no JS required beyond the class toggle that drives the size change." },
-  { key: "p9", file: "02-number-pop-in",       summary: "Re-enter each digit with a blurred slide when a number updates",
-    when: "Counters, prices, balances, or any number that updates and should re-enter from a direction with blur. Each character animates independently and the last two digits stagger so decimals feel alive without looking chaotic." },
+  { key: "p9", file: "02-number-pop-in",       summary: "Swap changed digits on a 3D drum with a bounce when a number updates",
+    when: "Counters, prices, balances, or any number that updates and the change should be noticed. Each changed digit swaps on a 3D drum: the old one leaves upward, the new one rises just after it, pulls back, and springs into place past 100%. Digits the old and new number share stay still, and the last two stagger so decimals feel alive without looking chaotic." },
   { key: "p1", file: "03-notification-badge",  summary: "Slide a small badge onto a trigger and pop the dot",
     when: "A small badge appearing on top of a trigger (bell, inbox, button). Slides in diagonally and pops the dot independently of the trigger so the trigger itself never moves." },
   { key: "p6", file: "04-text-states-swap",    summary: "Swap text in place with a blurred up-and-down transition",
@@ -348,8 +348,10 @@ The natural way to turn the "v" into a "^" is to morph the chevron's SVG \`d\` b
     when: "\"Learn more\", \"See all\", \"Continue\" — inline links or buttons with a trailing chevron that should acknowledge hover. The chevron slides toward the text's reading direction while its two arms spread apart into a full arrow, then eases back on exit with a slightly faster out clock.\n\nA hover-only affordance: keyboard focus and touch fall back to the resting state, so nothing essential is communicated by the motion alone." },
   { key: "p25", file: "25-checkbox-check", summary: "Fill the box, then stroke-draw the checkmark",
     when: "Checkboxes, to-do completion, multi-select rows — any boolean control where the checked state should feel earned. The box's background fills first, then the checkmark draws itself via stroke-dashoffset after a short delay; unchecking reverses quickly with no draw.\n\nToggle `aria-checked` on the control. Like **success check**, the draw needs `stroke-dasharray` calibrated to your actual path length (`path.getTotalLength()`)." },
-  { key: "p26", file: "26-spinning-counter", summary: "Spin slot-machine digit reels with vertical motion blur",
-    when: "Numbers that change with fanfare — points, prices, follower counts, dashboards KPIs. Each digit is a clipped vertical reel of 0-9 cells; the strip translates up through several full spins before landing on the target digit, with a per-column stagger and a vertical-only SVG blur while moving.\n\nReach for this over **number pop-in** when the change should feel like an event (a jackpot roll) rather than a quiet update. The reels are built in JS — one `.t-reel-col` per digit — so bring the small builder snippet from the recipe." },
+  { key: "p26", file: "26-spinning-counter", summary: "Roll digits through the numbers on a 3D drum, landing with a bounce",
+    when: "Numbers that change with fanfare: points, rewards, milestones, dashboard KPIs. Each digit is a drum of 0-9 that rolls through the numbers up to its target. Nothing is cropped: the numbers above and below sit behind the middle one, smaller, fainter and blurrier, so it reads as 3D. Digits that do not change stay still, and each target lands with an anticipation and a spring past 100%.\n\nReach for this over **number pop-in** when the change should feel like an event rather than an update. The drums are built and driven in JS, so bring the whole script from the recipe. For numbers that update often, use **number subtle change** instead." },
+  { key: "p35", file: "36-number-subtle-change", summary: "Cross-fade changed digits in place, rising or falling with the value",
+    when: "Numbers that update often and should not draw attention: live stats, dashboards, tickers. Only the digits that changed cross-fade in place, with a small shift up when the number rises and down when it falls.\n\nReach for this over **number pop-in** when the number changes every few seconds and a bigger animation would become noise." },
   { key: "p27", file: "27-toggle", summary: "Travel the switch thumb with a double-bounce overshoot",
     when: "On/off switches — settings rows, theme toggles, feature flags. The thumb travels across the track with a two-step overshoot (past the end, back, settle) while the track color cross-fades on its own clock.\n\nToggle `data-on` on the switch. Add `.is-init` on first interaction so the \"off\" keyframes don't animate on page load — without it every switch on the page plays its return bounce once at mount." },
   { key: "p28", file: "28-thinking-states", summary: "Shimmer a status line while it holds, then swap it to the next state",
@@ -475,27 +477,6 @@ function swapText(next) {
     el.classList.remove("is-enter-start");
   }, dur);
 }`,
-  p9: `// Replay the digit pop-in: remove .is-animating, swap the digit spans,
-// force a reflow, then re-add .is-animating. Mark the last two digits
-// with data-stagger="1" / "2" so they ride in 1× / 2× --digit-stagger
-// behind the leading digits.
-const group = document.querySelector(".t-digit-group");
-
-function setDigits(str) {
-  group.classList.remove("is-animating");
-  group.replaceChildren();
-  const chars = str.split("");
-  chars.forEach((ch, i) => {
-    const span = document.createElement("span");
-    span.className = "t-digit";
-    span.textContent = ch;
-    if (i === chars.length - 2) span.dataset.stagger = "1";
-    else if (i === chars.length - 1) span.dataset.stagger = "2";
-    group.appendChild(span);
-  });
-  void group.offsetHeight; // force reflow
-  group.classList.add("is-animating");
-}`,
   p8: `// Flip data-page on the container — the CSS handles the rest.
 // Set --page-exit-enabled: 0 on the container if you want pages to
 // fade without sliding (useful on first paint).
@@ -619,11 +600,15 @@ const inputEl = wrap.querySelector("input, textarea");
 
 // Long orchestration lives in build/snippets/*.js so extract.mjs stays readable.
 const snippetDir = path.join(here, "snippets");
-for (const name of ["p13-clear.js"]) {
+for (const [key, name] of [
+  ["p13", "p13-clear.js"],
+  ["p9", "p9-swap.js"],
+  ["p26", "p26-spin.js"],
+  ["p35", "p35-subtle.js"],
+]) {
   const p = path.join(snippetDir, name);
   if (fs.existsSync(p)) {
-    JS_SNIPPETS[name.replace(".js", "").replace("p13-clear", "p13")] =
-      fs.readFileSync(p, "utf8").trim();
+    JS_SNIPPETS[key] = fs.readFileSync(p, "utf8").trim();
   }
 }
 

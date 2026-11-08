@@ -333,15 +333,19 @@
       --p8-slide-ease: var(--ease-smooth-out);
       --p8-fade-ease: var(--ease-smooth-out);
 
-      /* P9 — Number pop-in */
-      --p9-dur: var(--duration-very-slow);
-      --p9-distance: var(--distance-base);
-      --p9-stagger: 70ms;
-      --p9-blur: var(--blur-small);
-      --p9-bounce: 1.45;
-      --p9-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
-      --p9-dir-x: 0;
-      --p9-dir-y: 1;
+      /* P9 - Number pop-in. Changed digits swap on a 3D drum: the old one
+         leaves upward, the new one rises just after it, pulls back, and
+         springs into place past 100%. --p9-dur covers anticipation + spring. */
+      --p9-dur: 600ms;
+      --p9-exit-dur: 155ms;
+      --p9-enter-delay: 50ms;
+      --p9-stagger: 40ms;
+      --p9-distance: 12.5px;
+      --p9-exit-distance: 12.5px;
+      --p9-blur: 2px;
+      --p9-lift: 3px;
+      --p9-start-scale: 0.7;
+      --p9-peak: 1.03;
 
       /* P10 — Success check (appear / disappear).
          Entry composes 5 sub-transitions in parallel (fade, rotate,
@@ -569,18 +573,36 @@
       --p25-uncheck-dur:     150ms;
       --p25-ease:            var(--ease-smooth-out);
 
-      /* P26 — Spinning reel counter (slot-machine / odometer). Each
-         digit strip spins --p26-spins loops and decelerates onto the
-         target digit; a vertical motion blur fades out as each reel
-         settles, columns landing left-to-right (--p26-stagger). */
-      --p26-dur:             1400ms;
-      --p26-target:          100;
-      --p26-spins:           3;
+      /* P26 - Spinning counter. Each digit is a drum of 0-9 rolling through
+         the numbers up to its target, --p26-step-dur per number. Nothing is
+         cropped: the numbers above and below sit behind the middle one,
+         smaller and blurrier, so the drum reads as 3D. The target lands while
+         still travelling in, with a spring past 100%. */
+      --p26-step-dur:        130ms;
+      --p26-from:            100;
+      --p26-target:          178;
+      --p26-spins:           0;
       --p26-cell:            30px;
-      --p26-rows:            1;
-      --p26-spin-blur:       3px;
       --p26-stagger:         90ms;
-      --p26-ease:            cubic-bezier(0.16, 1, 0.3, 1);
+      --p26-ease:            cubic-bezier(0.35, -0.02, 0.43, 1);
+      --p26-side-scale:      0.7;
+      --p26-side-offset:     12px;
+      --p26-side-blur:       2px;
+      --p26-side-opacity:    0.17;
+      --p26-center-scale:    0.9;
+      --p26-center-blur:     1px;
+      --p26-antic-dur:       100ms;
+      --p26-antic-scale:     0.94;
+      --p26-antic-lift:      3px;
+      --p26-land-dur:        740ms;
+      --p26-land-peak:       1.03;
+
+      /* P35 - Number subtle change. Changed digits cross-fade in place,
+         rising when the number goes up and falling when it goes down. */
+      --p35-dur:             455ms;
+      --p35-distance:        3.4px;
+      --p35-blur:            1px;
+      --p35-ease:            cubic-bezier(0.22, 1, 0.36, 1);
 
       /* P27 — Toggle on/off. The thumb travels with a double bounce:
          overshoot past the end (--p27-ov1), swing back through
@@ -3226,13 +3248,16 @@
       width: 100%;
     }
 
-    /* ─── Prototype 9 — Number pop-in ────────────────────────── */
+    /* ─── Prototype 9: Number pop-in ─── */
     /* True-centre the number in the stage (ignore the bottom padding
        reserved for the Animate button). */
     .p9-stage-inner {
       padding-bottom: 0;
     }
 
+    /* Changed digits swap on a 3D drum: the old one leaves upward, the new
+       one rises just after it, pulls back and springs into place past 100%.
+       Keyframes are baked from a spring, so timing lives in --p9-dur. */
     .p9-number {
       font-family: var(--font-sans);
       font-weight: 500;
@@ -3246,52 +3271,63 @@
       user-select: none;
       position: relative;
     }
-    .p9-char {
-      display: inline-block;
-      transform: translateY(0);
-      opacity: 1;
-      will-change: transform, opacity;
-    }
+    .p9-slot { position: relative; display: inline-block; }
+    .p9-old { position: absolute; inset: 0; text-align: center; pointer-events: none; }
+    .p9-char { display: inline-block; will-change: transform, opacity, filter; }
     .p9-number.is-animating .p9-char {
-      animation: p9-pop-in var(--p9-dur) var(--p9-ease) both;
+      animation: p9-pop-in var(--p9-dur) linear both;
+      animation-delay: calc(var(--p9-stagger) * var(--digit-i, 0) + var(--p9-enter-delay));
     }
-    .p9-number.is-animating .p9-char[data-stagger="1"] { animation-delay: var(--p9-stagger); }
-    .p9-number.is-animating .p9-char[data-stagger="2"] { animation-delay: calc(var(--p9-stagger) * 2); }
-
-    .p9-number .p9-ghost {
-      position: absolute;
-      inset: 0;
-      display: inline-flex;
-      align-items: baseline;
-      pointer-events: none;
+    .p9-number.is-animating .p9-old {
+      animation: p9-pop-out var(--p9-exit-dur) linear both;
+      animation-delay: calc(var(--p9-stagger) * var(--digit-i, 0));
     }
-    .p9-number .p9-ghost .p9-char {
-      animation: p9-pop-out var(--p9-dur) var(--p9-ease) both;
-    }
-    .p9-number .p9-ghost .p9-char[data-stagger="1"] { animation-delay: var(--p9-stagger); }
-    .p9-number .p9-ghost .p9-char[data-stagger="2"] { animation-delay: calc(var(--p9-stagger) * 2); }
+    .p9-number.is-animating [data-stagger="1"] { --digit-i: 1; }
+    .p9-number.is-animating [data-stagger="2"] { --digit-i: 2; }
+    /* Digits that did not change (the leading ones the old and new number
+       share) stay still; only the digits that changed swap. */
+    .p9-number.is-animating .p9-char[data-same] { animation: none; }
 
     @keyframes p9-pop-in {
-      0%   {
-        transform: translate(
-          calc(var(--p9-distance) * var(--p9-dir-x)),
-          calc(var(--p9-distance) * var(--p9-dir-y))
-        );
-        opacity: 0;
-        filter: blur(var(--p9-blur));
-      }
-      100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+      0% { transform: translateY(calc(var(--p9-distance) * 1 + var(--p9-lift) * 0)) scale(var(--p9-start-scale)); opacity: 0; filter: blur(calc(var(--p9-blur) * 1)); }
+      5% { transform: translateY(calc(var(--p9-distance) * 0.941 + var(--p9-lift) * 0.216)) scale(var(--p9-start-scale)); opacity: 0.059; filter: blur(calc(var(--p9-blur) * 1)); }
+      10% { transform: translateY(calc(var(--p9-distance) * 0.755 + var(--p9-lift) * 0.648)) scale(var(--p9-start-scale)); opacity: 0.245; filter: blur(calc(var(--p9-blur) * 1)); }
+      15% { transform: translateY(calc(var(--p9-distance) * 0.475 + var(--p9-lift) * 0.972)) scale(var(--p9-start-scale)); opacity: 0.525; filter: blur(calc(var(--p9-blur) * 1)); }
+      20% { transform: translateY(calc(var(--p9-distance) * 0.206 + var(--p9-lift) * 0.792)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.792)); opacity: 0.794; filter: blur(calc(var(--p9-blur) * 0.9)); }
+      25% { transform: translateY(calc(var(--p9-distance) * 0.041 + var(--p9-lift) * 0.392)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.392)); opacity: 0.959; filter: blur(calc(var(--p9-blur) * 0.75)); }
+      30% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.033)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.033)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.6)); }
+      35% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.194)) scale(calc(1 + (var(--p9-peak) - 1) * 0.711)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.45)); }
+      40% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.272)) scale(calc(1 + (var(--p9-peak) - 1) * 0.997)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.3)); }
+      45% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.238)) scale(calc(1 + (var(--p9-peak) - 1) * 0.87)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.15)); }
+      50% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.146)) scale(calc(1 + (var(--p9-peak) - 1) * 0.535)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      55% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.05)) scale(calc(1 + (var(--p9-peak) - 1) * 0.183)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      60% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.019)) scale(calc(1 + (var(--p9-peak) - 1) * -0.069)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      65% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.05)) scale(calc(1 + (var(--p9-peak) - 1) * -0.185)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      70% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.051)) scale(calc(1 + (var(--p9-peak) - 1) * -0.187)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      75% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.035)) scale(calc(1 + (var(--p9-peak) - 1) * -0.128)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      80% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.016)) scale(calc(1 + (var(--p9-peak) - 1) * -0.057)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      85% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0.002)) scale(calc(1 + (var(--p9-peak) - 1) * -0.007)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      90% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.004)) scale(calc(1 + (var(--p9-peak) - 1) * 0.013)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      95% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * -0.003)) scale(calc(1 + (var(--p9-peak) - 1) * 0.011)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      100% { transform: translateY(calc(var(--p9-distance) * 0 + var(--p9-lift) * 0)) scale(1); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
     }
     @keyframes p9-pop-out {
-      0%   { transform: translate(0, 0); opacity: 1; filter: blur(0); }
-      100% {
-        transform: translate(
-          calc(var(--p9-distance) * var(--p9-dir-x) * -1),
-          calc(var(--p9-distance) * var(--p9-dir-y) * -1)
-        );
-        opacity: 0;
-        filter: blur(var(--p9-blur));
-      }
+      0% { transform: translateY(calc(var(--p9-exit-distance) * 0)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0)); }
+      10% { transform: translateY(calc(var(--p9-exit-distance) * -0.009)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.009)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.009)); }
+      20% { transform: translateY(calc(var(--p9-exit-distance) * -0.042)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.042)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.042)); }
+      30% { transform: translateY(calc(var(--p9-exit-distance) * -0.112)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.112)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.112)); }
+      40% { transform: translateY(calc(var(--p9-exit-distance) * -0.252)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.252)); opacity: 1; filter: blur(calc(var(--p9-blur) * 0.252)); }
+      50% { transform: translateY(calc(var(--p9-exit-distance) * -0.5)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.5)); opacity: 0.833; filter: blur(calc(var(--p9-blur) * 0.5)); }
+      60% { transform: translateY(calc(var(--p9-exit-distance) * -0.748)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.748)); opacity: 0.42; filter: blur(calc(var(--p9-blur) * 0.748)); }
+      70% { transform: translateY(calc(var(--p9-exit-distance) * -0.888)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.888)); opacity: 0.187; filter: blur(calc(var(--p9-blur) * 0.888)); }
+      80% { transform: translateY(calc(var(--p9-exit-distance) * -0.958)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.958)); opacity: 0.069; filter: blur(calc(var(--p9-blur) * 0.958)); }
+      90% { transform: translateY(calc(var(--p9-exit-distance) * -0.991)) scale(calc(1 + (var(--p9-start-scale) - 1) * 0.991)); opacity: 0.015; filter: blur(calc(var(--p9-blur) * 0.991)); }
+      100% { transform: translateY(calc(var(--p9-exit-distance) * -1)) scale(calc(1 + (var(--p9-start-scale) - 1) * 1)); opacity: 0; filter: blur(calc(var(--p9-blur) * 1)); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .p9-number .p9-char { animation: none !important; }
+      .p9-number .p9-old { display: none; }
     }
 
     /* ─── Prototype 10 — Success check appear / disappear ────── */
@@ -4881,21 +4917,17 @@
     html[data-theme="dark"] .p25-box { --p25-ring: rgba(255, 255, 255, 0.18); }
 
     /* ============================================================ */
-    /* Prototype 26 — Spinning reel counter                          */
+    /* Prototype 26: Spinning counter                                 */
     /* ============================================================ */
-    /* .p26-value is a flex row of per-digit reels (.p26-col) built by
-       JS. Each reel clips a vertical strip (.p26-col-strip) of 0-9
-       cells; JS translates it up by (spins*10 + targetDigit) cells so
-       it spins several turns and lands on the final digit. Each strip
-       carries a DIRECTIONAL (vertical-only) motion blur via an SVG
-       feGaussianBlur stdDeviation="0 Y" (unlike CSS blur() which is
-       isotropic and would smear digits sideways); a rAF loop decays it
-       to 0 as each reel settles. --p26-rows: 1 shows only the target
-       at rest; the mask gradient softens the window edges. */
+    /* .p26-value is a flex row of per-digit drums (.p26-col) built by
+       JS. A hidden sizer holds the column's width; the ten digits are
+       stacked on top of it and JS places each one on the drum per frame
+       (position, scale, blur, opacity, stacking). There is no clipping:
+       digits leave by fading at the back of the drum. */
     .p26-value {
       display: inline-flex;
       align-items: center;
-      height: calc(var(--p26-cell) * var(--p26-rows));
+      height: var(--p26-cell);
       font-weight: 600;
       font-size: 23px;
       line-height: var(--p26-cell);
@@ -4904,29 +4936,59 @@
     }
     .p26-col {
       position: relative;
-      height: calc(var(--p26-cell) * var(--p26-rows));
-      overflow: hidden;
-      -webkit-mask-image: linear-gradient(
-        to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
-      mask-image: linear-gradient(
-        to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
-    }
-    .p26-col-strip {
-      display: flex;
-      flex-direction: column;
-      will-change: transform, filter;
-    }
-    .p26-digit {
+      display: inline-block;
       height: var(--p26-cell);
+    }
+    .p26-sizer { visibility: hidden; }
+    .p26-digit {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-variant-numeric: tabular-nums;
+      will-change: transform, filter, opacity;
     }
     .p26-sep {
       display: flex;
       align-items: center;
-      height: calc(var(--p26-cell) * var(--p26-rows));
+      height: var(--p26-cell);
+    }
+
+    /* Prototype 35: Number subtle change. Changed digits cross-fade in place;
+       --p35-dir is 1 when the number went up and -1 when it went down. */
+    .p35-number {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 24px;
+      line-height: 24px;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: baseline;
+      user-select: none;
+    }
+    .p35-slot { position: relative; display: inline-block; }
+    .p35-new { display: inline-block; }
+    .p35-old { position: absolute; inset: 0; text-align: center; pointer-events: none; }
+    .p35-number.is-animating .p35-new { animation: p35-in var(--p35-dur) var(--p35-ease) both; }
+    .p35-number.is-animating .p35-old { animation: p35-out var(--p35-dur) var(--p35-ease) both; }
+    @keyframes p35-in {
+      from {
+        transform: translateY(calc(var(--p35-distance) * var(--p35-dir, 1)));
+        opacity: 0;
+        filter: blur(var(--p35-blur));
+      }
+    }
+    @keyframes p35-out {
+      to {
+        transform: translateY(calc(var(--p35-distance) * var(--p35-dir, 1) * -1));
+        opacity: 0;
+        filter: blur(var(--p35-blur));
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .p35-number .p35-new { animation: none !important; }
+      .p35-number .p35-old { display: none; }
     }
 
     /* ============================================================ */
@@ -5002,9 +5064,7 @@
     @media (prefers-reduced-motion: reduce) {
       .p22-toast,
       .p24-chevron,
-      .p24-arm,
-      .p26-value,
-      .p26-col-strip {
+      .p24-arm {
         transition: none !important;
         transform: none !important;
         filter: none !important;
@@ -6515,7 +6575,7 @@
         </div>
         <div class="card-meta">
           <div class="card-title">Number pop-in</div>
-          <div class="card-subtitle">Digit flip with blur and stagger</div>
+          <div class="card-subtitle">Digits swap on a 3D drum with a bounce</div>
         </div>
         <a class="card-copy card-remix" href="studio.html?lib=number-pop-in" aria-label="Remix Number pop-in in the Builder" data-remix-key="p9">
           <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></svg>
@@ -7464,9 +7524,27 @@
         </div>
         <div class="card-meta">
           <div class="card-title">Spinning counter</div>
-          <div class="card-subtitle">Digits spin like a reel to the value</div>
+          <div class="card-subtitle">Digits roll on a 3D drum to the value</div>
         </div>
         <a class="card-copy card-remix" href="studio.html?lib=spinning-counter" aria-label="Remix Spinning counter in the Builder" data-remix-key="p26">
+          <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></svg>
+          <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
+        </a>
+      </article>
+
+      <!-- Number subtle change -->
+      <article class="card" data-proto-card data-cat="texts" data-seq="44">
+        <div class="card-stage">
+          <div class="stage-inner">
+            <div class="p35-number" data-proto-subtle data-value="1284" aria-label="1,284">1,284</div>
+          </div>
+          <button type="button" class="btn-animate" data-proto="35">Animate</button>
+        </div>
+        <div class="card-meta">
+          <div class="card-title">Number subtle change</div>
+          <div class="card-subtitle">Changed digits cross-fade in place</div>
+        </div>
+        <a class="card-copy card-remix" href="studio.html?lib=number-subtle-change" aria-label="Remix Number subtle change in the Builder" data-remix-key="p35">
           <svg class="icon-copy" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></svg>
           <span class="card-copy-tooltip" role="tooltip" aria-hidden="true"><span class="tt-text">Remix</span></span>
         </a>
@@ -8250,34 +8328,50 @@ export function PageSlide() {
 }
 </script>
 
-  <script type="text/plain" data-react-key="p9">import { useState } from "react";
+  <script type="text/plain" data-react-key="p9">import { useEffect, useRef, useState } from "react";
 
-// Pair with the CSS from the CSS tab.
-// Toggle `.is-animating` to replay the pop-in sequence.
-export function NumberPopIn({ value = "123" }) {
-  const [playing, setPlaying] = useState(true);
+// Pair with the CSS from the CSS tab. Changed digits get a slot with the old
+// digit (leaves upward) and the new one (rises just after it, springs into
+// place). The leading characters both numbers share stay still.
+export function NumberPopIn({ initial = "65.78" }) {
+  const [value, setValue] = useState(initial);
+  const prev = useRef(value);
+  const from = prev.current;
+  useEffect(() => { prev.current = value; }, [value]);
 
-  // Replay: strip the class, force a reflow via rAF, then re-add.
-  const replay = () => {
-    setPlaying(false);
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => setPlaying(true))
-    );
+  let same = 0;
+  while (same < from.length && same < value.length && from[same] === value[same]) same++;
+
+  const next = () => {
+    const whole = Math.floor(Math.random() * 90) + 10;
+    const part = String(Math.floor(Math.random() * 100)).padStart(2, "0");
+    setValue(whole + "." + part);
   };
 
   return (
     <>
-      <button type="button" onClick={replay}>Animate</button>
-      <span className={"t-digit-group" + (playing ? " is-animating" : "")}>
-        {value.split("").map((ch, i) => (
-          <span
-            key={i}
-            className="t-digit"
-            data-stagger={i > 0 ? i : undefined}
-          >
-            {ch}
-          </span>
-        ))}
+      <button type="button" onClick={next}>Animate</button>
+      {/* The key restarts the animation on every change. */}
+      <span key={value} className={"t-digit-group" + (from !== value ? " is-animating" : "")}>
+        {value.split("").map((ch, i) => {
+          if (i < same || !/\d/.test(ch)) {
+            return <span key={i} className="t-digit" data-same="">{ch}</span>;
+          }
+          const fromEnd = value.length - 1 - i;
+          const old = from[from.length - (value.length - i)];
+          return (
+            <span
+              key={i}
+              className="t-digit-slot"
+              data-stagger={fromEnd === 1 ? "1" : fromEnd === 0 ? "2" : undefined}
+            >
+              {old && /\d/.test(old) && (
+                <span className="t-digit-old" aria-hidden="true">{old}</span>
+              )}
+              <span className="t-digit">{ch}</span>
+            </span>
+          );
+        })}
       </span>
     </>
   );
@@ -9194,70 +9288,299 @@ export function Checkbox({ label }) {
 }
 </script>
 
-  <script type="text/plain" data-react-key="p26">import { useEffect, useRef } from "react";
+  <script type="text/plain" data-react-key="p26">import { useEffect, useRef, useState } from "react";
 
-// Pair with the CSS from the CSS tab. Each digit is a clipped reel of
-// 0-9 cells; the strip translates up (spins*10 + digit) cells to spin then
-// land, with a per-column delay for a left-to-right cascade. (The vertical
-// SVG motion-blur driver is omitted here for brevity — see the demo.)
-const SPINS = 3, CELL = 30, DUR = 1400, STAGGER = 90;
-const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+// Pair with the CSS from the CSS tab. Each digit is a drum of 0-9 that rolls
+// through the numbers up to its target; a digit that does not change stays
+// still. The tokens in :root drive everything.
+const STEP = (50 * Math.PI) / 180; // drum angle between two digits
+const ENTER_MS = 120;              // rest to rolling
+const FADE_END = 1.8;              // steps from the middle where a digit is gone
+const LAND_AT = 0.6;               // steps from the middle where the target starts landing
+const ARRIVE_AT = 0.29;            // share of the spring where it reaches the middle
+const CLEAR_MS = 200;              // blur + neighbours clearing at the start of the spring
 
-export function Counter({ target = 100 }) {
-  const ref = useRef(null);
+function token(name, fallback) {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+  return Number.isNaN(v) ? fallback : v;
+}
+function readTokens() {
+  const css = getComputedStyle(document.documentElement);
+  const m = css.getPropertyValue("--reel-ease").match(/cubic-bezier\(([^)]+)\)/);
+  return {
+    stepDur: token("--reel-step-dur", 130),
+    stagger: token("--reel-stagger", 90),
+    ease: bezier(m ? m[1].split(",").map(parseFloat) : [0.35, -0.02, 0.43, 1]),
+    offset: token("--reel-side-offset", 12),
+    sideScale: token("--reel-side-scale", 0.7),
+    sideBlur: token("--reel-side-blur", 2),
+    sideOpacity: token("--reel-side-opacity", 0.17),
+    centerScale: token("--reel-center-scale", 0.9),
+    centerBlur: token("--reel-center-blur", 1),
+    anticDur: token("--reel-antic-dur", 100),
+    anticScale: token("--reel-antic-scale", 0.94),
+    anticLift: token("--reel-antic-lift", 3),
+    landDur: token("--reel-land-dur", 740),
+    landPeak: token("--reel-land-peak", 1.03),
+  };
+}
+function bezier([x1, y1, x2, y2]) {
+  const at = (a, b, t) => 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t;
+  return (x) => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let lo = 0, hi = 1, t = x;
+    for (let i = 0; i < 20; i++) {
+      if (at(x1, x2, t) < x) lo = t; else hi = t;
+      t = (lo + hi) / 2;
+    }
+    return at(y1, y2, t);
+  };
+}
+function smooth(x) {
+  x = Math.max(0, Math.min(1, x));
+  return x * x * (3 - 2 * x);
+}
+// Damped wave: starts at 1, crosses 0, swings negative (the bounce), ends at 0.
+function wave(s) {
+  return s >= 1 ? 0 : Math.exp(-3 * s) * Math.cos(3 * Math.PI * s) * (1 - s);
+}
+const WAVE_TROUGH = (() => {
+  let low = 0;
+  for (let i = 1; i < 400; i++) low = Math.min(low, wave(i / 400));
+  return -low;
+})();
 
-  function build(str) {
-    ref.current.innerHTML = "";
-    const strips = [];
-    [...str].forEach((ch) => {
-      if (ch < "0" || ch > "9") {
-        const sep = document.createElement("span");
-        sep.className = "t-reel-sep";
-        sep.textContent = ch;
-        ref.current.appendChild(sep);
+function buildColumns(el, str) {
+  el.replaceChildren();
+  const cols = [];
+  for (const ch of str) {
+    if (ch < "0" || ch > "9") {
+      const sep = document.createElement("span");
+      sep.className = "t-reel-sep";
+      sep.textContent = ch;
+      el.appendChild(sep);
+      continue;
+    }
+    const col = document.createElement("span");
+    col.className = "t-reel-col";
+    const sizer = document.createElement("span");
+    sizer.className = "t-reel-sizer";
+    sizer.textContent = "0";
+    col.appendChild(sizer);
+    const cells = [];
+    for (let d = 0; d < 10; d++) {
+      const cell = document.createElement("span");
+      cell.className = "t-reel-digit";
+      cell.textContent = String(d);
+      col.appendChild(cell);
+      cells.push(cell);
+    }
+    el.appendChild(col);
+    cols.push({ cells, digit: +ch });
+  }
+  return cols;
+}
+function rest(col, digit) {
+  col.cells.forEach((cell, d) => {
+    cell.style.transform = "none";
+    cell.style.filter = "none";
+    cell.style.zIndex = "";
+    cell.style.opacity = d === digit ? "1" : "0";
+  });
+}
+function look(dist, middle, o) {
+  const angle = Math.min(dist * STEP, Math.PI / 2);
+  // 1 in the middle, 0 at one step away, below 0 further back.
+  const face = (Math.cos(angle) - Math.cos(STEP)) / (1 - Math.cos(STEP));
+  return {
+    angle,
+    scale: o.sideScale + (middle - o.sideScale) * face,
+    back: dist <= 1 ? 1 + (o.sideOpacity - 1) * dist : o.sideOpacity * (1 - (dist - 1) / (FADE_END - 1)),
+  };
+}
+function place(col, pos, spread, middle, o, land) {
+  const radius = o.offset / Math.sin(STEP);
+  col.cells.forEach((cell, d) => {
+    let p = (((d - pos) % 10) + 10) % 10;
+    if (p > 5) p -= 10;
+    const dist = Math.abs(p);
+    if (dist >= FADE_END) { cell.style.opacity = "0"; return; }
+    const l = look(dist, middle, o);
+    // Upcoming digits sit above the middle, so the drum turns downward.
+    let y = (p < 0 ? 1 : -1) * radius * Math.sin(l.angle);
+    const blur = (o.centerBlur + (o.sideBlur - o.centerBlur) * Math.min(dist, 1)) * spread;
+    const away = Math.max(0, Math.min(1, (dist - 0.3) / 0.5));
+    let opacity = l.back * (1 - (1 - spread) * away);
+    let scale = l.scale;
+    let z = 100 - Math.round(dist * 10);
+    if (land && d === col.digit) {
+      y = y * land.arrive + land.lift;
+      scale = land.scale;
+      opacity = land.opacity;
+      z = 200;
+    }
+    cell.style.transform = `translateY(${y.toFixed(2)}px) scale(${scale.toFixed(4)})`;
+    cell.style.filter = blur > 0.01 ? `blur(${blur.toFixed(2)}px)` : "none";
+    cell.style.opacity = opacity.toFixed(3);
+    cell.style.zIndex = String(z);
+  });
+}
+// Rolls `el` from one number to another. Returns a function that cancels it.
+function roll(el, from, to) {
+  const str = to.toLocaleString("en-US");
+  el.setAttribute("aria-label", str);
+  const cols = buildColumns(el, str);
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    cols.forEach((c) => rest(c, c.digit));
+    return () => {};
+  }
+  const o = readTokens();
+  // Each column starts on its digit of the old number, aligned from the right.
+  const fromDigits = String(from).padStart(cols.length, "0").slice(-cols.length);
+  cols.forEach((c, i) => {
+    c.from = +fromDigits[i];
+    rest(c, c.from);
+    if (c.from === c.digit) c.done = true; // nothing to do
+  });
+  const t0 = performance.now();
+  let raf = 0;
+  const tick = () => {
+    const t = performance.now() - t0;
+    let running = false;
+    cols.forEach((c, i) => {
+      if (c.done) return;
+      const local = t - i * o.stagger;
+      if (local <= 0) { running = true; return; }
+      const total = (c.digit - c.from + 10) % 10;
+      // Time per number is fixed, so a longer roll takes longer.
+      const pos = c.from + total * o.ease(local / (total * o.stepDur));
+      const enter = Math.min(1, local / ENTER_MS);
+      if (c.landAt === undefined && c.from + total - pos < LAND_AT) c.landAt = t;
+      const since = c.landAt === undefined ? -1 : t - c.landAt;
+      if (since >= o.anticDur + o.landDur) {
+        rest(c, c.digit);
+        c.done = true;
         return;
       }
-      const col = document.createElement("span");
-      col.className = "t-reel-col";
-      const strip = document.createElement("span");
-      strip.className = "t-reel-strip";
-      for (let k = 0; k < (SPINS + 1) * 10 + 1; k++) {
-        const cell = document.createElement("span");
-        cell.className = "t-reel-digit";
-        cell.textContent = String(k % 10);
-        strip.appendChild(cell);
+      running = true;
+      const middle = 1 + (o.centerScale - 1) * enter;
+      let spread = enter;
+      let land = null;
+      if (since >= 0) {
+        // Start from how the target looks right now, so nothing jumps.
+        if (!c.landFrom) c.landFrom = look(c.from + total - pos, middle, o);
+        const arrive = 1 - smooth(since / (o.anticDur + o.landDur * ARRIVE_AT));
+        if (since < o.anticDur) {
+          // Anticipation: eases to --reel-antic-scale, pulling back against the roll.
+          const a = smooth(since / o.anticDur);
+          land = {
+            scale: c.landFrom.scale + (o.anticScale - c.landFrom.scale) * a,
+            lift: -o.anticLift * a,
+            opacity: c.landFrom.back + (1 - c.landFrom.back) * a,
+            arrive,
+          };
+        } else {
+          // Spring: snaps into the middle, past 100%, then settles.
+          const sp = since - o.anticDur;
+          const sn = sp / o.landDur;
+          const w = wave(sn);
+          land = {
+            scale: sn < 1 / 6 ? 1 + (o.anticScale - 1) * w : 1 - ((o.landPeak - 1) * w) / WAVE_TROUGH,
+            lift: -o.anticLift * w,
+            opacity: 1,
+            arrive,
+          };
+          spread = 1 - Math.min(1, sp / CLEAR_MS);
+        }
       }
-      col.appendChild(strip);
-      ref.current.appendChild(col);
-      strips.push({ strip, digit: +ch });
+      place(c, pos, spread, middle, o, land);
     });
-    return strips;
-  }
+    if (running) raf = requestAnimationFrame(tick);
+  };
+  tick();
+  return () => cancelAnimationFrame(raf);
+}
+
+export function SpinningCounter({ initial = 100, first = 178 }) {
+  const ref = useRef(null);
+  const value = useRef(initial);
+  const [target, setTarget] = useState(initial);
 
   useEffect(() => {
-    // Rest at 0.
-    build("0").forEach(({ strip, digit }) => {
-      strip.style.transform = `translateY(-${digit * CELL}px)`;
-    });
-  }, []);
+    const el = ref.current;
+    if (target === value.current) {
+      const str = target.toLocaleString("en-US");
+      el.setAttribute("aria-label", str);
+      buildColumns(el, str).forEach((c) => rest(c, c.digit));
+      return undefined;
+    }
+    const cancel = roll(el, value.current, target);
+    value.current = target;
+    return cancel;
+  }, [target]);
 
-  function spin() {
-    const strips = build(Math.round(target).toLocaleString("en-US"));
-    strips.forEach(({ strip }) => {
-      strip.style.transition = "none";
-      strip.style.transform = "translateY(0)";
-    });
-    void ref.current.offsetWidth;
-    strips.forEach(({ strip, digit }, i) => {
-      strip.style.transition = `transform ${DUR}ms ${EASE} ${i * STAGGER}ms`;
-      strip.style.transform = `translateY(-${(SPINS * 10 + digit) * CELL}px)`;
-    });
-  }
+  const next = () => {
+    if (value.current === initial) return setTarget(first);
+    let n;
+    do { n = 100 + Math.floor(Math.random() * 900); } while (n === value.current);
+    return setTarget(n);
+  };
 
   return (
     <>
-      <div ref={ref} className="t-reel" aria-label={String(target)} />
-      <button type="button" onClick={spin}>Animate</button>
+      <div ref={ref} className="t-reel" />
+      <button type="button" onClick={next}>Animate</button>
+    </>
+  );
+}
+</script>
+
+  <script type="text/plain" data-react-key="p35">import { useEffect, useRef, useState } from "react";
+
+// Pair with the CSS from the CSS tab. Changed digits cross-fade in place,
+// rising when the number goes up and falling when it goes down.
+const format = (n) => n.toLocaleString("en-US");
+
+export function NumberSubtleChange({ initial = 1284 }) {
+  const [value, setValue] = useState(initial);
+  const prev = useRef(value);
+  const from = prev.current;
+  useEffect(() => { prev.current = value; }, [value]);
+
+  const oldStr = format(from);
+  const str = format(value);
+  const sameLength = oldStr.length === str.length;
+
+  const next = () => {
+    let delta = 0;
+    while (delta === 0) delta = Math.floor(Math.random() * 81) - 40;
+    setValue((v) => v + delta);
+  };
+
+  return (
+    <>
+      <button type="button" onClick={next}>Animate</button>
+      {/* The key restarts the animation on every change. */}
+      <span
+        key={value}
+        className={"t-subtle-number" + (from !== value ? " is-animating" : "")}
+        style={{ "--subtle-dir": value >= from ? 1 : -1 }}
+        aria-label={str}
+      >
+        {str.split("").map((ch, i) =>
+          sameLength && oldStr[i] === ch ? (
+            ch
+          ) : (
+            <span key={i} className="t-subtle-slot">
+              {sameLength && (
+                <span className="t-subtle-old" aria-hidden="true">{oldStr[i]}</span>
+              )}
+              <span className="t-subtle-new">{ch}</span>
+            </span>
+          )
+        )}
+      </span>
     </>
   );
 }
@@ -9823,67 +10146,167 @@ export function Surface({ open, children }) {
         }
       }
 
-      /* ── Prototype 26: Spinning reel counter ───────────────────
-         Each digit is a clipped reel of 0-9 cells; the strip
-         translates up (spins·10 + digit) cells to spin then land.
-         A directional (vertical-only) SVG motion blur decays to 0 as
-         each reel settles (rAF, since SVG attrs aren't transitionable);
-         columns land left-to-right via a per-strip transition-delay. */
-      var P26_BLUR_MAX = 10;
+      /* ── Prototype 9: Number pop-in ────────────────────────────
+         Changed digits get a slot holding the old digit (leaves upward)
+         and the new one (rises just after it, springs into place). The
+         leading characters both numbers share stay still; the last two
+         characters ride --p9-stagger behind. */
+      function p9Set(el, str) {
+        var prev = el.getAttribute("data-value");
+        if (prev === null) {
+          prev = Array.prototype.map.call(el.children, function (c) { return c.textContent; }).join("");
+        }
+        var same = 0;
+        while (same < prev.length && same < str.length && prev[same] === str[same]) same++;
+        el.setAttribute("data-value", str);
+        el.classList.remove("is-animating");
+        el.textContent = "";
+        str.split("").forEach(function (ch, i) {
+          var fresh = document.createElement("span");
+          fresh.className = "p9-char";
+          fresh.textContent = ch;
+          var fromEnd = str.length - 1 - i;
+          var stagger = fromEnd === 1 ? "1" : fromEnd === 0 ? "2" : null;
+          if (i < same || ch < "0" || ch > "9") {
+            fresh.setAttribute("data-same", "");
+            el.appendChild(fresh);
+            return;
+          }
+          var slot = document.createElement("span");
+          slot.className = "p9-slot";
+          if (stagger) slot.setAttribute("data-stagger", stagger);
+          var oldCh = prev[prev.length - (str.length - i)];
+          if (oldCh !== undefined && oldCh >= "0" && oldCh <= "9") {
+            var old = document.createElement("span");
+            old.className = "p9-old";
+            old.setAttribute("aria-hidden", "true");
+            old.textContent = oldCh;
+            slot.appendChild(old);
+          }
+          slot.appendChild(fresh);
+          el.appendChild(slot);
+        });
+        // Force reflow so re-adding the class replays.
+        // eslint-disable-next-line no-unused-expressions
+        el.offsetHeight;
+        el.classList.add("is-animating");
+      }
+
+      /* ── Prototype 35: Number subtle change ───────────────────
+         Changed digits cross-fade in place, rising when the number goes up
+         and falling when it goes down. */
+      function p35Set(el, value) {
+        var prevValue = Number(el.getAttribute("data-value"));
+        var prev = prevValue.toLocaleString("en-US");
+        var str = value.toLocaleString("en-US");
+        var sameLength = prev.length === str.length;
+        el.setAttribute("data-value", String(value));
+        el.setAttribute("aria-label", str);
+        el.style.setProperty("--p35-dir", value >= prevValue ? "1" : "-1");
+        el.classList.remove("is-animating");
+        el.textContent = "";
+        str.split("").forEach(function (ch, i) {
+          if (sameLength && prev[i] === ch) {
+            el.appendChild(document.createTextNode(ch));
+            return;
+          }
+          var slot = document.createElement("span");
+          slot.className = "p35-slot";
+          if (sameLength) {
+            var old = document.createElement("span");
+            old.className = "p35-old";
+            old.setAttribute("aria-hidden", "true");
+            old.textContent = prev[i];
+            slot.appendChild(old);
+          }
+          var fresh = document.createElement("span");
+          fresh.className = "p35-new";
+          fresh.textContent = ch;
+          slot.appendChild(fresh);
+          el.appendChild(slot);
+        });
+        // eslint-disable-next-line no-unused-expressions
+        el.offsetHeight;
+        el.classList.add("is-animating");
+      }
+
+      /* ── Prototype 26: Spinning counter ────────────────────────
+         Each digit is a drum of 0-9. A rAF loop rolls it through the
+         numbers up to its target (plus --p26-spins extra full turns, 0 by
+         default), --p26-step-dur per number with --p26-ease across the
+         whole roll, and places every digit from its distance to the
+         middle: the middle one is on top at --p26-center-scale /
+         --p26-center-blur, the ones above and below sit behind it at
+         --p26-side-scale / --p26-side-blur / --p26-side-opacity. The target
+         lands while still travelling in: it eases to --p26-antic-scale and
+         pulls back against the roll, then a spring snaps it into the middle,
+         blur clears, the neighbours fade, and it bounces past 100%. */
+      var P26_STEP = 50 * Math.PI / 180; // drum angle between two digits
+      var P26_ENTER_MS = 120;            // rest to rolling
+      var P26_FADE_END = 1.8;            // steps from the middle where a digit is gone
+      var P26_LAND_AT = 0.6;             // steps from the middle where the target starts landing
+      var P26_ARRIVE_AT = 0.29;          // share of the spring where it reaches the middle
+      var P26_CLEAR_MS = 200;            // blur + neighbours clearing at the start of the spring
+      var P26_SPRING_DAMP = 3;
+      var P26_SPRING_FREQ = 3;
       function p26ReadNum(name, fallback) {
         var v = parseFloat(
           getComputedStyle(document.documentElement).getPropertyValue(name));
         return isNaN(v) ? fallback : v;
       }
-      function p26EnsureDefs() {
-        if (document.getElementById("p26-blur-defs")) return;
-        var svgNS = "http://www.w3.org/2000/svg";
-        var svg = document.createElementNS(svgNS, "svg");
-        svg.setAttribute("id", "p26-blur-defs");
-        svg.setAttribute("aria-hidden", "true");
-        svg.style.position = "absolute";
-        svg.style.width = "0";
-        svg.style.height = "0";
-        svg.style.overflow = "hidden";
-        var defs = document.createElementNS(svgNS, "defs");
-        for (var i = 0; i < P26_BLUR_MAX; i++) {
-          var filter = document.createElementNS(svgNS, "filter");
-          filter.setAttribute("id", "p26-blur-" + i);
-          filter.setAttribute("x", "-20%");
-          filter.setAttribute("y", "-150%");
-          filter.setAttribute("width", "140%");
-          filter.setAttribute("height", "400%");
-          var fe = document.createElementNS(svgNS, "feGaussianBlur");
-          fe.setAttribute("id", "p26-blur-fe-" + i);
-          fe.setAttribute("stdDeviation", "0 0");
-          filter.appendChild(fe);
-          defs.appendChild(filter);
+      // cubic-bezier(...) string to a progress function. Falls back to linear.
+      function p26Curve(name, fallback) {
+        var raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+        var m = raw.match(/cubic-bezier\(([^)]+)\)/);
+        var n = m ? m[1].split(",").map(parseFloat) : [0, 0, 1, 1];
+        function at(a, b, t) {
+          return 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t;
         }
-        svg.appendChild(defs);
-        document.body.appendChild(svg);
+        return function (x) {
+          if (x <= 0) return 0;
+          if (x >= 1) return 1;
+          var lo = 0, hi = 1, t = x;
+          for (var i = 0; i < 20; i++) {
+            if (at(n[0], n[2], t) < x) lo = t; else hi = t;
+            t = (lo + hi) / 2;
+          }
+          return at(n[1], n[3], t);
+        };
       }
-      function p26Build(el, str, spins, rows) {
+      // Damped wave over s = 0-1: starts at 1, crosses 0, swings negative
+      // (the bounce), rebounds once, ends at 0.
+      function p26Wave(s) {
+        if (s >= 1) return 0;
+        return Math.exp(-P26_SPRING_DAMP * s) * Math.cos(P26_SPRING_FREQ * Math.PI * s) * (1 - s);
+      }
+      // Deepest negative swing, so --p26-land-peak can set the bounce exactly.
+      var P26_WAVE_TROUGH = (function () {
+        var low = 0;
+        for (var i = 1; i < 400; i++) low = Math.min(low, p26Wave(i / 400));
+        return -low;
+      })();
+      function p26Build(el, str) {
         el.innerHTML = "";
         var cols = [];
-        var total = (spins + 1) * 10 + rows;
         for (var c = 0; c < str.length; c++) {
           var ch = str[c];
           if (ch >= "0" && ch <= "9") {
             var col = document.createElement("span");
             col.className = "p26-col";
-            var strip = document.createElement("span");
-            strip.className = "p26-col-strip";
-            for (var k = 0; k < total; k++) {
+            var sizer = document.createElement("span");
+            sizer.className = "p26-sizer";
+            sizer.textContent = "0";
+            col.appendChild(sizer);
+            var cells = [];
+            for (var k = 0; k < 10; k++) {
               var cell = document.createElement("span");
               cell.className = "p26-digit";
-              cell.textContent = String(k % 10);
-              strip.appendChild(cell);
+              cell.textContent = String(k);
+              col.appendChild(cell);
+              cells.push(cell);
             }
-            col.appendChild(strip);
             el.appendChild(col);
-            var idx = cols.length % P26_BLUR_MAX;
-            strip.style.filter = "url(#p26-blur-" + idx + ")";
-            cols.push({ strip: strip, digit: +ch, blurIndex: idx });
+            cols.push({ cells: cells, digit: +ch });
           } else {
             var sep = document.createElement("span");
             sep.className = "p26-sep";
@@ -9893,75 +10316,173 @@ export function Surface({ open, children }) {
         }
         return cols;
       }
-      function p26CenterY(index, cell, rows) {
-        return -((index - Math.floor(rows / 2)) * cell);
+      // Shows one digit at rest: no blur, no neighbours, 100%.
+      function p26Rest(col, digit) {
+        col.cells.forEach(function (cell, d) {
+          cell.style.transform = "none";
+          cell.style.filter = "none";
+          cell.style.zIndex = "";
+          cell.style.opacity = d === digit ? "1" : "0";
+        });
       }
-      function p26SetBlur(blurIndex, y) {
-        var fe = document.getElementById("p26-blur-fe-" + blurIndex);
-        if (fe) fe.setAttribute("stdDeviation", "0 " + y);
+      function p26Smooth(x) {
+        x = Math.max(0, Math.min(1, x));
+        return x * x * (3 - 2 * x);
+      }
+      // How a digit looks purely from its distance to the middle of the drum.
+      function p26Look(dist, middle, o) {
+        var angle = Math.min(dist * P26_STEP, Math.PI / 2);
+        // 1 in the middle, 0 at one step away, below 0 further back.
+        var face = (Math.cos(angle) - Math.cos(P26_STEP)) / (1 - Math.cos(P26_STEP));
+        return {
+          angle: angle,
+          scale: o.sideScale + (middle - o.sideScale) * face,
+          back: dist <= 1
+            ? 1 + (o.sideOpacity - 1) * dist
+            : o.sideOpacity * (1 - (dist - 1) / (P26_FADE_END - 1))
+        };
+      }
+      // Places the ten digits for drum position `pos`. `spread` 0-1 is how
+      // spun-up the drum is (neighbours + blur); `middle` is the middle
+      // digit's scale. `land` overrides the target digit while it lands.
+      function p26Place(col, pos, spread, middle, o, land) {
+        var radius = o.offset / Math.sin(P26_STEP);
+        col.cells.forEach(function (cell, d) {
+          var p = ((d - pos) % 10 + 10) % 10;
+          if (p > 5) p -= 10;
+          var dist = Math.abs(p);
+          if (dist >= P26_FADE_END) { cell.style.opacity = "0"; return; }
+          var look = p26Look(dist, middle, o);
+          // Upcoming digits sit above the middle, so the drum turns downward.
+          var y = (p < 0 ? 1 : -1) * radius * Math.sin(look.angle);
+          var blur = (o.centerBlur + (o.sideBlur - o.centerBlur) * Math.min(dist, 1)) * spread;
+          // Only digits away from the middle follow `spread`.
+          var away = Math.max(0, Math.min(1, (dist - 0.3) / 0.5));
+          var opacity = look.back * (1 - (1 - spread) * away);
+          var scale = look.scale;
+          var z = 100 - Math.round(dist * 10);
+          if (land && d === col.digit) {
+            y = y * land.arrive + land.lift;
+            scale = land.scale;
+            opacity = land.opacity;
+            z = 200;
+          }
+          cell.style.transform = "translateY(" + y.toFixed(2) + "px) scale(" + scale.toFixed(4) + ")";
+          cell.style.filter = blur > 0.01 ? "blur(" + blur.toFixed(2) + "px)" : "none";
+          cell.style.opacity = opacity.toFixed(3);
+          cell.style.zIndex = String(z);
+        });
       }
       function p26Spin(el) {
-        p26EnsureDefs();
-        var target = Math.round(p26ReadNum("--p26-target", 100));
+        // First run: --p26-from to --p26-target. After that it carries on from
+        // the number on screen to a random three-digit one.
+        var from = el._p26Value;
+        var target;
+        if (from === undefined) {
+          from = Math.round(p26ReadNum("--p26-from", 100));
+          target = Math.round(p26ReadNum("--p26-target", 178));
+        } else {
+          do { target = 100 + Math.floor(Math.random() * 900); } while (target === from);
+        }
+        el._p26Value = target;
         var str = target.toLocaleString("en-US");
-        var spins = Math.max(1, Math.round(p26ReadNum("--p26-spins", 3)));
-        var cell = p26ReadNum("--p26-cell", 30);
-        var rows = Math.max(1, Math.round(p26ReadNum("--p26-rows", 1)));
-        var blurAmt = p26ReadNum("--p26-spin-blur", 3);
-        var dur = readMs("--p26-dur", 1400);
+        var spins = Math.max(0, Math.round(p26ReadNum("--p26-spins", 0)));
+        var stepDur = readMs("--p26-step-dur", 130);
         var stagger = readMs("--p26-stagger", 90);
-        var ease = getComputedStyle(document.documentElement)
-          .getPropertyValue("--p26-ease").trim() || "cubic-bezier(0.16, 1, 0.3, 1)";
+        var anticDur = readMs("--p26-antic-dur", 100);
+        var landDur = readMs("--p26-land-dur", 740);
+        var anticScale = p26ReadNum("--p26-antic-scale", 0.94);
+        var anticLift = p26ReadNum("--p26-antic-lift", 3);
+        var landPeak = p26ReadNum("--p26-land-peak", 1.03);
+        var centerScale = p26ReadNum("--p26-center-scale", 0.9);
+        var ease = p26Curve("--p26-ease", "cubic-bezier(0.35, -0.02, 0.43, 1)");
+        var o = {
+          offset: p26ReadNum("--p26-side-offset", 12),
+          sideScale: p26ReadNum("--p26-side-scale", 0.7),
+          sideBlur: p26ReadNum("--p26-side-blur", 2),
+          sideOpacity: p26ReadNum("--p26-side-opacity", 0.17),
+          centerBlur: p26ReadNum("--p26-center-blur", 1)
+        };
         var reduce = window.matchMedia &&
           window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         el.setAttribute("aria-label", str);
-        var cols = p26Build(el, str, spins, rows);
-        var startY = p26CenterY(Math.floor(rows / 2), cell, rows);
-        cols.forEach(function (c) {
-          c.strip.style.transition = "none";
-          c.strip.style.transform = "translateY(" + startY + "px)";
-          p26SetBlur(c.blurIndex, reduce ? 0 : blurAmt);
-        });
-        // eslint-disable-next-line no-unused-expressions
-        el.offsetWidth;
-        cols.forEach(function (c, i) {
-          var delay = i * stagger;
-          c.strip.style.transition = "transform " + dur + "ms " + ease + " " + delay + "ms";
-          c.strip.style.transform =
-            "translateY(" + p26CenterY(spins * 10 + c.digit, cell, rows) + "px)";
-        });
         if (el._p26RafId) window.cancelAnimationFrame(el._p26RafId);
-        if (reduce) return;
+        var cols = p26Build(el, str);
+        if (reduce) {
+          cols.forEach(function (c) { p26Rest(c, c.digit); });
+          return;
+        }
+        // Each column starts on its digit of the old number, aligned from the right.
+        var fromDigits = String(from).padStart(cols.length, "0").slice(-cols.length);
+        cols.forEach(function (c, i) {
+          c.from = +fromDigits[i];
+          p26Rest(c, c.from);
+          // A digit that doesn't change has nothing to do.
+          if (spins === 0 && c.from === c.digit) c.done = true;
+        });
         var t0 = performance.now();
-        var maxEnd = (cols.length - 1) * stagger + dur;
         (function tick() {
           var t = performance.now() - t0;
+          var running = false;
           cols.forEach(function (c, i) {
-            var local = Math.min(1, Math.max(0, (t - i * stagger) / dur));
-            p26SetBlur(c.blurIndex, (blurAmt * (1 - local)).toFixed(2));
+            if (c.done) return;
+            var local = t - i * stagger;
+            if (local <= 0) { running = true; return; }
+            var total = spins * 10 + ((c.digit - c.from + 10) % 10);
+            // Time per number is fixed, so a longer roll takes longer.
+            var pos = c.from + total * ease(local / (total * stepDur));
+            var enter = Math.min(1, local / P26_ENTER_MS);
+            if (c.landAt === undefined && c.from + total - pos < P26_LAND_AT) c.landAt = t;
+            var since = c.landAt === undefined ? -1 : t - c.landAt;
+            if (since >= anticDur + landDur) {
+              p26Rest(c, c.digit);
+              c.done = true;
+              return;
+            }
+            running = true;
+            var middle = 1 + (centerScale - 1) * enter;
+            var spread = enter;
+            var land = null;
+            if (since >= 0) {
+              // Start from how the target looks right now, so nothing jumps.
+              if (!c.landFrom) c.landFrom = p26Look(c.from + total - pos, middle, o);
+              var arrive = 1 - p26Smooth(since / (anticDur + landDur * P26_ARRIVE_AT));
+              if (since < anticDur) {
+                var a = p26Smooth(since / anticDur);
+                land = {
+                  scale: c.landFrom.scale + (anticScale - c.landFrom.scale) * a,
+                  lift: -anticLift * a,
+                  opacity: c.landFrom.back + (1 - c.landFrom.back) * a,
+                  arrive: arrive
+                };
+              } else {
+                var sp = since - anticDur;
+                var sn = sp / landDur;
+                var wave = p26Wave(sn);
+                // Before the first crossing it rises out of the dip; after that
+                // the wave swings around 100%, peaking at --p26-land-peak.
+                land = {
+                  scale: sn < 1 / (2 * P26_SPRING_FREQ)
+                    ? 1 + (anticScale - 1) * wave
+                    : 1 - (landPeak - 1) * wave / P26_WAVE_TROUGH,
+                  lift: -anticLift * wave,
+                  opacity: 1,
+                  arrive: arrive
+                };
+                spread = 1 - Math.min(1, sp / P26_CLEAR_MS);
+              }
+            }
+            p26Place(c, pos, spread, middle, o, land);
           });
-          if (t < maxEnd + 40) {
-            el._p26RafId = window.requestAnimationFrame(tick);
-          } else {
-            cols.forEach(function (c) { p26SetBlur(c.blurIndex, 0); });
-            el._p26RafId = null;
-          }
+          el._p26RafId = running ? window.requestAnimationFrame(tick) : null;
         })();
       }
-      // Resting state: render a static "0" in every reel on load.
+      // Resting state: render --p26-from in every reel on load.
       (function initP26Reels() {
-        p26EnsureDefs();
-        var reels = document.querySelectorAll("[data-proto-reel]");
-        var cell = p26ReadNum("--p26-cell", 30);
-        var rows = Math.max(1, Math.round(p26ReadNum("--p26-rows", 1)));
-        reels.forEach(function (el) {
-          el.setAttribute("aria-label", "0");
-          var cols = p26Build(el, "0", 1, rows);
-          cols.forEach(function (c) {
-            c.strip.style.transform =
-              "translateY(" + p26CenterY(c.digit, cell, rows) + "px)";
-            p26SetBlur(c.blurIndex, 0);
-          });
+        var from = Math.round(p26ReadNum("--p26-from", 100)).toLocaleString("en-US");
+        document.querySelectorAll("[data-proto-reel]").forEach(function (el) {
+          el.setAttribute("aria-label", from);
+          p26Build(el, from).forEach(function (c) { p26Rest(c, c.digit); });
         });
       })();
 
@@ -10682,63 +11203,104 @@ export function Surface({ open, children }) {
           name: "Number pop-in",
           usage:
             "    <span class=\"t-digit-group is-animating\">\n" +
-            "      <span class=\"t-digit\">1</span>\n" +
-            "      <span class=\"t-digit\">2</span>\n" +
-            "      <span class=\"t-digit\" data-stagger=\"1\">.</span>\n" +
-            "      <span class=\"t-digit\" data-stagger=\"2\">3</span>\n" +
+            "      <span class=\"t-digit\" data-same>1</span>\n" +
+            "      <span class=\"t-digit-slot\">\n" +
+            "        <span class=\"t-digit-old\" aria-hidden=\"true\">2</span>\n" +
+            "        <span class=\"t-digit\">3</span>\n" +
+            "      </span>\n" +
+            "      <span class=\"t-digit-slot\" data-stagger=\"1\">\n" +
+            "        <span class=\"t-digit-old\" aria-hidden=\"true\">4</span>\n" +
+            "        <span class=\"t-digit\">5</span>\n" +
+            "      </span>\n" +
             "    </span>\n" +
             "\n" +
-            "  Replay:\n" +
-            "    - Remove `.is-animating`, re-render digits (or swap text),\n" +
-            "      force a reflow, then re-add `.is-animating`.\n" +
-            "    - Use data-stagger=\"1\", \"2\", … to delay individual\n" +
-            "      digits by `n * var(--digit-stagger)`.\n" +
+            "  Each changed digit gets a .t-digit-slot holding the old digit\n" +
+            "  (leaves upward) and the new one (rises just after it, pulls back,\n" +
+            "  springs into place past 100%). --digit-dur covers anticipation and\n" +
+            "  spring.\n" +
             "\n" +
-            "  Direction:\n" +
-            "    --digit-dir-x / --digit-dir-y are unit-less multipliers\n" +
-            "    (e.g. 1, -1, 0) applied to --digit-distance.",
+            "  Replay:\n" +
+            "    - Remove `.is-animating`, re-render the digits, force a reflow,\n" +
+            "      then re-add `.is-animating`.\n" +
+            "    - Use data-stagger=\"1\", \"2\" on a slot to delay it by\n" +
+            "      `n * var(--digit-stagger)`.\n" +
+            "    - Mark the leading digits the old and new number share with\n" +
+            "      data-same: they stay still and only the changed digits swap\n" +
+            "      (1,299 to 1,305: \"1,\" stays, \"305\" swaps).\n" +
+            "\n" +
+            "  Sizes: the tokens are tuned for a 24px number. Scale --digit-distance,\n" +
+            "  --digit-exit-distance, --digit-blur and --digit-lift with your font size.",
           vars: [
-            ["--digit-dur",      "--p9-dur"],
+            ["--digit-dur", "--p9-dur"],
+            ["--digit-exit-dur", "--p9-exit-dur"],
+            ["--digit-enter-delay", "--p9-enter-delay"],
+            ["--digit-stagger", "--p9-stagger"],
             ["--digit-distance", "--p9-distance"],
-            ["--digit-stagger",  "--p9-stagger"],
-            ["--digit-blur",     "--p9-blur"],
-            ["--digit-ease",     "--p9-ease"],
-            ["--digit-dir-x",    "--p9-dir-x"],
-            ["--digit-dir-y",    "--p9-dir-y"]
+            ["--digit-exit-distance", "--p9-exit-distance"],
+            ["--digit-blur", "--p9-blur"],
+            ["--digit-lift", "--p9-lift"],
+            ["--digit-start-scale", "--p9-start-scale"],
+            ["--digit-peak", "--p9-peak"]
           ],
           css:
-            "@keyframes t-digit-pop-in {\n" +
-            "  0%   {\n" +
-            "    transform: translate(\n" +
-            "      calc(var(--digit-distance) * var(--digit-dir-x)),\n" +
-            "      calc(var(--digit-distance) * var(--digit-dir-y))\n" +
-            "    );\n" +
-            "    opacity: 0;\n" +
-            "    filter: blur(var(--digit-blur));\n" +
-            "  }\n" +
-            "  100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }\n" +
-            "}\n" +
-            "\n" +
-            ".t-digit-group {\n" +
-            "  display: inline-flex;\n" +
-            "  align-items: baseline;\n" +
-            "}\n" +
-            ".t-digit {\n" +
-            "  display: inline-block;\n" +
-            "  will-change: transform, opacity, filter;\n" +
-            "}\n" +
+            ".t-digit-group { display: inline-flex; align-items: baseline; }\n" +
+            ".t-digit-slot { position: relative; display: inline-block; }\n" +
+            ".t-digit-old { position: absolute; inset: 0; text-align: center; pointer-events: none; }\n" +
+            ".t-digit { display: inline-block; will-change: transform, opacity, filter; }\n" +
             ".t-digit-group.is-animating .t-digit {\n" +
-            "  animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;\n" +
+            "  animation: t-digit-in var(--digit-dur) linear both;\n" +
+            "  animation-delay: calc(var(--digit-stagger) * var(--digit-i, 0) + var(--digit-enter-delay));\n" +
             "}\n" +
-            ".t-digit-group.is-animating .t-digit[data-stagger=\"1\"] {\n" +
-            "  animation-delay: var(--digit-stagger);\n" +
+            ".t-digit-group.is-animating .t-digit-old {\n" +
+            "  animation: t-digit-out var(--digit-exit-dur) linear both;\n" +
+            "  animation-delay: calc(var(--digit-stagger) * var(--digit-i, 0));\n" +
             "}\n" +
-            ".t-digit-group.is-animating .t-digit[data-stagger=\"2\"] {\n" +
-            "  animation-delay: calc(var(--digit-stagger) * 2);\n" +
+            ".t-digit-group.is-animating [data-stagger=\"1\"] { --digit-i: 1; }\n" +
+            ".t-digit-group.is-animating [data-stagger=\"2\"] { --digit-i: 2; }\n" +
+            "/* Digits that did not change (the leading ones the old and new number\n" +
+            "   share) stay still; only the digits that changed swap. */\n" +
+            ".t-digit-group.is-animating .t-digit[data-same] { animation: none; }\n" +
+            "\n" +
+            "@keyframes t-digit-in {\n" +
+            "  0% { transform: translateY(calc(var(--digit-distance) * 1 + var(--digit-lift) * 0)) scale(var(--digit-start-scale)); opacity: 0; filter: blur(calc(var(--digit-blur) * 1)); }\n" +
+            "  5% { transform: translateY(calc(var(--digit-distance) * 0.941 + var(--digit-lift) * 0.216)) scale(var(--digit-start-scale)); opacity: 0.059; filter: blur(calc(var(--digit-blur) * 1)); }\n" +
+            "  10% { transform: translateY(calc(var(--digit-distance) * 0.755 + var(--digit-lift) * 0.648)) scale(var(--digit-start-scale)); opacity: 0.245; filter: blur(calc(var(--digit-blur) * 1)); }\n" +
+            "  15% { transform: translateY(calc(var(--digit-distance) * 0.475 + var(--digit-lift) * 0.972)) scale(var(--digit-start-scale)); opacity: 0.525; filter: blur(calc(var(--digit-blur) * 1)); }\n" +
+            "  20% { transform: translateY(calc(var(--digit-distance) * 0.206 + var(--digit-lift) * 0.792)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.792)); opacity: 0.794; filter: blur(calc(var(--digit-blur) * 0.9)); }\n" +
+            "  25% { transform: translateY(calc(var(--digit-distance) * 0.041 + var(--digit-lift) * 0.392)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.392)); opacity: 0.959; filter: blur(calc(var(--digit-blur) * 0.75)); }\n" +
+            "  30% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.033)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.033)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.6)); }\n" +
+            "  35% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.194)) scale(calc(1 + (var(--digit-peak) - 1) * 0.711)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.45)); }\n" +
+            "  40% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.272)) scale(calc(1 + (var(--digit-peak) - 1) * 0.997)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.3)); }\n" +
+            "  45% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.238)) scale(calc(1 + (var(--digit-peak) - 1) * 0.87)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.15)); }\n" +
+            "  50% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.146)) scale(calc(1 + (var(--digit-peak) - 1) * 0.535)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  55% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.05)) scale(calc(1 + (var(--digit-peak) - 1) * 0.183)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  60% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.019)) scale(calc(1 + (var(--digit-peak) - 1) * -0.069)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  65% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.05)) scale(calc(1 + (var(--digit-peak) - 1) * -0.185)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  70% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.051)) scale(calc(1 + (var(--digit-peak) - 1) * -0.187)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  75% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.035)) scale(calc(1 + (var(--digit-peak) - 1) * -0.128)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  80% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.016)) scale(calc(1 + (var(--digit-peak) - 1) * -0.057)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  85% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.002)) scale(calc(1 + (var(--digit-peak) - 1) * -0.007)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  90% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.004)) scale(calc(1 + (var(--digit-peak) - 1) * 0.013)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  95% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.003)) scale(calc(1 + (var(--digit-peak) - 1) * 0.011)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  100% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0)) scale(1); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "}\n" +
+            "@keyframes t-digit-out {\n" +
+            "  0% { transform: translateY(calc(var(--digit-exit-distance) * 0)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }\n" +
+            "  10% { transform: translateY(calc(var(--digit-exit-distance) * -0.009)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.009)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.009)); }\n" +
+            "  20% { transform: translateY(calc(var(--digit-exit-distance) * -0.042)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.042)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.042)); }\n" +
+            "  30% { transform: translateY(calc(var(--digit-exit-distance) * -0.112)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.112)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.112)); }\n" +
+            "  40% { transform: translateY(calc(var(--digit-exit-distance) * -0.252)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.252)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.252)); }\n" +
+            "  50% { transform: translateY(calc(var(--digit-exit-distance) * -0.5)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.5)); opacity: 0.833; filter: blur(calc(var(--digit-blur) * 0.5)); }\n" +
+            "  60% { transform: translateY(calc(var(--digit-exit-distance) * -0.748)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.748)); opacity: 0.42; filter: blur(calc(var(--digit-blur) * 0.748)); }\n" +
+            "  70% { transform: translateY(calc(var(--digit-exit-distance) * -0.888)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.888)); opacity: 0.187; filter: blur(calc(var(--digit-blur) * 0.888)); }\n" +
+            "  80% { transform: translateY(calc(var(--digit-exit-distance) * -0.958)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.958)); opacity: 0.069; filter: blur(calc(var(--digit-blur) * 0.958)); }\n" +
+            "  90% { transform: translateY(calc(var(--digit-exit-distance) * -0.991)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.991)); opacity: 0.015; filter: blur(calc(var(--digit-blur) * 0.991)); }\n" +
+            "  100% { transform: translateY(calc(var(--digit-exit-distance) * -1)) scale(calc(1 + (var(--digit-start-scale) - 1) * 1)); opacity: 0; filter: blur(calc(var(--digit-blur) * 1)); }\n" +
             "}\n" +
             "\n" +
             "@media (prefers-reduced-motion: reduce) {\n" +
             "  .t-digit-group .t-digit { animation: none !important; }\n" +
+            "  .t-digit-group .t-digit-old { display: none; }\n" +
             "}"
         },
 
@@ -11900,38 +12462,129 @@ export function Surface({ open, children }) {
         p26: {
           name: "Spinning counter",
           usage:
-            "    <div class=\"t-reel\"></div>  <!-- reels built in JS -->\n" +
+            "    <div class=\"t-reel\"></div>  <!-- drums built in JS -->\n" +
             "\n" +
-            "  Build one .t-reel-col per digit, each clipping a strip\n" +
-            "  (.t-reel-strip) of 0-9 cells; translate the strip up by\n" +
-            "  (spins*10 + digit) cells to spin then land. A directional\n" +
-            "  (vertical-only) SVG feGaussianBlur stdDeviation=\"0 Y\" gives\n" +
-            "  the motion streak (CSS blur() would smear sideways); decay it\n" +
-            "  to 0 per column as each reel settles.",
+            "  One .t-reel-col per digit: a hidden sizer for the width, plus ten\n" +
+            "  stacked .t-reel-digit cells. JS places each cell per frame from its\n" +
+            "  distance to the middle of the drum. Digits only roll through the\n" +
+            "  numbers on the way to their target; a digit that does not change\n" +
+            "  stays still. The target lands while still travelling in, with a\n" +
+            "  spring past 100%.\n" +
+            "\n" +
+            "  Sizes: the tokens are tuned for a 24px number. Scale --reel-cell,\n" +
+            "  --reel-side-offset, the blurs and --reel-antic-lift with your font size.\n" +
+            "\n" +
+            "  The script that drives the drums is in the React tab and the skill recipe.",
           vars: [
-            ["--reel-dur",       "--p26-dur"],
-            ["--reel-cell",      "--p26-cell"],
-            ["--reel-spin-blur", "--p26-spin-blur"],
-            ["--reel-stagger",   "--p26-stagger"],
-            ["--reel-ease",      "--p26-ease"]
+            ["--reel-step-dur", "--p26-step-dur"],
+            ["--reel-stagger", "--p26-stagger"],
+            ["--reel-ease", "--p26-ease"],
+            ["--reel-cell", "--p26-cell"],
+            ["--reel-side-scale", "--p26-side-scale"],
+            ["--reel-side-offset", "--p26-side-offset"],
+            ["--reel-side-blur", "--p26-side-blur"],
+            ["--reel-side-opacity", "--p26-side-opacity"],
+            ["--reel-center-scale", "--p26-center-scale"],
+            ["--reel-center-blur", "--p26-center-blur"],
+            ["--reel-antic-dur", "--p26-antic-dur"],
+            ["--reel-antic-scale", "--p26-antic-scale"],
+            ["--reel-antic-lift", "--p26-antic-lift"],
+            ["--reel-land-dur", "--p26-land-dur"],
+            ["--reel-land-peak", "--p26-land-peak"]
           ],
           css:
-            ".t-reel { display: inline-flex; align-items: center; height: var(--reel-cell); font-variant-numeric: tabular-nums; }\n" +
-            ".t-reel-col {\n" +
-            "  position: relative; height: var(--reel-cell); overflow: hidden;\n" +
-            "  /* Soft-fade the window edges instead of hard-cropping. */\n" +
-            "  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);\n" +
-            "  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);\n" +
+            ".t-reel {\n" +
+            "  display: inline-flex;\n" +
+            "  align-items: center;\n" +
+            "  height: var(--reel-cell);\n" +
+            "  font-variant-numeric: tabular-nums;\n" +
             "}\n" +
-            ".t-reel-strip { display: flex; flex-direction: column; will-change: transform, filter; }\n" +
-            ".t-reel-digit { height: var(--reel-cell); display: flex; align-items: center; justify-content: center; }\n" +
-            "/* JS drives the tween: strip.style.transition =\n" +
-            "     'transform var(--reel-dur) var(--reel-ease) ' + (col*var(--reel-stagger)) + 'ms';\n" +
-            "   and decays each column's feGaussianBlur stdDeviation from\n" +
-            "   var(--reel-spin-blur) to 0 over its own window. */\n" +
+            ".t-reel-col {\n" +
+            "  position: relative;\n" +
+            "  display: inline-block;\n" +
+            "  height: var(--reel-cell);\n" +
+            "  line-height: var(--reel-cell);\n" +
+            "}\n" +
+            ".t-reel-sizer { visibility: hidden; }\n" +
+            ".t-reel-digit {\n" +
+            "  position: absolute;\n" +
+            "  inset: 0;\n" +
+            "  display: flex;\n" +
+            "  align-items: center;\n" +
+            "  justify-content: center;\n" +
+            "  will-change: transform, filter, opacity;\n" +
+            "}\n" +
+            ".t-reel-sep {\n" +
+            "  display: inline-block;\n" +
+            "  height: var(--reel-cell);\n" +
+            "  line-height: var(--reel-cell);\n" +
+            "}\n" +
+            "/* JS drives every digit per frame from the tokens above. */\n" +
             "\n" +
             "@media (prefers-reduced-motion: reduce) {\n" +
-            "  .t-reel-strip { transition: none !important; filter: none !important; }\n" +
+            "  .t-reel-digit { filter: none !important; }\n" +
+            "}"
+        },
+
+        p35: {
+          name: "Number subtle change",
+          usage:
+            "    <span class=\"t-subtle-number is-animating\" style=\"--subtle-dir: 1\">\n" +
+            "      1,2\n" +
+            "      <span class=\"t-subtle-slot\">\n" +
+            "        <span class=\"t-subtle-old\" aria-hidden=\"true\">8</span>\n" +
+            "        <span class=\"t-subtle-new\">9</span>\n" +
+            "      </span>\n" +
+            "      4\n" +
+            "    </span>\n" +
+            "\n" +
+            "  Each changed digit gets a .t-subtle-slot with the old digit and the\n" +
+            "  new one; digits that did not change stay plain text. Set --subtle-dir\n" +
+            "  to 1 when the number went up and -1 when it went down.\n" +
+            "\n" +
+            "  Replay: remove `.is-animating`, re-render, force a reflow, re-add it.\n" +
+            "\n" +
+            "  Sizes: the tokens are tuned for a 24px number. Scale --subtle-distance\n" +
+            "  and --subtle-blur with your font size.",
+          vars: [
+            ["--subtle-dur", "--p35-dur"],
+            ["--subtle-distance", "--p35-distance"],
+            ["--subtle-blur", "--p35-blur"],
+            ["--subtle-ease", "--p35-ease"]
+          ],
+          css:
+            ".t-subtle-number {\n" +
+            "  display: inline-flex;\n" +
+            "  align-items: baseline;\n" +
+            "  font-variant-numeric: tabular-nums;\n" +
+            "}\n" +
+            ".t-subtle-slot { position: relative; display: inline-block; }\n" +
+            ".t-subtle-new { display: inline-block; }\n" +
+            ".t-subtle-old { position: absolute; inset: 0; text-align: center; pointer-events: none; }\n" +
+            ".t-subtle-number.is-animating .t-subtle-new {\n" +
+            "  animation: t-subtle-in var(--subtle-dur) var(--subtle-ease) both;\n" +
+            "}\n" +
+            ".t-subtle-number.is-animating .t-subtle-old {\n" +
+            "  animation: t-subtle-out var(--subtle-dur) var(--subtle-ease) both;\n" +
+            "}\n" +
+            "@keyframes t-subtle-in {\n" +
+            "  from {\n" +
+            "    transform: translateY(calc(var(--subtle-distance) * var(--subtle-dir, 1)));\n" +
+            "    opacity: 0;\n" +
+            "    filter: blur(var(--subtle-blur));\n" +
+            "  }\n" +
+            "}\n" +
+            "@keyframes t-subtle-out {\n" +
+            "  to {\n" +
+            "    transform: translateY(calc(var(--subtle-distance) * var(--subtle-dir, 1) * -1));\n" +
+            "    opacity: 0;\n" +
+            "    filter: blur(var(--subtle-blur));\n" +
+            "  }\n" +
+            "}\n" +
+            "\n" +
+            "@media (prefers-reduced-motion: reduce) {\n" +
+            "  .t-subtle-number .t-subtle-new { animation: none !important; }\n" +
+            "  .t-subtle-number .t-subtle-old { display: none; }\n" +
             "}"
         },
 
@@ -12962,50 +13615,10 @@ export function Surface({ open, children }) {
             case "9": {
               var p9 = card.querySelector("[data-proto-number]");
               if (!p9) break;
-              // Generate a new two-integer-digit + "." + two-decimal number.
+              // A new two-integer-digit + "." + two-decimal number.
               var intPart = Math.floor(Math.random() * 90) + 10;
               var decPart = Math.floor(Math.random() * 100);
-              var str = String(intPart) + "." + String(decPart).padStart(2, "0");
-              var chars = str.split("");
-              var len = chars.length;
-
-              // Snapshot old digits into a ghost so they can play the
-              // pop-out animation in parallel with new digits popping in.
-              var oldGhost = p9.querySelector(".p9-ghost");
-              if (oldGhost) oldGhost.remove();
-
-              var liveChars = p9.querySelectorAll(":scope > .p9-char");
-              if (liveChars.length) {
-                var ghost = document.createElement("span");
-                ghost.className = "p9-ghost";
-                liveChars.forEach(function (ch) {
-                  ghost.appendChild(ch.cloneNode(true));
-                });
-                p9.appendChild(ghost);
-                var p9Dur = readMs("--p9-dur", 500);
-                var p9Stag = readMs("--p9-stagger", 70);
-                window.setTimeout(function () {
-                  if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
-                }, p9Dur + p9Stag * 2 + 50);
-              }
-
-              // Restart the animation class cleanly.
-              p9.classList.remove("is-animating");
-              p9.querySelectorAll(":scope > .p9-char").forEach(function (el) { el.remove(); });
-              chars.forEach(function (ch, i) {
-                var span = document.createElement("span");
-                span.className = "p9-char";
-                span.textContent = ch;
-                if (i === len - 2) span.setAttribute("data-stagger", "1");
-                else if (i === len - 1) span.setAttribute("data-stagger", "2");
-                var ghostEl = p9.querySelector(".p9-ghost");
-                if (ghostEl) p9.insertBefore(span, ghostEl);
-                else p9.appendChild(span);
-              });
-              // Force reflow so removing + re-adding the class replays.
-              // eslint-disable-next-line no-unused-expressions
-              p9.offsetHeight;
-              p9.classList.add("is-animating");
+              p9Set(p9, String(intPart) + "." + String(decPart).padStart(2, "0"));
               break;
             }
             case "13": {
@@ -13066,6 +13679,16 @@ export function Surface({ open, children }) {
               if (!toast) break;
               var toastOpen = toast.classList.toggle("is-open");
               toast.setAttribute("aria-hidden", toastOpen ? "false" : "true");
+              break;
+            }
+            case "35": {
+              var p35 = card.querySelector("[data-proto-subtle]");
+              if (!p35) break;
+              // A small change, up or down, the way a live stat moves.
+              var p35Value = Number(p35.getAttribute("data-value"));
+              var p35Delta = 0;
+              while (p35Delta === 0) p35Delta = Math.floor(Math.random() * 81) - 40;
+              p35Set(p35, p35Value + p35Delta);
               break;
             }
             case "26": {

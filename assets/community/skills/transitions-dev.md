@@ -7,7 +7,7 @@ Motion tokens and the 32 library transitions from transitions.dev. Reuse these t
 | Transition | When to use |
 | --- | --- |
 | **Card resize** | Tween a container's width or height when its layout state changes. |
-| **Number pop-in** | Re-enter each digit with a blurred slide when a number updates. |
+| **Number pop-in** | Swap changed digits on a 3D drum with a bounce when a number updates. |
 | **Notification badge** | Slide a small badge onto a trigger and pop the dot. |
 | **Text states swap** | Swap text in place with a blurred up-and-down transition. |
 | **Menu dropdown** | Open an origin-aware dropdown that grows from its trigger. |
@@ -31,7 +31,7 @@ Motion tokens and the 32 library transitions from transitions.dev. Reuse these t
 | **Like button** | Fill a heart with a pop + particle burst on like. |
 | **Learn more hover** | Slide the chevron and spread its arms into an arrow on hover. |
 | **Checkbox check** | Fill the box, then stroke-draw the checkmark. |
-| **Spinning counter** | Spin slot-machine digit reels with vertical motion blur. |
+| **Spinning counter** | Roll digits through the numbers on a 3D drum, landing with a bounce. |
 | **Toggle** | Travel the switch thumb with a double-bounce overshoot. |
 | **Thinking states** | Shimmer a status line while it holds, then swap it to the next state. |
 | **Reasoning stream** | Step an agent-reasoning transcript up two lines at a time on a loop. |
@@ -41,6 +41,7 @@ Motion tokens and the 32 library transitions from transitions.dev. Reuse these t
 | **Text morph** | Keep the letters two labels share and cross-blur only the part that changes, easing its width. |
 | **Text swap soft** | Cross-blur a value into the new one in place, both at once, with no movement. |
 | **Donut chart** | Ring segments with even gaps and rounded corners that morph to new values. |
+| **Number subtle change** | Cross-fade changed digits in place, rising or falling with the value. |
 
 ## Decision rules
 
@@ -56,7 +57,9 @@ When the user asks for a transition, match against the visible UI element first,
 - **Values update in place because the data behind a view changed** (a chart's period, a currency, a unit) → text swap soft for every value that changed.
 - **A donut or ring chart** → donut chart (even gaps, the smallest corner radius, morphs when its data changes).
 - **Two icons in the same slot** → icon swap.
-- **A number updates** → number pop-in.
+- **A number updates and the change should be noticed** → number pop-in.
+- **A number updates often and should stay quiet** (live stats, dashboards, tickers) → number subtle change.
+- **A number change is an event** (points, rewards, milestones) → spinning counter.
 - **Confirmation / success / "done" moment** (checkmark, payment processed, file uploaded) → success check.
 - **Hovering an item in a horizontal stack** (avatars, chips, segmented buttons, tag pills) → avatar group hover.
 - **Form validation error / "this is wrong" feedback** (invalid field, wrong PIN, duplicate name) → error state shake.
@@ -75,7 +78,7 @@ If two transitions could fit, prefer the lower-overhead one (card resize over pa
 
 ## Motion tokens
 
-The shared motion scale behind the thirty-two transitions, the same tokens the [transitions.dev](https://transitions.dev) Motion tokens tab exposes. They ship at the top of [`_root.css`](./_root.css), so once it's imported you can reference any of them as `var(--…)` (e.g. `transition: transform var(--duration-fast) var(--ease-smooth-out)`).
+The shared motion scale behind the thirty-six transitions, the same tokens the [transitions.dev](https://transitions.dev) Motion tokens tab exposes. They ship at the top of [`_root.css`](./_root.css), so once it's imported you can reference any of them as `var(--…)` (e.g. `transition: transform var(--duration-fast) var(--ease-smooth-out)`).
 
 `transitions refine` maps each existing value to a usage below, then suggests the token to reference. Match on **usage**, not on the raw number, a 300ms modal close still maps to `--duration-quick` (150ms).
 
