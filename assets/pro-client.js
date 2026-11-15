@@ -1006,32 +1006,144 @@
     var peopleEl = modalEl.querySelector("[data-people]");
     var peopleNum = modalEl.querySelector("[data-people-num]");
     var people = 0, peopleWanted = false;
-    // Number pop-in (transitions-dev 02): the leading digits stay still, the
-    // last two rise in on a stagger.
-    function popPeople() {
-      var str = people.toLocaleString("en-US");
-      var digits = 0, cut = str.length;
-      while (cut > 0 && digits < 2) { cut--; if (/\d/.test(str[cut])) digits++; }
-      peopleNum.classList.remove("is-animating");
-      peopleNum.replaceChildren();
-      [].forEach.call(str, function (ch, i) {
-        var d = document.createElement("span");
-        d.className = "tp-digit";
-        d.textContent = ch;
-        if (i < cut) { d.setAttribute("data-same", ""); peopleNum.appendChild(d); return; }
-        var slot = document.createElement("span");
-        slot.className = "tp-digit-slot";
-        slot.setAttribute("data-stagger", str.length - 1 - i === 1 ? "1" : "2");
-        slot.appendChild(d);
-        peopleNum.appendChild(slot);
+    // Spinning counter (transitions-dev 26): each digit is a drum of 0-9 that
+    // rolls to its target and lands with a spring. The leading digits stay
+    // still; the last two roll up from 0 each time the box opens.
+    var REEL = { step: 50 * Math.PI / 180, enterMs: 120, fadeEnd: 1.8, landAt: 0.6, arriveAt: 0.29, clearMs: 200,
+      stepDur: 130, stagger: 90, sideScale: 0.7, sideOpacity: 0.17, centerScale: 0.9, anticDur: 100, anticScale: 0.94, landDur: 740, landPeak: 1.03 };
+    function reelBezier(x1, y1, x2, y2) {
+      function at(a, b, t) { return 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t; }
+      return function (x) {
+        if (x <= 0) return 0;
+        if (x >= 1) return 1;
+        var lo = 0, hi = 1, t = x;
+        for (var i = 0; i < 20; i++) { if (at(x1, x2, t) < x) lo = t; else hi = t; t = (lo + hi) / 2; }
+        return at(y1, y2, t);
+      };
+    }
+    var reelEase = reelBezier(0.35, -0.02, 0.43, 1);
+    function reelSmooth(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
+    function reelWave(s) { return s >= 1 ? 0 : Math.exp(-3 * s) * Math.cos(3 * Math.PI * s) * (1 - s); }
+    var REEL_TROUGH = (function () { var low = 0; for (var i = 1; i < 400; i++) low = Math.min(low, reelWave(i / 400)); return -low; })();
+    function reelRest(col, digit) {
+      col.cells.forEach(function (cell, d) {
+        cell.style.transform = "none"; cell.style.filter = "none"; cell.style.zIndex = "";
+        cell.style.opacity = d === digit ? "1" : "0";
       });
-      void peopleNum.offsetWidth;
-      peopleNum.classList.add("is-animating");
+    }
+    function reelLook(dist, middle) {
+      var angle = Math.min(dist * REEL.step, Math.PI / 2);
+      var face = (Math.cos(angle) - Math.cos(REEL.step)) / (1 - Math.cos(REEL.step));
+      return {
+        angle: angle,
+        scale: REEL.sideScale + (middle - REEL.sideScale) * face,
+        back: dist <= 1 ? 1 + (REEL.sideOpacity - 1) * dist : REEL.sideOpacity * (1 - (dist - 1) / (REEL.fadeEnd - 1)),
+      };
+    }
+    function reelPlace(col, pos, spread, middle, o, land) {
+      var radius = o.offset / Math.sin(REEL.step);
+      col.cells.forEach(function (cell, d) {
+        var p = (((d - pos) % 10) + 10) % 10;
+        if (p > 5) p -= 10;
+        var dist = Math.abs(p);
+        if (dist >= REEL.fadeEnd) { cell.style.opacity = "0"; return; }
+        var l = reelLook(dist, middle);
+        var y = (p < 0 ? 1 : -1) * radius * Math.sin(l.angle);
+        var blur = (o.centerBlur + (o.sideBlur - o.centerBlur) * Math.min(dist, 1)) * spread;
+        var away = Math.max(0, Math.min(1, (dist - 0.3) / 0.5));
+        var opacity = l.back * (1 - (1 - spread) * away);
+        var scale = l.scale, z = 100 - Math.round(dist * 10);
+        if (land && d === col.digit) { y = y * land.arrive + land.lift; scale = land.scale; opacity = land.opacity; z = 200; }
+        cell.style.transform = "translateY(" + y.toFixed(2) + "px) scale(" + scale.toFixed(4) + ")";
+        cell.style.filter = blur > 0.01 ? "blur(" + blur.toFixed(2) + "px)" : "none";
+        cell.style.opacity = opacity.toFixed(3);
+        cell.style.zIndex = String(z);
+      });
+    }
+    var reelStop = null;
+    function rollPeople() {
+      if (reelStop) reelStop();
+      var str = people.toLocaleString("en-US");
+      var from = people - (people % 100);
+      peopleNum.replaceChildren();
+      var cols = [];
+      [].forEach.call(str, function (ch) {
+        if (ch < "0" || ch > "9") {
+          var sep = document.createElement("span");
+          sep.className = "tp-reel-sep";
+          sep.textContent = ch;
+          peopleNum.appendChild(sep);
+          return;
+        }
+        var col = document.createElement("span");
+        col.className = "tp-reel-col";
+        var sizer = document.createElement("span");
+        sizer.className = "tp-reel-sizer";
+        sizer.textContent = "0";
+        col.appendChild(sizer);
+        var cells = [];
+        for (var d = 0; d < 10; d++) {
+          var cell = document.createElement("span");
+          cell.className = "tp-reel-digit";
+          cell.setAttribute("aria-hidden", "true");
+          cell.textContent = String(d);
+          col.appendChild(cell);
+          cells.push(cell);
+        }
+        peopleNum.appendChild(col);
+        cols.push({ cells: cells, digit: +ch });
+      });
+      peopleNum.setAttribute("role", "img");
+      peopleNum.setAttribute("aria-label", str);
+      var fromDigits = String(from);
+      while (fromDigits.length < cols.length) fromDigits = "0" + fromDigits;
+      fromDigits = fromDigits.slice(-cols.length);
+      cols.forEach(function (c, i) { c.from = +fromDigits[i]; reelRest(c, c.from); if (c.from === c.digit) c.done = true; });
+      if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        cols.forEach(function (c) { reelRest(c, c.digit); });
+        return;
+      }
+      // Lengths are in em, so they follow the text size.
+      var fs = parseFloat(getComputedStyle(peopleNum).fontSize) || 13;
+      var o = { offset: 0.52 * fs, sideBlur: Math.max(0.067 * fs, 0.171 * fs - 2.1), centerBlur: 0.042 * fs, anticLift: 0.125 * fs };
+      var t0 = performance.now(), raf = 0, rolled = 0;
+      function tick() {
+        var t = performance.now() - t0, running = false;
+        cols.forEach(function (c) {
+          if (c.done) return;
+          var local = t - (c.order === undefined ? (c.order = rolled++) : c.order) * REEL.stagger;
+          if (local <= 0) { running = true; return; }
+          var total = (c.digit - c.from + 10) % 10;
+          var pos = c.from + total * reelEase(local / (total * REEL.stepDur));
+          var enter = Math.min(1, local / REEL.enterMs);
+          if (c.landAt === undefined && c.from + total - pos < REEL.landAt) c.landAt = t;
+          var since = c.landAt === undefined ? -1 : t - c.landAt;
+          if (since >= REEL.anticDur + REEL.landDur) { reelRest(c, c.digit); c.done = true; return; }
+          running = true;
+          var middle = 1 + (REEL.centerScale - 1) * enter, spread = enter, land = null;
+          if (since >= 0) {
+            if (!c.landFrom) c.landFrom = reelLook(c.from + total - pos, middle);
+            var arrive = 1 - reelSmooth(since / (REEL.anticDur + REEL.landDur * REEL.arriveAt));
+            if (since < REEL.anticDur) {
+              var a = reelSmooth(since / REEL.anticDur);
+              land = { scale: c.landFrom.scale + (REEL.anticScale - c.landFrom.scale) * a, lift: -o.anticLift * a, opacity: c.landFrom.back + (1 - c.landFrom.back) * a, arrive: arrive };
+            } else {
+              var sp = since - REEL.anticDur, sn = sp / REEL.landDur, w = reelWave(sn);
+              land = { scale: sn < 1 / 6 ? 1 + (REEL.anticScale - 1) * w : 1 - ((REEL.landPeak - 1) * w) / REEL_TROUGH, lift: -o.anticLift * w, opacity: 1, arrive: arrive };
+              spread = 1 - Math.min(1, sp / REEL.clearMs);
+            }
+          }
+          reelPlace(c, pos, spread, middle, o, land);
+        });
+        if (running) raf = requestAnimationFrame(tick);
+      }
+      tick();
+      reelStop = function () { cancelAnimationFrame(raf); };
     }
     function paintPeople(show) {
       peopleWanted = show;
       peopleEl.hidden = !(show && people);
-      if (show && people) popPeople();
+      if (show && people) rollPeople();
     }
     fetch(apiUrl("/stats/people")).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
       if (!d || !d.people) return;
@@ -1414,17 +1526,13 @@
       ".tp-modal-people{margin:0 0 -16px;color:#8a8a8a;font-size:13px;font-weight:400;line-height:16px;font-variant-numeric:tabular-nums}" +
       ".tp-modal-people[hidden]{display:none}" +
       ".tp-modal-people-dim{margin-left:4px}" +
-      // Number pop-in (transitions-dev 02), enter half: the new digits only.
-      ".tp-modal-people-num{display:inline-flex;align-items:baseline;--digit-dur:600ms;--digit-enter-delay:50ms;--digit-stagger:40ms;--digit-distance:.52em;" +
-      "--digit-blur:max(.067em,.171em - 2.1px);--digit-lift:.125em;--digit-start-scale:.7;--digit-peak:1.03}" +
-      ".tp-digit-slot{position:relative;display:inline-block}" +
-      ".tp-digit{display:inline-block}" +
-      ".tp-modal-people-num.is-animating .tp-digit{animation:tp-digit-in var(--digit-dur) linear both;animation-delay:calc(var(--digit-stagger) * var(--digit-i,0) + var(--digit-enter-delay))}" +
-      '.tp-modal-people-num.is-animating [data-stagger="1"]{--digit-i:1}' +
-      '.tp-modal-people-num.is-animating [data-stagger="2"]{--digit-i:2}' +
-      ".tp-modal-people-num.is-animating .tp-digit[data-same]{animation:none}" +
-      "@keyframes tp-digit-in{  0% { transform: translateY(calc(var(--digit-distance) * 1 + var(--digit-lift) * 0)) scale(var(--digit-start-scale)); opacity: 0; filter: blur(calc(var(--digit-blur) * 1)); }5% { transform: translateY(calc(var(--digit-distance) * 0.941 + var(--digit-lift) * 0.216)) scale(var(--digit-start-scale)); opacity: 0.059; filter: blur(calc(var(--digit-blur) * 1)); }10% { transform: translateY(calc(var(--digit-distance) * 0.755 + var(--digit-lift) * 0.648)) scale(var(--digit-start-scale)); opacity: 0.245; filter: blur(calc(var(--digit-blur) * 1)); }15% { transform: translateY(calc(var(--digit-distance) * 0.475 + var(--digit-lift) * 0.972)) scale(var(--digit-start-scale)); opacity: 0.525; filter: blur(calc(var(--digit-blur) * 1)); }20% { transform: translateY(calc(var(--digit-distance) * 0.206 + var(--digit-lift) * 0.792)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.792)); opacity: 0.794; filter: blur(calc(var(--digit-blur) * 0.9)); }25% { transform: translateY(calc(var(--digit-distance) * 0.041 + var(--digit-lift) * 0.392)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.392)); opacity: 0.959; filter: blur(calc(var(--digit-blur) * 0.75)); }30% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.033)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.033)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.6)); }35% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.194)) scale(calc(1 + (var(--digit-peak) - 1) * 0.711)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.45)); }40% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.272)) scale(calc(1 + (var(--digit-peak) - 1) * 0.997)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.3)); }45% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.238)) scale(calc(1 + (var(--digit-peak) - 1) * 0.87)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.15)); }50% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.146)) scale(calc(1 + (var(--digit-peak) - 1) * 0.535)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }55% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.05)) scale(calc(1 + (var(--digit-peak) - 1) * 0.183)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }60% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.019)) scale(calc(1 + (var(--digit-peak) - 1) * -0.069)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }65% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.05)) scale(calc(1 + (var(--digit-peak) - 1) * -0.185)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }70% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.051)) scale(calc(1 + (var(--digit-peak) - 1) * -0.187)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }75% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.035)) scale(calc(1 + (var(--digit-peak) - 1) * -0.128)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }80% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.016)) scale(calc(1 + (var(--digit-peak) - 1) * -0.057)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }85% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.002)) scale(calc(1 + (var(--digit-peak) - 1) * -0.007)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }90% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.004)) scale(calc(1 + (var(--digit-peak) - 1) * 0.013)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }95% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.003)) scale(calc(1 + (var(--digit-peak) - 1) * 0.011)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }100% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0)) scale(1); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }}" +
-      "@media (prefers-reduced-motion:reduce){.tp-modal-people-num .tp-digit{animation:none!important}}" +
+      // Spinning counter (transitions-dev 26): the drums are driven in JS.
+      ".tp-modal-people-num{display:inline-flex;align-items:center;height:1.2em;vertical-align:top}" +
+      ".tp-reel-col{position:relative;display:inline-block;height:1.2em;line-height:1.2em}" +
+      ".tp-reel-sizer{visibility:hidden}" +
+      ".tp-reel-digit{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform,filter,opacity}" +
+      ".tp-reel-sep{display:inline-block;height:1.2em;line-height:1.2em}" +
+      "@media (prefers-reduced-motion:reduce){.tp-reel-digit{filter:none!important}}" +
       ".tp-modal-mark svg{display:block;width:24px;height:24px}" +
       'html[data-theme="dark"] .tp-modal-mark{color:#f2f2f2}' +
       ".tp-modal-form{display:flex;flex-direction:column;gap:12px}" +
