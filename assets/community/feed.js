@@ -314,18 +314,16 @@
       paintRemix();
       remixBtn.focus();
     });
-    // Remix starts on Modal open/close, so the first send has something to
-    // build from. Clear it to start from a prompt alone.
-    var REMIX_DEFAULT = "modal-open-close";
+    // Remix starts empty; a library card's Remix link picks one (below).
     var remixTouched = false;
     remixBtn.addEventListener("click", function () { remixTouched = true; });
     remixClear.addEventListener("click", function () { remixTouched = true; });
     // A library card's Remix link opens the Builder with ?remix=<slug>.
     var REMIX_ASKED = new URLSearchParams(location.search).get("remix");
-    C.library().then(function (items) {
+    if (REMIX_ASKED) C.library().then(function (items) {
       if (remix || remixTouched) return;
       var pick = function (slug) { return (items || []).filter(function (x) { return x.slug === slug; })[0]; };
-      var t = (REMIX_ASKED && pick(REMIX_ASKED)) || pick(REMIX_DEFAULT);
+      var t = REMIX_ASKED && pick(REMIX_ASKED);
       if (t) { remix = t; paintRemix(); }
       if (REMIX_ASKED) prompt.focus();
     });

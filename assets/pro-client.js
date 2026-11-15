@@ -391,6 +391,8 @@
   }
 
   function paintAuth() {
+    // Sign-up prompts (the homepage's Join for free) only while signed out.
+    document.querySelectorAll("[data-signed-out]").forEach(function (el) { el.hidden = !!state.authenticated; });
     // 3-dot menu: "Sign in" becomes "Account", and while authenticated a
     // "Sign out" item closes the menu, after a divider (Figma: profile under the ⋮ menu).
     var signin = document.getElementById("pm-signin");
@@ -421,6 +423,28 @@
         signout.remove();
         var oldRule = document.getElementById("pm-signout-rule");
         if (oldRule) oldRule.remove();
+      }
+      // Signed out: "Join for free" above Sign in opens the free sign-up box.
+      var join = document.getElementById("pm-join");
+      if (!state.authenticated && !join) {
+        join = document.createElement("div");
+        join.className = "tl-menu-item";
+        join.id = "pm-join";
+        join.setAttribute("role", "menuitem");
+        join.setAttribute("tabindex", "0");
+        join.innerHTML = '<span class="tl-menu-item-label">Join for free</span>';
+        var openJoin = function (e) {
+          e.preventDefault();
+          // The page's menu closes on Escape.
+          document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+          if (state.authenticated) location.href = "/builder.html";
+          else openAuthModal({ mode: "signup", plan: "free", cta: join });
+        };
+        join.addEventListener("click", openJoin);
+        join.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") openJoin(e); });
+        signin.parentNode.insertBefore(join, signin);
+      } else if (state.authenticated && join) {
+        join.remove();
       }
       // Signed in: your Community profile and your projects, above Account.
       [["pm-profile", "Profile", "/profile.html"], ["pm-projects", "Projects", "/projects.html"]].forEach(function (it) {
@@ -893,8 +917,8 @@
     }
     // Sign-up header copy (Figma 1674:35924).
     return {
-      title: "Get Started.",
-      sub: "Make your UI motion better",
+      title: "Join Transitions.dev community",
+      sub: "",
       btn: plan && plan !== "free" ? "Continue to " + PLAN_NAMES[plan] : "Continue",
     };
   }
@@ -914,6 +938,9 @@
         // sign-up only) a short confirmation.
         // Sign-up header mark (Figma 1674:35924, ar-cube-3): the brand cube.
         '<span class="tp-modal-mark" aria-hidden="true" hidden><svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.85265L15.5409 3.84441L14.5604 5.58756L13 4.70985V7H11V4.70985L9.43962 5.58756L8.45909 3.84441L12 1.85265ZM17.3613 4.86837L21 6.91515V11H19V9.23205L17.0359 10.366L16.0359 8.63397L17.9804 7.51132L16.3807 6.61152L17.3613 4.86837ZM7.61925 6.61152L6.01961 7.51132L7.9641 8.63397L6.9641 10.366L5 9.23205L5 11H3L3 6.91515L6.63873 4.86837L7.61925 6.61152ZM5 13V14.7679L6.9641 13.634L7.9641 15.366L6.0196 16.4887L7.61925 17.3885L6.63873 19.1316L3 17.0848V13H5ZM21 13V17.0848L17.3613 19.1316L16.3807 17.3885L17.9804 16.4887L16.0359 15.366L17.0359 13.634L19 14.7679V13H21ZM13 17V19.2902L14.5604 18.4124L15.5409 20.1556L12 22.1473L8.45908 20.1556L9.43961 18.4124L11 19.2902V17H13Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M15.0981 11.366L13 12.5774V15H11V12.5774L8.90192 11.366L9.90192 9.63397L12 10.8453L14.0981 9.63397L15.0981 11.366Z" fill="currentColor"/></svg></span>' +
+        // Members count (live from /stats/people), plain text: the
+        // last two digits come in with Number pop-in each time it shows.
+        '<p class="tp-modal-people" data-people hidden><span class="tp-modal-people-num" data-people-num></span><span class="tp-modal-people-dim">members</span></p>' +
         '<p class="tp-modal-intro" id="tp-modal-title"><span data-step-title>Sign in</span>' +
           '<span class="tp-modal-intro-muted" data-step-sub></span></p>' +
         // GitHub and ChatGPT, shown once /auth/providers says they are set up.
@@ -976,6 +1003,41 @@
     var subEl = modalEl.querySelector("[data-step-sub]");
     var footEl = modalEl.querySelector("[data-foot]");
     var markEl = modalEl.querySelector(".tp-modal-mark");
+    var peopleEl = modalEl.querySelector("[data-people]");
+    var peopleNum = modalEl.querySelector("[data-people-num]");
+    var people = 0, peopleWanted = false;
+    // Number pop-in (transitions-dev 02): the leading digits stay still, the
+    // last two rise in on a stagger.
+    function popPeople() {
+      var str = people.toLocaleString("en-US");
+      var digits = 0, cut = str.length;
+      while (cut > 0 && digits < 2) { cut--; if (/\d/.test(str[cut])) digits++; }
+      peopleNum.classList.remove("is-animating");
+      peopleNum.replaceChildren();
+      [].forEach.call(str, function (ch, i) {
+        var d = document.createElement("span");
+        d.className = "tp-digit";
+        d.textContent = ch;
+        if (i < cut) { d.setAttribute("data-same", ""); peopleNum.appendChild(d); return; }
+        var slot = document.createElement("span");
+        slot.className = "tp-digit-slot";
+        slot.setAttribute("data-stagger", str.length - 1 - i === 1 ? "1" : "2");
+        slot.appendChild(d);
+        peopleNum.appendChild(slot);
+      });
+      void peopleNum.offsetWidth;
+      peopleNum.classList.add("is-animating");
+    }
+    function paintPeople(show) {
+      peopleWanted = show;
+      peopleEl.hidden = !(show && people);
+      if (show && people) popPeople();
+    }
+    fetch(apiUrl("/stats/people")).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d || !d.people) return;
+      people = d.people;
+      if (peopleWanted && !modalEl.hasAttribute("hidden")) paintPeople(true);
+    }).catch(function () {});
     var oauthEl = modalEl.querySelector(".tp-modal-oauth");
     var legalEl = modalEl.querySelector("[data-legal]");
     var onEmailStep = true;
@@ -1004,6 +1066,7 @@
       subEl.textContent = copy.sub;
       // The cube heads the sign-up screen only.
       markEl.hidden = !(authCtx.mode === "signup" && step === "email");
+      paintPeople(authCtx.mode === "signup" && step === "email");
       if (copy.btn) {
         var btn = (step === "code" ? codeFormEl : emailForm).querySelector(".tp-modal-btn");
         btn.textContent = copy.btn;
@@ -1347,6 +1410,21 @@
       ".tp-modal-intro-muted{color:#8a8a8a;display:block}" +
       ".tp-modal-mark{display:block;width:24px;height:24px;color:#1d1d1d;margin-bottom:-9px}" +
       ".tp-modal-mark[hidden]{display:none}" +
+      // Members: plain muted text, number and word in one color.
+      ".tp-modal-people{margin:0 0 -16px;color:#8a8a8a;font-size:13px;font-weight:400;line-height:16px;font-variant-numeric:tabular-nums}" +
+      ".tp-modal-people[hidden]{display:none}" +
+      ".tp-modal-people-dim{margin-left:4px}" +
+      // Number pop-in (transitions-dev 02), enter half: the new digits only.
+      ".tp-modal-people-num{display:inline-flex;align-items:baseline;--digit-dur:600ms;--digit-enter-delay:50ms;--digit-stagger:40ms;--digit-distance:.52em;" +
+      "--digit-blur:max(.067em,.171em - 2.1px);--digit-lift:.125em;--digit-start-scale:.7;--digit-peak:1.03}" +
+      ".tp-digit-slot{position:relative;display:inline-block}" +
+      ".tp-digit{display:inline-block}" +
+      ".tp-modal-people-num.is-animating .tp-digit{animation:tp-digit-in var(--digit-dur) linear both;animation-delay:calc(var(--digit-stagger) * var(--digit-i,0) + var(--digit-enter-delay))}" +
+      '.tp-modal-people-num.is-animating [data-stagger="1"]{--digit-i:1}' +
+      '.tp-modal-people-num.is-animating [data-stagger="2"]{--digit-i:2}' +
+      ".tp-modal-people-num.is-animating .tp-digit[data-same]{animation:none}" +
+      "@keyframes tp-digit-in{  0% { transform: translateY(calc(var(--digit-distance) * 1 + var(--digit-lift) * 0)) scale(var(--digit-start-scale)); opacity: 0; filter: blur(calc(var(--digit-blur) * 1)); }5% { transform: translateY(calc(var(--digit-distance) * 0.941 + var(--digit-lift) * 0.216)) scale(var(--digit-start-scale)); opacity: 0.059; filter: blur(calc(var(--digit-blur) * 1)); }10% { transform: translateY(calc(var(--digit-distance) * 0.755 + var(--digit-lift) * 0.648)) scale(var(--digit-start-scale)); opacity: 0.245; filter: blur(calc(var(--digit-blur) * 1)); }15% { transform: translateY(calc(var(--digit-distance) * 0.475 + var(--digit-lift) * 0.972)) scale(var(--digit-start-scale)); opacity: 0.525; filter: blur(calc(var(--digit-blur) * 1)); }20% { transform: translateY(calc(var(--digit-distance) * 0.206 + var(--digit-lift) * 0.792)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.792)); opacity: 0.794; filter: blur(calc(var(--digit-blur) * 0.9)); }25% { transform: translateY(calc(var(--digit-distance) * 0.041 + var(--digit-lift) * 0.392)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.392)); opacity: 0.959; filter: blur(calc(var(--digit-blur) * 0.75)); }30% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.033)) scale(calc(1 + (var(--digit-start-scale) - 1) * 0.033)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.6)); }35% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.194)) scale(calc(1 + (var(--digit-peak) - 1) * 0.711)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.45)); }40% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.272)) scale(calc(1 + (var(--digit-peak) - 1) * 0.997)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.3)); }45% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.238)) scale(calc(1 + (var(--digit-peak) - 1) * 0.87)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0.15)); }50% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.146)) scale(calc(1 + (var(--digit-peak) - 1) * 0.535)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }55% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.05)) scale(calc(1 + (var(--digit-peak) - 1) * 0.183)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }60% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.019)) scale(calc(1 + (var(--digit-peak) - 1) * -0.069)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }65% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.05)) scale(calc(1 + (var(--digit-peak) - 1) * -0.185)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }70% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.051)) scale(calc(1 + (var(--digit-peak) - 1) * -0.187)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }75% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.035)) scale(calc(1 + (var(--digit-peak) - 1) * -0.128)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }80% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.016)) scale(calc(1 + (var(--digit-peak) - 1) * -0.057)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }85% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0.002)) scale(calc(1 + (var(--digit-peak) - 1) * -0.007)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }90% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.004)) scale(calc(1 + (var(--digit-peak) - 1) * 0.013)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }95% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * -0.003)) scale(calc(1 + (var(--digit-peak) - 1) * 0.011)); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }100% { transform: translateY(calc(var(--digit-distance) * 0 + var(--digit-lift) * 0)) scale(1); opacity: 1; filter: blur(calc(var(--digit-blur) * 0)); }}" +
+      "@media (prefers-reduced-motion:reduce){.tp-modal-people-num .tp-digit{animation:none!important}}" +
       ".tp-modal-mark svg{display:block;width:24px;height:24px}" +
       'html[data-theme="dark"] .tp-modal-mark{color:#f2f2f2}' +
       ".tp-modal-form{display:flex;flex-direction:column;gap:12px}" +

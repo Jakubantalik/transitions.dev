@@ -6212,6 +6212,10 @@
        library page and the Community feed (columns of at least 320px,
        16px gaps, 20px gutters); every other block keeps the 1192px column. */
     .home-hero .subtitle { max-width: 600px; text-wrap: balance; }
+    /* Join for free under the composer: the site's 36px CTA, text only. */
+    .home-join { display: flex; justify-content: center; margin-top: 24px; }
+    .home-join[hidden] { display: none; }
+    .home-join-btn { height: 36px; padding: 0 14px; }
     .app { max-width: none; padding-left: 20px; padding-right: 20px; }
     /* Zero specificity: a block with its own measure (the sponsors and the
        Motion Agent bento, 1008px) keeps it; the rest get the old column. */
@@ -6500,6 +6504,11 @@
           </button>
         </div>
       </form>
+      </div>
+      <!-- Signed out: the free sign-up box (pro-client.js [data-join-free]);
+           hidden once signed in. -->
+      <div class="home-join" data-signed-out>
+        <a class="cm-btn cm-btn--primary home-join-btn" href="/pro.html" data-join-free>Join for free</a>
       </div>
     </header>
 
@@ -16181,11 +16190,11 @@ btn.textContent = STATES[i].label;
 })();
 </script>
   <!-- Pro platform client: mounts Pro badges on data-pro cards, reads auth state. -->
-  <script src="assets/pro-client.js?v=71" defer></script>
+  <script src="assets/pro-client.js?v=76" defer></script>
   <script src="assets/cmdk-search.js?v=5" defer></script>
   <script src="assets/community/community.js?v=256" defer></script>
   <script src="assets/community/beam.js?v=140" defer></script>
-  <script src="assets/community/feed.js?v=159" defer></script>
+  <script src="assets/community/feed.js?v=160" defer></script>
   <script type="module" src="assets/community/composer-generate.js?v=8"></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
   <script src="assets/nav-products.js?v=17" defer></script>
