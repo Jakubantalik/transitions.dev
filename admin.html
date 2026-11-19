@@ -235,6 +235,18 @@
     @media (max-width: 1100px) { .bu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bu-card:nth-child(3n) { border-right: 1px solid var(--c-line); } .bu-card:nth-child(2n) { border-right: none; } }
     @media (max-width: 640px) { .bu-grid { grid-template-columns: 1fr; } .bu-card { border-right: none !important; } }
 
+    /* Cancellations view. */
+    .cx-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px; border-bottom: 1px solid var(--c-line); }
+    .cx-bar .grow { flex: 1; }
+    .cx-mail { margin: 0 12px 12px; padding: 14px 16px; border-radius: 12px; background: var(--card-bg); box-shadow: var(--card-ring); display: flex; flex-direction: column; gap: 10px; }
+    .cx-mail pre { margin: 0; white-space: pre-wrap; font-family: inherit; font-size: 13px; line-height: 20px; color: var(--c-text); }
+    .cx-mail .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .cx-mail .note { font-size: 11px; line-height: 14px; color: var(--c-text-faint); }
+    .cx-table td { height: 48px; white-space: normal; }
+    .cx-used { font-size: 12px; line-height: 16px; color: var(--c-text-mut2); }
+    .cx-used.none { color: var(--err-fg); }
+    .cx-reason { font-size: 12px; line-height: 16px; color: var(--c-text); max-width: 280px; }
+
     /* Errors view. */
     .err-sum { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 12px; border-bottom: 1px solid var(--c-line); }
     .err-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: none; border-radius: 36px; cursor: pointer;
@@ -480,6 +492,7 @@
         <div class="seg view-seg" id="view-seg" role="tablist" aria-label="View">
           <button type="button" role="tab" class="seg-btn is-active" data-view="people" aria-selected="true">People</button>
           <button type="button" role="tab" class="seg-btn" data-view="daily" aria-selected="false">Daily</button>
+          <button type="button" role="tab" class="seg-btn" data-view="churn" aria-selected="false">Cancellations</button>
           <button type="button" role="tab" class="seg-btn" data-view="builder" aria-selected="false" id="builder-tab">Builder</button>
           <button type="button" role="tab" class="seg-btn" data-view="errors" aria-selected="false" id="errors-tab">Errors</button>
         </div>
@@ -510,6 +523,7 @@
       <div id="daily-view" hidden></div>
       <div id="errors-view" hidden></div>
       <div id="builder-view" hidden></div>
+      <div id="churn-view" hidden></div>
 
       <div class="toolbar" id="people-toolbar">
         <label class="field">
@@ -1310,6 +1324,98 @@
       }
       el.innerHTML = html;
     }
+    /* ─── Cancellations ───────────────────────────────────── */
+    var CX_FEEDBACK = { too_expensive: "Too expensive", missing_features: "Missing features", switched_service: "Switched to something else",
+      unused: "Not using it", customer_service: "Customer service", too_complex: "Too complex", low_quality: "Quality", other: "Other" };
+    state.cx = "30";
+    state.cxMail = false;
+    // What the person actually did before leaving, per product.
+    function cxUsage(p) {
+      var bits = [];
+      if (p.community && (p.community.drafts || p.community.made)) bits.push("Builder " + plural(p.community.drafts || 0, "draft"));
+      if (p.agent && (p.agent.fixes_total || p.agent.fixes_month || p.agent.last_used)) bits.push("Agent " + plural(Math.max(p.agent.fixes_total || 0, (p.agent.fixes_month || 0) + (p.agent.fixes_prev_month || 0)), "fix", "fixes"));
+      if (p.studio && (p.studio.requests_month || p.studio.requests_prev_month)) bits.push("Studio " + plural((p.studio.requests_month || 0) + (p.studio.requests_prev_month || 0), "request"));
+      if (p.downloads && p.downloads.n) bits.push(plural(p.downloads.n, "model download"));
+      if (p.last_sign_in) bits.push("signed in " + day(p.last_sign_in));
+      return bits;
+    }
+    function cxList() {
+      var all = state.data.people.filter(function (p) { return p.churn; });
+      var since = Date.now() - 30 * 864e5;
+      var list = state.cx === "scheduled" ? all.filter(function (p) { return p.churn.status === "scheduled"; })
+        : state.cx === "30" ? all.filter(function (p) { return p.churn.status === "cancelled" && p.churn.ended_at && new Date(p.churn.ended_at).getTime() >= since; })
+        : all.filter(function (p) { return p.churn.status === "cancelled"; });
+      return list.sort(function (a, b) { return (b.churn.ended_at || b.churn.ends_at || "").localeCompare(a.churn.ended_at || a.churn.ends_at || ""); });
+    }
+    function cxMailText() {
+      var name = product === "libraries" ? "Libraries.dev" : "Transitions.dev";
+      return "Subject: Quick question about " + name + "\n\n" +
+        "Hi,\n\n" +
+        "I'm Jakub, I make " + name + ". I saw you cancelled your plan, and I'd really like to know why.\n\n" +
+        "Was something missing, not working, too expensive, or did you simply not need it anymore? A one-line reply is plenty, I read every one, and it decides what I build next.\n\n" +
+        "Thanks for giving it a try,\nJakub";
+    }
+    function renderChurn() {
+      var el = $("churn-view");
+      // An API without cancellation data yet (before its deploy) sends no `churn` field.
+      if (state.data.people.length && !("churn" in state.data.people[0])) {
+        el.innerHTML = '<div class="empty">Cancellations need the latest API for ' + esc(PRODUCTS[product].label) + ". Deploy it, then refresh.</div>";
+        return;
+      }
+      var all = state.data.people.filter(function (p) { return p.churn; });
+      var since = Date.now() - 30 * 864e5;
+      var recent = all.filter(function (p) { return p.churn.status === "cancelled" && p.churn.ended_at && new Date(p.churn.ended_at).getTime() >= since; });
+      var scheduled = all.filter(function (p) { return p.churn.status === "scheduled"; });
+      var months = recent.map(function (p) { return p.churn.months; }).filter(function (m) { return m != null; }).sort(function (a, b) { return a - b; });
+      var median = months.length ? months[Math.floor(months.length / 2)] : null;
+      var unused = recent.filter(function (p) { return !cxUsage(p).filter(function (b) { return b.indexOf("signed in") !== 0; }).length; }).length;
+      var reasons = {};
+      recent.forEach(function (p) { var k = p.churn.feedback || (p.churn.comment ? "comment" : null); if (k) reasons[k] = (reasons[k] || 0) + 1; });
+      var gave = Object.keys(reasons).reduce(function (s, k) { return s + reasons[k]; }, 0);
+      var cells = [
+        { label: "Cancelled, last 30 days", value: num(recent.length), sub: num(all.filter(function (p) { return p.churn.status === "cancelled"; }).length) + " all time" },
+        { label: "Scheduled to cancel", value: num(scheduled.length), sub: "still paying until their period ends" },
+        { label: "Median time as a customer", value: median == null ? "·" : median + " months", sub: "of those cancelled in 30 days" },
+        { label: "Never used the product", value: num(unused), sub: recent.length ? Math.round(unused / recent.length * 100) + "% of the last 30 days" : "" },
+        { label: "Gave a reason", value: num(gave), sub: gave ? Object.keys(reasons).map(function (k) { return reasons[k] + " " + (CX_FEEDBACK[k] || (k === "comment" ? "comment only" : k)); }).join(" · ") : "turn on reasons in Stripe's customer portal" },
+        { label: "They paid in total", value: paidText(recent.reduce(function (m, p) { for (var c in p.paid) m[c] = (m[c] || 0) + p.paid[c]; return m; }, {})) || "$0", sub: "what they paid in total" }
+      ];
+      var list = cxList();
+      var html = '<div class="stats">' + cells.map(function (c) {
+          return '<div class="stat"><span class="stat-label">' + esc(c.label) + '</span><span class="stat-value">' + esc(c.value) + '</span><span class="stat-sub">' + esc(c.sub) + "</span></div>";
+        }).join("") + "</div>" +
+        '<div class="cx-bar">' +
+          [["30", "Last 30 days"], ["scheduled", "Scheduled"], ["all", "All cancelled"]].map(function (c) {
+            return '<button type="button" class="err-chip' + (state.cx === c[0] ? " is-on" : "") + '" data-cx="' + c[0] + '">' + esc(c[1]) + "</button>";
+          }).join("") +
+          '<span class="grow"></span>' +
+          '<button type="button" class="btn-sec" id="cx-copy">Copy ' + esc(plural(list.length, "email")) + "</button>" +
+          '<button type="button" class="btn-sec" id="cx-draft">' + (state.cxMail ? "Hide email draft" : "Email draft") + "</button>" +
+        "</div>" +
+        (state.cxMail ? '<div class="cx-mail"><pre id="cx-text">' + esc(cxMailText()) + '</pre><div class="row"><button type="button" class="btn-sec" id="cx-copy-text">Copy text</button>' +
+          '<span class="note">Send it from your own inbox, one person at a time or with everyone in BCC. Personal notes get far more replies than a bulk email.</span></div></div>' : "");
+      if (!list.length) {
+        html += '<div class="empty">' + (state.cx === "scheduled" ? "No one is scheduled to cancel." : "No cancellations here.") + "</div>";
+      } else {
+        html += '<div class="table-wrap"><table class="cx-table"><thead><tr><th>Person</th><th>Was</th><th>Started</th><th>' + (state.cx === "scheduled" ? "Ends" : "Ended") +
+          '</th><th class="num">Stayed</th><th class="num">Paid</th><th>Used it?</th><th>Reason</th></tr></thead><tbody>' +
+          list.map(function (p) {
+            var c = p.churn, used = cxUsage(p), when = c.status === "scheduled" ? c.ends_at : c.ended_at;
+            var reason = c.feedback ? (CX_FEEDBACK[c.feedback] || c.feedback) : "";
+            return '<tr data-email="' + esc(p.email) + '">' +
+              '<td><div class="who-text"><span class="who-name' + (p.name ? "" : " is-empty") + '">' + esc(p.name || "No name") + '</span><span class="who-email">' + esc(p.email) + "</span></div></td>" +
+              "<td>" + planBadge(c.was === "Business" ? "business" : c.was === "Sponsor" ? "sponsor" : "pro").replace(/>[^<]*<\/span>$/, ">" + esc(c.was) + "</span>") + "</td>" +
+              '<td class="tnum">' + esc(day(c.started_at)) + "</td>" +
+              '<td class="tnum">' + esc(day(when)) + "</td>" +
+              '<td class="num tnum">' + (c.months == null ? "·" : esc(c.months + " mo")) + "</td>" +
+              '<td class="num tnum">' + esc(paidText(p.paid) || "$0") + "</td>" +
+              '<td><span class="cx-used' + (used.filter(function (b) { return b.indexOf("signed in") !== 0; }).length ? "" : " none") + '">' + esc(used.length ? used.join(" · ") : "Never signed in or used it") + "</span></td>" +
+              '<td><span class="cx-reason">' + esc([reason, c.comment ? "“" + c.comment + "”" : ""].filter(Boolean).join(": ")) + (reason || c.comment ? "" : '<span class="muted">·</span>') + "</span></td></tr>";
+          }).join("") + "</tbody></table></div>";
+      }
+      el.innerHTML = html;
+    }
+
     /* ─── Builder usage (Transitions) ──────────────────────── */
     // Answer kinds as the API records them: base kind, "+repair" when the
     // agent had to fix its own output afterwards.
@@ -1368,8 +1474,9 @@
         b.classList.toggle("is-active", on);
         b.setAttribute("aria-selected", on ? "true" : "false");
       });
-      var daily = v === "daily", errs = v === "errors", bview = v === "builder", other = daily || errs || bview;
+      var daily = v === "daily", errs = v === "errors", bview = v === "builder", cview = v === "churn", other = daily || errs || bview || cview;
       $("builder-view").hidden = !bview;
+      $("churn-view").hidden = !cview;
       $("daily-view").hidden = !daily;
       $("errors-view").hidden = !errs;
       $("agent-band").hidden = other;
@@ -1382,6 +1489,7 @@
       if (daily && state.data) renderDaily();
       if (errs && state.data) renderErrors();
       if (bview && state.data) renderBuilderView();
+      if (cview && state.data) renderChurn();
     }
     function renderDayFilter() {
       var el = $("day-filter");
@@ -1390,7 +1498,7 @@
         '<button type="button" id="day-clear" aria-label="Clear day filter"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></span>';
       $("day-clear").addEventListener("click", function () { state.day = null; renderDayFilter(); renderRows(); });
     }
-    function render() { renderStats(); renderAgent(); renderBuilder(); renderStudio(); renderFree(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); if (state.view === "errors") renderErrors(); if (state.view === "builder") renderBuilderView(); }
+    function render() { renderStats(); renderAgent(); renderBuilder(); renderStudio(); renderFree(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); if (state.view === "errors") renderErrors(); if (state.view === "builder") renderBuilderView(); if (state.view === "churn") renderChurn(); }
     function select(email) {
       state.selected = state.selected === email ? null : email;
       document.querySelectorAll("#rows tr").forEach(function (tr) { tr.classList.toggle("selected", tr.getAttribute("data-email") === state.selected); });
@@ -1455,6 +1563,26 @@
       var r = parseInt(load("tdev:crm-range"), 10) || 0;
       if (r) { state.range = r; $("range").value = String(r); $("range").classList.add("is-set"); }
     })();
+    $("churn-view").addEventListener("click", function (e) {
+      var chip = e.target.closest("[data-cx]");
+      if (chip) { state.cx = chip.getAttribute("data-cx"); renderChurn(); return; }
+      if (e.target.closest("#cx-draft")) { state.cxMail = !state.cxMail; renderChurn(); return; }
+      var copyBtn = e.target.closest("#cx-copy, #cx-copy-text");
+      if (copyBtn) {
+        var text = copyBtn.id === "cx-copy" ? cxList().map(function (p) { return p.email; }).join(", ") : cxMailText();
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () {
+          var was = copyBtn.textContent; copyBtn.textContent = "Copied"; setTimeout(function () { copyBtn.textContent = was; }, 1200);
+        });
+        return;
+      }
+      var tr = e.target.closest("tr[data-email]");
+      var email = tr && tr.getAttribute("data-email");
+      if (!email) return;
+      state.filter = "all"; state.day = null; state.q = email; $("search").value = email;
+      setView("people");
+      renderFilters(); renderDayFilter(); renderRows();
+      if (state.selected !== email) select(email);
+    });
     $("errors-view").addEventListener("click", function (e) {
       var chip = e.target.closest("[data-err]");
       if (chip) { state.errCode = chip.getAttribute("data-err") || null; renderErrors(); return; }
