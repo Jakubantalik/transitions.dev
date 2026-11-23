@@ -2124,7 +2124,7 @@
       .nav-pill { padding: 0 9px; }
     }
   </style>
-  <link rel="stylesheet" href="assets/community/community.css?v=259" />
+  <link rel="stylesheet" href="assets/community/community.css?v=266" />
   <style>
     /* Desktop only (the libraries.dev Studio's notice). */
     .st-desktop-only { display: none; }
@@ -2468,6 +2468,8 @@
               <input type="file" id="st-img-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden />
             </div>
             <form class="st-chat-composer" id="st-ai" novalidate>
+              <!-- Messages waiting for the running draft (studio.js). -->
+              <ol class="st-queue" id="st-queue" aria-label="Queued messages" aria-live="polite" hidden></ol>
               <div class="st-target" id="st-target" hidden></div>
               <div class="cm-imgs" id="st-imgs" aria-label="Attached images" hidden></div>
               <label class="sr-only" for="st-ai-input">Ask the agent</label>
@@ -2494,6 +2496,9 @@
                 </div>
                 <span class="cm-grow"></span>
                 <p class="st-chat-quota" id="st-chat-quota" hidden></p>
+                <button type="button" class="st-chat-send st-chat-stop" id="st-ai-stop" aria-label="Stop" title="Stop" hidden>
+                  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
+                </button>
                 <button type="submit" class="st-chat-send" id="st-ai-send" aria-label="Send" disabled>
                   <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M7.99967 12.6667V3.33337M12.6663 8.00004L7.99967 3.33337L3.33301 8.00004" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
@@ -3148,12 +3153,12 @@
     })();
   </script>
   <!-- Pro platform client: wires Get access / Sign in / account state to the API. -->
-  <script src="assets/pro-client.js?v=77" defer></script>
+  <script src="assets/pro-client.js?v=78" defer></script>
   <script src="assets/cmdk-search.js?v=5" defer></script>
 
   <script src="assets/community/community.js?v=256" defer></script>
   <script src="assets/community/controls.js?v=140" defer></script>
-  <script src="assets/community/studio.js?v=251" defer></script>
+  <script src="assets/community/studio.js?v=252" defer></script>
   <script src="assets/brand-mark.js?v=4" defer></script>
   <script src="assets/nav-products.js?v=17" defer></script>
 </body>

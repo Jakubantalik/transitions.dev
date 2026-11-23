@@ -359,6 +359,7 @@
   // The preview's layout check (text running under a button): shown once
   // after an agent build, and sent with the next request so the agent fixes it.
   var layoutIssues = [], sayLayout = false;
+  var onLayout = null; // called once, at the next layout check (the queue waits for it)
   function render() {
     logs = [];
     layoutIssues = []; sayLayout = false;
@@ -383,6 +384,7 @@
               layoutIssues.slice(0, 3).map(function (t) { return '<span class="st-scan-issue">' + C.esc(String(t).split(/(?<=\.)\s/)[0]) + "</span>"; }).join("") +
               '<span class="st-scan-issue">The agent fixes it with your next change.</span>');
           }
+          if (onLayout) { var next = onLayout; onLayout = null; next(); }
         }
       },
     });
@@ -788,7 +790,7 @@
     savedEl.hidden = false;
   }
   window.addEventListener("beforeunload", function (e) {
-    if (S.dirty && S.owner && S.id) { e.preventDefault(); e.returnValue = ""; }
+    if ((S.dirty && S.owner && S.id) || queue.length) { e.preventDefault(); e.returnValue = ""; }
   });
 
   // The component's own height in the preview, stored with the saved
@@ -2146,6 +2148,7 @@
   var log = $("st-chat-log");
   var quotaEl = $("st-chat-quota");
   var busy = false;
+  var queue = []; // messages waiting for the running draft (enqueue)
 
   // Images for the agent: the Image chip, drag and drop on the panel, paste.
   var attach = C.attachments({ list: $("st-imgs"), drop: document.querySelector('[data-panel-body="agent"]'), paste: aiInput, onChange: function () { aiSize(); } });
@@ -2170,30 +2173,89 @@
   function aiSize() {
     aiInput.style.height = "auto";
     aiInput.style.height = Math.min(aiInput.scrollHeight, 7 * 20 + 12) + "px";
-    // While the agent works the button is Stop, so it stays active.
-    aiSend.disabled = !busy && !aiInput.value.trim() && !(attach && attach.count());
+    // While the agent works, Stop stands in for Send until there is something
+    // to queue; then both show. A queue left waiting (a stop, an error) goes
+    // on with Send, with nothing typed.
+    var typed = !!aiInput.value.trim() || !!(attach && attach.count());
+    var waiting = !busy && !typed && queue.length > 0 && !sheetCancel;
+    aiSend.hidden = busy && !typed;
+    aiSend.disabled = !typed && !waiting;
+    var label = busy ? "Queue message" : waiting ? "Send the next queued message" : "Send";
+    aiSend.setAttribute("aria-label", label);
+    aiSend.title = label === "Send" ? "" : label;
   }
-  // The send button: an arrow, or a stop square while the agent works.
-  var ICON_SEND = aiSend.innerHTML;
-  var ICON_STOP = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1.5" fill="currentColor"/></svg>';
+  var aiStop = $("st-ai-stop");
   var aiAbort = null;
   // An open question sheet: a new request replaces it (see runAI).
   var sheetCancel = null;
   function stopAI() { if (aiAbort) aiAbort.abort(); }
   function submitAI() {
-    if (busy) { stopAI(); return; }
-    if (aiSend.disabled) return;
+    if (aiSend.hidden || aiSend.disabled) return;
     if (attach.busy()) { C.toast("Images are still loading."); return; }
-    runAI(aiInput.value.trim(), attach.items());
+    var text = aiInput.value.trim(), images = attach.items();
+    if (!text && !images.length) { runNext(); return; }
+    if (busy) { enqueue(text, images); return; }
+    runAI(text, images);
+  }
+
+  // Messages sent while the agent works: they wait above the input, in order,
+  // and go out one by one as each draft lands. A stop or an error holds the
+  // rest, so nothing runs on a draft that did not land.
+  var queueEl = $("st-queue");
+  var QUEUE_MS = 250;
+  function enqueue(text, images) {
+    var q = { text: text, images: images, target: target };
+    var li = document.createElement("li");
+    li.className = "st-queue-row is-out";
+    li.innerHTML = '<div class="st-queue-in"><div class="st-queue-item"><span class="st-queue-key">Queued</span>' +
+      '<span class="st-queue-text">' + (target ? '<code class="st-chat-target">' + C.esc(targetLabel(target)) + "</code> " : "") +
+        C.esc(text || (images.length === 1 ? "1 image" : images.length + " images")) +
+        (text && images.length ? ' <span class="st-queue-imgs">+ ' + images.length + (images.length === 1 ? " image" : " images") + "</span>" : "") + "</span>" +
+      '<button type="button" class="st-target-x" aria-label="Remove from queue" title="Remove from queue">' + X_SVG + "</button></div></div>";
+    q.el = li;
+    li.querySelector("button").addEventListener("click", function () { dequeue(q); aiInput.focus(); });
+    queue.push(q);
+    queueEl.hidden = false;
+    queueEl.appendChild(li);
+    void li.offsetHeight;
+    li.classList.remove("is-out");
+    // The picked element goes with this message.
+    if (target) clearTarget();
+    aiInput.value = "";
+    attach.clear();
+    aiSize();
+  }
+  function dequeue(q) {
+    var i = queue.indexOf(q);
+    if (i < 0) return;
+    queue.splice(i, 1);
+    q.el.classList.add("is-out");
+    setTimeout(function () { q.el.remove(); queueEl.hidden = !queueEl.children.length; }, QUEUE_MS);
+    aiSize();
+  }
+  function runNext() {
+    if (busy || sheetCancel || !queue.length) return;
+    var q = queue[0];
+    dequeue(q);
+    runAI(q.text, q.images, { queued: true, target: q.target });
+  }
+  // After a draft lands: once its preview has been checked, so the check goes
+  // with the next message (or shortly after, when no check comes).
+  function queueNext() {
+    if (!queue.length) return;
+    var go = function () { clearTimeout(t); onLayout = null; runNext(); };
+    var t = setTimeout(go, 1500);
+    onLayout = go;
   }
   aiInput.addEventListener("input", aiSize);
   aiInput.addEventListener("keydown", function (e) {
     if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
       e.preventDefault();
-      // Enter never stops a running draft; only the button does.
-      if (!busy) submitAI();
+      // Enter never stops a running draft; only Stop does.
+      submitAI();
     }
   });
+  aiStop.addEventListener("click", stopAI);
   aiForm.addEventListener("submit", function (e) { e.preventDefault(); submitAI(); });
 
   // Fade the bottom edge only while there is more transcript below.
@@ -2429,9 +2491,9 @@
     preview.classList.toggle("is-working", on);
     if (on) setWorking("Working");
     if (on) aiForm.setAttribute("data-busy", ""); else aiForm.removeAttribute("data-busy");
-    aiSend.innerHTML = on ? ICON_STOP : ICON_SEND;
-    aiSend.setAttribute("aria-label", on ? "Stop" : "Send");
-    aiSend.title = on ? "Stop" : "";
+    if (!on && document.activeElement === aiStop) aiInput.focus();
+    aiStop.hidden = !on;
+    aiInput.placeholder = on ? "Queue another change…" : "Ask for a change…";
     if (on) preview.setAttribute("aria-busy", "true"); else preview.removeAttribute("aria-busy");
     aiSize();
   }
@@ -2810,12 +2872,12 @@
     C.withAccount(function () {
       var fresh = isStarter() || (!S.files.html.trim() && !S.files.js.trim());
       if (!text) text = fresh ? "Build the component in the attached image." : "Update the component to match the attached image.";
-      var picked = target;
+      var picked = "target" in opts ? opts.target : target;
       say("user", (images.length ? C.imageStrip(images) : "") +
         (picked ? '<code class="st-chat-target">' + C.esc(targetLabel(picked)) + "</code> " : "") + C.esc(text), text);
       if (opts.libNote) say("agent", "Building in React to use " + C.esc(opts.libNote) + ": libraries are React components.");
-      aiInput.value = "";
-      attach.clear();
+      // A queued message leaves what is being typed alone.
+      if (!opts.queued) { aiInput.value = ""; attach.clear(); }
       setBusy(true);
       var status = thinking();
       // The agent's plan (its thinking summary) streams into the working
@@ -2931,6 +2993,7 @@
         // closing the tab never loses a change the credits paid for.
         // (Published components wait for Save changes: those go to review.)
         if (S.id && S.owner && !S.published) save(undefined, null);
+        queueNext();
       });
     });
   }

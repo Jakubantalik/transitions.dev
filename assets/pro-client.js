@@ -1523,7 +1523,7 @@
       ".tp-modal-mark{display:block;width:24px;height:24px;color:#1d1d1d;margin-bottom:-9px}" +
       ".tp-modal-mark[hidden]{display:none}" +
       // Members: plain muted text, number and word in one color.
-      ".tp-modal-people{margin:0 0 -16px;color:#8a8a8a;font-size:13px;font-weight:400;line-height:16px;font-variant-numeric:tabular-nums}" +
+      ".tp-modal-people{margin:0 0 -19px;color:#8a8a8a;font-size:13px;font-weight:400;line-height:16px;font-variant-numeric:tabular-nums}" +
       ".tp-modal-people[hidden]{display:none}" +
       ".tp-modal-people-dim{margin-left:4px}" +
       // Spinning counter (transitions-dev 26): the drums are driven in JS.

@@ -1744,6 +1744,36 @@ html[data-theme="dark"] .st-reason-card { background: rgba(255, 255, 255, 0.03);
 }
 .st-think-text.is-enter-start { transition: none; transform: translateY(8px); filter: blur(2px); opacity: 0; }
 
+/* Messages queued while the agent works, above the input: one line each,
+   growing in and out (Accordion's grid rows). */
+.st-queue { flex: 1 0 100%; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.st-queue[hidden] { display: none; }
+.st-queue-row {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 250ms cubic-bezier(0.22, 1, 0.36, 1), opacity 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.st-queue-row.is-out { grid-template-rows: 0fr; opacity: 0; }
+.st-queue-in { min-width: 0; min-height: 0; overflow: hidden; }
+.st-queue-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-top: 4px;
+  padding: 4px 4px 4px 8px;
+  border-radius: 8px;
+  background: var(--chip-bg);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 16px;
+}
+.st-queue-row:first-child .st-queue-item { margin-top: 8px; }
+.st-queue-key { flex: none; color: var(--text-muted); font-weight: 500; }
+.st-queue-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-queue-imgs { color: var(--text-muted); }
+@media (prefers-reduced-motion: reduce) { .st-queue-row { transition: none; } }
+
 /* Composer (libraries.dev Figma 1434:39739 light / 1434:39714 dark). */
 .st-chat-composer {
   --cmp-bg: rgba(255, 255, 255, 0.04);
@@ -1833,6 +1863,9 @@ html[data-theme="dark"] .st-chat-composer {
   -webkit-tap-highlight-color: transparent;
 }
 .st-chat-send svg { width: 16px; height: 16px; display: block; }
+.st-chat-send[hidden] { display: none; }
+/* Stop steps back while there is a message to queue beside it. */
+.st-chat-stop:has(+ .st-chat-send:not([hidden])) { background: var(--cmp-btn-bg); box-shadow: var(--cmp-btn-ring); color: var(--cmp-btn-ink); }
 .st-chat-send:not(:disabled) { background: var(--cmp-btn-bg-on); box-shadow: var(--cmp-btn-ring-on); color: var(--cmp-btn-ink-on); cursor: pointer; }
 .st-chat-send:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
 .st-chat-quota { margin: -4px 0 0; font-size: 11px; line-height: 14px; color: var(--text-subtle); text-align: center; }
