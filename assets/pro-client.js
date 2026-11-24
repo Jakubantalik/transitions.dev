@@ -787,7 +787,8 @@
     var body = { email: (email || "").trim() };
     if (deviceCode) body.device_code = deviceCode;
     if (inviteToken) body.invite_token = inviteToken;
-    if (signup) body.signup = true;
+    // `promo`: signed up from a box that says we send product email.
+    if (signup) { body.signup = true; body.promo = true; }
     // The sign-in box says "By continuing, you agree to our Terms".
     body.terms = TERMS_VERSION;
     return apiJSON("/auth/magic-link", "POST", body);
@@ -972,7 +973,7 @@
         '</div>' +
         '<p class="tp-modal-note" role="status" hidden></p>' +
         '<p class="tp-modal-foot" data-foot></p>' +
-        '<p class="tp-modal-legal" data-legal>By continuing, you agree to our <a href="/terms.html" target="_blank" rel="noopener">Terms</a> ' +
+        '<p class="tp-modal-legal" data-legal><span data-promo-line hidden>We’ll email you about new releases and plans. Unsubscribe anytime. </span>By continuing, you agree to our <a href="/terms.html" target="_blank" rel="noopener">Terms</a> ' +
           'and acknowledge our <a href="/privacy.html" target="_blank" rel="noopener">Privacy notice</a>.</p>' +
       "</div>";
     document.body.appendChild(modalEl);
@@ -1172,6 +1173,7 @@
       onEmailStep = step === "email";
       providers().then(paintProviders);
       legalEl.hidden = step === "done";
+      legalEl.querySelector("[data-promo-line]").hidden = authCtx.mode !== "signup";
       // A provider's confirmation code has no email to change.
       codeFormEl.querySelector("[data-tp-restart]").textContent = authCtx.pending ? "Cancel" : "Use a different email";
       titleEl.textContent = copy.title;
@@ -1378,6 +1380,7 @@
     u.searchParams.set("intent", intent === "link" ? "link" : "signin");
     u.searchParams.set("terms", TERMS_VERSION);
     if (intent !== "link" && authCtx.plan) u.searchParams.set("plan", authCtx.plan);
+    if (intent !== "link" && authCtx.mode === "signup") u.searchParams.set("promo", "1");
     location.href = u.toString();
   }
 
