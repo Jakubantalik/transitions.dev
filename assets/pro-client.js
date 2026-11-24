@@ -783,12 +783,15 @@
   // flow; optional inviteToken makes signing in also accept a team invitation.
   // `signup` lets a new address through: the create-account modal sends it,
   // the sign-in modal does not (so a mistyped checkout email is still caught).
-  function magicLink(email, deviceCode, inviteToken, signup) {
+  // `promo` is the sign-up box's email choice: false = refused.
+  function magicLink(email, deviceCode, inviteToken, signup, promo) {
     var body = { email: (email || "").trim() };
     if (deviceCode) body.device_code = deviceCode;
     if (inviteToken) body.invite_token = inviteToken;
-    // `promo`: signed up from a box that says we send product email.
-    if (signup) { body.signup = true; body.promo = true; }
+    if (signup) {
+      body.signup = true;
+      if (typeof promo === "boolean") body.promo = promo;
+    }
     // The sign-in box says "By continuing, you agree to our Terms".
     body.terms = TERMS_VERSION;
     return apiJSON("/auth/magic-link", "POST", body);
@@ -973,7 +976,10 @@
         '</div>' +
         '<p class="tp-modal-note" role="status" hidden></p>' +
         '<p class="tp-modal-foot" data-foot></p>' +
-        '<p class="tp-modal-legal" data-legal><span data-promo-line hidden>We’ll email you about new releases and plans. Unsubscribe anytime. </span>By continuing, you agree to our <a href="/terms.html" target="_blank" rel="noopener">Terms</a> ' +
+        // Sign-up only: the right to refuse product email, offered as the
+        // address is given (privacy.html). Also sent with GitHub / ChatGPT.
+        '<label class="tp-modal-choice" data-promo hidden><input type="checkbox" /><span>Don’t email me about new releases and plans</span></label>' +
+        '<p class="tp-modal-legal" data-legal>By continuing, you agree to our <a href="/terms.html" target="_blank" rel="noopener">Terms</a> ' +
           'and acknowledge our <a href="/privacy.html" target="_blank" rel="noopener">Privacy notice</a>.</p>' +
       "</div>";
     document.body.appendChild(modalEl);
@@ -1173,7 +1179,7 @@
       onEmailStep = step === "email";
       providers().then(paintProviders);
       legalEl.hidden = step === "done";
-      legalEl.querySelector("[data-promo-line]").hidden = authCtx.mode !== "signup";
+      modalEl.querySelector("[data-promo]").hidden = !(authCtx.mode === "signup" && step === "email");
       // A provider's confirmation code has no email to change.
       codeFormEl.querySelector("[data-tp-restart]").textContent = authCtx.pending ? "Cancel" : "Use a different email";
       titleEl.textContent = copy.title;
@@ -1233,7 +1239,7 @@
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setError(true); input.focus(); return; }
       setError(false);
       btn.disabled = true; btn.textContent = "Sending code…";
-      magicLink(email, null, null, authCtx.mode === "signup")
+      magicLink(email, null, null, authCtx.mode === "signup", promoChoice())
         .then(function (data) {
           // apiJSON resolves on any status, so a refusal arrives here, not in
           // .catch.
@@ -1372,6 +1378,12 @@
     return providersP;
   }
 
+  // The sign-up box's email choice: true unless "Don’t email me" is ticked.
+  function promoChoice() {
+    var box = modalEl && modalEl.querySelector("[data-promo] input");
+    return !(box && box.checked);
+  }
+
   // intent "signin" (also creates a free account for a new address) or
   // "link" (signed in: connect it to this account).
   function startOAuth(provider, intent, returnTo) {
@@ -1380,7 +1392,7 @@
     u.searchParams.set("intent", intent === "link" ? "link" : "signin");
     u.searchParams.set("terms", TERMS_VERSION);
     if (intent !== "link" && authCtx.plan) u.searchParams.set("plan", authCtx.plan);
-    if (intent !== "link" && authCtx.mode === "signup") u.searchParams.set("promo", "1");
+    if (intent !== "link" && authCtx.mode === "signup") u.searchParams.set("promo", promoChoice() ? "1" : "0");
     location.href = u.toString();
   }
 
@@ -1585,6 +1597,12 @@
       ".tp-modal-or{display:flex;align-items:center;gap:12px;margin:4px 0 -12px;font-size:12px;line-height:16px;color:#8a8a8a}" +
       ".tp-modal-or::before,.tp-modal-or::after{content:\"\";flex:1;height:1px;background:rgba(0,0,0,.08)}" +
       'html[data-theme="dark"] .tp-modal-or::before,html[data-theme="dark"] .tp-modal-or::after{background:rgba(255,255,255,.1)}' +
+      // Sign-up's email choice, sitting with the legal line under it.
+      ".tp-modal-choice{display:flex;align-items:center;gap:8px;width:fit-content;margin:-12px 0 0;font-size:12px;line-height:17px;color:#8a8a8a;cursor:pointer}" +
+      ".tp-modal-choice[hidden]{display:none}" +
+      ".tp-modal-choice input{flex:none;width:14px;height:14px;margin:0;accent-color:#17181c;cursor:pointer}" +
+      'html[data-theme="dark"] .tp-modal-choice{color:#8a8a8a}' +
+      'html[data-theme="dark"] .tp-modal-choice input{accent-color:#f2f2f2;color-scheme:dark}' +
       ".tp-modal-legal{margin:-12px 0 0;font-size:12px;line-height:17px;color:#8a8a8a}" +
       ".tp-modal-legal a{color:inherit;text-decoration:underline;text-underline-offset:2px}" +
       ".tp-modal-legal a:hover{color:#17181c}" +
