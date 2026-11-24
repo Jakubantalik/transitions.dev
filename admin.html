@@ -247,6 +247,20 @@
     .cx-used.none { color: var(--err-fg); }
     .cx-reason { font-size: 12px; line-height: 16px; color: var(--c-text); max-width: 280px; }
 
+    /* Emails view. */
+    @media (max-width: 1100px) { .crm-head { flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 12px; } .crm-head .crm-title { flex: 1 0 100%; } }
+    .em-note { padding: 12px 16px; border-bottom: 1px solid var(--c-line); font-size: 12px; line-height: 16px; color: var(--c-text-mut2); text-wrap: pretty; }
+    .em-table td { height: 40px; }
+    .em-table tr.is-on td { background: var(--row-sel); }
+    .em-table td.off, .em-table td.zero { color: var(--c-text-faint); }
+    .em-table .pct { margin-left: 6px; font-size: 11px; color: var(--c-text-faint); }
+    .em-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 16px 16px 8px; font-size: 13px; line-height: 16px; font-weight: 500; color: var(--c-text); }
+    .em-head span { font-weight: 400; font-size: 11px; color: var(--c-text-faint); }
+    .em-list td { height: 48px; }
+    .em-more { padding: 12px; display: flex; justify-content: center; }
+    .err-dot.ok { background: #26953b; }
+    .err-dot.hit { background: #3097fd; }
+
     /* Errors view. */
     .err-sum { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 12px; border-bottom: 1px solid var(--c-line); }
     .err-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: none; border-radius: 36px; cursor: pointer;
@@ -493,6 +507,7 @@
           <button type="button" role="tab" class="seg-btn is-active" data-view="people" aria-selected="true">People</button>
           <button type="button" role="tab" class="seg-btn" data-view="daily" aria-selected="false">Daily</button>
           <button type="button" role="tab" class="seg-btn" data-view="churn" aria-selected="false">Cancellations</button>
+          <button type="button" role="tab" class="seg-btn" data-view="emails" aria-selected="false">Emails</button>
           <button type="button" role="tab" class="seg-btn" data-view="builder" aria-selected="false" id="builder-tab">Builder</button>
           <button type="button" role="tab" class="seg-btn" data-view="errors" aria-selected="false" id="errors-tab">Errors</button>
         </div>
@@ -524,6 +539,7 @@
       <div id="errors-view" hidden></div>
       <div id="builder-view" hidden></div>
       <div id="churn-view" hidden></div>
+      <div id="emails-view" hidden></div>
 
       <div class="toolbar" id="people-toolbar">
         <label class="field">
@@ -755,6 +771,7 @@
       var btn = $("refresh-btn");
       btn.classList.add("is-spinning");
       clearTimeout(pollT);
+      if (state.view === "emails") loadEmails();
       fetchCrm(token, true).then(function (data) { state.data = data; render(); })
         .catch(function (e) { if (e.message === "forbidden") { store(tokenKey(), null); showGate("The saved token no longer works."); } })
         .then(function () { btn.classList.remove("is-spinning"); });
@@ -1416,6 +1433,156 @@
       el.innerHTML = html;
     }
 
+    /* ─── Emails ──────────────────────────────────────────── */
+    // Read on its own (GET /admin/emails), not from the CRM's saved copy, so a
+    // send shows up at once. Delivered and after come from Resend's webhook.
+    var EM_KIND = { code: "Sign-in code", invite: "Team invite", license: "Agent license", welcome: "Welcome", day2: "Setup help, day 2", day9: "What Pro adds, day 9",
+      purchase: "Purchase confirmation", notice: "Change to our emails", offer: "Pro offer", downloads: "Model downloads", community: "Community notice" };
+    // Emails with an unsubscribe link in them; the rest are about the account.
+    var EM_PRODUCT = { welcome: 1, day2: 1, day9: 1, purchase: 1, license: 1, notice: 1, offer: 1, downloads: 1 };
+    var EM_RANGE = [[7, "7 days"], [30, "30 days"], [90, "90 days"], [365, "12 months"]];
+    state.em = { days: 30, kind: "", q: "", data: null, all: false, seq: 0 };
+    function emLabel(k) { return EM_KIND[k] || String(k).charAt(0).toUpperCase() + String(k).slice(1); }
+    function emFetch(params) {
+      var q = Object.keys(params).filter(function (k) { return params[k]; }).map(function (k) { return k + "=" + encodeURIComponent(params[k]); }).join("&");
+      return fetch(PRODUCTS[product].api + "/admin/emails?tz=" + new Date().getTimezoneOffset() + "&" + q, { headers: { Authorization: "Bearer " + loadToken() }, cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); });
+    }
+    function openEmails() { if (!state.em.data) loadEmails(); }
+    function loadEmails() {
+      var em = state.em, seq = ++em.seq, forProduct = product;
+      if (!em.data) $("emails-view").innerHTML = '<div class="empty">Loading emails…</div>';
+      emFetch({ days: em.days, kind: em.kind, q: em.q }).then(function (d) {
+        if (seq !== em.seq || forProduct !== product) return;
+        em.data = d;
+        renderEmails();
+      }).catch(function (e) {
+        if (seq !== em.seq || forProduct !== product) return;
+        em.data = null;
+        $("emails-view").innerHTML = '<div class="empty">' + (e.message === "404" || e.message === "500"
+          ? "Emails need the latest API for " + esc(PRODUCTS[product].label) + ". Deploy it, then refresh." : "Could not load the emails. Try Refresh.") + "</div>";
+      });
+    }
+    // The list alone: another kind, a search, or the next page.
+    function loadEmailList(more) {
+      var em = state.em, seq = ++em.seq, forProduct = product;
+      emFetch({ days: em.days, kind: em.kind, q: em.q, list: 1, before: more ? em.data.next : "" }).then(function (d) {
+        if (seq !== em.seq || forProduct !== product || !em.data) return;
+        em.data.emails = more ? em.data.emails.concat(d.emails) : d.emails;
+        em.data.next = d.next;
+        renderEmailList();
+      }).catch(function () {
+        if (seq !== em.seq || forProduct !== product) return;
+        var b = $("em-more"); if (b) { b.disabled = false; b.textContent = "Could not load, try again"; }
+      });
+    }
+    function emSum(rows) {
+      var t = { sent: 0, delivered: 0, opened: 0, clicked: 0, unsubscribed: 0, bounced: 0, complained: 0, tracked: 0 };
+      rows.forEach(function (r) { for (var k in t) t[k] += r[k] || 0; });
+      return t;
+    }
+    function emPct(n, of) { if (!of) return ""; var p = n / of * 100; return (p > 0 && p < 1 ? p.toFixed(1) : Math.round(p)) + "%"; }
+    // A count with its share, or why there is none. Delivered and bounced are out of
+    // the emails Resend reported on; opened, clicked and unsubscribed are out of delivered.
+    function emCell(r, key) {
+      var d = state.em.data, off = (key === "opened" && !d.opens) || (key === "clicked" && !d.clicks);
+      if (off && !r[key]) return '<td class="num off" title="Tracking is off in Resend">Off</td>';
+      if ((key === "delivered" || key === "bounced" || key === "complained") && !r[key] && !r.tracked) return '<td class="num off" title="Resend has not reported yet">·</td>';
+      if (key === "unsubscribed" && r.kind && !EM_PRODUCT[r.kind]) return '<td class="num off" title="No unsubscribe link in this email">·</td>';
+      var of = key === "opened" || key === "clicked" ? r.delivered : key === "unsubscribed" ? r.delivered || r.sent : r.tracked;
+      return '<td class="num tnum' + (r[key] ? "" : " zero") + '">' + num(r[key]) + (r[key] && of ? '<span class="pct">' + emPct(r[key], of) + "</span>" : "") + "</td>";
+    }
+    var EM_COLS = [["delivered", "Delivered"], ["opened", "Opened"], ["clicked", "Clicked"], ["unsubscribed", "Unsubscribed"], ["bounced", "Bounced"], ["complained", "Spam reports"]];
+    function emHeads() { return EM_COLS.map(function (c) { return '<th class="num">' + c[1] + "</th>"; }).join(""); }
+    function renderEmails() {
+      var em = state.em, d = em.data, el = $("emails-view");
+      var kinds = d.kinds, t = emSum(kinds), product_ = emSum(kinds.filter(function (k) { return EM_PRODUCT[k.kind]; }));
+      var codes = emSum(kinds.filter(function (k) { return k.kind === "code"; })).sent;
+      var pe = d.product_email || {}, nl = d.newsletter || {};
+      var off = "not tracked";
+      var cells = [
+        { label: "Sent", value: num(t.sent), sub: num(codes) + " sign-in codes, " + num(t.sent - codes) + " others" },
+        { label: "Delivered", value: d.events_since ? emPct(t.delivered, t.tracked) : "·", sub: d.events_since ? num(t.delivered) + " of " + num(t.tracked) : "waiting for Resend" },
+        { label: "Opened", value: d.opens || t.opened ? num(t.opened) : "·", sub: d.opens || t.opened ? emPct(t.opened, t.delivered) + " of delivered, estimated" : off },
+        { label: "Clicked", value: d.clicks || t.clicked ? num(t.clicked) : "·", sub: d.clicks || t.clicked ? emPct(t.clicked, t.delivered) + " of delivered" : off },
+        { label: "Unsubscribed", value: num(t.unsubscribed), sub: product_.sent ? emPct(t.unsubscribed, product_.sent) + " of " + num(product_.sent) + " with the link" : "no emails with the link" },
+        { label: "Bounced, spam", value: d.events_since ? num(t.bounced) + ", " + num(t.complained) : "·", sub: d.events_since ? "spam reports under 0.1% keep inboxes open" : "waiting for Resend" }
+      ];
+      var notes = [];
+      if (!d.webhook) notes.push("Delivered, bounced and spam reports start once the Resend webhook is set up.");
+      else if (!d.events_since) notes.push("The Resend webhook is set up. Delivered and bounced fill in with the next email.");
+      if (!d.opens || !d.clicks) notes.push((!d.opens && !d.clicks ? "Opens and clicks are" : !d.opens ? "Opens are" : "Clicks are") + " off in Resend, so they are not counted.");
+      notes.push("Product email: " + num(pe.allowed) + " accounts allow it, " + num(pe.refused) + " refused or unsubscribed." +
+        (nl.confirmed || nl.unsubscribed ? " Newsletter: " + num(nl.confirmed) + " subscribed, " + num(nl.unsubscribed) + " unsubscribed." : ""));
+      var html = '<div class="stats">' + cells.map(function (c) {
+          return '<div class="stat"><span class="stat-label">' + esc(c.label) + '</span><span class="stat-value">' + esc(c.value) + '</span><span class="stat-sub">' + esc(c.sub) + "</span></div>";
+        }).join("") + "</div>" +
+        '<div class="cx-bar">' + EM_RANGE.map(function (r) {
+          return '<button type="button" class="err-chip' + (em.days === r[0] ? " is-on" : "") + '" data-days="' + r[0] + '">' + r[1] + "</button>";
+        }).join("") + "</div>" +
+        '<div class="em-note">' + esc(notes.join(" ")) + "</div>";
+      if (!kinds.length) { el.innerHTML = html + '<div class="empty">No emails in this period.</div>'; return; }
+
+      html += '<div class="em-head">By email <span>click one to filter everything below</span></div>' +
+        '<div class="table-wrap"><table class="em-table"><thead><tr><th>Email</th><th class="num">Sent</th>' + emHeads() + "<th>Last sent</th></tr></thead><tbody>" +
+        kinds.map(function (k) {
+          return '<tr data-kind="' + esc(k.kind) + '"' + (em.kind === k.kind ? ' class="is-on"' : "") + "><td>" + esc(emLabel(k.kind)) + '</td><td class="num tnum">' + num(k.sent) + "</td>" +
+            EM_COLS.map(function (c) { return emCell(k, c[0]); }).join("") + '<td class="muted">' + esc(ago(k.last)) + "</td></tr>";
+        }).join("") +
+        (kinds.length > 1 ? '<tr data-kind=""><td>All emails</td><td class="num tnum">' + num(t.sent) + "</td>" + EM_COLS.map(function (c) { return emCell(t, c[0]); }).join("") + "<td></td></tr>" : "") +
+        "</tbody></table></div>" +
+        '<div id="em-days"></div>' +
+        '<div class="em-head">Sent emails <span id="em-filter"></span></div>' +
+        '<div class="toolbar"><label class="field"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>' +
+          '<input type="search" id="em-q" placeholder="Search email address" aria-label="Search sent emails" value="' + esc(em.q) + '" /></label></div>' +
+        '<div id="em-list"></div>';
+      el.innerHTML = html;
+      renderEmailDays();
+      renderEmailList();
+    }
+    function renderEmailDays() {
+      var em = state.em, by = {}, order = [];
+      em.data.by_day.forEach(function (r) {
+        if (em.kind && r.kind !== em.kind) return;
+        if (!by[r.day]) { by[r.day] = []; order.push(r.day); }
+        // A day counts as reported on once the webhook was running.
+        r.tracked = em.data.events_since && r.day >= em.data.events_since.slice(0, 10) ? r.sent : 0;
+        by[r.day].push(r);
+      });
+      var shown = em.all ? order : order.slice(0, 10);
+      $("em-days").innerHTML = '<div class="em-head">By day <span>' + esc(em.kind ? emLabel(em.kind) : "all emails") + ", results are counted on the day the email was sent</span></div>" +
+        '<div class="table-wrap"><table class="em-table day-table"><thead><tr><th>Day</th><th class="num">Sent</th>' + emHeads() + "</tr></thead><tbody>" +
+        shown.map(function (day_) {
+          var t = emSum(by[day_]); t.kind = em.kind;
+          return "<tr><td>" + esc(fmtDate(day_, true)) + '</td><td class="num tnum">' + num(t.sent) + "</td>" + EM_COLS.map(function (c) { return emCell(t, c[0]); }).join("") + "</tr>";
+        }).join("") + "</tbody></table></div>" +
+        (order.length > 10 ? '<div class="em-more"><button type="button" class="btn-sec" id="em-all">' + (em.all ? "Show fewer days" : "Show all " + order.length + " days") + "</button></div>" : "");
+    }
+    // The last thing that happened to one email.
+    function emStatus(e) {
+      if (e.complained) return ["Marked as spam", " fail", e.complained];
+      if (e.unsubscribed) return ["Unsubscribed", "", e.unsubscribed];
+      if (e.bounced) return [e.bounce_type === "Transient" ? "Bounced, temporary" : "Bounced", " fail", e.bounced];
+      if (e.clicked) return ["Clicked", " hit", e.clicked];
+      if (e.opened) return ["Opened", " hit", e.opened];
+      if (e.delivered) return ["Delivered", " ok", e.delivered];
+      return ["Sent", " info", null];
+    }
+    function renderEmailList() {
+      var em = state.em, d = em.data, names = {};
+      state.data.people.forEach(function (p) { if (p.name) names[p.email] = p.name; });
+      $("em-filter").textContent = (em.kind ? emLabel(em.kind) + ", " : "") + "newest first";
+      $("em-list").innerHTML = !d.emails.length ? '<div class="empty">No emails match.</div>' :
+        '<div class="table-wrap"><table class="em-list"><thead><tr><th>Sent</th><th>Person</th><th>Email</th><th>Status</th></tr></thead><tbody>' +
+        d.emails.map(function (e) {
+          var s = emStatus(e);
+          return '<tr data-email="' + esc(e.email || "") + '"><td class="when" title="' + esc(new Date(e.sent).toLocaleString()) + '">' + esc(ago(e.sent)) + "</td><td>" +
+            (e.email ? '<div class="who-text"><span class="who-name' + (names[e.email] ? "" : " is-empty") + '">' + esc(names[e.email] || "No name") + '</span><span class="who-email">' + esc(e.email) + "</span></div>" : '<span class="muted">Not linked</span>') +
+            "</td><td>" + esc(emLabel(e.kind)) + '</td><td><div class="err-what"><span class="err-dot' + s[1] + '"></span>' + esc(s[0]) + "</div>" + (s[2] ? '<div class="err-where">' + esc(ago(s[2])) + "</div>" : "") + "</td></tr>";
+        }).join("") + "</tbody></table></div>" +
+        (d.next ? '<div class="em-more"><button type="button" class="btn-sec" id="em-more">Load more</button></div>' : "");
+    }
+
     /* ─── Builder usage (Transitions) ──────────────────────── */
     // Answer kinds as the API records them: base kind, "+repair" when the
     // agent had to fix its own output afterwards.
@@ -1474,9 +1641,10 @@
         b.classList.toggle("is-active", on);
         b.setAttribute("aria-selected", on ? "true" : "false");
       });
-      var daily = v === "daily", errs = v === "errors", bview = v === "builder", cview = v === "churn", other = daily || errs || bview || cview;
+      var daily = v === "daily", errs = v === "errors", bview = v === "builder", cview = v === "churn", eview = v === "emails", other = daily || errs || bview || cview || eview;
       $("builder-view").hidden = !bview;
       $("churn-view").hidden = !cview;
+      $("emails-view").hidden = !eview;
       $("daily-view").hidden = !daily;
       $("errors-view").hidden = !errs;
       $("agent-band").hidden = other;
@@ -1490,6 +1658,7 @@
       if (errs && state.data) renderErrors();
       if (bview && state.data) renderBuilderView();
       if (cview && state.data) renderChurn();
+      if (eview && state.data) openEmails();
     }
     function renderDayFilter() {
       var el = $("day-filter");
@@ -1498,7 +1667,7 @@
         '<button type="button" id="day-clear" aria-label="Clear day filter"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></span>';
       $("day-clear").addEventListener("click", function () { state.day = null; renderDayFilter(); renderRows(); });
     }
-    function render() { renderStats(); renderAgent(); renderBuilder(); renderStudio(); renderFree(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); if (state.view === "errors") renderErrors(); if (state.view === "builder") renderBuilderView(); if (state.view === "churn") renderChurn(); }
+    function render() { renderStats(); renderAgent(); renderBuilder(); renderStudio(); renderFree(); renderFilters(); renderDayFilter(); renderRows(); renderInspector(); if (state.view === "daily") renderDaily(); if (state.view === "errors") renderErrors(); if (state.view === "builder") renderBuilderView(); if (state.view === "churn") renderChurn(); if (state.view === "emails") openEmails(); }
     function select(email) {
       state.selected = state.selected === email ? null : email;
       document.querySelectorAll("#rows tr").forEach(function (tr) { tr.classList.toggle("selected", tr.getAttribute("data-email") === state.selected); });
@@ -1577,6 +1746,33 @@
       }
       var tr = e.target.closest("tr[data-email]");
       var email = tr && tr.getAttribute("data-email");
+      if (!email) return;
+      state.filter = "all"; state.day = null; state.q = email; $("search").value = email;
+      setView("people");
+      renderFilters(); renderDayFilter(); renderRows();
+      if (state.selected !== email) select(email);
+    });
+    var emT = null;
+    $("emails-view").addEventListener("input", function (e) {
+      if (e.target.id !== "em-q") return;
+      state.em.q = e.target.value.trim();
+      clearTimeout(emT);
+      emT = setTimeout(function () { if (state.em.data) loadEmailList(); }, 250);
+    });
+    $("emails-view").addEventListener("click", function (e) {
+      var em = state.em, chip = e.target.closest("[data-days]"), kind = e.target.closest("tr[data-kind]");
+      if (chip) { em.days = parseInt(chip.getAttribute("data-days"), 10); em.all = false; loadEmails(); return; }
+      if (kind) {
+        var k = kind.getAttribute("data-kind");
+        em.kind = em.kind === k ? "" : k;
+        document.querySelectorAll("#emails-view tr[data-kind]").forEach(function (tr) { tr.classList.toggle("is-on", !!em.kind && tr.getAttribute("data-kind") === em.kind); });
+        renderEmailDays(); loadEmailList();
+        return;
+      }
+      if (e.target.closest("#em-all")) { em.all = !em.all; renderEmailDays(); return; }
+      var more = e.target.closest("#em-more");
+      if (more) { more.disabled = true; more.textContent = "Loading…"; loadEmailList(true); return; }
+      var tr = e.target.closest("tr[data-email]"), email = tr && tr.getAttribute("data-email");
       if (!email) return;
       state.filter = "all"; state.day = null; state.q = email; $("search").value = email;
       setView("people");
@@ -1819,6 +2015,7 @@
       state.data = null; state.selected = null; state.filter = "all"; state.day = null;
       if ((state.view === "errors" || state.view === "builder") && product === "libraries") setView("people");
       ["stats", "agent-band", "builder-band", "studio-band", "free-band"].forEach(function (id) { $(id).innerHTML = ""; });
+      state.em.data = null; state.em.kind = ""; state.em.q = ""; $("emails-view").innerHTML = "";
       $("inspector").hidden = true;
       $("subtitle").textContent = "Loading…";
       boot();
