@@ -38,16 +38,15 @@ Thirty-six portable CSS transitions, each namespaced under `t-*` selectors with 
 | **Learn more hover** | Slide the chevron and spread its arms into an arrow on hover. | [24-learn-more-hover.md](./24-learn-more-hover.md) |
 | **Checkbox check** | Fill the box, then stroke-draw the checkmark. | [25-checkbox-check.md](./25-checkbox-check.md) |
 | **Spinning counter** | Roll digits through the numbers on a 3D drum, landing with a bounce. | [26-spinning-counter.md](./26-spinning-counter.md) |
+| **Number subtle change** | Cross-fade changed digits in place, rising or falling with the value. | [36-number-subtle-change.md](./36-number-subtle-change.md) |
 | **Toggle** | Travel the switch thumb with a double-bounce overshoot. | [27-toggle.md](./27-toggle.md) |
 | **Thinking states** | Shimmer a status line while it holds, then swap it to the next state. | [28-thinking-states.md](./28-thinking-states.md) |
 | **Reasoning stream** | Step an agent-reasoning transcript up two lines at a time on a loop. | [29-reasoning-stream.md](./29-reasoning-stream.md) |
 | **Streaming text** | Resolve streamed words one by one through a soft cross-blur. | [30-streaming-text.md](./30-streaming-text.md) |
 | **Matrix dot loader** | Pulse a 4×4 dot matrix in scan / twinkle / orbit / pulse patterns. | [31-matrix-loader.md](./31-matrix-loader.md) |
 | **Banner stacking** | Stack banners like toasts — new ones rise in, older ones push back. | [32-banner-stacking.md](./32-banner-stacking.md) |
-| **Text morph** | Keep the letters two labels share and cross-blur only the part that changes, easing its width. | [33-text-morph.md](./33-text-morph.md) |
-| **Text swap soft** | Cross-blur a value into the new one in place, both at once, with no movement. | [34-text-swap-soft.md](./34-text-swap-soft.md) |
-| **Donut chart** | Ring segments with even gaps and rounded corners that morph to new values. | [35-donut-chart.md](./35-donut-chart.md) |
-| **Number subtle change** | Cross-fade changed digits in place, rising or falling with the value. | [36-number-subtle-change.md](./36-number-subtle-change.md) |
+| **To-do reorder** | Drag a row to reorder a list, with the rows it passes opening a slot. | [37-to-do-reorder.md](./37-to-do-reorder.md) |
+| **Magnetic slider** | Snap a slider to the nearest stop on release, overshooting slightly. | [38-magnetic-slider.md](./38-magnetic-slider.md) |
 
 ## Decision rules
 
@@ -58,10 +57,7 @@ When the user asks for a transition, match against the visible UI element first,
 - **Surface that slides into a region of the page** → panel reveal.
 - **Two screens, list ↔ detail or step 1 ↔ step 2** → page side-by-side.
 - **Element changes width or height** → card resize.
-- **A label changes in place and the old and new text share letters at the start or end** (Copy code to Copied, Follow to Following) → text morph.
-- **Element's text content changes in place and the texts share nothing** (Processing to Done) → text states swap.
-- **Values update in place because the data behind a view changed** (a chart's period, a currency, a unit) → text swap soft for every value that changed.
-- **A donut or ring chart** → donut chart (even gaps, the smallest corner radius, morphs when its data changes).
+- **Element's text content changes in place** → text states swap.
 - **Two icons in the same slot** → icon swap.
 - **A number updates and the change should be noticed** → number pop-in.
 - **A number updates often and should stay quiet** (live stats, dashboards, tickers) → number subtle change.
@@ -248,14 +244,13 @@ Keep the diff small: only edit the files needed to introduce the transition. Don
 - [24-learn-more-hover.md](./24-learn-more-hover.md) — Learn more hover
 - [25-checkbox-check.md](./25-checkbox-check.md) — Checkbox check
 - [26-spinning-counter.md](./26-spinning-counter.md) — Spinning counter
+- [36-number-subtle-change.md](./36-number-subtle-change.md) — Number subtle change
 - [27-toggle.md](./27-toggle.md) — Toggle
 - [28-thinking-states.md](./28-thinking-states.md) — Thinking states
 - [29-reasoning-stream.md](./29-reasoning-stream.md) — Reasoning stream
 - [30-streaming-text.md](./30-streaming-text.md) — Streaming text
 - [31-matrix-loader.md](./31-matrix-loader.md) — Matrix dot loader
 - [32-banner-stacking.md](./32-banner-stacking.md) — Banner stacking
-- [33-text-morph.md](./33-text-morph.md): Text morph
-- [34-text-swap-soft.md](./34-text-swap-soft.md): Text swap soft
-- [35-donut-chart.md](./35-donut-chart.md): Donut chart
-- [36-number-subtle-change.md](./36-number-subtle-change.md): Number subtle change
+- [37-to-do-reorder.md](./37-to-do-reorder.md) — To-do reorder
+- [38-magnetic-slider.md](./38-magnetic-slider.md) — Magnetic slider
 - [_root.css](./_root.css) — the universal install block on its own, ready to import directly.

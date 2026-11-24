@@ -32,16 +32,15 @@ Motion tokens and the 32 library transitions from transitions.dev. Reuse these t
 | **Learn more hover** | Slide the chevron and spread its arms into an arrow on hover. |
 | **Checkbox check** | Fill the box, then stroke-draw the checkmark. |
 | **Spinning counter** | Roll digits through the numbers on a 3D drum, landing with a bounce. |
+| **Number subtle change** | Cross-fade changed digits in place, rising or falling with the value. |
 | **Toggle** | Travel the switch thumb with a double-bounce overshoot. |
 | **Thinking states** | Shimmer a status line while it holds, then swap it to the next state. |
 | **Reasoning stream** | Step an agent-reasoning transcript up two lines at a time on a loop. |
 | **Streaming text** | Resolve streamed words one by one through a soft cross-blur. |
 | **Matrix dot loader** | Pulse a 4×4 dot matrix in scan / twinkle / orbit / pulse patterns. |
 | **Banner stacking** | Stack banners like toasts, new ones rise in, older ones push back. |
-| **Text morph** | Keep the letters two labels share and cross-blur only the part that changes, easing its width. |
-| **Text swap soft** | Cross-blur a value into the new one in place, both at once, with no movement. |
-| **Donut chart** | Ring segments with even gaps and rounded corners that morph to new values. |
-| **Number subtle change** | Cross-fade changed digits in place, rising or falling with the value. |
+| **To-do reorder** | Drag a row to reorder a list, with the rows it passes opening a slot. |
+| **Magnetic slider** | Snap a slider to the nearest stop on release, overshooting slightly. |
 
 ## Decision rules
 
@@ -52,10 +51,7 @@ When the user asks for a transition, match against the visible UI element first,
 - **Surface that slides into a region of the page** → panel reveal.
 - **Two screens, list ↔ detail or step 1 ↔ step 2** → page side-by-side.
 - **Element changes width or height** → card resize.
-- **A label changes in place and the old and new text share letters at the start or end** (Copy code to Copied, Follow to Following) → text morph.
-- **Element's text content changes in place and the texts share nothing** (Processing to Done) → text states swap.
-- **Values update in place because the data behind a view changed** (a chart's period, a currency, a unit) → text swap soft for every value that changed.
-- **A donut or ring chart** → donut chart (even gaps, the smallest corner radius, morphs when its data changes).
+- **Element's text content changes in place** → text states swap.
 - **Two icons in the same slot** → icon swap.
 - **A number updates and the change should be noticed** → number pop-in.
 - **A number updates often and should stay quiet** (live stats, dashboards, tickers) → number subtle change.

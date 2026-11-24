@@ -378,6 +378,8 @@ const TRIGGERS = {
   "checkbox-check": ["checkbox", "check box", "agree", "todo", "task"],
   "spinning-counter": ["spin", "spinning", "odometer", "slot", "reel", "counter", "jackpot", "roll", "rolling", "points", "reward", "milestone"],
   "number-subtle-change": ["number", "count", "counter", "stat", "stats", "metric", "kpi", "dashboard", "ticker", "live", "subtle", "value"],
+  "to-do-reorder": ["list", "reorder", "sortable", "drag", "drag and drop", "dnd", "todo", "to-do", "task", "rows", "move", "rank", "priority", "handle", "grip"],
+  "magnetic-slider": ["slider", "range", "stops", "steps", "stepped", "snap", "level", "volume", "quality", "speed", "zoom", "thumb", "track"],
   "toggle": ["toggle", "switch", "on off", "dark mode"],
   "thinking-states": ["thinking", "ai", "agent", "steps", "status line"],
   "reasoning-stream": ["reasoning", "transcript", "log", "stream"],

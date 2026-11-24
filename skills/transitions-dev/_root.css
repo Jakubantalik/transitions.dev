@@ -301,4 +301,24 @@
   --stack-depth1-blur: 1px;
   --stack-depth2-blur: 2px;
   --stack-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* To-do reorder */
+  --reorder-shift: 220ms;
+  --reorder-lift-dur: 180ms;
+  --reorder-drop: 260ms;
+  --reorder-lift: 1.02;
+  --reorder-tilt: 0.6deg;
+  --reorder-gap: 6px;
+  --reorder-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --reorder-drop-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Magnetic slider */
+  --mslider-snap: 380ms;
+  --mslider-grab: 180ms;
+  --mslider-grab-scale: 1.06;
+  --mslider-h: 32px;
+  --mslider-thumb: 32px;
+  --mslider-inset: 0px;
+  --mslider-track: #e8e8ea;
+  --mslider-fill: #17181c;
+  --mslider-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --mslider-snap-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
 }

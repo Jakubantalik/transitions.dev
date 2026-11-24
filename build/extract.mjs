@@ -364,6 +364,10 @@ The natural way to turn the "v" into a "^" is to morph the chevron's SVG \`d\` b
     when: "Tiny inline loaders built from a 4×4 matrix of 2px dots. All four variants share one colour-pulse keyframe; a per-dot delay table gives each its motion character — a column scan, a randomized-looking twinkle, a perimeter orbit, a centre-out pulse. Rounded variants drop the four corner dots.\n\nUse where a spinner would be too loud: alongside a status line, inside a compact button, in a table cell. The loader whispers." },
   { key: "p34", file: "32-banner-stacking", summary: "Stack banners like toasts — new ones rise in, older ones push back",
     when: "Sonner-style banner / toast stacking. Each new banner rises in with the **toast** motion (rise + cross-blur + slight scale) while older banners push back — smaller, higher, dimmer — instead of leaving; the fourth arrival sends the oldest out. Hovering the stack fans it into a readable list.\n\nUse over a single **toast** when notifications can overlap: the stack keeps the newest legible while acknowledging the queue behind it." },
+  { key: "p37", file: "37-to-do-reorder", summary: "Drag a row to reorder a list, with the rows it passes opening a slot",
+    when: "Sortable lists: to-do items, playlist tracks, board columns, settings rows. The dragged row lifts and follows the pointer exactly while the rows it passes slide one slot aside, so the gap it will land in is always visible.\n\nThe DOM order changes only when the drop finishes, and the inline transforms are cleared in the same frame, so the reorder itself is never seen. Rows must be positioned or the dragged row passes behind its later siblings." },
+  { key: "p38", file: "38-magnetic-slider", summary: "Snap a slider to the nearest stop on release, overshooting slightly",
+    when: "Sliders with named stops rather than a continuous range: quality levels, text size, playback speed, zoom steps. While held the thumb tracks the pointer exactly; on release it flies to the nearest stop and overshoots it by a hair, which is what makes the stops feel magnetic rather than merely marked.\n\nThumb and fill are written from one position value and carry the same spring, so they arrive as one object." },
 ];
 
 // ── Default-value rewrites ───────────────────────────────────────
@@ -605,6 +609,8 @@ for (const [key, name] of [
   ["p9", "p9-swap.js"],
   ["p26", "p26-spin.js"],
   ["p35", "p35-subtle.js"],
+  ["p37", "p37-reorder.js"],
+  ["p38", "p38-mslider.js"],
 ]) {
   const p = path.join(snippetDir, name);
   if (fs.existsSync(p)) {

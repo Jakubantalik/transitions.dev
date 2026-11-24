@@ -600,6 +600,56 @@
       --p34-depth-scale:     0.06;
       --p34-depth-fade:      0.4;
       --p34-ease:            cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* P36 - Icon morph. A ghost icon button whose icon morphs in
+         place on click: play/pause, menu/close, mic on/off, chevron/
+         arrow. Every state is reached with geometry the browser can
+         interpolate (bars sliding and rotating, four-point clip paths
+         unfolding, strokes drawing themselves), because CSS `d:` path
+         interpolation is Chromium-only and snaps everywhere else. */
+      --p36-dur:             320ms;
+      --p36-ease:            cubic-bezier(0.22, 1, 0.36, 1);
+      /* Menu only: closing slides the bars apart before they unrotate,
+         opening does both at once, so the X assembles as the lines meet. */
+      --p36-stagger:         50ms;
+      --p36-size:            32px;
+      --p36-icon:            16px;
+      --p36-stroke:          1.5px;
+      --p36-press:           0.94;
+      --p36-hover-dur:       140ms;
+      --p36-ink:             #6d6d6d;
+      --p36-ink-strong:      #0d0d0d;
+      --p36-hover-bg:        rgba(0, 0, 0, 0.05);
+
+      /* P37 - To-do reorder. Dragging a row lifts it out of the list
+         and the rows it passes slide aside to open the slot. Nothing
+         animates on drop: the row is already sitting where the DOM
+         puts it, so the reorder is invisible. */
+      --p37-lift:            1.02;
+      --p37-lift-dur:        180ms;
+      --p37-shift-dur:       220ms;
+      --p37-drop-dur:        260ms;
+      --p37-tilt:            0.6deg;
+      --p37-ease:            cubic-bezier(0.22, 1, 0.36, 1);
+      --p37-drop-ease:       cubic-bezier(0.22, 1, 0.36, 1);
+      --p37-row-h:           44px;
+      --p37-gap:             6px;
+
+      /* P38 - Magnetic slider. The thumb tracks the pointer exactly
+         while held, then flies to the nearest stop and overshoots it
+         by a hair, so the stop feels magnetic rather than snapped. */
+      --p38-snap-dur:        380ms;
+      --p38-snap-ease:       cubic-bezier(0.34, 1.45, 0.64, 1);
+      --p38-grab-dur:        180ms;
+      --p38-grab-scale:      1.06;
+      --p38-h:               32px;
+      --p38-thumb:           32px;
+      --p38-inset:           0px;
+      --p38-track-bg:        #e8e8ea;
+      /* The site's own CTA ink, not a system blue: the slider is a
+         control on our surface, not an iOS citation. */
+      --p38-fill-bg:         #17181c;
+      --p38-ease:            cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     * {
@@ -3783,6 +3833,403 @@
     }
 
     /* ============================================================ */
+    /* Prototype 36 - Icon morph                                     */
+    /* ============================================================ */
+    /* One ghost button, four morphs. The button is the same in every
+       case; only the icon's construction differs. */
+    .p36-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+    }
+    .p36-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 64px;
+    }
+    .p36-cap {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .p36-btn {
+      appearance: none;
+      border: 0;
+      padding: 0;
+      width: var(--p36-size);
+      height: var(--p36-size);
+      display: grid;
+      place-items: center;
+      border-radius: 60px;
+      background: transparent;
+      color: var(--p36-ink);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition:
+        background var(--p36-hover-dur) ease,
+        color var(--p36-hover-dur) ease,
+        transform var(--p36-hover-dur) ease;
+    }
+    .p36-btn:hover {
+      background: var(--p36-hover-bg);
+      color: var(--p36-ink-strong);
+    }
+    /* The press belongs to the button, not the icon: the morph keeps
+       its own clock and is not nudged by the tap. */
+    .p36-btn:active { transform: scale(var(--p36-press)); }
+    .p36-btn:focus-visible {
+      outline: 2px solid var(--p36-ink-strong);
+      outline-offset: 2px;
+    }
+
+    .p36-ic {
+      position: relative;
+      display: block;
+      width: var(--p36-icon);
+      height: var(--p36-icon);
+    }
+    .p36-ic svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .p36-ic svg path {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: var(--p36-stroke);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* --- Play / pause ------------------------------------------- */
+    /* The triangle is cut in half down the middle and each half is
+       clipped out of its own box. Both clip paths are four-point
+       polygons (the apex is a doubled point), so they interpolate:
+       the halves unfold into bars instead of cross-fading. */
+    .p36-play { position: absolute; inset: 0; }
+    .p36-play i {
+      position: absolute;
+      top: 12.5%;
+      height: 75%;
+      background: currentColor;
+      transition: clip-path var(--p36-dur) var(--p36-ease);
+    }
+    /* Twelve points per state, three to a corner: an arc approximation
+       where the corner is rounded and three coincident points where it
+       is not. The inner edge stays sharp in the play state so the two
+       halves meet as one triangle, and the point order matches across
+       states, which is what lets them interpolate. */
+    .p36-play i:nth-child(1) {
+      left: 21.875%;
+      width: 32.8125%;
+      clip-path: polygon(0.00% 14.36%, 9.49% 7.15%, 28.50% 7.12%, 100.00% 25.00%, 100.00% 25.00%, 100.00% 25.00%, 100.00% 75.00%, 100.00% 75.00%, 100.00% 75.00%, 28.50% 92.88%, 9.49% 92.85%, 0.00% 85.64%);
+    }
+    .p36-play i:nth-child(2) {
+      left: 54.6875%;
+      width: 32.8125%;
+      clip-path: polygon(0.00% 25.00%, 0.00% 25.00%, 0.00% 25.00%, 91.73% 47.93%, 93.15% 48.29%, 100.00% 50.00%, 100.00% 50.00%, 93.15% 51.71%, 91.73% 52.07%, 0.00% 75.00%, 0.00% 75.00%, 0.00% 75.00%);
+    }
+    .p36-btn[data-on="true"] .p36-play i:nth-child(1) {
+      clip-path: polygon(14.29% 8.33%, 19.86% 2.44%, 33.33% 0.00%, 52.38% 0.00%, 65.85% 2.44%, 71.43% 8.33%, 71.43% 91.67%, 65.85% 97.56%, 52.38% 100.00%, 33.33% 100.00%, 19.86% 97.56%, 14.29% 91.67%);
+    }
+    .p36-btn[data-on="true"] .p36-play i:nth-child(2) {
+      clip-path: polygon(19.05% 8.33%, 24.63% 2.44%, 38.10% 0.00%, 57.14% 0.00%, 70.61% 2.44%, 76.19% 8.33%, 76.19% 91.67%, 70.61% 97.56%, 57.14% 100.00%, 38.10% 100.00%, 24.63% 97.56%, 19.05% 91.67%);
+    }
+
+    /* --- Menu / close ------------------------------------------- */
+    /* The two-bar burger from the site's own mobile nav: the bars
+       slide to the centre line and rotate into the X. */
+    .p36-menu { position: absolute; inset: 0; }
+    .p36-menu i {
+      position: absolute;
+      left: 6.25%;
+      right: 6.25%;
+      height: var(--p36-stroke);
+      border-radius: 2px;
+      background: currentColor;
+      transform-origin: center;
+      transition:
+        top var(--p36-dur) var(--p36-ease),
+        transform var(--p36-dur) var(--p36-ease) var(--p36-stagger);
+    }
+    .p36-menu i:nth-child(1) { top: 31.25%; }
+    .p36-menu i:nth-child(2) { top: 59.375%; }
+    .p36-btn[data-on="true"] .p36-menu i {
+      top: calc(50% - var(--p36-stroke) / 2);
+      transition:
+        top var(--p36-dur) var(--p36-ease),
+        transform var(--p36-dur) var(--p36-ease);
+    }
+    .p36-btn[data-on="true"] .p36-menu i:nth-child(1) { transform: rotate(45deg); }
+    .p36-btn[data-on="true"] .p36-menu i:nth-child(2) { transform: rotate(-45deg); }
+
+    /* --- Microphone on / off ------------------------------------ */
+    /* Filled capsule, so the mic carries the same weight as the play
+       triangle. Muting draws the slash across it and unmuting retracts
+       it to where it started, so the state change is a gesture rather
+       than a second icon appearing. A second copy of the slash rides
+       inside a mask and cuts a gap through the mic as it travels: on a
+       filled icon a bare line would read as lying on top of the body
+       rather than through it. Both copies share --len, measured per
+       path in JS, so the gap tracks the stroke exactly. */
+    .p36-ic svg path.p36-mic-cap {
+      fill: currentColor;
+      stroke: none;
+    }
+    .p36-mic-slash,
+    .p36-mic-cut {
+      /* One dash as long as the path, then a gap long enough that the
+         pattern never comes round again: with a single-value dasharray
+         the gap equals the dash, so an offset pushed past the end wraps
+         and repaints a stub at the far end of the path. */
+      stroke-dasharray: var(--len, 14px) 999px;
+      /* A round cap on an empty dash is still drawn: at an offset of
+         exactly --len both strokes leave a dot behind (and the mask's
+         copy bites a notch out of the mic). Parking them one cap
+         further along retires the cap with the dash. */
+      stroke-dashoffset: calc(var(--len, 14px) + var(--p36-stroke) + 1.7px);
+      transition: stroke-dashoffset var(--p36-dur) var(--p36-ease);
+    }
+    .p36-ic svg path.p36-mic-cut {
+      stroke: #000;
+      stroke-width: calc(var(--p36-stroke) + 1.7px);
+      stroke-linecap: round;
+      fill: none;
+    }
+    .p36-btn[data-on="true"] .p36-mic-slash,
+    .p36-btn[data-on="true"] .p36-mic-cut { stroke-dashoffset: 0; }
+
+    /* --- Chevron / arrow ---------------------------------------- */
+    /* The shaft draws out from under the head, which steps aside to
+       make room, so the chevron grows into an arrow in one move. */
+    .p36-arrow-head {
+      transform: translateX(0);
+      transition: transform var(--p36-dur) var(--p36-ease);
+    }
+    .p36-arrow-shaft {
+      stroke-dasharray: var(--len, 8px) 999px;
+      /* Same cap and wrap rules as the mic slash. */
+      stroke-dashoffset: calc(var(--len, 8px) + var(--p36-stroke) + 1px);
+      transition: stroke-dashoffset var(--p36-dur) var(--p36-ease);
+    }
+    .p36-btn[data-on="true"] .p36-arrow-head { transform: translateX(1.25px); }
+    .p36-btn[data-on="true"] .p36-arrow-shaft { stroke-dashoffset: 0; }
+
+    /* ============================================================ */
+    /* Prototype 37 - To-do reorder                                  */
+    /* ============================================================ */
+    /* A sortable list with no layout thrash: the dragged row follows
+       the pointer on a transform, and every row it displaces takes a
+       transform of exactly one slot. The DOM only changes on drop,
+       when the transforms are cleared in the same frame, so the list
+       never jumps. */
+    .p37-card {
+      width: 268px;
+      padding: 8px;
+      border-radius: var(--r-card);
+      background: var(--modal-bg);
+      box-shadow: var(--shadow);
+    }
+    .p37-list {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: var(--p37-gap);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .p37-item {
+      /* Positioned, or the z-index on the dragged row is ignored and a
+         row dragged downwards passes behind its later siblings. */
+      position: relative;
+      z-index: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: var(--p37-row-h);
+      padding: 0 10px;
+      border-radius: 8px;
+      background: var(--modal-bg);
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      transform: translateY(0) scale(1) rotate(0deg);
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+      transition:
+        transform var(--p37-shift-dur) var(--p37-ease),
+        box-shadow var(--p37-lift-dur) var(--p37-ease);
+      will-change: transform;
+    }
+    /* The row under the pointer: out of the flow's clock entirely, so
+       it tracks the finger 1:1 instead of easing behind it. */
+    .p37-item.is-dragging {
+      z-index: 2;
+      cursor: grabbing;
+      transform:
+        translateY(var(--dy, 0px))
+        scale(var(--p37-lift))
+        rotate(var(--p37-tilt));
+      box-shadow: var(--shadow);
+      transition: box-shadow var(--p37-lift-dur) var(--p37-ease);
+    }
+    /* Released: the row keeps its lift shadow for one settle and
+       springs the last few pixels into the slot it won. */
+    .p37-item.is-settling {
+      z-index: 2;
+      animation: p37-land var(--p37-drop-dur) var(--p37-drop-ease) forwards;
+      transition: box-shadow var(--p37-drop-dur) var(--p37-ease);
+    }
+    /* The row goes straight to its slot: lift, tilt and position all
+       resolve on one clock, so the drop reads as the row being set down
+       rather than thrown. Pick a springy Drop ease if you want weight;
+       the motion itself adds none. */
+    @keyframes p37-land {
+      from {
+        transform:
+          translateY(var(--dy, 0px))
+          scale(var(--p37-lift))
+          rotate(var(--p37-tilt));
+      }
+      to {
+        transform: translateY(var(--rest, 0px)) scale(1) rotate(0deg);
+      }
+    }
+    .p37-check {
+      flex: 0 0 auto;
+      width: 16px;
+      height: 16px;
+      border-radius: 5px;
+      box-shadow: inset 0 0 0 1.5px #d6d6d9;
+    }
+    .p37-line {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--skeleton);
+    }
+    .p37-grip {
+      flex: 0 0 auto;
+      margin-left: auto;
+      display: grid;
+      grid-template-columns: repeat(2, 2px);
+      gap: 3px 4px;
+      opacity: 0.45;
+      transition: opacity var(--p37-lift-dur) var(--p37-ease);
+    }
+    .p37-grip i {
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+    .p37-item:hover .p37-grip,
+    .p37-item.is-dragging .p37-grip { opacity: 1; }
+
+    /* ============================================================ */
+    /* Prototype 38 - Magnetic slider                                */
+    /* ============================================================ */
+    /* Two layers move together: the thumb on a translate and the fill
+       on a clip-path inset. Both are set from the same --pos, so they
+       cannot drift apart, and both carry the same snap transition, so
+       the overshoot reads as one object arriving. */
+    .p38-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .p38-value {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      display: flex;
+      gap: 6px;
+    }
+    .p38-value span { color: var(--p38-fill-bg); }
+
+    .p38-slider {
+      position: relative;
+      width: 196px;
+      height: var(--p38-h);
+      touch-action: none;
+      cursor: grab;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .p38-slider:active { cursor: grabbing; }
+    .p38-slider:focus-visible { outline: 2px solid var(--p38-fill-bg); outline-offset: 3px; }
+
+    .p38-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: var(--p38-track-bg);
+      overflow: hidden;
+    }
+    /* The fill is a full-width layer the clip path eats into, so the
+       rounded cap survives: scaling the width would squash it. */
+    .p38-fill {
+      position: absolute;
+      inset: 0;
+      background: var(--p38-fill-bg);
+      /* Round the outer end only: the cut end is a straight edge that
+         lives under the thumb, and rounding it leaves a visible notch
+         between the fill and the thumb as the thumb moves off it. */
+      clip-path: inset(0 var(--cut, 50%) 0 0 round 999px 0 0 999px);
+    }
+    .p38-dot {
+      position: absolute;
+      top: 50%;
+      width: 4px;
+      height: 4px;
+      margin: -2px 0 0 -2px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.16);
+    }
+    .p38-dots--on { position: absolute; inset: 0; clip-path: inset(0 var(--cut, 50%) 0 0 round 999px 0 0 999px); }
+    .p38-dots--on .p38-dot { background: rgba(255, 255, 255, 0.55); }
+
+    .p38-thumb {
+      position: absolute;
+      top: 50%;
+      left: var(--p38-inset);
+      width: var(--p38-thumb);
+      height: var(--p38-thumb);
+      border-radius: 50%;
+      background: #fff;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.12),
+        0 3px 8px rgba(0, 0, 0, 0.13);
+      transform: translate(var(--x, 0px), -50%) scale(1);
+      transition: transform var(--p38-grab-dur) var(--p38-ease);
+    }
+    .p38-slider.is-grabbed .p38-thumb {
+      transform: translate(var(--x, 0px), -50%) scale(var(--p38-grab-scale));
+      transition: none;
+    }
+    .p38-slider.is-grabbed .p38-fill,
+    .p38-slider.is-grabbed .p38-dots--on { transition: none; }
+    .p38-slider.is-min .p38-fill,
+    .p38-slider.is-min .p38-dots--on {
+      clip-path: inset(0 100% 0 0 round 999px 0 0 999px);
+    }
+    /* Released: thumb and fill run the same spring to the stop. */
+    .p38-slider.is-snapping .p38-thumb {
+      transition: transform var(--p38-snap-dur) var(--p38-snap-ease);
+    }
+    .p38-slider.is-snapping .p38-fill,
+    .p38-slider.is-snapping .p38-dots--on {
+      transition: clip-path var(--p38-snap-dur) var(--p38-snap-ease);
+    }
+
+    /* ============================================================ */
     /* Reduced motion                                                */
     /* ============================================================ */
     @media (prefers-reduced-motion: reduce) {
@@ -4527,6 +4974,104 @@
         <button type="button" class="btn" id="p34-add">Add banner</button>
       </div>
     </section>
+
+    <!-- ================================================== -->
+    <!-- 36. Icon morph                                      -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">36.pototype</p>
+      <div class="stage">
+        <div class="p36-row">
+          <div class="p36-cell">
+            <button type="button" class="p36-btn" data-p36 data-on="false" aria-pressed="false" aria-label="Play">
+              <span class="p36-ic" aria-hidden="true">
+                <span class="p36-play"><i></i><i></i></span>
+              </span>
+            </button>
+            <span class="p36-cap">play</span>
+          </div>
+          <div class="p36-cell">
+            <button type="button" class="p36-btn" data-p36 data-on="false" aria-pressed="false" aria-label="Open menu">
+              <span class="p36-ic" aria-hidden="true">
+                <span class="p36-menu"><i></i><i></i></span>
+              </span>
+            </button>
+            <span class="p36-cap">menu</span>
+          </div>
+          <div class="p36-cell">
+            <button type="button" class="p36-btn" data-p36 data-on="false" aria-pressed="false" aria-label="Mute microphone">
+              <span class="p36-ic" aria-hidden="true">
+                <svg viewBox="1.333 1.333 13.333 13.333">
+                  <defs>
+                    <!-- One mask per instance: give the id a suffix if
+                         the page renders more than one mic. -->
+                    <mask id="p36-mic-cut">
+                      <rect width="16" height="16" fill="#fff" />
+                      <path class="p36-mic-cut" data-draw d="M3.4 3.4 12.6 12.6" />
+                    </mask>
+                  </defs>
+                  <g class="p36-mic-body" mask="url(#p36-mic-cut)">
+                    <path class="p36-mic-cap" d="M8 2.25A1.75 1.75 0 0 1 9.75 4v3.5a1.75 1.75 0 0 1-3.5 0V4A1.75 1.75 0 0 1 8 2.25Z" />
+                    <path d="M11.5 7.5a3.5 3.5 0 0 1-7 0" />
+                    <path d="M8 11.25v2.25" />
+                  </g>
+                  <path class="p36-mic-slash" data-draw d="M3.4 3.4 12.6 12.6" />
+                </svg>
+              </span>
+            </button>
+            <span class="p36-cap">mic</span>
+          </div>
+          <div class="p36-cell">
+            <button type="button" class="p36-btn" data-p36 data-on="false" aria-pressed="false" aria-label="Expand to arrow">
+              <span class="p36-ic" aria-hidden="true">
+                <svg viewBox="0 0 16 16">
+                  <path class="p36-arrow-shaft" data-draw d="M10.25 8H3.5" />
+                  <path class="p36-arrow-head" d="M6.75 4.5 10.25 8l-3.5 3.5" />
+                </svg>
+              </span>
+            </button>
+            <span class="p36-cap">arrow</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 37. To-do reorder                                   -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">37.pototype</p>
+      <div class="stage">
+        <div class="p37-card">
+          <ul class="p37-list" id="p37-list">
+            <li class="p37-item"><span class="p37-check"></span><span class="p37-line" style="width: 104px"></span><span class="p37-grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></li>
+            <li class="p37-item"><span class="p37-check"></span><span class="p37-line" style="width: 72px"></span><span class="p37-grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></li>
+            <li class="p37-item"><span class="p37-check"></span><span class="p37-line" style="width: 126px"></span><span class="p37-grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- 38. Magnetic slider                                 -->
+    <!-- ================================================== -->
+    <section class="proto-card">
+      <p class="proto-label">38.pototype</p>
+      <div class="stage">
+        <div class="p38-wrap">
+          <p class="p38-value"><b id="p38-num">3</b> <span id="p38-name">Medium</span></p>
+          <div class="p38-slider" id="p38-slider" role="slider" tabindex="0"
+               aria-label="Level" aria-valuemin="1" aria-valuemax="5" aria-valuenow="3" aria-valuetext="Medium">
+            <div class="p38-track">
+              <span class="p38-dots" id="p38-dots"></span>
+              <span class="p38-fill"></span>
+              <span class="p38-dots--on" id="p38-dots-on"></span>
+            </div>
+            <span class="p38-thumb"></span>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- ================================================== -->
@@ -5102,6 +5647,57 @@
         <div class="cp-row"><span class="cp-label">Depth fade</span><input type="number" data-var="--p34-depth-fade" data-unit="" min="0" max="0.6" step="0.05" value="0.4"></div>
         <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p34-ease"></select></div>
         <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p34-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">36. Icon morph</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Morph (ms)</span><input type="number" data-var="--p36-dur" data-unit="ms" min="0" max="1200" step="10" value="320"></div>
+        <div class="cp-row"><span class="cp-label">Menu stagger (ms)</span><input type="number" data-var="--p36-stagger" data-unit="ms" min="0" max="300" step="5" value="50"></div>
+        <div class="cp-row"><span class="cp-label">Button (px)</span><input type="number" data-var="--p36-size" data-unit="px" min="24" max="64" step="2" value="32"></div>
+        <div class="cp-row"><span class="cp-label">Icon (px)</span><input type="number" data-var="--p36-icon" data-unit="px" min="12" max="32" step="1" value="16"></div>
+        <div class="cp-row"><span class="cp-label">Stroke (px)</span><input type="number" data-var="--p36-stroke" data-unit="px" min="1" max="3" step="0.25" value="1.5"></div>
+        <div class="cp-row"><span class="cp-label">Press scale</span><input type="number" data-var="--p36-press" data-unit="" min="0.8" max="1" step="0.01" value="0.94"></div>
+        <div class="cp-row"><span class="cp-label">Hover (ms)</span><input type="number" data-var="--p36-hover-dur" data-unit="ms" min="0" max="600" step="10" value="140"></div>
+        <div class="cp-row"><span class="cp-label">Ease</span><select class="cp-ease" data-var="--p36-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p36-ease" spellcheck="false" aria-label="Ease value"></div>
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">37. To-do reorder</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Shift (ms)</span><input type="number" data-var="--p37-shift-dur" data-unit="ms" min="0" max="800" step="10" value="220"></div>
+        <div class="cp-row"><span class="cp-label">Lift (ms)</span><input type="number" data-var="--p37-lift-dur" data-unit="ms" min="0" max="800" step="10" value="180"></div>
+        <div class="cp-row"><span class="cp-label">Drop (ms)</span><input type="number" data-var="--p37-drop-dur" data-unit="ms" min="0" max="900" step="10" value="260"></div>
+
+        <div class="cp-row"><span class="cp-label">Lift scale</span><input type="number" data-var="--p37-lift" data-unit="" min="1" max="1.2" step="0.01" value="1.02"></div>
+        <div class="cp-row"><span class="cp-label">Tilt (deg)</span><input type="number" data-var="--p37-tilt" data-unit="deg" min="0" max="6" step="0.2" value="0.6"></div>
+        <div class="cp-row"><span class="cp-label">Row (px)</span><input type="number" data-var="--p37-row-h" data-unit="px" min="32" max="72" step="2" value="44"></div>
+        <div class="cp-row"><span class="cp-label">Gap (px)</span><input type="number" data-var="--p37-gap" data-unit="px" min="0" max="24" step="1" value="6"></div>
+        <div class="cp-row"><span class="cp-label">Shift ease</span><select class="cp-ease" data-var="--p37-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p37-ease" spellcheck="false" aria-label="Ease value"></div>
+        <div class="cp-row"><span class="cp-label">Drop ease</span><select class="cp-ease" data-var="--p37-drop-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p37-drop-ease" spellcheck="false" aria-label="Drop ease value"></div>
+
+      </section>
+
+      <section class="cp-section">
+        <header class="cp-section-head">
+          <span class="cp-section-title">38. Magnetic slider</span>
+          <button type="button" class="cp-export">Export</button>
+        </header>
+        <div class="cp-row"><span class="cp-label">Snap (ms)</span><input type="number" data-var="--p38-snap-dur" data-unit="ms" min="0" max="1200" step="10" value="380"></div>
+        <div class="cp-row"><span class="cp-label">Grab (ms)</span><input type="number" data-var="--p38-grab-dur" data-unit="ms" min="0" max="600" step="10" value="180"></div>
+        <div class="cp-row"><span class="cp-label">Grab scale</span><input type="number" data-var="--p38-grab-scale" data-unit="" min="1" max="1.3" step="0.01" value="1.06"></div>
+        <div class="cp-row"><span class="cp-label">Track (px)</span><input type="number" data-var="--p38-h" data-unit="px" min="20" max="72" step="2" value="32"></div>
+        <div class="cp-row"><span class="cp-label">Thumb (px)</span><input type="number" data-var="--p38-thumb" data-unit="px" min="14" max="64" step="2" value="32"></div>
+        <div class="cp-row"><span class="cp-label">Inset (px)</span><input type="number" data-var="--p38-inset" data-unit="px" min="0" max="12" step="1" value="0"></div>
+        <div class="cp-row"><span class="cp-label">Snap ease</span><select class="cp-ease" data-var="--p38-snap-ease"></select></div>
+        <div class="cp-row-ease-raw"><input type="text" class="cp-ease-text" data-var="--p38-snap-ease" spellcheck="false" aria-label="Snap ease value"></div>
       </section>
 
     </div>
@@ -6628,6 +7224,236 @@
           el.classList.remove("is-enter");
         });
       })();
+
+      // --- Prototype 36: icon morph ---------------------------
+      // One handler for every preset: the button owns a single
+      // data-on, and the CSS decides what that means for its icon.
+      // Drawn strokes are calibrated to their own measured length,
+      // so a dash always retracts exactly to the start of the path
+      // whatever geometry a preset uses.
+      (function initP36() {
+        const btns = document.querySelectorAll("[data-p36]");
+        btns.forEach(function (btn) {
+          btn.querySelectorAll("[data-draw]").forEach(function (path) {
+            path.style.setProperty("--len", path.getTotalLength().toFixed(2) + "px");
+          });
+          btn.addEventListener("click", function () {
+            const on = btn.getAttribute("data-on") === "true";
+            btn.setAttribute("data-on", on ? "false" : "true");
+            btn.setAttribute("aria-pressed", on ? "false" : "true");
+          });
+        });
+      })();
+
+      // --- Prototype 37: to-do reorder ------------------------
+      // The dragged row rides a transform; the rows between its old
+      // and new index take exactly one slot of offset. Only on drop
+      // does the DOM change, and the transforms are cleared in the
+      // same frame, so the list is already drawn where it lands.
+      (function initP37() {
+        const list = document.getElementById("p37-list");
+        if (!list) return;
+        let drag = null;
+        let pending = null;   // a drop still playing out its settle
+
+        function slot() {
+          const first = list.children[0];
+          const gap = parseFloat(getComputedStyle(list).rowGap) || 0;
+          return first.getBoundingClientRect().height + gap;
+        }
+
+        list.addEventListener("pointerdown", function (e) {
+          const item = e.target.closest(".p37-item");
+          if (!item || e.button !== 0) return;
+          // Grabbing again mid-settle would let the old drop's cleanup
+          // wipe the new drag's transforms, so commit it first.
+          if (pending) { window.clearTimeout(pending.timer); pending.run(); }
+          const rows = [...list.children];
+          drag = {
+            item: item,
+            rows: rows,
+            from: rows.indexOf(item),
+            to: rows.indexOf(item),
+            startY: e.clientY,
+            step: slot(),
+          };
+          // Capture keeps the drag alive if the pointer leaves the row,
+          // but it throws for a pointer the element never saw (synthetic
+          // events, some pen hardware). The drag works without it, so a
+          // failure here must not cost the lift.
+          try { item.setPointerCapture(e.pointerId); } catch (err) {}
+          item.classList.add("is-dragging");
+          item.style.setProperty("--dy", "0px");
+        });
+
+        list.addEventListener("pointermove", function (e) {
+          if (!drag) return;
+          const dy = e.clientY - drag.startY;
+          drag.item.style.setProperty("--dy", dy + "px");
+
+          // Where the row would land: half a slot of travel commits.
+          const moved = Math.round(dy / drag.step);
+          const to = Math.max(0, Math.min(drag.rows.length - 1, drag.from + moved));
+          if (to === drag.to) return;
+          drag.to = to;
+
+          drag.rows.forEach(function (row, i) {
+            if (row === drag.item) return;
+            let shift = 0;
+            if (drag.from < to && i > drag.from && i <= to) shift = -drag.step;
+            if (drag.from > to && i >= to && i < drag.from) shift = drag.step;
+            row.style.transform = "translateY(" + shift + "px)";
+          });
+        });
+
+        function end(e) {
+          if (!drag) return;
+          const d = drag;
+          drag = null;
+          const rest = (d.to - d.from) * d.step;
+
+          // Settle into the slot, then swap the DOM and drop every
+          // transform at once. Doing both in one frame means the
+          // reorder itself is never visible.
+          d.item.classList.remove("is-dragging");
+          d.item.style.setProperty("--rest", rest + "px");
+          d.item.classList.add("is-settling");
+
+          const settle = parseFloat(getComputedStyle(document.documentElement)
+            .getPropertyValue("--p37-drop-dur")) || 260;
+
+          function run() {
+            if (!pending) return;
+            pending = null;
+            const ref = d.rows[d.to > d.from ? d.to + 1 : d.to];
+            list.insertBefore(d.item, ref || null);
+            d.rows.forEach(function (row) {
+              row.style.transition = "none";
+              row.style.transform = "";
+              row.style.removeProperty("--dy");
+              row.style.removeProperty("--rest");
+            });
+            d.item.classList.remove("is-settling");
+            // eslint-disable-next-line no-unused-expressions
+            list.offsetHeight;
+            d.rows.forEach(function (row) { row.style.transition = ""; });
+          }
+          pending = { run: run, timer: window.setTimeout(run, settle) };
+        }
+        list.addEventListener("pointerup", end);
+        list.addEventListener("pointercancel", end);
+      })();
+
+      // --- Prototype 38: magnetic slider ----------------------
+      // While held, position is the pointer: no transition, so the
+      // thumb cannot lag the finger. On release the nearest stop wins
+      // and one spring carries thumb and fill there together. A drag
+      // that ends between stops still lands on a stop, which is what
+      // makes the stops feel magnetic instead of merely marked.
+      (function initP38() {
+        const slider = document.getElementById("p38-slider");
+        if (!slider) return;
+        const dots = document.getElementById("p38-dots");
+        const dotsOn = document.getElementById("p38-dots-on");
+        const num = document.getElementById("p38-num");
+        const name = document.getElementById("p38-name");
+        const STOPS = ["Off", "Low", "Medium", "High", "Max"];
+        const last = STOPS.length - 1;
+        let index = 2;
+        let dragging = false;
+
+        STOPS.forEach(function (_, i) {
+          const at = (i / last) * 100;
+          [dots, dotsOn].forEach(function (layer) {
+            const d = document.createElement("span");
+            d.className = "p38-dot";
+            d.style.left = "calc(var(--p38-inset) + " +
+              "(100% - var(--p38-inset) * 2 - var(--p38-thumb)) * " + (at / 100) +
+              " + var(--p38-thumb) / 2)";
+            layer.appendChild(d);
+          });
+        });
+
+        function travel() {
+          const inset = parseFloat(getComputedStyle(slider).getPropertyValue("--p38-inset")) || 0;
+          const thumb = parseFloat(getComputedStyle(slider).getPropertyValue("--p38-thumb")) || 0;
+          return slider.getBoundingClientRect().width - thumb - inset * 2;
+        }
+
+        // One writer for both layers: the fill is cut to the thumb's
+        // centre so the colour always ends under it.
+        function paint(ratio) {
+          const inset = parseFloat(getComputedStyle(slider).getPropertyValue("--p38-inset")) || 0;
+          const thumb = parseFloat(getComputedStyle(slider).getPropertyValue("--p38-thumb")) || 0;
+          const w = slider.getBoundingClientRect().width;
+          const x = travel() * ratio;
+          const centre = inset + x + thumb / 2;
+          slider.style.setProperty("--x", x.toFixed(2) + "px");
+          slider.style.setProperty("--cut", (100 - (centre / w) * 100).toFixed(2) + "%");
+          slider.classList.toggle("is-min", ratio <= 0.0005);
+        }
+
+        function commit(i) {
+          index = Math.max(0, Math.min(last, i));
+          paint(index / last);
+          num.textContent = String(index + 1);
+          name.textContent = STOPS[index];
+          slider.setAttribute("aria-valuenow", String(index + 1));
+          slider.setAttribute("aria-valuetext", STOPS[index]);
+        }
+
+        function ratioFromEvent(e) {
+          const inset = parseFloat(getComputedStyle(slider).getPropertyValue("--p38-inset")) || 0;
+          const thumb = parseFloat(getComputedStyle(slider).getPropertyValue("--p38-thumb")) || 0;
+          const r = slider.getBoundingClientRect();
+          const x = e.clientX - r.left - inset - thumb / 2;
+          return Math.max(0, Math.min(1, x / travel()));
+        }
+
+        slider.addEventListener("pointerdown", function (e) {
+          dragging = true;
+          slider.setPointerCapture(e.pointerId);
+          slider.classList.remove("is-snapping");
+          slider.classList.add("is-grabbed");
+          paint(ratioFromEvent(e));
+        });
+
+        slider.addEventListener("pointermove", function (e) {
+          if (!dragging) return;
+          paint(ratioFromEvent(e));
+        });
+
+        function release(e) {
+          if (!dragging) return;
+          dragging = false;
+          slider.classList.remove("is-grabbed");
+          slider.classList.add("is-snapping");
+          commit(Math.round(ratioFromEvent(e) * last));
+          const dur = parseFloat(getComputedStyle(document.documentElement)
+            .getPropertyValue("--p38-snap-dur")) || 380;
+          window.setTimeout(function () {
+            slider.classList.remove("is-snapping");
+          }, dur + 40);
+        }
+        slider.addEventListener("pointerup", release);
+        slider.addEventListener("pointercancel", release);
+
+        slider.addEventListener("keydown", function (e) {
+          const step = e.key === "ArrowRight" || e.key === "ArrowUp" ? 1
+            : e.key === "ArrowLeft" || e.key === "ArrowDown" ? -1 : 0;
+          if (!step) return;
+          e.preventDefault();
+          slider.classList.add("is-snapping");
+          commit(index + step);
+          window.setTimeout(function () { slider.classList.remove("is-snapping"); }, 420);
+        });
+
+        commit(index);
+        window.addEventListener("resize", function () { paint(index / last); });
+      })();
+
+
+
 
       document.addEventListener("click", function (e) {
         const btn = e.target.closest("button[data-proto]");

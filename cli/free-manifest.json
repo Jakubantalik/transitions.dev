@@ -163,5 +163,15 @@
     "slug": "banner-stacking",
     "name": "Banner stacking",
     "tier": "free"
+  },
+  {
+    "slug": "to-do-reorder",
+    "name": "To-do reorder",
+    "tier": "free"
+  },
+  {
+    "slug": "magnetic-slider",
+    "name": "Magnetic slider",
+    "tier": "free"
   }
 ]
