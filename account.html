@@ -4652,6 +4652,7 @@
       gap: 12px; min-height: 48px;
     }
     .settings-label { font-size: 13px; color: var(--text); }
+    #acc-emails-row { gap: 16px; padding: 12px 0; }
     .acc-packs-note { display: block; margin-top: 2px; font-size: 12px; color: var(--text-muted); }
     .acc-packs .acc-provider { flex-wrap: wrap; justify-content: flex-end; }
     /* Name fields: the row-btn surface, as text inputs. */
@@ -5142,6 +5143,10 @@
             <div class="settings-row" id="acc-payment-row">
               <span class="settings-label">Payment</span>
               <button type="button" class="row-btn" id="acc-portal">Manage in Stripe</button>
+            </div>
+            <div class="settings-row" id="acc-emails-row" hidden>
+              <span class="settings-label">Product emails<span class="acc-packs-note">New transitions, features and our plans. Sign-in codes and email about your account always arrive.</span></span>
+              <button type="button" class="row-btn" id="acc-emails">Turn off</button>
             </div>
             <div class="settings-row">
               <span class="settings-label">Log out of all devices</span>
@@ -6458,6 +6463,36 @@
       el("acc-adjust").addEventListener("click", function (e) { e.preventDefault(); portal(); });
       el("acc-cancel").addEventListener("click", portal);
       el("acc-portal").addEventListener("click", portal);
+
+      // Product emails: on or off for this account (/account/emails).
+      (function () {
+        var row = el("acc-emails-row"), btn = el("acc-emails"), on = false, asked = false;
+        function show() {
+          btn.textContent = on ? "Turn off" : "Turn on";
+          btn.setAttribute("aria-label", (on ? "Turn off" : "Turn on") + " product emails");
+          row.hidden = false;
+        }
+        function call(promo) {
+          return fetch(TP.apiBase + "/account/emails", promo === undefined
+            ? { credentials: "include" }
+            : { method: "POST", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ promo: promo }) })
+            .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+            .then(function (d) { on = !!d.promo; show(); });
+        }
+        function load(s) {
+          if (!s || !s.authenticated || !s.resolved || asked) return;
+          asked = true;
+          call().catch(function () { asked = false; });
+        }
+        document.addEventListener("pro:me", function (e) { load(e.detail); });
+        if (TP && TP.state) load(TP.state);
+        btn.addEventListener("click", function () {
+          btn.disabled = true;
+          call(!on)
+            .catch(function () { setNote("acc-note", "Couldn't save the email setting. Please try again.", "err"); })
+            .then(function () { btn.disabled = false; });
+        });
+      })();
 
       el("acc-logout-all").addEventListener("click", function () {
         TP.logout(true).then(function () { location.href = "/"; });
