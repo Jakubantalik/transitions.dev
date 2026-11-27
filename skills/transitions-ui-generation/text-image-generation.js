@@ -46,6 +46,8 @@ const DEFAULTS = {
   focus: false,             // the focus bracket on the glyph or image being drawn, with its label
   readout: false,           // the coordinate readout on the moving dot
   particles: true,          // dots flying in to where each glyph starts
+  settled: 0,               // the first this many glyphs start already drawn and in; the build (and its easing) runs
+                            // over the rest, e.g. to open a slide on a title that is half written
   dotScale: 1,              // scales the dots, their spacing and the moving heads (e.g. with the type in a scaled scene)
   steps: ["Setting type", "Tracing glyphs", "Sampling images", "Inking"],
   done: "Ready",
@@ -382,14 +384,16 @@ function build(el, M, opts) {
   const se = opts.sequenceEase, nums = Array.isArray(se) ? se : typeof se === "string" && /^cubic-bezier/.test(se) ? se.match(/-?[\d.]+/g).map(Number) : null;
   const ease = nums && nums.length === 4 ? bezier(...nums) : SEQUENCE[se] || SEQUENCE.linear;
   const seq = (f) => { let lo = 0, hi = 1; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (ease(m) < f) lo = m; else hi = m; } return (lo + hi) / 2; };
-  const traced = M.glyphs.slice(0, opts.maxGlyphs), n = M.glyphs.length, span = PH.glyphs[1] - PH.glyphs[0], dur = Math.min(0.16, span * 0.45);
+  const traced = M.glyphs.slice(0, opts.maxGlyphs), done = Math.max(0, Math.min(M.glyphs.length, opts.settled | 0));
+  const n = M.glyphs.length - done, span = PH.glyphs[1] - PH.glyphs[0], dur = Math.min(0.16, span * 0.45);
   M.glyphs.forEach((g, i) => {
-    const t0 = PH.glyphs[0] + (n > 1 ? (span - dur) * seq(i / (n - 1)) : 0), gg = svg("g", {}, wires);
+    // settled glyphs were drawn before the start; the others share the build along the easing
+    const k = i - done, t0 = k < 0 ? -1 : PH.glyphs[0] + (n > 1 ? (span - dur) * seq(k / (n - 1)) : 0), gg = svg("g", {}, wires);
     let strokes = [];
     if (traced.includes(g)) { try { strokes = glyphLoops(g).map((d) => stroke(d, gg)); } catch (e) { strokes = []; } }
     strokes.forEach((s, k) => { s.idx = k; s.head = head(gg); });
     strokes.n = strokes.length;
-    G.glyphs.push({ g: gg, strokes, b: g, t0, t1: t0 + dur, ti: t0 + dur * 0.8, host: g.host });
+    G.glyphs.push({ g: gg, strokes, b: g, t0, t1: t0 + dur, ti: t0 + dur * 0.8, host: g.host, settled: k < 0 });
   });
 
   // smaller text: a dotted line through each line of it, like the wireframe skill
@@ -431,7 +435,7 @@ function build(el, M, opts) {
   // reticle on the glyph being traced, coordinate readout on its moving dot, particles landing on each glyph
   G.ret = svg("path", { class: "t-tig-reticle", opacity: 0 }, root); G.tag = svg("text", { class: "t-tig-label t-tig-label--tag", opacity: 0 }, root);
   G.read = svg("text", { class: "t-tig-label t-tig-label--small", opacity: 0 }, root);
-  G.flyers = opts.particles === false ? [] : G.glyphs.filter((g) => g.strokes.length).map((g, i) => {
+  G.flyers = opts.particles === false ? [] : G.glyphs.filter((g) => g.strokes.length && !g.settled).map((g, i) => {
     const pt = g.strokes[0].el.getPointAtLength(0), ang = hashN(i * 9.1) * Math.PI * 2, dist = 28 + 50 * hashN(i * 4.7);
     return { el: svg("circle", { r: f2(1.6 * DS), class: "t-tig-flyer", opacity: 0 }, root), x0: pt.x + Math.cos(ang) * dist, y0: pt.y + Math.sin(ang) * dist, x1: pt.x, y1: pt.y, arr: g.t0, s0: g.t0 - 0.08 };
   });
@@ -459,7 +463,7 @@ function build(el, M, opts) {
   const looks = inv(0.98);
   for (const g of G.glyphs) {
     const n = g.strokes.n || 1, q = Math.min(1, ((n - 1) * 0.75 + looks) / n); // the last loop starts at (n - 1) × 0.75 of n
-    g.wi = g.t0 + (g.t1 - g.t0) * q + wait;
+    g.wi = g.settled ? -1 : g.t0 + (g.t1 - g.t0) * q + wait;
   }
   G.words = M.words.map((wd) => {
     const r0 = wd.rects[0] || { x: 0, y: 0, w: 0, h: 0 }, last = wd.rects[wd.rects.length - 1] || r0;
@@ -468,15 +472,20 @@ function build(el, M, opts) {
     return { rects: wd.rects, host: wd.host, word: wd.word, ln, wi: (ln ? ln.t0 + (ln.t1 - ln.t0) * inv(f) : PH.lines[0]) + wait };
   });
   // an even stagger instead of the tracing's rhythm: the first fade stays put, the rest follow every fadeStagger ms
-  // (per word with fadeBy: "word"), but no character fades in before it is drawn
+  // (per word with fadeBy: "word"), but no character fades in before it is drawn. Traced glyphs and the characters of
+  // smaller lines keep separate beats, so a subtitle never holds up its headline.
   if (opts.fadeStagger != null && +opts.fadeStagger >= 0) {
-    const units = [...G.glyphs.map((g) => ({ o: g, word: g.b.word, t: g.wi })), ...G.words.map((w) => ({ o: w, word: w.word, t: w.wi }))].sort((a, b) => a.t - b.t);
-    const base = units.length ? units[0].t : 0, step = +opts.fadeStagger / opts.duration, order = new Map();
-    units.forEach((u) => { if (!order.has(u.word)) order.set(u.word, order.size); });
-    // the same total as an even stagger, spread along the sequence easing
-    const N = opts.fadeBy === "word" ? order.size : units.length;
-    // never before the character's own drawing is done (plus fadeDelay): a short word traced slowly keeps its trace
-    units.forEach((u, k) => { const j = opts.fadeBy === "word" ? order.get(u.word) : k; u.o.wi = Math.max(u.t, base + (N > 1 ? (N - 1) * step * seq(j / (N - 1)) : 0)); });
+    const beat = (units) => {
+      units.sort((a, b) => a.t - b.t);
+      const base = units.length ? units[0].t : 0, step = +opts.fadeStagger / opts.duration, order = new Map();
+      units.forEach((u) => { if (!order.has(u.word)) order.set(u.word, order.size); });
+      // the same total as an even stagger, spread along the sequence easing
+      const N = opts.fadeBy === "word" ? order.size : units.length;
+      // never before the character's own drawing is done (plus fadeDelay): a short word traced slowly keeps its trace
+      units.forEach((u, k) => { const j = opts.fadeBy === "word" ? order.get(u.word) : k; u.o.wi = Math.max(u.t, base + (N > 1 ? (N - 1) * step * seq(j / (N - 1)) : 0)); });
+    };
+    beat(G.glyphs.filter((g) => !g.settled).map((g) => ({ o: g, word: g.b.word, t: g.wi })));
+    beat(G.words.map((w) => ({ o: w, word: w.word, t: w.wi })));
   }
   if (opts.fadeBy === "word") {
     const end = new Map();
@@ -568,7 +577,7 @@ function frame(G, p, t, D) {
   for (const g of G.glyphs) {
     const q = clamp((p - g.t0) / (g.t1 - g.t0)), iq = ink(g.wi);
     g.strokes.forEach((s) => drawStroke(s, OUT(clamp(q * g.strokes.n - s.idx * 0.75)), t));
-    g.g.setAttribute("opacity", f2((1 - 0.85 * smooth(0.2, 1, iq)) * clean));
+    g.g.setAttribute("opacity", g.settled ? 0 : f2((1 - 0.85 * smooth(0.2, 1, iq)) * clean));
     if (p >= g.t0 && p < g.t1 + 0.04) cur = g;
   }
   for (const l of G.lines) {
