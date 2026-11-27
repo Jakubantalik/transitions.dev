@@ -328,7 +328,7 @@
         <h3>When you visit the site</h3>
         <ul>
           <li><strong>Server logs.</strong> GitHub Pages, which serves the website, and Cloudflare, which runs our API, record standard request data such as your IP address, browser and the page requested, to deliver and protect the service.</li>
-          <li><strong>Analytics.</strong> GoatCounter counts page views without cookies. It records the page, the referring site, the browser type, screen size and country, and does not store your IP address or build a profile of you.</li>
+          <li><strong>Analytics.</strong> GoatCounter and PostHog count page views without cookies. They record the page, the referring site, the browser type, screen size and country, and do not store your IP address or build a profile of you.</li>
           <li><strong>Regional pricing.</strong> To show a regional discount, our API reads the country Cloudflare derives from your IP address. We do not store it; your browser keeps the result for 24 hours.</li>
           <li><strong>GitHub star count.</strong> Some pages ask GitHub's public API for the number of stars on our repository, so GitHub receives your IP address when that request is made.</li>
         </ul>
@@ -414,6 +414,7 @@
               <tr><td>OpenAI (USA)</td><td>Content checks for published components and Community profiles (Moderation API); Sign in with ChatGPT and Studio drafts on your ChatGPT plan, if you use them</td><td>For checks: a component's title, description, visible text and images, and your Community name, bio and profile picture. For sign-in and drafts: your OpenAI account ID, name and email address, and the same request data as Studio drafts sent to Anthropic</td></tr>
               <tr><td>esm.sh</td><td>Loads code libraries for component previews and the Studio editor</td><td>IP address and request data when a preview loads</td></tr>
               <tr><td>GoatCounter</td><td>Cookieless analytics</td><td>Page, referrer, browser type, screen size, country</td></tr>
+              <tr><td>PostHog (EU Cloud)</td><td>Cookieless analytics</td><td>Page, referrer, browser type, screen size, country</td></tr>
               <tr><td>Google (Gmail)</td><td>Our email inbox</td><td>Messages you send us, feedback, and account notifications we send ourselves</td></tr>
             </tbody>
           </table>
