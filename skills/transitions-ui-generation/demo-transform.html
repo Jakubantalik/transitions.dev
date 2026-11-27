@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>UI transform demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./ui-generation.css" />
+<style>
+  :root { --bg: #fbfbfb; --fg: #0d0d0d; --muted: #6c6c6c; --soft: rgba(0,0,0,.06); --line: rgba(0,0,0,.08); --card: #fff; --accent: #0d0d0d; --on-accent: #fff; --good: #30a46c; color-scheme: light; }
+  html[data-theme="dark"] { --bg: #0b0b0c; --fg: #f2f2f2; --muted: rgba(202,202,202,.7); --soft: rgba(255,255,255,.08); --line: rgba(255,255,255,.1); --card: #161616; --accent: #f2f2f2; --on-accent: #0d0d0d; --good: #3dd68c; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); color: var(--fg); font: 400 14px/20px Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  .bar { position: sticky; top: 0; z-index: 2147483647; /* above the generation overlay */ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 14px 16px; }
+  .bar button, .bar a { height: 34px; display: inline-flex; align-items: center; padding: 0 14px; border: 0; border-radius: 999px; background: var(--soft); color: var(--fg); font: 500 14px/1 Inter, sans-serif; text-decoration: none; cursor: pointer;
+    transition: transform 150ms cubic-bezier(.22, 1, .36, 1); }
+  .bar button:active, .bar a:active { transform: scale(.97); }
+  .bar .primary { background: var(--fg); color: var(--bg); }
+
+  .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px 16px 120px; }
+  /* the request the agent is working on */
+  .ask { display: flex; align-items: center; gap: 10px; min-height: 40px; max-width: min(520px, 100%); padding: 9px 14px 9px 10px; border-radius: 14px; background: var(--card); box-shadow: 0 0 0 1px var(--line), 0 6px 24px -6px rgba(0,0,0,.08); font-size: 13px; color: var(--muted); }
+  .ask-dot { width: 20px; height: 20px; flex: none; border-radius: 6px; background: var(--fg); color: var(--bg); display: grid; place-items: center; font: 600 10px/1 "Roboto Mono", monospace; }
+  .ask-text { color: var(--fg); }
+  .ask-caret { display: inline-block; width: 1.5px; height: 14px; margin-left: 1px; vertical-align: -2px; background: var(--fg); animation: blink 900ms steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* both versions in one cell: the transform reads each where it will be seen */
+  .slot { display: grid; place-items: start center; }
+  .slot > * { grid-area: 1 / 1; }
+
+  .plan { width: 300px; padding: 22px; border-radius: 22px; background: var(--card); box-shadow: 0 0 0 1px rgba(0,0,0,.07), 0 8px 32px -4px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.07); }
+  html[data-theme="dark"] .plan { box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 8px 32px -4px rgba(0,0,0,.5); }
+  .plan-name { margin: 0; font: 600 15px/20px Inter, sans-serif; }
+  .plan-price { margin: 14px 0 18px; color: var(--muted); }
+  .plan-price b { font: 700 38px/40px "Inter Tight", Inter, sans-serif; letter-spacing: -.03em; color: var(--fg); margin-right: 4px; }
+  .plan ul { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 10px; }
+  .plan li { display: flex; align-items: center; gap: 10px; }
+  .plan li svg { flex: none; color: var(--good); }
+  .btn { width: 100%; height: 40px; border: 0; border-radius: 12px; background: var(--accent); color: var(--on-accent); font: 500 14px/1 Inter, sans-serif; cursor: pointer; }
+
+  .plan.v2 { width: 340px; padding: 24px; }
+  .plan-head { display: flex; align-items: center; justify-content: space-between; }
+  .badge { padding: 4px 9px; border-radius: 999px; background: rgba(48,164,108,.12); color: var(--good); font: 500 12px/16px Inter, sans-serif; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 16px; padding: 3px; border-radius: 12px; background: var(--soft); }
+  .seg span { height: 30px; display: grid; place-items: center; border-radius: 9px; color: var(--muted); font-weight: 500; }
+  .seg .on { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .plan.v2 .plan-price { margin: 18px 0 4px; }
+  .plan.v2 .plan-price b { font-size: 44px; line-height: 46px; }
+  .plan-note { margin: 0 0 20px; color: var(--muted); font-size: 13px; }
+  .row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; }
+  .btn.ghost { background: var(--soft); color: var(--fg); }
+
+  .hint { color: var(--muted); font: 500 11px/16px "Roboto Mono", monospace; letter-spacing: .06em; text-transform: uppercase; }
+</style>
+<script>if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.dataset.theme = "dark";</script>
+</head>
+<body>
+  <div class="bar" role="toolbar" aria-label="Demo controls">
+    <button class="primary" id="go">Regenerate</button>
+    <button id="replay">Replay</button>
+    <a href="./demo.html">UI components</a>
+    <a href="./demo-text.html">Text</a>
+  </div>
+
+  <main class="stage">
+    <div class="ask" aria-live="polite"><span class="ask-dot">AI</span><span><span class="ask-text" id="askText"></span><span class="ask-caret" id="caret"></span></span></div>
+
+    <div class="slot" id="slot">
+      <article class="plan v1" id="v1" aria-label="Team plan, version 1">
+        <p class="plan-name">Team</p>
+        <p class="plan-price"><b>$24</b>per month</p>
+        <ul>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" /></svg>Up to 10 seats</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" /></svg>Shared workspaces</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" /></svg>Email support</li>
+        </ul>
+        <button class="btn" type="button">Choose plan</button>
+      </article>
+
+      <article class="plan v2" id="v2" aria-label="Team plan, version 2" style="visibility:hidden">
+        <div class="plan-head"><p class="plan-name">Team</p><span class="badge">Most popular</span></div>
+        <div class="seg" aria-hidden="true"><span>Monthly</span><span class="on">Yearly −20%</span></div>
+        <p class="plan-price"><b>$19</b>per month</p>
+        <p class="plan-note">Billed yearly, $228 in all</p>
+        <ul>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" /></svg>Up to 25 seats</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" /></svg>Shared workspaces</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" /></svg>Priority support</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" /></svg>Audit log and SSO</li>
+        </ul>
+        <div class="row"><button class="btn" type="button">Start free trial</button><button class="btn ghost" type="button">Compare</button></div>
+      </article>
+    </div>
+
+    <p class="hint" id="hint">Version 1</p>
+  </main>
+
+<script type="module">
+  import { transform } from "./ui-generation.js";
+  const v1 = document.getElementById("v1"), v2 = document.getElementById("v2"), askText = document.getElementById("askText"), hint = document.getElementById("hint");
+  const ASKS = { up: "Make it more premium: a yearly toggle, more seats and a free trial", down: "Back to the simple version" };
+  let showing = v1, busy = null;
+  // the request types out, then the agent regenerates the card into the other version
+  const type = (text) => new Promise((done) => {
+    askText.textContent = ""; let i = 0;
+    const step = () => { askText.textContent = text.slice(0, ++i); if (i < text.length) setTimeout(step, 18); else setTimeout(done, 240); };
+    step();
+  });
+  const regenerate = async (from, to, ask) => {
+    if (busy) busy.cancel();
+    await type(ask);
+    hint.textContent = "Regenerating";
+    busy = transform(from, to, { duration: 2800, versions: from === v1 ? ["v1", "v2"] : ["v2", "v1"] });
+    await busy.finished; busy = null;
+    showing = to; hint.textContent = to === v2 ? "Version 2" : "Version 1";
+  };
+  document.getElementById("go").addEventListener("click", () => (showing === v1 ? regenerate(v1, v2, ASKS.up) : regenerate(v2, v1, ASKS.down)));
+  document.getElementById("replay").addEventListener("click", () => {
+    if (busy) busy.cancel();
+    v2.style.visibility = "hidden"; v1.style.visibility = ""; showing = v1;
+    regenerate(v1, v2, ASKS.up);
+  });
+  await document.fonts.ready;
+  askText.textContent = "Make it more premium";
+  setTimeout(() => regenerate(v1, v2, ASKS.up), 700);
+</script>
+</body>
+</html>

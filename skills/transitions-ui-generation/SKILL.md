@@ -1,7 +1,7 @@
 ---
 name: transitions-ui-generation
 license: Free for personal and commercial use; see LICENSE.txt (no redistribution of the library itself)
-description: Make any UI, headline or image appear as if an AI agent is generating it. Five variants: ui (the default: a dotted wireframe drawn from the element's own structure, outline, boxes, text lines, icon paths, with guides, corner handles and size labels, then the real UI revealed behind a scan line), text (every glyph of a headline traced along its real outline in flowing dots, then fading in one by one), small text (a dotted line through each line of text), image (a frame, a sketch of the photo's tones, a halftone of its own pixels, colour dots, then the photo) and auto (text by size and images in one block). Two modes, skeleton and skeleton + generation texts (an agent log, the motion CSS being written, and a step line). One dependency-free runtime that works with any framework (vanilla, React, Next.js, Vue, Svelte). Use when the user asks for a "generation animation", "AI generating the UI", "agent building the component", "build-in animation", "wireframe to UI reveal", "skeleton generation", "dotted wireframe", "matrix dots", "make it look generated", "futuristic reveal", "generative UI loading", "headline generation animation", "letters drawn in dots", "glyph outline reveal", "image generation reveal", "halftone image reveal", or for an AI product that should show its output being built. Also the commands transitions generate, transitions generate texts and transitions generate preview.
+description: Make any UI, headline or image appear as if an AI agent is generating it. Five variants: ui (the default: a dotted wireframe drawn from the element's own structure, outline, boxes, text lines, icon paths, with guides, corner handles and size labels, then the real UI revealed behind a scan line), text (every glyph of a headline traced along its real outline in flowing dots, then fading in one by one), small text (a dotted line through each line of text), image (a frame, a sketch of the photo's tones, a halftone of its own pixels, colour dots, then the photo) auto (text by size and images in one block) and transform (one version of a UI morphing into a new version: every part moves and resizes into its new place under the generation effect, new parts traced in, gone parts dissolving). Two modes, skeleton and skeleton + generation texts (an agent log, the motion CSS being written, and a step line). One dependency-free runtime that works with any framework (vanilla, React, Next.js, Vue, Svelte). Use when the user asks for a "generation animation", "AI generating the UI", "agent building the component", "build-in animation", "wireframe to UI reveal", "skeleton generation", "dotted wireframe", "matrix dots", "make it look generated", "futuristic reveal", "generative UI loading", "headline generation animation", "letters drawn in dots", "glyph outline reveal", "image generation reveal", "halftone image reveal", "regenerate the UI", "morph old UI into new", "UI version transition", "redesign animation", or for an AI product that should show its output being built. Also the commands transitions generate, transitions generate texts and transitions generate preview.
 ---
 
 # Transitions UI generation
@@ -17,6 +17,7 @@ Plays an "agent is generating this" animation over any element on the page, then
 | **`small-text`** | A dotted line through each line of text; the characters fade in as it passes. | Eyebrows, subtitles, captions, labels. | [04-small-text.md](./04-small-text.md) |
 | **`image`** | A dotted frame, a sketch of the photo's tones, a fine halftone of its pixels, a dot matrix in its colours, then the photo. | Hero images, image cards, covers. | [05-image.md](./05-image.md) |
 | **`auto`** | Text and images in one block: text at `display` (32px) or larger as `text`, smaller as `small-text`, every image as `image`. | A hero or editorial block mixing a headline, copy and a photo. | |
+| **`transform`** | One version of a UI morphing into a new one: nothing fades away, every matched part (and the card) moves and resizes into its new place with its content changing over, under the generation effect (dot field, probe, guides, handles, reticle, parts traced in, gone parts dissolving). `transform(oldEl, newEl)` or `generate(oldEl, { variant: "transform", to: newEl })`. | An agent editing or redesigning a component it made: "make it more premium", a regenerated result. | [07-transform.md](./07-transform.md) |
 
 `text`, `small-text`, `image` and `auto` are drawn by [`text-image-generation.js`](./text-image-generation.js), which ships with this skill; `generate(el, { variant })` from `ui-generation.js` hands them over. Those variants generate only their own content; the rest of the element shows as it is.
 
@@ -44,6 +45,7 @@ Every variant takes the same two modes (for the text and image variants, `skelet
 ## Decision rules
 
 - **A headline** → `text`. **Its subtitle or eyebrow** → `small-text`. **A photo** → `image`. **A hero mixing them** → `auto`, or each element with its own variant and a `delay`. **A card or component** → `ui`.
+- **An agent changes a UI that is already on screen** (an edit, a redesign, a regenerated result) → `transform` from the old version to the new one.
 - **An AI feature returns UI** (a generated component, a chart, a summary card, a draft) → `skeleton`, played when the result arrives.
 - **A launch page, demo or video** that should tell the "built by an agent" story → `skeleton-texts`, played when it scrolls into view.
 - **The user asks for "the texts", "the log", "the code streaming", "the futuristic version"** → `skeleton-texts`.
@@ -75,6 +77,7 @@ Serve the folder over http (for example `npx serve` in this directory) and open:
 - [`demo.html`](./demo.html): the `ui` variant on three components published on the transitions.dev Community (Heart Rate Monitor, Chart card, Music Player Likes), each in its own shadow root, with a one-card layout that shows the side panels.
 - [`demo-text.html`](./demo-text.html): one title ("Generative skill", Saans Medium from the repo's `assets/fonts`, Inter when served on its own) in the `text` and `small-text` variants, with a settings panel (variant, build, delay, fade, delay between characters, sequence easing with a draggable curve, fade by, focus bracket, coordinates, type guides, flying dots) remembered per browser.
 - [`demo-editorial.html`](./demo-editorial.html): an editorial page (hero, two image cards, a quote) in the `auto` variant, the same panel with all variants.
+- [`demo-transform.html`](./demo-transform.html): the `transform` variant: a pricing card regenerated from a typed request ("Make it more premium"), and back.
 
 ## Install
 
@@ -267,7 +270,8 @@ Keep the drawing monochrome. Grey dots read as "the agent's working layer"; the 
 - [04-small-text.md](./04-small-text.md): the small text variant.
 - [05-image.md](./05-image.md): the image variant, phase by phase.
 - [06-text-image-texts.md](./06-text-image-texts.md): the agent log and step line of the text and image variants.
-- [ui-generation.js](./ui-generation.js): the runtime (ES module; also `window.UIGeneration`), with `generate`, `auto` and `timeline`.
+- [07-transform.md](./07-transform.md): the transform variant: phases, matching, options, wiring.
+- [ui-generation.js](./ui-generation.js): the runtime (ES module; also `window.UIGeneration`), with `generate`, `auto`, `timeline` and `transform`.
 - [text-image-generation.js](./text-image-generation.js): the text and image variants (imported by ui-generation.js; also `window.TextImageGeneration`).
 - [ui-generation.css](./ui-generation.css), [text-image-generation.css](./text-image-generation.css): the overlay styles and variables.
-- [demo.html](./demo.html), [demo-text.html](./demo-text.html), [demo-editorial.html](./demo-editorial.html), [demo-panel.js](./demo-panel.js): the demos and their settings panel.
+- [demo.html](./demo.html), [demo-text.html](./demo-text.html), [demo-editorial.html](./demo-editorial.html), [demo-transform.html](./demo-transform.html), [demo-panel.js](./demo-panel.js): the demos and their settings panel.
